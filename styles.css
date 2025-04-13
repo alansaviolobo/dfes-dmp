@@ -1,0 +1,1013 @@
+#map {
+    width: 100%;
+    height: 100%;
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    z-index: 1;
+}
+
+/* Add new styles for the opacity control */
+.opacity-control {
+    background: white;
+    border-radius: 4px;
+    box-shadow: 0 0 0 2px rgba(0, 0, 0, 0.1);
+    margin-bottom: 1px !important;
+    padding: 8px;
+}
+
+.opacity-control button {
+    background: white;
+    border: none;
+    cursor: pointer;
+    font-weight: 500;
+    padding: 6px 12px;
+    border-radius: 4px;
+    transition: all 0.2s ease;
+    width: 100%;
+    text-align: left;
+}
+
+.opacity-control button:hover {
+    background: #f0f0f0;
+}
+
+.source-control {
+    border-top: 1px solid #e5e5e5;
+    padding: 8px 12px;
+    max-height: 500px;
+    overflow: hidden;
+    transition: all .2s ease-in-out;
+    opacity: 1;
+    margin-top: 0;
+    padding: 12px;
+    border-top: none;
+}
+
+.source-control.collapsed {
+    max-height: 0;
+    opacity: 0;
+    padding: 0;
+    border-top: none;
+}
+
+.source-control .title {
+    font-size: 12px;
+    color: #666;
+    margin-bottom: 4px;
+}
+
+.radio-group {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.radio-label {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 12px;
+    color: #333;
+    cursor: pointer;
+}
+
+.radio-label input[type="radio"] {
+    margin: 0;
+    cursor: pointer;
+}
+
+/* Add padding to prevent controls from sticking to the edge */
+.mapboxgl-ctrl.opacity-control {
+    margin: 0 0 0 10px;
+    /* Remove bottom margin */
+    width: 200px;
+    /* Set fixed width for consistency */
+}
+
+/* Update the margin between controls */
+.mapboxgl-ctrl.opacity-control+.mapboxgl-ctrl.opacity-control {
+    margin-top: 1px;
+    /* Reduce gap between controls */
+    border-top: 1px solid #e5e5e5;
+    /* Add separator */
+    border-radius: 0 0 4px 4px;
+    /* Round only bottom corners */
+}
+
+/* Style first control's bottom corners when second control is present */
+.mapboxgl-ctrl.opacity-control:has(+ .mapboxgl-ctrl.opacity-control) {
+    border-radius: 4px 4px 0 0;
+    /* Round only top corners */
+    margin-bottom: 0;
+}
+
+/* Add these styles to fix mobile viewport height */
+html,
+body {
+    height: 100%;
+    margin: 0;
+    padding: 0;
+    overflow: hidden;
+    position: relative;
+    width: 100%;
+}
+
+/* Update the map container positioning */
+#map {
+    width: 100%;
+    height: 100%;
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+}
+
+
+/* Ensure attribution is visible */
+.mapboxgl-ctrl-bottom-right {
+    bottom: 0 !important;
+    z-index: 2;
+}
+
+/* Update these styles */
+html,
+body {
+    height: 100%;
+    margin: 0;
+    padding: 0;
+    overflow: hidden;
+    position: relative;
+    width: 100%;
+}
+
+/* Update main container */
+main {
+    height: calc(100% - 56px);
+    width: 100%;
+    position: relative;
+    overflow: hidden;
+}
+
+/* Update map container */
+#map {
+    width: 100%;
+    height: 100%;
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+}
+
+
+/* Add these styles in your existing style section */
+.mapboxgl-ctrl-icon svg {
+    display: block;
+    margin: 2px;
+}
+
+.mapboxgl-ctrl-icon {
+    padding: 5px;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+.mapboxgl-ctrl-location {
+    background: white;
+    border: none;
+    cursor: pointer;
+    padding: 6px 10px;
+    border-radius: 4px;
+    font-size: 12px;
+    color: #333;
+    transition: background-color 0.2s;
+}
+
+.mapboxgl-ctrl-location:hover {
+    background-color: #f0f0f0;
+}
+
+/* Add these to your existing styles */
+.mapboxgl-ctrl-geolocate {
+    display: flex !important;
+    align-items: center;
+    width: auto !important;
+    min-width: 30px;
+    white-space: nowrap;
+}
+
+.mapboxgl-ctrl-geolocate .mapboxgl-ctrl-icon {
+    margin-right: 0;
+    width: 20px;
+    height: 20px;
+}
+
+.mapboxgl-ctrl-group {
+    width: auto !important;
+}
+
+.mapboxgl-ctrl-group button {
+    background-color: white;
+}
+.mapboxgl-ctrl button:not(:disabled):hover {
+    background-color: white;
+}
+
+/* Add new styles for layer group cards */
+.layer-group {
+    background: #d6d6d6;
+    overflow: hidden;
+    opacity: 0.8;
+    transition: all 0.3s ease;
+    position: relative;
+    border-left: 3px solid transparent;
+    border-radius: 4px;
+    margin-bottom: 8px;
+}
+
+.layer-group:hover {
+    background: #e8e8e8;
+    opacity: 1;
+}
+
+.layer-group:last-child {
+    margin-bottom: 0;
+}
+
+/* Update group header styles */
+.group-header {
+    display: flex;
+    align-items: center;
+    position: relative;
+    min-height: 48px;
+    border-radius: 15px;
+    overflow: hidden;
+    margin-bottom: 8px;
+}
+
+/* Style the checkbox for consistent appearance across systems - to be replaced by toggle switches */
+.group-header input[type="checkbox"] {
+    margin: 0;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+    width: 16px;
+    height: 16px;
+    border: 1px solid #ffffff;
+    border-radius: 3px;
+    position: relative;
+    cursor: pointer;
+    background-color: #e1e1e1;
+}
+
+.group-header input[type="checkbox"]:checked {
+    background-color: #ffffff;
+    border: 2px solid #ffffff;
+}
+
+.group-header input[type="checkbox"]:checked::after {
+    content: '';
+    position: absolute;
+    left: 4px;
+    top: 1px;
+    width: 5px;
+    height: 9px;
+    border: solid #050505;
+    border-width: 0 2px 2px 0;
+    transform: rotate(45deg);
+}
+
+/* Ensure sublayer checkbox has proper border and contrast */
+.sublayer-checkbox {
+  border: 1px solid #777 !important;
+  background-color: white !important;
+}
+
+/* Add existing styles from index.html */
+.layer-control-wrapper {
+    position: relative;
+    margin: 0;
+    z-index: 1;
+}
+
+.mapboxgl-ctrl.layer-control {
+    width: 400px;
+    background: #ffffff11;
+    margin: 0;
+    padding: 0 0 0 55px;
+    transition: transform 0.2s ease;
+    overflow-y: auto;
+    max-height: calc(100vh - 180px);
+    position: absolute;
+    top: 0;
+    left: 0;
+    z-index: 1;
+}
+
+.mapboxgl-ctrl.layer-control.no-transition {
+    transition: none !important;
+}
+
+.mapboxgl-ctrl.layer-control.collapsed {
+    transform: translateX(-420px);
+}
+
+@media (min-width: 768px) {
+    .layer-control-wrapper {
+        margin: 10px 0 0 10px;
+    }
+    
+    .mapboxgl-ctrl.layer-control {
+        max-width: 400px;
+    }
+}
+
+/* Update header font style */
+header h1 {
+    font-family: 'Open Sans', sans-serif;
+}
+
+
+/* Popup styles */
+.mapboxgl-popup-content {
+    padding: 0;
+    border-radius: 2px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+    background: white;
+    position: relative;
+    overflow: hidden;
+}
+
+.mapboxgl-popup-content a{
+    text-decoration: underline;
+}
+
+/* Ensure text remains readable over the background image */
+.map-popup {
+    position: relative;
+    z-index: 1;
+    background: transparent;
+}
+
+.mapboxgl-popup-close-button {
+    padding: 0;
+    width: 24px;
+    height: 24px;
+    color: hsl(0, 0%, 0%);
+    font-size: 16px;
+    right: 6px;
+    top: 6px;
+    z-index: 2;
+    background: none;
+}
+
+.mapboxgl-popup-close-button:hover {
+    background: none;
+    color: #000;
+}
+
+/* Hover popup styles */
+.hover-popup .mapboxgl-popup-content {
+    background: white;
+    color: black;
+    padding: 4px 8px;
+    font-size: 12px;
+    border-radius: 2px;
+}
+
+.hover-popup .mapboxgl-popup-tip {
+    border-top-color: white;
+}
+
+/* Ensure text is black in both hover and active popups */
+.map-popup .text-sm,
+.map-popup .text-2xl,
+.hover-popup .text-sm {
+    color: black !important;
+}
+
+/* Update legend container styles */
+.legend-container {
+    border-top: 1px solid rgba(0,0,0,0.1);
+    padding-top: 1rem;
+    max-height: 300px; /* Limit maximum height */
+    overflow: hidden;
+    transition: max-height 0.3s ease;
+}
+
+/* Style the legend toggle button */
+.legend-container button {
+    font-size: 0.875rem;
+    padding: 0.25rem 0;
+    width: 100%;
+    text-align: left;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+/* Style the legend icon */
+.legend-container .legend-icon {
+    display: inline-block;
+    font-size: 0.75rem;
+    transition: transform 0.2s ease;
+    width: 16px;
+    text-align: center;
+}
+
+/* Style the legend content wrapper */
+.legend-content {
+    overflow-y: auto;
+    max-height: 250px; /* Limit scrollable area height */
+    margin-right: -8px; /* Compensate for scrollbar */
+    padding-right: 8px;
+    scrollbar-width: thin;
+    scrollbar-color: rgba(0,0,0,0.2) transparent;
+}
+
+/* Style the legend image */
+.legend-content img {
+    max-width: 100%;
+    height: auto;
+    margin-top: 0.5rem;
+    border-radius: 4px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+}
+
+/* Webkit scrollbar styles */
+.legend-content::-webkit-scrollbar {
+    width: 6px;
+}
+
+.legend-content::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.legend-content::-webkit-scrollbar-thumb {
+    background-color: rgba(0,0,0,0.2);
+    border-radius: 3px;
+}
+
+/* When legend is hidden */
+.legend-content.hidden {
+    max-height: 0;
+    margin-top: 0;
+}
+
+/* Modal styles */
+.legend-modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.75);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 9999;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.3s ease, visibility 0.3s ease;
+}
+
+.legend-modal:not(.hidden) {
+    opacity: 1;
+    visibility: visible;
+}
+
+.legend-modal-content {
+    background: white;
+    padding: 1rem;
+    border-radius: 8px;
+    position: relative;
+    max-width: 90vw;
+    max-height: 90vh;
+    overflow: auto;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.legend-modal-content img {
+    display: block;
+    max-width: 100%;
+    height: auto;
+}
+
+.legend-modal-close {
+    position: absolute;
+    top: 0.5rem;
+    right: 0.5rem;
+    width: 2rem;
+    height: 2rem;
+    border-radius: 50%;
+    background: white;
+    border: none;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+    color: #666;
+    transition: all 0.2s ease;
+}
+
+.legend-modal-close:hover {
+    background: #f0f0f0;
+    color: #000;
+}
+
+/* Update legend image cursor */
+.legend-content img {
+    cursor: pointer;
+    transition: opacity 0.2s ease;
+}
+
+.legend-content img:hover {
+    opacity: 0.9;
+}
+
+
+sl-drawer{
+    --header-spacing: 5px;
+    --body-spacing:5px;
+    color: white;
+}
+sl-drawer::part(overlay) {
+    background: none;
+    pointer-events: none; /* Prevent overlay from capturing clicks */
+}
+
+sl-drawer::part(panel) {
+    background: hsla(0, 0%, 35%, 0.902);
+    backdrop-filter: blur(8px);
+    border-right: 1px solid rgba(0, 0, 0, 0.1);
+    width: 400px;
+    z-index: 50;
+    padding: 5px 10px;
+}
+
+sl-drawer::part(close-button) {
+    color: #fdfdfd;
+    font-size: 1.5rem;
+}
+
+/* Update opacity toggle button styles */
+button.opacity-toggle {
+    margin-left: auto !important;
+    width: 20px !important;
+    height: 20px !important;
+    border-radius: 50% !important;
+    padding: 0 !important;
+    border: 2px solid #ddd !important;
+    cursor: pointer !important;
+    transition: all 0.2s ease !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    font-size: 0 !important;
+    background: white !important;
+}
+
+button.opacity-toggle[data-opacity="0.5"] {
+    background: #999 !important;
+}
+
+button.opacity-toggle:hover {
+    border-color: #999 !important;
+}
+
+button.opacity-toggle.hidden {
+    display: none !important;
+}
+
+/* Remove old opacity control styles */
+.opacity-control {
+    display: none;
+}
+
+
+/* Style all skeleton loaders in the drawer */
+#layer-controls-loader sl-skeleton::part(base) {
+    --border-radius: 0;
+    height: 50px;
+    width: 100%;
+}
+
+/* Add hover effect */
+#layer-controls-loader sl-skeleton {
+    opacity: 0.8;
+}
+
+#layer-controls-loader sl-skeleton:hover {
+    opacity: 1;
+}
+
+/* Ensure main container is properly positioned for contained drawer */
+
+/* Update map container to be relative for drawer containment */
+#map {
+    width: 100%;
+    height: 100%;
+    position: relative;
+}
+
+sl-details.map-controls-group::part(base) {
+    width: 100%;
+}
+
+/* Add styles to ensure proper spacing and scrolling for fog settings */
+.fog-settings-content {
+    max-height: 70vh; /* Limit maximum height */
+    overflow-y: auto; /* Enable vertical scrolling if needed */
+    padding-right: 8px; /* Add some padding for the scrollbar */
+}
+
+/* Add smooth scrolling for a better user experience */
+.fog-settings-content {
+    scroll-behavior: smooth;
+}
+
+/* Style the scrollbar for better visibility */
+.fog-settings-content::-webkit-scrollbar {
+    width: 6px;
+}
+
+.fog-settings-content::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 3px;
+}
+
+.fog-settings-content::-webkit-scrollbar-thumb {
+    background: #888;
+    border-radius: 3px;
+}
+
+.fog-settings-content::-webkit-scrollbar-thumb:hover {
+    background: #555;
+}
+
+/* Style the terrain control container */
+.terrain-control-container {
+    max-height: 400px;  /* Set a maximum height */
+    overflow-y: auto;   /* Enable vertical scrolling */
+    padding-right: 12px; /* Add padding for scrollbar */
+}
+
+/* Style the terrain settings sections */
+.terrain-settings-section {
+    background: rgba(255, 255, 255, 0.8);
+    border-radius: 4px;
+    padding: 12px;
+    margin-bottom: 12px;
+}
+
+/* Style the scrollbar */
+.terrain-control-container::-webkit-scrollbar {
+    width: 6px;
+}
+
+.terrain-control-container::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 3px;
+}
+
+.terrain-control-container::-webkit-scrollbar-thumb {
+    background: #888;
+    border-radius: 3px;
+}
+
+.terrain-control-container::-webkit-scrollbar-thumb:hover {
+    background: #555;
+}
+
+/* Ensure proper spacing for controls */
+.terrain-control-container .terrain-settings-section:last-child {
+    margin-bottom: 0;
+}
+
+/* Style the fog settings checkbox area */
+.terrain-control-container label.flex.items-center {
+    padding: 8px;
+    border-radius: 4px;
+    background: rgba(255, 255, 255, 0.8);
+    margin-bottom: 8px;
+}
+
+/* Style the input controls */
+.terrain-control-container input[type="range"],
+.terrain-control-container input[type="color"] {
+    width: 100%;
+    margin: 4px 0;
+}
+
+/* Style the color picker containers */
+.terrain-control-container .flex.items-center {
+    gap: 8px;
+}
+
+
+/* Add toast notification styles */
+.toast-notification {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    background-color: #4CAF50;
+    color: white;
+    padding: 12px 24px;
+    border-radius: 4px;
+    z-index: 1000;
+    opacity: 0;
+    transform: translateY(20px);
+    transition: all 0.3s ease;
+}
+
+.toast-notification.show {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+/* Add these attribution-specific styles */
+.layer-attribution {
+    font-size: 12px;
+    color: #777;
+    margin-top: 8px;
+    border-radius: 4px;
+}
+
+.layer-attribution a {
+    color: #0078A8;
+    text-decoration: none;
+}
+
+.layer-attribution a:hover {
+    text-decoration: underline;
+}
+
+
+.description-area a{
+    text-decoration: underline;
+}
+
+
+
+/* Update basemap control to overlay control */
+.overlay-control {
+    background: rgba(255, 255, 255, 0.9);
+    padding: 12px;
+    margin-bottom: 16px;
+    border-radius: 4px;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+.overlay-control label {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+}
+
+.overlay-control input[type="checkbox"] {
+    margin: 0;
+    cursor: pointer;
+}
+
+.overlay-control span {
+    font-size: 14px;
+    color: #333;
+}
+
+/* Update the layer control styles to ensure proper scrolling */
+.mapboxgl-ctrl.layer-control {
+    display: flex;
+    flex-direction: column;
+}
+
+/* Ensure the overlay control stays at the top */
+.layer-control > .overlay-control {
+    flex-shrink: 0;
+}
+
+/* Update the container for the rest of the controls */
+.layer-control > div:not(.overlay-control) {
+    flex-grow: 1;
+    overflow-y: auto;
+}
+
+/* Style the share button */
+.share-button {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.25rem 0.75rem;
+    font-size: 0.875rem;
+    color: hsl(0, 0%, 77%);
+    border: 1px solid #929292;
+    border-radius: 0.375rem;
+    transition: all 0.2s;
+}
+
+.share-button:hover {
+    background-color: #edf2f7;
+    color: #1a202c;
+}
+
+.share-button svg {
+    width: 1rem;
+    height: 1rem;
+}
+
+
+
+/* Style the open drawer button and its icon */
+#open-drawer {
+    background-color: #000000;
+}
+
+#open-drawer::part(base) {
+    background-color: #000000;
+}
+
+header .icon-button {
+    color: #ffffff !important;
+}
+
+sl-details::part(header) {
+    padding: 0;
+    opacity: 0.9;
+}
+sl-details::part(header):hover {
+    opacity: 1;
+}
+sl-details::part(base) {
+    padding: 0;
+    border: 1px solid #535353;
+    box-shadow: inset 0px 0px 3px rgb(69 69 69);
+}
+sl-details::part(content) {
+    box-shadow: inset 0px 0px 3px rgb(69 69 69);
+    background-color: rgb(255, 251, 243);
+}
+
+/* Add these styles for the attribution section in popups */
+.attribution-container {
+    position: relative;
+}
+
+.attribution-content {
+    overflow: hidden;
+    transition: all 0.2s ease;
+}
+
+.attribution-content.line-clamp-2 {
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+}
+
+.expand-attribution {
+    display: block;
+    width: 100%;
+    text-align: left;
+    padding: 2px 0;
+}
+
+.expand-attribution:hover {
+    text-decoration: underline;
+}
+
+/* Toggle Switch Styles for layer controls */
+.toggle-switch {
+  position: relative;
+  display: inline-block;
+  width: 36px;
+  height: 20px;
+  margin-right: 8px;
+}
+
+.toggle-switch input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.toggle-slider {
+  position: absolute;
+  cursor: pointer;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: #aaa;
+  transition: .3s;
+  border-radius: 34px;
+  box-shadow: inset 0 0 3px rgba(0, 0, 0, 0.2);
+}
+
+.toggle-slider:before {
+  position: absolute;
+  content: "";
+  height: 16px;
+  width: 16px;
+  left: 2px;
+  bottom: 2px;
+  background-color: white;
+  transition: .3s;
+  border-radius: 50%;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+}
+
+input:checked + .toggle-slider {
+  background-color: #F96302;
+}
+
+input:checked + .toggle-slider:before {
+  transform: translateX(16px);
+}
+
+/* Add pulse animation when toggle is activated */
+@keyframes togglePulse {
+  0% { box-shadow: 0 0 0 0 rgba(249, 99, 2, 0.7); }
+  70% { box-shadow: 0 0 0 6px rgba(249, 99, 2, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(249, 99, 2, 0); }
+}
+
+/* Animate the toggle button with pulse effect */
+input:checked + .toggle-slider:before {
+  animation: togglePulse 0.5s 1;
+}
+
+/* Style for sublayer toggles in Street Map to ensure proper contrast */
+.layer-controls .toggle-switch {
+  width: 30px;
+  height: 16px;
+}
+
+.layer-controls .toggle-slider:before {
+  height: 12px;
+  width: 12px;
+}
+
+.layer-controls input:checked + .toggle-slider:before {
+  transform: translateX(14px);
+}
+
+/* Additional styles for Street Map layer toggles */
+.layer-controls .toggle-slider {
+  background-color: #f0f0f0;
+  border: 1px solid #333;
+}
+
+.layer-controls .toggle-slider:before {
+  background-color: #fff;
+  border: 1px solid #666;
+  height: 12px;
+  width: 12px;
+}
+
+.layer-controls input:checked + .toggle-slider {
+  background-color: #F96302;
+  border-color: #D85600;
+}
+
+.layer-controls input:checked + .toggle-slider:before {
+  transform: translateX(14px);
+}
+
+/* Enhanced styling for layer groups to improve on/off state visibility */
+.layer-group.active,
+.layer-group:has(.toggle-switch input:checked) {
+  background: linear-gradient(to right, rgba(249, 99, 2, 0.05), #e8e8e8);
+  opacity: 1;
+  box-shadow: 0 0 0 1px rgba(249, 99, 2, 0.3);
+  border-left: 3px solid #F96302;
+}
+
+/* Make the active layer title slightly brighter */
+.layer-group.active .control-title,
+.layer-group:has(.toggle-switch input:checked) .control-title {
+  color: #fff;
+  text-shadow: 0 0 3px rgba(0, 0, 0, 0.3);
+}
+
+/* Add hover effects for clickable layer titles */
+.layer-group .control-title {
+  transition: color 0.2s;
+}
+
+.layer-group:hover .control-title {
+  color: #fff;
+  text-shadow: 0 0 2px rgba(255, 255, 255, 0.5);
+}
+
+/* Make sublayer labels visibly clickable */
+.layer-controls label {
+  transition: color 0.2s;
+  padding: 3px 0;
+}
+
+.layer-controls label:hover {
+  color: #F96302;
+}
