@@ -7,7 +7,7 @@ class ViewControl {
                 pitch: 28,
                 bearing: 0
             },
-            iconUrl: 'assets/goa-icon.svg',
+            iconUrl: 'images/goa-icon.svg',
             ...options
         };
     }

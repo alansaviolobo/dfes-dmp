@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="canonical" href="https://dfes.goa.gov.in"/>
     <title>Disaster Management Plan - Directorate of Fire & Emergency Services</title>
+    <link rel="icon" type="image/x-icon" href="images/favicon.ico">
 
     <!-- SEO and Social Media Meta Tags -->
     <meta name="description"
@@ -18,7 +19,7 @@
           content="Explore Goa's disaster response resource map featuring detailed hospitals, cyclone shelters, fire fighting resources."/>
     <meta property="og:type" content="website"/>
     <meta property="og:url" content="https://dfes.goa.gov.in"/>
-    <meta property="og:image" content="https://dfes.goa.gov.in/assets/og_image.jpg"/>
+    <meta property="og:image" content="images/og_image.png"/>
     <meta property="og:site_name" content="dfes.goa.gov.in"/>
     <meta property="og:locale" content="en_IN"/>
 
@@ -27,7 +28,7 @@
     <meta name="twitter:title" content="Disaster Response Resources Map of Goa"/>
     <meta name="twitter:description"
           content="Explore Goa's disaster response resource map featuring detailed hospitals, cyclone shelters, fire fighting resources."/>
-    <meta name="twitter:image" content="https://dfes.goa.gov.in/assets/og_image.jpg"/>
+    <meta name="twitter:image" content="images/og_image.png"/>
 
     <!-- Tailwind CSS via CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -129,7 +130,7 @@
     }
 
 
-    mapboxgl.accessToken = 'pk.eyJ1Ijoib3NtaW5kaWEiLCJhIjoiY202czRpbWdpMDNyZjJwczJqZXdkMGR1eSJ9.eQQf--msfqtZIamJN-KKVQ'; // Mapbox Token by OpenStreetMap India community via @planemad
+    mapboxgl.accessToken = 'pk.eyJ1IjoicGxhbmVtYWQiLCJhIjoiY2x2MzZwbGRyMGdheDJtbXVwdDA4aDNyaCJ9.nbvz6aNGQo68xa4NtWH26A';
 
     // Initialize the map
     // Mapbox Studio style https://www.mapbox.com/studio/styles/planemad/cm3gyibd3004x01qz08rohcsg/
@@ -183,13 +184,6 @@
 
         });
 
-        // // add an event listener to handle the `retrieve` event
-        // searchBox.addEventListener('retrieve', (e) => {
-        //     const feature = e.detail;
-        //     console.log(feature) // geojson object representing the selected item
-        // });
-
-
         // set the mapboxgl library to use for markers and enable the marker functionality
         searchBox.mapboxgl = mapboxgl
         searchBox.marker = true
@@ -233,9 +227,9 @@
                 headerImage: 'assets/map-layer-water-bodies.png',
                 type: 'geojson',
                 id: 'fire-stations',
-                url: 'https://gist.githubusercontent.com/alansaviolobo/e87a9cf06b0396eeae76041d97661986/raw/a4b5b76d37c3c8c66995880a7777a975f3ac1d1d/fire_stations',
+                url: 'https://gist.githubusercontent.com/alansaviolobo/e87a9cf06b0396eeae76041d97661986/raw/f9320135354012a9db7262cdc7572c334512c3cf/fire_stations.geojson',
                 attribution: '',
-                initiallyChecked: true,
+                initiallyChecked: false,
                 style: {
                     'text-color': 'white',
                     'text-halo-color': '#0084f7',
@@ -255,12 +249,12 @@
                 }
             },
             {
-                title: 'Civil Supplies Godowns',
-                description: 'Location of Civil Supplies Godowns',
+                title: 'Police Stations',
+                description: 'Location of Police Stations',
                 headerImage: 'assets/map-layer-water-bodies.png',
                 type: 'geojson',
-                id: 'civil-supplies-godowns',
-                url: 'https://gist.githubusercontent.com/alansaviolobo/4698b4ae8ce4dd3592d8848bb369a299/raw/9b81189440e4e13bd1799e384478d04f697b05e8/civil_supplies_godowns',
+                id: 'police-stations',
+                url: 'https://gist.githubusercontent.com/alansaviolobo/40033d9982c08818210ba1d52bb43d2e/raw/157d63b3aab8365cba9a6beee3d8eb6c8967757d/police_stations.geojson',
                 attribution: '',
                 initiallyChecked: true,
                 style: {
@@ -274,11 +268,38 @@
                     'fill-opacity': 0.1
                 },
                 inspect: {
+                    id: 'Station',
+                    title: 'Station',
+                    label: 'Station',
+                    fields: ['Station'],
+                    fieldTitles: ['Station'],
+                }
+            },
+            {
+                title: 'Civil Supplies Godowns',
+                description: 'Location of Civil Supplies Godowns',
+                headerImage: 'assets/map-layer-water-bodies.png',
+                type: 'geojson',
+                id: 'civil-supplies-godowns',
+                url: 'https://gist.githubusercontent.com/alansaviolobo/4698b4ae8ce4dd3592d8848bb369a299/raw/bd7e39f9b151ac71bcbcb87f5a733146b7af782c/civil_supplies_godowns.geojson',
+                attribution: '',
+                initiallyChecked: false,
+                style: {
+                    'text-color': 'white',
+                    'text-halo-color': '#0084f7',
+                    'text-halo-width': 2,
+                    'text-size': 12,
+                    'line-color': '#0084f7',
+                    'line-width': 2,
+                    'fill-color': '#0084f7',
+                    'fill-opacity': 0.1
+                },
+                inspect: {
                     id: 'Name',
                     title: 'Name',
-                    label: 'Name',
-                    fields: ['Name', 'Address', 'Capacity'],
-                    fieldTitles: ['Name', 'Address', 'Capacity'],
+                    label: 'name',
+                    fields: ['name', 'address', 'Capacity'],
+                    fieldTitles: ['name', 'address', 'Capacity'],
                 }
             },
             {
@@ -287,9 +308,13 @@
                 headerImage: 'assets/map-layer-water-bodies.png',
                 type: 'geojson',
                 id: 'river-flooding-gauges',
-                url: 'https://gist.githubusercontent.com/alansaviolobo/83a4067c36e906ba2a3287830d6245f3/raw/55d3fd7409e9bd0b4279c9e18069b16e7eb195a9/river_gauges',
+                url: 'https://gist.githubusercontent.com/alansaviolobo/83a4067c36e906ba2a3287830d6245f3/raw/67c3be304f8a6f2f0f27c6201aa7001ee22e8071/river_gauges.geojson',
                 attribution: '',
-                initiallyChecked: true,
+                initiallyChecked: false,
+                paint: {
+                    "circle-radius": 10,
+                    "circle-color": "#FF0000"
+                },
                 style: {
                     'text-color': 'white',
                     'text-halo-color': '#0084f7',
@@ -309,12 +334,190 @@
                 }
             },
             {
-                title: 'Village Panchayats',
-                description: 'Village Panchayat boundaries',
+                title: 'Cyclone Shelters',
+                description: 'Location of Cyclone Shelters',
                 headerImage: 'assets/map-layer-water-bodies.png',
                 type: 'geojson',
-                id: 'village-panchayats',
-                url: 'https://gist.githubusercontent.com/alansaviolobo/7a324cc42b827e0eeb3a8c0f02b01918/raw/331470b4ae140a6a38bdddd4d40ffd06a07eec06/village_panchayats',
+                id: 'cyclone-shelters',
+                url: 'https://gist.githubusercontent.com/alansaviolobo/7d045e0b6c6c53b14892b2f9591b5757/raw/29088daa72be07e6e59a732b542cd4a2a367c42c/cyclone_shelters.geojson',
+                attribution: '',
+                initiallyChecked: false,
+                paint: {
+                    "circle-radius": 10,
+                    "circle-color": "#FF0000"
+                },
+                style: {
+                    'text-color': 'white',
+                    'text-halo-color': '#0084f7',
+                    'text-halo-width': 2,
+                    'text-size': 12,
+                    'line-color': '#0084f7',
+                    'line-width': 2,
+                    'fill-color': '#0084f7',
+                    'fill-opacity': 0.1
+                },
+                inspect: {
+                    id: 'id',
+                    title: 'Name',
+                    label: 'name',
+                    fields: ['id', 'name'],
+                    fieldTitles: ['Call Sign', 'Display Name'],
+                }
+            },
+            {
+                title: 'Schools',
+                description: 'Location of Schools',
+                headerImage: 'assets/map-layer-water-bodies.png',
+                type: 'geojson',
+                id: 'schools',
+                url: 'https://gist.githubusercontent.com/alansaviolobo/771a08edf43e34627b4fb748fadcef3b/raw/b02e2d890cc3f469b01457efb558864c54165b45/schools.geojson',
+                attribution: '',
+                initiallyChecked: false,
+                paint: {
+                    "circle-radius": 10,
+                    "circle-color": "#FF0000"
+                },
+                style: {
+                    'text-color': 'white',
+                    'text-halo-color': '#0084f7',
+                    'text-halo-width': 2,
+                    'text-size': 12,
+                    'line-color': '#0084f7',
+                    'line-width': 2,
+                    'fill-color': '#0084f7',
+                    'fill-opacity': 0.1
+                },
+                inspect: {
+                    id: 'id',
+                    title: 'Name',
+                    label: 'name',
+                    fields: ['id', 'name'],
+                    fieldTitles: ['Call Sign', 'Display Name'],
+                }
+            },
+            {
+                title: 'Water Resources',
+                description: 'Location of Water Resources',
+                headerImage: 'assets/map-layer-water-bodies.png',
+                type: 'geojson',
+                id: 'water-resources',
+                url: 'https://gist.githubusercontent.com/alansaviolobo/771a08edf43e34627b4fb748fadcef3b/raw/b02e2d890cc3f469b01457efb558864c54165b45/schools.geojson',
+                attribution: '',
+                initiallyChecked: false,
+                paint: {
+                    "circle-radius": 10,
+                    "circle-color": "#FF0000"
+                },
+                style: {
+                    'text-color': 'white',
+                    'text-halo-color': '#0084f7',
+                    'text-halo-width': 2,
+                    'text-size': 12,
+                    'line-color': '#0084f7',
+                    'line-width': 2,
+                    'fill-color': '#0084f7',
+                    'fill-opacity': 0.1
+                },
+                inspect: {
+                    id: 'Location',
+                    title: 'Location',
+                    label: 'Location',
+                    fields: ['Location', 'Type'],
+                    fieldTitles: ['Location', 'Type'],
+                }
+            },
+            {
+                title: 'Mutual Aid Agencies',
+                description: 'Location of Mutual Aid Agencies',
+                headerImage: 'assets/map-layer-water-bodies.png',
+                type: 'geojson',
+                id: 'mutual-aid-agencies',
+                url: 'https://gist.githubusercontent.com/alansaviolobo/43acdb2c97c73ab163927f56178d707a/raw/923b2efcdebc9d0f541cd46ecc54ff73f5fd9685/mutual_aid_agencies.geojson',
+                attribution: '',
+                initiallyChecked: false,
+                style: {
+                    'text-color': 'white',
+                    'text-halo-color': '#0084f7',
+                    'text-halo-width': 2,
+                    'text-size': 12,
+                    'line-color': '#0084f7',
+                    'line-width': 2,
+                    'fill-color': '#0084f7',
+                    'fill-opacity': 0.1
+                },
+                inspect: {
+                    id: 'id',
+                    title: 'Name',
+                    label: 'name',
+                    fields: ['name'],
+                    fieldTitles: ['Name'],
+                }
+            },
+            {
+                title: 'MHA Units',
+                description: 'Location of MHA Units',
+                headerImage: 'assets/map-layer-water-bodies.png',
+                type: 'geojson',
+                id: 'mha-units',
+                url: 'https://gist.githubusercontent.com/alansaviolobo/a46fbea981c43226e3645a2b446aac4a/raw/d9ddfc3fa7622757d121bb82e53381028a82e0aa/mha_units.geojson',
+                attribution: '',
+                initiallyChecked: true,
+                paint: {
+                    "circle-radius": 10,
+                    "circle-color": "#FF0000"
+                },
+                style: {
+                    'text-color': 'white',
+                    'text-halo-color': '#0084f7',
+                    'text-halo-width': 2,
+                    'text-size': 12,
+                    'line-color': '#0084f7',
+                    'line-width': 2,
+                    'fill-color': '#0084f7',
+                    'fill-opacity': 0.1
+                },
+                inspect: {
+                    id: 'Name',
+                    title: 'Name',
+                    label: 'Name',
+                    fields: ['Name'],
+                    fieldTitles: ['Name'],
+                }
+            },
+            {
+                title: 'Dam Levels',
+                description: 'Dam Levels',
+                headerImage: 'assets/map-layer-water-bodies.png',
+                type: 'geojson',
+                id: 'dam-levels',
+                url: 'https://gist.githubusercontent.com/alansaviolobo/e7ffaf4015c46e0abefd7979519a363a/raw/8bc04d20ae3cb4a751760f643389232cf3486b2c/dam_levels.geojson',
+                attribution: '',
+                initiallyChecked: false,
+                style: {
+                    'text-color': 'white',
+                    'text-halo-color': '#0084f7',
+                    'text-halo-width': 2,
+                    'text-size': 12,
+                    'line-color': '#0084f7',
+                    'line-width': 2,
+                    'fill-color': '#0084f7',
+                    'fill-opacity': 0.01
+                },
+                inspect: {
+                    id: 'id',
+                    title: 'name',
+                    label: 'name',
+                    fields: ['name', 'id'],
+                    fieldTitles: ['name', 'id'],
+                }
+            },
+            {
+                title: 'Hospitals',
+                description: 'Hospitals',
+                headerImage: 'assets/map-layer-water-bodies.png',
+                type: 'geojson',
+                id: 'hospitals',
+                url: 'https://gist.githubusercontent.com/alansaviolobo/5d179194f07f3fb37c0941b13ecf3bf8/raw/cf0f1e1347b2b2fd4e38f2f66912ad541ecfc9f2/hospitals.geojson',
                 attribution: '',
                 initiallyChecked: true,
                 style: {
@@ -325,7 +528,89 @@
                     'line-color': '#0084f7',
                     'line-width': 2,
                     'fill-color': '#0084f7',
-                    'fill-opacity': 0.1
+                    'fill-opacity': 0.01
+                },
+                inspect: {
+                    id: 'id',
+                    title: 'id',
+                    label: 'name',
+                    fields: ['id', 'Name', 'Beds'],
+                    fieldTitles: ['id', 'Name', 'Beds'],
+                }
+            },
+            {
+                title: 'Fire Appliances',
+                description: 'Fire Appliances',
+                headerImage: 'assets/map-layer-water-bodies.png',
+                type: 'geojson',
+                id: 'fire-appliances',
+                // url: 'https://gist.githubusercontent.com/alansaviolobo/62dc93e9478030799901b4e256946540/raw/d1839486286db0af09e5e87aaf51ad2ce776cc7f/fire_appliances.geojson',
+                url: 'http://localhost/dfes-dmp/layers/fire_appliances/fire_appliances.geojson',
+                attribution: '',
+                initiallyChecked: true,
+                style: {
+                    'text-color': 'white',
+                    'text-halo-color': '#0084f7',
+                    'text-halo-width': 2,
+                    'text-size': 12,
+                    'line-color': '#0084f7',
+                    'line-width': 2,
+                    'fill-color': '#0084f7',
+                    'fill-opacity': 0.01
+                },
+                inspect: {
+                    id: 'id',
+                    title: 'vehicle_no',
+                    label: 'vehicle_no',
+                    fields: ['vehicle_no'],
+                    fieldTitles: ['vehicle_no'],
+                }
+            },
+            {
+                title: 'Gas Pipelines',
+                description: 'Gas Pipelines',
+                headerImage: 'assets/map-layer-water-bodies.png',
+                type: 'geojson',
+                id: 'gas-pipelines',
+                url: 'https://gist.githubusercontent.com/alansaviolobo/618378ae02a60efdd41b84e3cbee5350/raw/657eca5c0fc646c45a1ef9083707068be30f7612/gas_pipelines.geojson',
+                attribution: '',
+                initiallyChecked: false,
+                style: {
+                    'text-color': 'white',
+                    'text-halo-color': '#0084f7',
+                    'text-halo-width': 2,
+                    'text-size': 12,
+                    'line-color': '#0084f7',
+                    'line-width': 2,
+                    'fill-color': '#0084f7',
+                    'fill-opacity': 0.01
+                },
+                inspect: {
+                    id: 'id',
+                    title: 'Name',
+                    label: 'name',
+                    fields: ['name', 'id'],
+                    fieldTitles: ['Name', 'id'],
+                }
+            },
+            {
+                title: 'Village Panchayats',
+                description: 'Village Panchayat boundaries',
+                headerImage: 'assets/map-layer-water-bodies.png',
+                type: 'geojson',
+                id: 'village-panchayats',
+                url: 'https://gist.githubusercontent.com/alansaviolobo/7a324cc42b827e0eeb3a8c0f02b01918/raw/b54a0e5e4c82dbeace95403e73222033cbd1968a/village_panchayats.geojson',
+                attribution: '',
+                initiallyChecked: false,
+                style: {
+                    'text-color': 'white',
+                    'text-halo-color': '#0084f7',
+                    'text-halo-width': 2,
+                    'text-size': 12,
+                    'line-color': '#0084f7',
+                    'line-width': 2,
+                    'fill-color': '#0084f7',
+                    'fill-opacity': 0.01
                 },
                 inspect: {
                     id: 'id',
@@ -345,7 +630,7 @@
                 sourceLayer: 'LGD_States',
                 maxzoom: 10,
                 attribution: '',
-                initiallyChecked: true,
+                initiallyChecked: false,
                 style: {
                     'fill-color': [
                         'interpolate',
@@ -412,7 +697,6 @@
         // Let MapLayerControl handle initial checkbox states based on initiallyChecked
         layerControl.renderToContainer(container, map);
 
-
         // Add navigation controls
         map.addControl(new mapboxgl.NavigationControl({
             showCompass: true,
@@ -454,7 +738,6 @@
         gtag('config', gtagid);
     }
 </script>
-
 <script>
     // Modify the drawer initialization script
     customElements.whenDefined('sl-drawer').then(() => {

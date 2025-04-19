@@ -3,7 +3,12 @@
   <component name="VcsDirectoryMappings">
     <mapping directory="" vcs="Git" />
     <mapping directory="$PROJECT_DIR$/layers/civil_supplies_godowns" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/layers/cyclone_shelters" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/layers/dam_levels" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/layers/fire_appliances" vcs="Git" />
     <mapping directory="$PROJECT_DIR$/layers/fire_stations" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/layers/gas_pipelines" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/layers/hospitals" vcs="Git" />
     <mapping directory="$PROJECT_DIR$/layers/river_gauges" vcs="Git" />
     <mapping directory="$PROJECT_DIR$/layers/village_panchayats" vcs="Git" />
   </component>
