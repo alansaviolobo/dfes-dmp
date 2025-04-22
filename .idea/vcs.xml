@@ -8,12 +8,14 @@
     <mapping directory="$PROJECT_DIR$/layers/fire_appliances" vcs="Git" />
     <mapping directory="$PROJECT_DIR$/layers/fire_stations" vcs="Git" />
     <mapping directory="$PROJECT_DIR$/layers/gas_pipelines" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/layers/heavy_machinery" vcs="Git" />
     <mapping directory="$PROJECT_DIR$/layers/hospitals" vcs="Git" />
     <mapping directory="$PROJECT_DIR$/layers/mha_units" vcs="Git" />
     <mapping directory="$PROJECT_DIR$/layers/mutual_aid_agencies" vcs="Git" />
     <mapping directory="$PROJECT_DIR$/layers/police_stations" vcs="Git" />
     <mapping directory="$PROJECT_DIR$/layers/river_gauges" vcs="Git" />
     <mapping directory="$PROJECT_DIR$/layers/schools" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/layers/tree_cutters" vcs="Git" />
     <mapping directory="$PROJECT_DIR$/layers/village_panchayats" vcs="Git" />
     <mapping directory="$PROJECT_DIR$/layers/water_resources" vcs="Git" />
   </component>
