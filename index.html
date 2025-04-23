@@ -128,8 +128,7 @@
 
         return params;
     }
-
-
+    
     mapboxgl.accessToken = 'pk.eyJ1IjoicGxhbmVtYWQiLCJhIjoiY2x2MzZwbGRyMGdheDJtbXVwdDA4aDNyaCJ9.nbvz6aNGQo68xa4NtWH26A';
 
     // Initialize the map
@@ -372,7 +371,7 @@
                 id: 'schools',
                 url: 'https://gist.githubusercontent.com/alansaviolobo/771a08edf43e34627b4fb748fadcef3b/raw/b02e2d890cc3f469b01457efb558864c54165b45/schools.geojson',
                 attribution: '',
-                initiallyChecked: false,
+                initiallyChecked: true,
                 paint: {
                     "circle-radius": 10,
                     "circle-color": "#FF0000"
@@ -403,7 +402,7 @@
                 id: 'water-resources',
                 url: 'https://gist.githubusercontent.com/alansaviolobo/771a08edf43e34627b4fb748fadcef3b/raw/b02e2d890cc3f469b01457efb558864c54165b45/schools.geojson',
                 attribution: '',
-                initiallyChecked: false,
+                initiallyChecked: true,
                 paint: {
                     "circle-radius": 10,
                     "circle-color": "#FF0000"
@@ -434,7 +433,7 @@
                 id: 'mutual-aid-agencies',
                 url: 'https://gist.githubusercontent.com/alansaviolobo/43acdb2c97c73ab163927f56178d707a/raw/923b2efcdebc9d0f541cd46ecc54ff73f5fd9685/mutual_aid_agencies.geojson',
                 attribution: '',
-                initiallyChecked: false,
+                initiallyChecked: true,
                 style: {
                     'text-color': 'white',
                     'text-halo-color': '#0084f7',
@@ -538,6 +537,33 @@
                     fieldTitles: ['id', 'Name', 'Beds'],
                 }
             },
+           {
+                title: 'Ambulances',
+                description: 'Ambulances',
+                headerImage: 'assets/map-layer-water-bodies.png',
+                type: 'geojson',
+                id: 'ambulances',
+                url: 'https://gist.githubusercontent.com/alansaviolobo/5d179194f07f3fb37c0941b13ecf3bf8/raw/cf0f1e1347b2b2fd4e38f2f66912ad541ecfc9f2/hospitals.geojson',
+                attribution: '',
+                initiallyChecked: true,
+                style: {
+                    'text-color': 'white',
+                    'text-halo-color': '#0084f7',
+                    'text-halo-width': 2,
+                    'text-size': 12,
+                    'line-color': '#0084f7',
+                    'line-width': 2,
+                    'fill-color': '#0084f7',
+                    'fill-opacity': 0.01
+                },
+                inspect: {
+                    id: 'Vehicle_No',
+                    title: 'Vehicle_No',
+                    label: 'Vehicle_No',
+                    fields: ['Vehicle_No', 'Contact', 'Hospital'],
+                    fieldTitles: ['Vehicle_No', 'Contact', 'Hospital'],
+                }
+            },
             {
                 title: 'Fire Appliances',
                 description: 'Fire Appliances',
@@ -601,7 +627,7 @@
                 id: 'heavy-machinery',
                 url: 'https://gist.githubusercontent.com/alansaviolobo/ae72bcdc08628ccbb3a3765f2cc3575d/raw/f7a15360cfd7439ea562aeabbd98a8589f8e38cc/heavy_machinery.geojson',
                 attribution: '',
-                initiallyChecked: false,
+                initiallyChecked: true,
                 style: {
                     'text-color': 'white',
                     'text-halo-color': '#0084f7',
@@ -628,7 +654,7 @@
                 id: 'tree-cutters',
                 url: 'https://gist.githubusercontent.com/alansaviolobo/bd6322d2588e3b56e99826b1f07cef8b/raw/e5bbd8cbd4c9a059ddb9f25877510ac774391853/tree_cutters.geojson',
                 attribution: '',
-                initiallyChecked: false,
+                initiallyChecked: true,
                 style: {
                     'text-color': 'white',
                     'text-halo-color': '#0084f7',
@@ -684,7 +710,7 @@
                 sourceLayer: 'LGD_States',
                 maxzoom: 10,
                 attribution: '',
-                initiallyChecked: false,
+                initiallyChecked: true,
                 style: {
                     'fill-color': [
                         'interpolate',

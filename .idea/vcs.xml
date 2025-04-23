@@ -2,6 +2,7 @@
 <project version="4">
   <component name="VcsDirectoryMappings">
     <mapping directory="" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/layers/ambulances" vcs="Git" />
     <mapping directory="$PROJECT_DIR$/layers/civil_supplies_godowns" vcs="Git" />
     <mapping directory="$PROJECT_DIR$/layers/cyclone_shelters" vcs="Git" />
     <mapping directory="$PROJECT_DIR$/layers/dam_levels" vcs="Git" />
