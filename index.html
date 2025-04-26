@@ -128,7 +128,7 @@
 
         return params;
     }
-    
+
     mapboxgl.accessToken = 'pk.eyJ1IjoicGxhbmVtYWQiLCJhIjoiY2x2MzZwbGRyMGdheDJtbXVwdDA4aDNyaCJ9.nbvz6aNGQo68xa4NtWH26A';
 
     // Initialize the map
@@ -253,9 +253,9 @@
                 headerImage: 'assets/map-layer-water-bodies.png',
                 type: 'geojson',
                 id: 'police-stations',
-                url: 'https://gist.githubusercontent.com/alansaviolobo/40033d9982c08818210ba1d52bb43d2e/raw/157d63b3aab8365cba9a6beee3d8eb6c8967757d/police_stations.geojson',
+                url: 'https://gist.githubusercontent.com/alansaviolobo/40033d9982c08818210ba1d52bb43d2e/raw/3228c5782ec5037bbc8e84bc46ac8836a2ca3e35/police_stations.geojson',
                 attribution: '',
-                initiallyChecked: true,
+                initiallyChecked: false,
                 style: {
                     'text-color': 'white',
                     'text-halo-color': '#0084f7',
@@ -267,11 +267,11 @@
                     'fill-opacity': 0.1
                 },
                 inspect: {
-                    id: 'Station',
-                    title: 'Station',
-                    label: 'Station',
-                    fields: ['Station'],
-                    fieldTitles: ['Station'],
+                    id: 'name',
+                    title: 'name',
+                    label: 'name',
+                    fields: ['name', 'pi_name'],
+                    fieldTitles: ['name', 'pi_name'],
                 }
             },
             {
@@ -369,9 +369,9 @@
                 headerImage: 'assets/map-layer-water-bodies.png',
                 type: 'geojson',
                 id: 'schools',
-                url: 'https://gist.githubusercontent.com/alansaviolobo/771a08edf43e34627b4fb748fadcef3b/raw/b02e2d890cc3f469b01457efb558864c54165b45/schools.geojson',
+                url: 'https://gist.githubusercontent.com/alansaviolobo/771a08edf43e34627b4fb748fadcef3b/raw/07ada7a19fc68adcd4d416cb5f3d9babaf7d0919/schools.geojson',
                 attribution: '',
-                initiallyChecked: true,
+                initiallyChecked: false,
                 paint: {
                     "circle-radius": 10,
                     "circle-color": "#FF0000"
@@ -387,11 +387,11 @@
                     'fill-opacity': 0.1
                 },
                 inspect: {
-                    id: 'id',
-                    title: 'Name',
+                    id: 'name',
+                    title: 'name',
                     label: 'name',
-                    fields: ['id', 'name'],
-                    fieldTitles: ['Call Sign', 'Display Name'],
+                    fields: ['name', 'mobile'],
+                    fieldTitles: ['Name', 'Mobile'],
                 }
             },
             {
@@ -400,9 +400,9 @@
                 headerImage: 'assets/map-layer-water-bodies.png',
                 type: 'geojson',
                 id: 'water-resources',
-                url: 'https://gist.githubusercontent.com/alansaviolobo/771a08edf43e34627b4fb748fadcef3b/raw/b02e2d890cc3f469b01457efb558864c54165b45/schools.geojson',
+                url: 'https://gist.githubusercontent.com/alansaviolobo/294c6d0b934829d46ea74336c298513c/raw/10b478bae5abf59dd3db63bab22edeb75b46c766/water_resources.geojson',
                 attribution: '',
-                initiallyChecked: true,
+                initiallyChecked: false,
                 paint: {
                     "circle-radius": 10,
                     "circle-color": "#FF0000"
@@ -418,11 +418,11 @@
                     'fill-opacity': 0.1
                 },
                 inspect: {
-                    id: 'Location',
-                    title: 'Location',
-                    label: 'Location',
-                    fields: ['Location', 'Type'],
-                    fieldTitles: ['Location', 'Type'],
+                    id: 'location',
+                    title: 'name',
+                    label: 'name',
+                    fields: ['name', 'location'],
+                    fieldTitles: ['name', 'location'],
                 }
             },
             {
@@ -431,9 +431,9 @@
                 headerImage: 'assets/map-layer-water-bodies.png',
                 type: 'geojson',
                 id: 'mutual-aid-agencies',
-                url: 'https://gist.githubusercontent.com/alansaviolobo/43acdb2c97c73ab163927f56178d707a/raw/923b2efcdebc9d0f541cd46ecc54ff73f5fd9685/mutual_aid_agencies.geojson',
+                url: 'https://gist.githubusercontent.com/alansaviolobo/43acdb2c97c73ab163927f56178d707a/raw/c57c970cbc2cbaee3ab6cd906885b7b231491bfd/mutual_aid_agencies.geojson',
                 attribution: '',
-                initiallyChecked: true,
+                initiallyChecked: false,
                 style: {
                     'text-color': 'white',
                     'text-halo-color': '#0084f7',
@@ -445,8 +445,8 @@
                     'fill-opacity': 0.1
                 },
                 inspect: {
-                    id: 'id',
-                    title: 'Name',
+                    id: 'name',
+                    title: 'name',
                     label: 'name',
                     fields: ['name'],
                     fieldTitles: ['Name'],
@@ -458,9 +458,9 @@
                 headerImage: 'assets/map-layer-water-bodies.png',
                 type: 'geojson',
                 id: 'mha-units',
-                url: 'https://gist.githubusercontent.com/alansaviolobo/a46fbea981c43226e3645a2b446aac4a/raw/d9ddfc3fa7622757d121bb82e53381028a82e0aa/mha_units.geojson',
+                url: 'https://gist.githubusercontent.com/alansaviolobo/a46fbea981c43226e3645a2b446aac4a/raw/36ce21431834803288a189b0bafe8eb6ed678865/mha_units.geojson',
                 attribution: '',
-                initiallyChecked: true,
+                initiallyChecked: false,
                 paint: {
                     "circle-radius": 10,
                     "circle-color": "#FF0000"
@@ -476,10 +476,10 @@
                     'fill-opacity': 0.1
                 },
                 inspect: {
-                    id: 'Name',
-                    title: 'Name',
-                    label: 'Name',
-                    fields: ['Name'],
+                    id: 'name',
+                    title: 'name',
+                    label: 'name',
+                    fields: ['name'],
                     fieldTitles: ['Name'],
                 }
             },
@@ -516,9 +516,9 @@
                 headerImage: 'assets/map-layer-water-bodies.png',
                 type: 'geojson',
                 id: 'hospitals',
-                url: 'https://gist.githubusercontent.com/alansaviolobo/5d179194f07f3fb37c0941b13ecf3bf8/raw/cf0f1e1347b2b2fd4e38f2f66912ad541ecfc9f2/hospitals.geojson',
+                url: 'https://gist.githubusercontent.com/alansaviolobo/5d179194f07f3fb37c0941b13ecf3bf8/raw/ce618ae5f383f283bd54f1edde5b1ba04ec197e7/hospitals.geojson',
                 attribution: '',
-                initiallyChecked: true,
+                initiallyChecked: false,
                 style: {
                     'text-color': 'white',
                     'text-halo-color': '#0084f7',
@@ -530,22 +530,22 @@
                     'fill-opacity': 0.01
                 },
                 inspect: {
-                    id: 'id',
-                    title: 'id',
+                    id: 'name',
+                    title: 'name',
                     label: 'name',
-                    fields: ['id', 'Name', 'Beds'],
-                    fieldTitles: ['id', 'Name', 'Beds'],
+                    fields: ['name', 'beds'],
+                    fieldTitles: ['Name', 'Beds'],
                 }
             },
-           {
+            {
                 title: 'Ambulances',
                 description: 'Ambulances',
                 headerImage: 'assets/map-layer-water-bodies.png',
                 type: 'geojson',
                 id: 'ambulances',
-                url: 'https://gist.githubusercontent.com/alansaviolobo/5d179194f07f3fb37c0941b13ecf3bf8/raw/cf0f1e1347b2b2fd4e38f2f66912ad541ecfc9f2/hospitals.geojson',
+                url: 'https://gist.githubusercontent.com/alansaviolobo/7dff3b0135532f2c2ea79b808baa1745/raw/9f2ee678011a5a1e3fd9b8d80f56b21ca0f43691/ambulances.geojson',
                 attribution: '',
-                initiallyChecked: true,
+                initiallyChecked: false,
                 style: {
                     'text-color': 'white',
                     'text-halo-color': '#0084f7',
@@ -557,11 +557,11 @@
                     'fill-opacity': 0.01
                 },
                 inspect: {
-                    id: 'Vehicle_No',
-                    title: 'Vehicle_No',
-                    label: 'Vehicle_No',
-                    fields: ['Vehicle_No', 'Contact', 'Hospital'],
-                    fieldTitles: ['Vehicle_No', 'Contact', 'Hospital'],
+                    id: 'name',
+                    title: 'name',
+                    label: 'name',
+                    fields: ['name', 'hospital', 'contact'],
+                    fieldTitles: ['name', 'hospital', 'contact'],
                 }
             },
             {
@@ -570,10 +570,9 @@
                 headerImage: 'assets/map-layer-water-bodies.png',
                 type: 'geojson',
                 id: 'fire-appliances',
-                // url: 'https://gist.githubusercontent.com/alansaviolobo/62dc93e9478030799901b4e256946540/raw/d1839486286db0af09e5e87aaf51ad2ce776cc7f/fire_appliances.geojson',
-                url: 'http://localhost/dfes-dmp/layers/fire_appliances/fire_appliances.geojson',
+                url: 'https://gist.githubusercontent.com/alansaviolobo/62dc93e9478030799901b4e256946540/raw/4f760c93d83b7b4599a29a2010a907ba06159886/fire_appliances.geojson',
                 attribution: '',
-                initiallyChecked: true,
+                initiallyChecked: false,
                 style: {
                     'text-color': 'white',
                     'text-halo-color': '#0084f7',
@@ -585,11 +584,11 @@
                     'fill-opacity': 0.01
                 },
                 inspect: {
-                    id: 'id',
-                    title: 'vehicle_no',
-                    label: 'vehicle_no',
-                    fields: ['vehicle_no'],
-                    fieldTitles: ['vehicle_no'],
+                    id: 'name',
+                    title: 'name',
+                    label: 'name',
+                    fields: ['name'],
+                    fieldTitles: ['vehicle No'],
                 }
             },
             {
@@ -625,9 +624,9 @@
                 headerImage: 'assets/map-layer-water-bodies.png',
                 type: 'geojson',
                 id: 'heavy-machinery',
-                url: 'https://gist.githubusercontent.com/alansaviolobo/ae72bcdc08628ccbb3a3765f2cc3575d/raw/f7a15360cfd7439ea562aeabbd98a8589f8e38cc/heavy_machinery.geojson',
+                url: 'https://gist.githubusercontent.com/alansaviolobo/ae72bcdc08628ccbb3a3765f2cc3575d/raw/644213d3f3413c990aaf319e94790a0de547e827/heavy_machinery.geojson',
                 attribution: '',
-                initiallyChecked: true,
+                initiallyChecked: false,
                 style: {
                     'text-color': 'white',
                     'text-halo-color': '#0084f7',
@@ -639,11 +638,11 @@
                     'fill-opacity': 0.01
                 },
                 inspect: {
-                    id: 'Vehicle No',
-                    title: 'Vehicle No',
-                    label: 'Vehicle No',
-                    fields: ['Vehicle No', 'Vehicle Type'],
-                    fieldTitles: ['Vehicle No', 'Vehicle Type'],
+                    id: 'id',
+                    title: 'name',
+                    label: 'name',
+                    fields: ['name', 'id', 'owner'],
+                    fieldTitles: ['Vehicle Type', 'Vehicle No', 'Owner'],
                 }
             },
             {
@@ -652,9 +651,9 @@
                 headerImage: 'assets/map-layer-water-bodies.png',
                 type: 'geojson',
                 id: 'tree-cutters',
-                url: 'https://gist.githubusercontent.com/alansaviolobo/bd6322d2588e3b56e99826b1f07cef8b/raw/e5bbd8cbd4c9a059ddb9f25877510ac774391853/tree_cutters.geojson',
+                url: 'https://gist.githubusercontent.com/alansaviolobo/bd6322d2588e3b56e99826b1f07cef8b/raw/79c1d8412aab51a7e99f97f63b901717b64f5ff3/tree_cutters.geojson',
                 attribution: '',
-                initiallyChecked: true,
+                initiallyChecked: false,
                 style: {
                     'text-color': 'white',
                     'text-halo-color': '#0084f7',
@@ -666,11 +665,11 @@
                     'fill-opacity': 0.01
                 },
                 inspect: {
-                    id: 'Name',
-                    title: 'Name',
-                    label: 'Name',
-                    fields: ['Name', 'Mobile'],
-                    fieldTitles: ['Name', 'Mobile'],
+                    id: 'name',
+                    title: 'name',
+                    label: 'name',
+                    fields: ['name', 'mobile'],
+                    fieldTitles: ['name', 'mobile'],
                 }
             },
             {
@@ -840,7 +839,7 @@
 <script>
     // Add this after your existing scripts
     const skeletonContainer = document.getElementById('skeleton-container');
-    const numberOfSkeletons = 15;
+    const numberOfSkeletons = 20;
 
     Array.from({length: numberOfSkeletons}).forEach(() => {
         const skeleton = document.createElement('sl-skeleton');
