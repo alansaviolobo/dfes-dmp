@@ -1034,6 +1034,104 @@
       }
     },
     {
+      "id": "notified-khazan",
+      "title": "Notified Khazan Lands",
+      "description": "Notified and protected Khazan Lands",
+      "headerImage": "assets/map-layers/map-layer-notified-khazan.png",
+      "type": "vector",
+      "url": "https://api-main-432878571563.europe-west4.run.app/tiler/vector/{z}/{x}/{y}?map_id=ece88d0e-2c10-4b78-a163-904a4cf16dd4",
+      "sourceLayer": "vector",
+      "maxzoom": 14,
+      "attribution": "<a href='https://czmp.ncscm.res.in'>Coastal Zone Management Plan 2019, Ministry of Environment, Forest and Climate Change</a> - via <a href='https://www.maphub.co/map/ece88d0e-2c10-4b78-a163-904a4cf16dd4'>Maphub</a>",
+      "filter": ["!=", "match_status", "unmatched"],
+      "style": {
+        "text-field": [
+          "step",
+          [
+            "zoom"
+          ],
+          "",
+          12,
+          [
+            "match",
+            [
+              "get",
+              "Class"
+            ],
+            ["Khazan Land"],
+            [
+              "match",
+              [
+                "get",
+                "CRZ_IA"
+              ],
+              "Nesting Grounds of Birds - CRZ IA",
+              "Bird Nesting Grounds",
+              "Salt Marsh - CRZ IA",
+              "Salt Marsh",
+              "Mangroves - CRZ IA",
+              "Mangroves",
+              [
+                "match",
+                [
+                  "get",
+                  "Class_2"
+                ],
+                "Aquaculture/Saltpan",
+                "Aquaculture",
+                "Khazan"
+              ]
+            ],
+            ""
+          ]
+        ]
+        ,
+        "fill-opacity": 1,
+        "fill-color": [
+          "match",
+          [
+            "get",
+            "Class"
+          ],
+          ["Khazan Land"],
+          [
+            "match",
+            [
+              "get",
+              "CRZ_IA"
+            ],
+            "Nesting Grounds of Birds - CRZ IA",
+            "darkgreen",
+            ["Salt Marsh - CRZ IA"],
+            "cyan",
+            ["Mangroves - CRZ IA"],
+            "green",
+            [
+              "match",
+              [
+                "get",
+                "Class_2"
+              ],
+              "Aquaculture/Saltpan",
+              "cyan",
+              "#b3ff0f"
+            ]
+          ],
+          "grey"
+        ], 
+        "line-width": 0.2,
+        "line-color":"black"
+      },
+      "inspect": {
+        "id": "Class",
+        "title": "Wetland Name",
+        "label": "Wetland Name",
+        "fields" : ["Category","match_notes"],
+        "fieldTitles": ["Type"," Coverage"],
+        "customHtml": "<a href='https://www.fao.org/soils-portal/data-hub/soil-maps-and-databases/faounesco-soil-map-of-the-world/en/' target='_blank'>Soil Code Lookup</a> | <a href='https://www.fao.org/soils-portal/data-hub/soil-maps-and-databases/faounesco-soil-map-of-the-world/en/'>Soil Unit Lookup</a> | <a href='https://www.fao.org/fileadmin/user_upload/soils/docs/Soil_map_FAOUNESCO/acrobat/South_Asia_VII_II.pdf' target='_blank'>South Asia Soil Unit Map</a>"
+      }
+    },
+    {
       "title": "Cadastral Plot Boundaries",
       "description": "Cadastral Boundaries from the <a href='Directorate of Settlement & Land Records'>Department of Land Records</a>. The map is provided for information purpose only. An official copy can be obtained from <a href='https://goaonline.gov.in' target='_blank' rel='noopener noreferrer'>Goa Online</a>",
       "headerImage": "assets/map-layers/map-layer-survey.png",
@@ -4539,7 +4637,7 @@
       "title": "Coastal Zone Management Plan",
       "description": "Coastal Zone Management Plan 2019",
       "headerImage": "assets/map-layers/map-layer-czmp.png",
-      "legendImage": "assets/map-layers/map-layer-czmp-legend.jpg",
+      "legendImage": "assets/map-layers/map-layer-czmp-legend.png",
       "type": "tms",
       "id": "goa-czmp-map",
       "url": "https://indianopenmaps.fly.dev/not-so-open/coastal/goa/regulation/ncscm/{z}/{x}/{y}.webp",
