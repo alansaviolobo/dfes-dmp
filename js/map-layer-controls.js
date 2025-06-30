@@ -2384,18 +2384,25 @@ export class MapLayerControl {
                 });
 
                 // Add fill layer
+                const userFillOpacity = group.style?.['fill-opacity'];
+                const defaultFillOpacity = this._defaultStyles.vector.fill['fill-opacity'];
+                
+                // If user provided fill-opacity or if default is a simple value, use case expression
+                // If default is complex (like zoom interpolation), use it directly
+                const fillOpacityExpression = (userFillOpacity !== undefined || typeof defaultFillOpacity === 'number') ? [
+                    'case',
+                    ['boolean', ['feature-state', 'hover'], false],
+                    0.8,
+                    userFillOpacity || defaultFillOpacity
+                ] : defaultFillOpacity;
+
                 this._map.addLayer({
                     id: `${sourceId}-fill`,
                     type: 'fill',
                     source: sourceId,
                     paint: {
                         'fill-color': group.style?.['fill-color'] || this._defaultStyles.vector.fill['fill-color'],
-                        'fill-opacity': [
-                            'case',
-                            ['boolean', ['feature-state', 'hover'], false],
-                            0.8,
-                            group.style?.['fill-opacity'] || this._defaultStyles.vector.fill['fill-opacity']
-                        ]
+                        'fill-opacity': fillOpacityExpression
                     },
                     layout: {
                         visibility: 'visible'
