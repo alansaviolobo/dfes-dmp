@@ -1045,6 +1045,7 @@
       "attribution": "<a href='https://czmp.ncscm.res.in'>Coastal Zone Management Plan 2019, Ministry of Environment, Forest and Climate Change</a> - via <a href='https://www.maphub.co/map/ece88d0e-2c10-4b78-a163-904a4cf16dd4'>Maphub</a>",
       "filter": ["!=", "match_status", "unmatched"],
       "style": {
+        "text-padding": 30,
         "text-field": [
           "step",
           [
@@ -1082,7 +1083,7 @@
                 "Khazan"
               ]
             ],
-            ""
+            "CRZ-IA Zone"
           ]
         ]
         ,
@@ -1117,18 +1118,17 @@
               "#b3ff0f"
             ]
           ],
-          "grey"
+          "#ccc"
         ], 
         "line-width": 0.2,
         "line-color":"black"
       },
       "inspect": {
         "id": "Class",
-        "title": "Wetland Name",
-        "label": "Wetland Name",
+        "title": "CRZ_IA",
+        "label": "CRZ-IA Zone",
         "fields" : ["Category","match_notes"],
-        "fieldTitles": ["Type"," Coverage"],
-        "customHtml": "<a href='https://www.fao.org/soils-portal/data-hub/soil-maps-and-databases/faounesco-soil-map-of-the-world/en/' target='_blank'>Soil Code Lookup</a> | <a href='https://www.fao.org/soils-portal/data-hub/soil-maps-and-databases/faounesco-soil-map-of-the-world/en/'>Soil Unit Lookup</a> | <a href='https://www.fao.org/fileadmin/user_upload/soils/docs/Soil_map_FAOUNESCO/acrobat/South_Asia_VII_II.pdf' target='_blank'>South Asia Soil Unit Map</a>"
+        "fieldTitles": ["Type"," Coverage"]
       }
     },
     {

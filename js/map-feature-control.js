@@ -3178,13 +3178,14 @@ export class MapFeatureControl {
 
     /**
      * Find which registered layer a feature belongs to (OPTIMIZED)
-     * Uses feature metadata directly when available, falling back to layer matching
+     * Uses feature metadata directly when available, falling back to precise layer matching
+     * FIXED: More precise matching to avoid cross-layer contamination
      */
     _findLayerIdForFeature(feature) {
         if (!feature.layer || !feature.layer.id) return null;
         
         // OPTIMIZATION: Use metadata.groupId directly if available
-        // This avoids expensive layer matching loops
+        // This avoids expensive layer matching loops and is most reliable
         if (feature.layer.metadata && feature.layer.metadata.groupId) {
             const groupId = feature.layer.metadata.groupId;
             
@@ -3194,11 +3195,42 @@ export class MapFeatureControl {
             }
         }
         
-        // Fallback to original method if metadata is not available or layer not registered
+        // Fallback to improved method if metadata is not available
         const actualLayerId = feature.layer.id;
         
-        // Check all registered layers to see which one this feature belongs to
+        // IMPROVED: Check for exact ID matches first to avoid cross-contamination
         const activeLayers = this._stateManager.getActiveLayers();
+        
+        // Pass 1: Look for direct/exact matches only
+        for (const [layerId, layerData] of activeLayers) {
+            const layerConfig = layerData.config;
+            
+            // Check for exact ID match first
+            if (actualLayerId === layerId) {
+                return layerId;
+            }
+            
+            // Check for exact prefix matches (geojson, vector patterns)
+            if (actualLayerId.startsWith(layerId + '-') || actualLayerId.startsWith(layerId + ' ')) {
+                return layerId;
+            }
+            
+            // Check type-specific exact patterns
+            if (layerConfig.type === 'vector' && actualLayerId.startsWith(`vector-layer-${layerId}`)) {
+                return layerId;
+            }
+            
+            if (layerConfig.type === 'geojson' && actualLayerId.startsWith(`geojson-${layerId}-`)) {
+                return layerId;
+            }
+            
+            if (layerConfig.type === 'csv' && actualLayerId.startsWith(`csv-${layerId}-`)) {
+                return layerId;
+            }
+        }
+        
+        // Pass 2: Only if no exact matches found, use broader matching
+        // This prevents features from matching multiple layers with shared sources
         for (const [layerId, layerData] of activeLayers) {
             const layerConfig = layerData.config;
             const matchingLayerIds = this._getMatchingLayerIds(layerConfig);
@@ -3212,6 +3244,7 @@ export class MapFeatureControl {
 
     /**
      * Get matching layer IDs - comprehensive version based on map-layer-controls.js logic
+     * FIXED: More precise matching to avoid cross-matches between layers with same sourceLayer
      */
     _getMatchingLayerIds(layerConfig) {
         const style = this._map.getStyle();
@@ -3220,7 +3253,7 @@ export class MapFeatureControl {
         const layerId = layerConfig.id;
         const matchingIds = [];
         
-        // Strategy 1: Direct ID match
+        // Strategy 1: Direct ID match (HIGHEST PRIORITY)
         const directMatches = style.layers.filter(l => l.id === layerId).map(l => l.id);
         matchingIds.push(...directMatches);
         
@@ -3230,16 +3263,21 @@ export class MapFeatureControl {
             .map(l => l.id);
         matchingIds.push(...prefixMatches);
         
-        // Strategy 3: Source layer matches (for vector layers)
-        if (layerConfig.sourceLayer) {
+        // If we have direct matches, prioritize them and be more restrictive with fallback strategies
+        const hasDirectMatches = directMatches.length > 0 || prefixMatches.length > 0;
+        
+        // Strategy 3: Source layer matches (ONLY if no direct matches found)
+        // This prevents cross-matches when multiple configs share the same sourceLayer
+        if (!hasDirectMatches && layerConfig.sourceLayer) {
             const sourceLayerMatches = style.layers
                 .filter(l => l['source-layer'] === layerConfig.sourceLayer)
                 .map(l => l.id);
             matchingIds.push(...sourceLayerMatches);
         }
         
-        // Strategy 4: Source matches (for vector tile sources)
-        if (layerConfig.source) {
+        // Strategy 4: Source matches (ONLY if no direct matches found)
+        // This prevents cross-matches when multiple configs share the same source
+        if (!hasDirectMatches && layerConfig.source) {
             const sourceMatches = style.layers
                 .filter(l => l.source === layerConfig.source)
                 .map(l => l.id);
