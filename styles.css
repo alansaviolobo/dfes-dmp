@@ -722,6 +722,11 @@ sl-details.map-controls-group::part(base) {
     width: 100%;
 }
 
+/* Hide the summary icon for map controls group to prevent interference with background images */
+sl-details.map-controls-group::part(summary-icon) {
+    display: none;
+}
+
 /* Add styles to ensure proper spacing and scrolling for fog settings */
 .fog-settings-content {
     max-height: 70vh; /* Limit maximum height */
