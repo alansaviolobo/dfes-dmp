@@ -1144,7 +1144,7 @@
       "style": {
         "text-padding": 10,
         "text-font": [
-          "Open Sans Bold"
+          "Open Sans SemiBold"
         ],
         "text-field": [
           "step",
@@ -1152,7 +1152,7 @@
             "zoom"
           ],
           "",
-          15,
+          16,
           [
             "to-string",
             [
@@ -1162,10 +1162,8 @@
           ]
         ],
         "text-color": "black",
-        "text-halo-color": "white",
-        "text-halo-width": 0.5,
-        "text-halo-blur": 1,
-        "text-size": 13,
+        "text-halo-width": 0.1,
+        "text-size": 14,
         "fill-color": [
           "interpolate",
           [
@@ -1179,7 +1177,7 @@
           18,
           "rgba(0, 0, 0, 0.1)"
         ],
-        "line-color": "black",
+        "line-color": "#333",
         "line-width": [
           "interpolate",
           [

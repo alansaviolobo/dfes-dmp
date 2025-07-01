@@ -192,11 +192,14 @@ export class MapFeatureControl {
                 // Create a unique container ID for this specific render
                 const containerId = `bhunaksha-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
 
-                // Create initial container with loading text
+                // Create initial container with loading spinner
                 const containerHTML = `
-                    <div id="${containerId}" class="text-xs">
-                        <div class="mb-2 font-semibold">Additional Information from Bhunaksha</div>
-                        <span class="text-xs">Requesting Occupant Details...</span>
+                    <div id="${containerId}" class="text-xs" style="color: #d1d5db;">
+                        <div class="mb-2 font-semibold">Additional Information from <a href="https://bhunaksha.goa.gov.in" target="_blank" style="color: #60a5fa;">Goa Bhunaksha</a></div>
+                        <div class="flex items-center gap-2">
+                            <sl-spinner style="font-size: 0.875rem; --indicator-color: #9ca3af;"></sl-spinner>
+                            <span class="text-xs">Requesting Occupant Details...</span>
+                        </div>
                     </div>
                 `;
 
