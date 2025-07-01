@@ -183,6 +183,11 @@ export class MapLinks {
                 icon: './assets/map-layers/icon-bhuvan.png'
             },
             {
+                name: 'Bhuvan Data Hub',
+                url: `https://bhuvanmaps.nrsc.gov.in/science?dataHubTab=0&mode=Satellite#${zoom}/${lat}/${lng}`,
+                icon: './assets/map-layers/icon-bhuvan.png'
+            },
+            {
                 name: 'NIC Bharatmaps',
                 url: `https://bharatmaps.gov.in/BharatMaps/Home/Map?long=${lat}&lat=${lng}`,
                 text: 'BM'

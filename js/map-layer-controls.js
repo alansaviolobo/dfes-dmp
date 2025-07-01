@@ -1934,30 +1934,7 @@ export class MapLayerControl {
                         this._map.addLayer(textLayerConfig, this._getInsertPosition('vector', 'symbol'));
                     }
 
-                    // Add inspect functionality if configured
-                    if (group.inspect) {
-                        const popup = new mapboxgl.Popup({
-                            closeButton: true,
-                            closeOnClick: true
-                        });
 
-                        const hoverPopup = new mapboxgl.Popup({
-                            closeButton: false,
-                            closeOnClick: false,
-                            className: 'hover-popup'
-                        });
-
-                        let hoveredFeatureId = null;
-                        let selectedFeatureId = null;
-
-                        // Add event listeners to both fill and line layers if they exist
-                        const layerIds = [];
-                        if (hasFillStyles) layerIds.push(`vector-layer-${group.id}`);
-                        if (hasLineStyles) layerIds.push(`vector-layer-${group.id}-outline`);
-                        if (group.style?.['text-field']) layerIds.push(`vector-layer-${group.id}-text`);
-
-                        this._setupLayerInteractivity(group, layerIds, sourceId);
-                    }
                 }
 
                 // Store the layer configuration for later use
@@ -2242,8 +2219,6 @@ export class MapLayerControl {
                     },
                     'filter': group.filter || null
                 }, this._getInsertPosition(group.type));
-
-                this._setupLayerInteractivity(group, [layerId], sourceId);
             } else {
                 // Add both fill and line layers as before for features with both types
                 // ... existing fill and line layer code ...
@@ -2502,8 +2477,6 @@ export class MapLayerControl {
                 if (group.style?.['circle-radius'] || group.style?.['circle-color']) {
                     layerIds.push(`${sourceId}-circle`);
                 }
-
-                this._setupLayerInteractivity(group, layerIds, sourceId);
             } else {
                 // Just update visibility for existing layers
                 ['fill', 'line', 'label', 'circle'].forEach(type => {
@@ -2722,8 +2695,6 @@ export class MapLayerControl {
                     if (hasFillStyles) layerIds.push(`vector-layer-${group.id}`);
                     if (hasLineStyles) layerIds.push(`vector-layer-${group.id}-outline`);
                     if (group.style?.['text-field']) layerIds.push(`vector-layer-${group.id}-text`);
-
-                    this._setupLayerInteractivity(group, layerIds, sourceId);
                 }
 
                 // Store the layer configuration for later use
@@ -2818,22 +2789,7 @@ export class MapLayerControl {
                                     }
                                 });
 
-                                this._map.on('click', layerId, (e) => {
-                                    if (e.features.length > 0 && this._config.showPopupsOnClick) {
-                                        const feature = e.features[0];
-                                        const coordinates = feature.geometry.coordinates.slice();
-                                        const content = this._createPopupContent(feature, group, false, {
-                                            lng: coordinates[0],
-                                            lat: coordinates[1]
-                                        });
-                                        if (content) {
-                                            new mapboxgl.Popup()
-                                                .setLngLat(coordinates)
-                                                .setDOMContent(content)
-                                                .addTo(this._map);
-                                        }
-                                    }
-                                });
+
                             }
                         }
                     });
@@ -3177,109 +3133,11 @@ export class MapLayerControl {
         if (this._resizeTimeout) {
             clearTimeout(this._resizeTimeout);
         }
-        // Clean up consolidated hover popup
-        if (this._consolidatedHoverPopup) {
-            this._consolidatedHoverPopup.remove();
-            this._consolidatedHoverPopup = null;
-        }
+
         // Selected features now managed by state manager
     }
 
-    _setupLayerInteractivity(group, layerIds, sourceId) {
-        if (!group.inspect) return;
 
-        const popup = new mapboxgl.Popup({
-            closeButton: true,
-            closeOnClick: true
-        });
-
-        // Create consolidated hover popup if it doesn't exist
-        if (!this._consolidatedHoverPopup) {
-            this._consolidatedHoverPopup = new mapboxgl.Popup({
-                closeButton: false,
-                closeOnClick: false,
-                className: 'hover-popup consolidated-hover-popup'
-            });
-        }
-
-        let hoveredFeatureId = null;
-        let selectedFeatureId = null;
-
-        // Helper function to create feature state params based on layer type
-        const getFeatureStateParams = (id) => {
-            const params = { source: sourceId, id };
-            if (group.type === 'vector') {
-                params.sourceLayer = group.sourceLayer;
-            }
-            return params;
-        };
-
-        // Helper function to update consolidated hover popup (now simplified since state manager handles features)
-        const updateConsolidatedHoverPopup = (e) => {
-            // Consolidated hover popup functionality simplified - state manager handles feature tracking
-            if (e && e.lngLat) {
-                // Simple hover popup could be implemented here if needed
-                // For now, the state manager handles all feature interactions
-            }
-        };
-
-        layerIds.forEach(layerId => {
-            // Mousemove handler - state manager handles hover states
-            this._map.on('mousemove', layerId, (e) => {
-                if (e.features.length > 0) {
-                    const feature = e.features[0];
-
-                    // Handle hover popup content
-                    if (group.inspect?.label && this._config.showPopupsOnHover) {
-                        // Update the consolidated hover popup
-                        updateConsolidatedHoverPopup(e);
-                    }
-                    
-                    // Feature hover state now fully managed by state manager
-                }
-            });
-
-            // Mouseleave handler - state manager handles hover states
-            this._map.on('mouseleave', layerId, () => {
-                // Update consolidated popup (will be removed if no features remain)
-                updateConsolidatedHoverPopup();
-
-                // Feature leave interactions now fully managed by state manager
-            });
-
-            // Click handler - state manager handles selection states
-            this._map.on('click', layerId, (e) => {
-                if (e.features.length > 0) {
-                    const feature = e.features[0];
-
-                    // Remove hover popup
-                    this._consolidatedHoverPopup.remove();
-
-                    // Only show click popup if enabled
-                    if (this._config.showPopupsOnClick) {
-                        const content = this._createPopupContent(feature, group, false, e.lngLat);
-                        if (content) {
-                            popup
-                                .setLngLat(e.lngLat)
-                                .setDOMContent(content)
-                                .addTo(this._map);
-                        }
-                    }
-
-                    // Feature click interactions and selection state now fully managed by state manager
-                }
-            });
-
-            // Add pointer cursor
-            this._map.on('mouseenter', layerId, () => {
-                this._map.getCanvas().style.cursor = 'pointer';
-            });
-
-            this._map.on('mouseleave', layerId, () => {
-                this._map.getCanvas().style.cursor = '';
-            });
-        });
-    }
 
     // When rendering legend images, we need to check if it's a PDF and handle it differently
     _renderLegendImage(legendImageUrl) {
@@ -4090,12 +3948,7 @@ export class MapLayerControl {
         }
     }
 
-    _createConsolidatedHoverContent() {
-        // Consolidated hover content now handled by state manager
-        return null;
 
-
-    }
 
     async _setupCsvLayer(group) {
         if (!group.data && !group.url) {
@@ -4184,8 +4037,7 @@ export class MapLayerControl {
                     }
                 }, this._getInsertPosition('csv'));
 
-                // Set up interactivity
-                this._setupLayerInteractivity(group, [layerId], sourceId);
+
 
                 // Ensure visibility state is properly set after layer is added
                 this._map.once('idle', () => {
@@ -4377,10 +4229,7 @@ export class MapLayerControl {
         };
     }
 
-    _clearAllSelectedFeatures() {
-        // Selected features are now managed by the state manager
-        // This method is kept for backwards compatibility but simplified
-    }
+
 
     _addGlobalClickHandler() {
         if (this._globalClickHandlerAdded) return;
