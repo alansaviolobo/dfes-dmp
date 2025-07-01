@@ -12,6 +12,7 @@
 
 import { drawerStateManager } from './drawer-state-manager.js';
 import { convertToKML } from './map-utils.js';
+import { LayerSettingsModal } from './layer-settings.js';
 
 export class MapFeatureControl {
     constructor(options = {}) {
@@ -75,6 +76,9 @@ export class MapFeatureControl {
             hoveredLayerId: null
         };
         
+        // Layer settings modal - initialize after map is available
+        this._layerSettingsModal = null;
+        
         // Initialized
     }
 
@@ -84,6 +88,10 @@ export class MapFeatureControl {
     onAdd(map) {
         this._map = map;
         this._createContainer();
+        
+        // Initialize layer settings modal now that we have a map reference
+        this._layerSettingsModal = new LayerSettingsModal(this);
+        
         return this._container;
     }
 
@@ -97,6 +105,7 @@ export class MapFeatureControl {
         }
         this._map = null;
         this._stateManager = null;
+        this._layerSettingsModal = null;
     }
 
     /**
@@ -1902,12 +1911,32 @@ export class MapFeatureControl {
      * Show layer settings modal
      */
     _showLayerSettings(layerConfig) {
-        // Try to access the layer control's settings method
-        if (window.layerControl && typeof window.layerControl._showLayerSettings === 'function') {
-            window.layerControl._showLayerSettings(layerConfig);
+        // Use our own layer settings modal instance
+        if (this._layerSettingsModal) {
+            this._layerSettingsModal.show(layerConfig);
         } else {
-            console.warn('Layer settings functionality not available');
-            this._showToast('Layer settings not available', 'warning');
+            // Fallback to layer control's settings modal if available
+            if (window.layerControl && window.layerControl._layerSettingsModal) {
+                window.layerControl._layerSettingsModal.show(layerConfig);
+            } else {
+                console.warn('Layer settings functionality not available');
+                this._showToast('Layer settings not available', 'warning');
+            }
+        }
+    }
+
+    /**
+     * Save layer settings - delegate to the main layer control
+     * This method is called by the LayerSettingsModal when settings are saved
+     */
+    _saveLayerSettingsInternal(newConfig) {
+        // Delegate to the main layer control if available
+        if (window.layerControl && typeof window.layerControl._saveLayerSettingsInternal === 'function') {
+            window.layerControl._saveLayerSettingsInternal(newConfig);
+            this._showToast('Layer settings saved successfully', 'success');
+        } else {
+            console.warn('Cannot save layer settings: main layer control not available');
+            this._showToast('Unable to save layer settings', 'error');
         }
     }
 
