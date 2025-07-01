@@ -11,7 +11,7 @@ export class MapFeatureStateManager extends EventTarget {
         this._map = map;
         
         // Single source of truth for all feature states
-        this._featureStates = new Map(); // featureId -> FeatureState
+        this._featureStates = new Map(); // compositeKey (layerId:featureId) -> FeatureState
         this._activeHoverFeatures = new Map(); // layerId -> Set<featureId>
         this._selectedFeatures = new Map(); // layerId -> Set<featureId>
         
@@ -278,11 +278,12 @@ export class MapFeatureStateManager extends EventTarget {
                 // Remove Mapbox feature state for hover
                 this._removeMapboxFeatureState(featureId, layerId, 'hover');
                 
-                const state = this._featureStates.get(featureId);
+                const compositeKey = this._getCompositeKey(layerId, featureId);
+                const state = this._featureStates.get(compositeKey);
                 if (state && !state.isSelected) {
-                    this._featureStates.delete(featureId);
+                    this._featureStates.delete(compositeKey);
                 } else if (state) {
-                    this._updateFeatureState(featureId, { isHovered: false });
+                    this._updateFeatureState(featureId, { layerId, isHovered: false });
                 }
             });
         });
@@ -427,10 +428,18 @@ export class MapFeatureStateManager extends EventTarget {
      * Close/remove a selected feature
      */
     closeSelectedFeature(featureId) {
-        const featureState = this._featureStates.get(featureId);
-        if (!featureState) return;
+        // Need to find the feature across all layers since we only have featureId
+        let foundLayerId = null;
+        this._featureStates.forEach((state, compositeKey) => {
+            const [layerId, fId] = compositeKey.split(':');
+            if (fId === featureId) {
+                foundLayerId = layerId;
+            }
+        });
         
-        this._deselectFeature(featureId, featureState.layerId);
+        if (foundLayerId) {
+            this._deselectFeature(featureId, foundLayerId);
+        }
     }
 
     /**
@@ -460,12 +469,13 @@ export class MapFeatureStateManager extends EventTarget {
         this._removeMapboxFeatureState(featureId, layerId, 'selected');
         
         // Update or remove feature state
-        const featureState = this._featureStates.get(featureId);
+        const compositeKey = this._getCompositeKey(layerId, featureId);
+        const featureState = this._featureStates.get(compositeKey);
         if (featureState) {
             if (!featureState.isHovered) {
-                this._featureStates.delete(featureId);
+                this._featureStates.delete(compositeKey);
             } else {
-                this._updateFeatureState(featureId, { isSelected: false });
+                this._updateFeatureState(featureId, { layerId, isSelected: false });
             }
         }
         
@@ -496,7 +506,8 @@ export class MapFeatureStateManager extends EventTarget {
         this._selectedFeatures.forEach((features, layerId) => {
             affectedLayers.add(layerId);
             features.forEach(featureId => {
-                const state = this._featureStates.get(featureId);
+                const compositeKey = this._getCompositeKey(layerId, featureId);
+                const state = this._featureStates.get(compositeKey);
                 if (state) {
                     clearedFeatures.push({ featureId, layerId });
                     
@@ -504,9 +515,9 @@ export class MapFeatureStateManager extends EventTarget {
                     this._removeMapboxFeatureState(featureId, layerId, 'selected');
                     
                     if (!state.isHovered) {
-                        this._featureStates.delete(featureId);
+                        this._featureStates.delete(compositeKey);
                     } else {
-                        this._updateFeatureState(featureId, { isSelected: false });
+                        this._updateFeatureState(featureId, { layerId, isSelected: false });
                     }
                 }
             });
@@ -533,8 +544,11 @@ export class MapFeatureStateManager extends EventTarget {
     getLayerFeatures(layerId) {
         const features = new Map();
         
-        this._featureStates.forEach((state, featureId) => {
+        this._featureStates.forEach((state, compositeKey) => {
             if (state.layerId === layerId) {
+                // Extract the featureId from the composite key
+                const [, featureId] = compositeKey.split(':');
+                
                 // Check if this feature is selected
                 const isSelected = this._selectedFeatures.get(layerId)?.has(featureId) || false;
                 
@@ -820,9 +834,24 @@ export class MapFeatureStateManager extends EventTarget {
         }
     }
 
+    /**
+     * Generate composite key for feature state storage
+     */
+    _getCompositeKey(layerId, featureId) {
+        return `${layerId}:${featureId}`;
+    }
+
     _updateFeatureState(featureId, updates) {
-        const existing = this._featureStates.get(featureId) || {};
-        this._featureStates.set(featureId, { ...existing, ...updates });
+        // Extract layerId from updates to create composite key
+        const layerId = updates.layerId;
+        if (!layerId) {
+            console.error('[StateManager] layerId is required for _updateFeatureState');
+            return;
+        }
+        
+        const compositeKey = this._getCompositeKey(layerId, featureId);
+        const existing = this._featureStates.get(compositeKey) || {};
+        this._featureStates.set(compositeKey, { ...existing, ...updates });
     }
 
     _clearLayerHover(layerId) {
@@ -832,11 +861,12 @@ export class MapFeatureStateManager extends EventTarget {
                 // Remove Mapbox feature state for hover
                 this._removeMapboxFeatureState(featureId, layerId, 'hover');
                 
-                const state = this._featureStates.get(featureId);
+                const compositeKey = this._getCompositeKey(layerId, featureId);
+                const state = this._featureStates.get(compositeKey);
                 if (state && !state.isSelected) {
-                    this._featureStates.delete(featureId);
+                    this._featureStates.delete(compositeKey);
                 } else if (state) {
-                    this._updateFeatureState(featureId, { isHovered: false });
+                    this._updateFeatureState(featureId, { layerId, isHovered: false });
                 }
             });
             this._activeHoverFeatures.delete(layerId);
@@ -849,14 +879,14 @@ export class MapFeatureStateManager extends EventTarget {
     _cleanupLayerFeatures(layerId) {
         const featuresToDelete = [];
         
-        this._featureStates.forEach((state, featureId) => {
+        this._featureStates.forEach((state, compositeKey) => {
             if (state.layerId === layerId) {
-                featuresToDelete.push(featureId);
+                featuresToDelete.push(compositeKey);
             }
         });
         
-        featuresToDelete.forEach(featureId => {
-            this._featureStates.delete(featureId);
+        featuresToDelete.forEach(compositeKey => {
+            this._featureStates.delete(compositeKey);
         });
         
         this._activeHoverFeatures.delete(layerId);
@@ -1016,15 +1046,15 @@ export class MapFeatureStateManager extends EventTarget {
         
         const featuresToDelete = [];
         
-        this._featureStates.forEach((state, featureId) => {
+        this._featureStates.forEach((state, compositeKey) => {
             if (!state.isSelected && 
                 (now - state.timestamp) > maxAge) {
-                featuresToDelete.push(featureId);
+                featuresToDelete.push(compositeKey);
             }
         });
         
-        featuresToDelete.forEach(featureId => {
-            this._featureStates.delete(featureId);
+        featuresToDelete.forEach(compositeKey => {
+            this._featureStates.delete(compositeKey);
         });
         
         if (featuresToDelete.length > 0) {
@@ -1073,7 +1103,8 @@ export class MapFeatureStateManager extends EventTarget {
 
             // CRITICAL FIX: Get the raw feature ID that Mapbox knows about
             // Try to get it from stored feature state first (most reliable)
-            const featureState = this._featureStates.get(featureId);
+            const compositeKey = this._getCompositeKey(layerId, featureId);
+            const featureState = this._featureStates.get(compositeKey);
             let rawFeatureId;
             
             if (featureState && featureState.rawFeatureId !== undefined) {
@@ -1140,7 +1171,8 @@ export class MapFeatureStateManager extends EventTarget {
 
             // CRITICAL FIX: Get the raw feature ID that Mapbox knows about
             // Try to get it from stored feature state first (most reliable)
-            const featureState = this._featureStates.get(featureId);
+            const compositeKey = this._getCompositeKey(layerId, featureId);
+            const featureState = this._featureStates.get(compositeKey);
             let rawFeatureId;
             
             if (featureState && featureState.rawFeatureId !== undefined) {
