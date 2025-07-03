@@ -1104,6 +1104,14 @@ export class MapFeatureStateManager extends EventTarget {
             const layerConfig = this._registeredLayers.get(layerId);
             if (!layerConfig) return;
 
+            // Skip feature state for style layers since they don't have their own sources
+            if (layerConfig.type === 'style') {
+                if (this._isDebug) {
+                    console.debug(`[StateManager] Skipping feature state for style layer ${layerId} (no custom source)`);
+                }
+                return;
+            }
+
             // Get raw feature ID for Mapbox
             const rawFeatureId = this._extractRawFeatureId(featureId);
 
@@ -1138,6 +1146,14 @@ export class MapFeatureStateManager extends EventTarget {
             // Get the layer config to find the source information
             const layerConfig = this._registeredLayers.get(layerId);
             if (!layerConfig) return;
+
+            // Skip feature state for style layers since they don't have their own sources
+            if (layerConfig.type === 'style') {
+                if (this._isDebug) {
+                    console.debug(`[StateManager] Skipping feature state removal for style layer ${layerId} (no custom source)`);
+                }
+                return;
+            }
 
             // Get raw feature ID for Mapbox
             const rawFeatureId = this._extractRawFeatureId(featureId);

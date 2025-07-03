@@ -244,18 +244,37 @@ export class MapLayerControl {
         this._state.groups.forEach((group, groupIndex) => {
             const $groupHeader = this._createGroupHeader(group, groupIndex);
             $container.append($groupHeader);
-
-            // Initialize the layer state using MapboxAPI
-            if (group.initiallyChecked) {
-                requestAnimationFrame(() => {
-                    this._toggleLayerGroup(groupIndex, true);
-                });
-            }
         });
+
+        // Initialize all layers explicitly after UI is set up
+        this._initializeAllLayers();
 
         if (!this._initialized) {
             this._initializeWithAnimation();
         }
+    }
+
+    /**
+     * Initialize all layers to their proper visibility states
+     */
+    _initializeAllLayers() {
+        this._state.groups.forEach((group, groupIndex) => {
+            // Initialize the layer state using MapboxAPI
+            // For all layers, explicitly set their initial visibility state
+            if (group.initiallyChecked) {
+                console.debug(`[LayerControl] Initializing layer ${group.id} as VISIBLE (initiallyChecked: true)`);
+                requestAnimationFrame(() => {
+                    this._toggleLayerGroup(groupIndex, true);
+                });
+            } else {
+                // Explicitly hide layers that should not be visible initially
+                // This is especially important for style layers which are visible by default
+                console.debug(`[LayerControl] Initializing layer ${group.id} as HIDDEN (initiallyChecked: false/undefined)`);
+                requestAnimationFrame(() => {
+                    this._toggleLayerGroup(groupIndex, false);
+                });
+            }
+        });
     }
 
     /**
@@ -370,6 +389,11 @@ export class MapLayerControl {
             toggleInput.checked = true;
         }
 
+        // For style layers, sync sublayer states
+        if (group.type === 'style' && group.layers) {
+            this._syncStyleLayerSubToggles(event.target, group, true);
+        }
+
         this._toggleLayerGroup(groupIndex, true);
         
         $opacityButton.toggleClass('hidden', false);
@@ -387,11 +411,40 @@ export class MapLayerControl {
             toggleInput.checked = false;
         }
 
+        // For style layers, sync sublayer states
+        if (group.type === 'style' && group.layers) {
+            this._syncStyleLayerSubToggles(event.target, group, false);
+        }
+
         this._toggleLayerGroup(groupIndex, false);
         
         $opacityButton.toggleClass('hidden', true);
         $settingsButton.toggleClass('hidden', true);
         $(event.target).closest('.group-header').removeClass('active');
+    }
+
+    /**
+     * Sync sublayer toggle states for style layers
+     */
+    _syncStyleLayerSubToggles(groupElement, group, isVisible) {
+        const $sublayerToggles = $(groupElement).find('.layer-controls .toggle-switch input[type="checkbox"]');
+        
+        if (isVisible) {
+            // When showing, set sublayer toggles to match actual layer visibility
+            $sublayerToggles.each((index, toggle) => {
+                const layer = group.layers[index];
+                if (layer) {
+                    const actualVisibility = this._getStyleLayerVisibility(layer);
+                    $(toggle).prop('checked', actualVisibility);
+                }
+            });
+        } else {
+            // When hiding, turn off all sublayer toggles and hide the layers
+            $sublayerToggles.prop('checked', false);
+            group.layers.forEach(layer => {
+                this._handleStyleLayerToggle(layer, false);
+            });
+        }
     }
 
     /**
@@ -409,6 +462,18 @@ export class MapLayerControl {
             if (visible) {
                 // Create or show the layer group
                 await this._mapboxAPI.createLayerGroup(group.id, group, { visible: true });
+                
+                // For style layers, ensure sublayers are properly synchronized
+                if (group.type === 'style' && group.layers) {
+                    // Find the group header element to sync sublayer toggles
+                    const groupElement = this._container.querySelector(`[data-layer-id="${group.id}"]`);
+                    if (groupElement) {
+                        // Use a small delay to ensure the main layer is fully processed
+                        setTimeout(() => {
+                            this._syncStyleLayerSubToggles(groupElement, group, true);
+                        }, 50);
+                    }
+                }
                 
                 // Register with state manager if available
                 if (this._stateManager) {
@@ -652,10 +717,14 @@ export class MapLayerControl {
         const $layerControl = $('<div>', { class: 'flex items-center gap-2 text-black' });
 
         const $sublayerToggleLabel = $('<label>', { class: 'toggle-switch' });
+        
+        // Check actual layer visibility instead of just parentGroup.initiallyChecked
+        const isLayerVisible = this._getStyleLayerVisibility(layer);
+        
         const $sublayerToggleInput = $('<input>', {
             type: 'checkbox',
             id: layerId,
-            checked: parentGroup.initiallyChecked || false
+            checked: isLayerVisible
         });
         const $sublayerToggleSlider = $('<span>', { class: 'toggle-slider' });
 
@@ -672,6 +741,29 @@ export class MapLayerControl {
 
         $layerControl.append($sublayerToggleLabel, $label);
         return $layerControl;
+    }
+
+    /**
+     * Get the visibility state of a style layer
+     */
+    _getStyleLayerVisibility(layer) {
+        if (!this._map || !layer.sourceLayer) return false;
+        
+        try {
+            const styleLayers = this._map.getStyle().layers;
+            const matchingLayers = styleLayers.filter(styleLayer => 
+                styleLayer['source-layer'] === layer.sourceLayer
+            );
+            
+            // If any matching layer is visible, consider the layer visible
+            return matchingLayers.some(styleLayer => {
+                const layerVisibility = this._map.getLayoutProperty(styleLayer.id, 'visibility');
+                return layerVisibility !== 'none';
+            });
+        } catch (error) {
+            console.warn('Error checking style layer visibility:', error);
+            return false;
+        }
     }
 
     /**
@@ -972,6 +1064,16 @@ export class MapLayerControl {
             );
             allMatches.push(...generatedMatches);
             
+            // For style layers, check for source-layer matches
+            if (group.type === 'style' && group.layers) {
+                const sourceLayerMatches = style.layers.filter(l => {
+                    return group.layers.some(sublayer => 
+                        sublayer.sourceLayer && l['source-layer'] === sublayer.sourceLayer
+                    );
+                });
+                allMatches.push(...sourceLayerMatches);
+            }
+            
             return allMatches.map(l => l.id);
         } catch (error) {
             console.warn('[LayerControl] Error checking layer existence:', error);
@@ -998,7 +1100,13 @@ export class MapLayerControl {
     _registerLayerWithStateManager(layerConfig) {
         if (!this._stateManager) return;
         
-        if (layerConfig.type === 'terrain') return;
+        // Skip terrain and style layers as they don't have their own sources/features
+        if (layerConfig.type === 'terrain' || layerConfig.type === 'style') {
+            if (layerConfig.type === 'style') {
+                console.debug(`[LayerControl] Skipping state manager registration for style layer ${layerConfig.id} (uses base map sources)`);
+            }
+            return;
+        }
         
         this._stateManager.registerLayer(layerConfig);
     }

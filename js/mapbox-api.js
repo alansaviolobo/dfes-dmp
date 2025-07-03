@@ -203,17 +203,32 @@ export class MapboxAPI {
         // Style layers are already in the map, just need to control visibility
         if (config.layers) {
             const styleLayers = this._map.getStyle().layers;
+            let totalLayersProcessed = 0;
+            
             config.layers.forEach(layer => {
                 const layerIds = styleLayers
                     .filter(styleLayer => styleLayer['source-layer'] === layer.sourceLayer)
                     .map(styleLayer => styleLayer.id);
 
+                if (layerIds.length === 0) {
+                    console.debug(`[MapboxAPI] No style layers found for sourceLayer: ${layer.sourceLayer}`);
+                } else {
+                    console.debug(`[MapboxAPI] Found ${layerIds.length} style layers for sourceLayer: ${layer.sourceLayer}`, layerIds);
+                }
+
                 layerIds.forEach(layerId => {
                     if (this._map.getLayer(layerId)) {
+                        // When creating/showing a style layer, make sure visibility matches the expected state
                         this._map.setLayoutProperty(layerId, 'visibility', visible ? 'visible' : 'none');
+                        totalLayersProcessed++;
+                        console.debug(`[MapboxAPI] Set layer ${layerId} visibility to ${visible ? 'visible' : 'none'}`);
+                    } else {
+                        console.warn(`[MapboxAPI] Layer ${layerId} not found in map style`);
                     }
                 });
             });
+            
+            console.debug(`[MapboxAPI] Style layer ${groupId}: processed ${totalLayersProcessed} layers, visible: ${visible}`);
             return true;
         }
         return false;
