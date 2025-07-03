@@ -121,6 +121,7 @@ export class MapFeatureStateManager extends EventTarget {
         // Clear existing hover timeout for this feature if any
         if (this._hoverTimeouts.has(compositeKey)) {
             clearTimeout(this._hoverTimeouts.get(compositeKey));
+            this._hoverTimeouts.delete(compositeKey);
         }
         
         // Update feature state
@@ -144,15 +145,12 @@ export class MapFeatureStateManager extends EventTarget {
         });
         
         if (this._isDebug) {
-            console.debug(`[StateManager] Feature hovered: ${featureId} (${layerId})`);
+            console.debug(`[StateManager] Feature hovered: ${featureId} (${layerId}) - will persist until mouse moves`);
         }
         
-        // Set a timeout to clear hover state if mouse doesn't move
-        const timeout = setTimeout(() => {
-            this._clearLayerHover(layerId);
-        }, 100); // 100ms timeout
-        
-        this._hoverTimeouts.set(compositeKey, timeout);
+        // DON'T set a timeout to clear hover state when mouse stops moving
+        // Hover states should persist until mouse actually moves away from features
+        // The timeout mechanism was causing premature clearing of hover states
     }
 
     /**
@@ -210,19 +208,20 @@ export class MapFeatureStateManager extends EventTarget {
             lngLat: globalLngLat
         });
         
-        // Clear hover timeouts for all features and set new global timeout
+        // Clear any existing hover timeout
         this._hoverTimeouts.forEach(timeout => clearTimeout(timeout));
         this._hoverTimeouts.clear();
         
-        // Set a single timeout to clear all hover states
-        const globalTimeout = setTimeout(() => {
-            this._clearAllHover();
-            this._emitStateChange('features-hover-cleared', {
-                clearedFeatures: processedFeatures
-            });
-        }, 150); // 150ms timeout for batch processing
+        // DON'T set a timeout to clear hover states when mouse stops moving
+        // Hover states should persist until mouse actually moves away from features
+        // Only clear hover states when:
+        // 1. Mouse moves to different features (handled by _clearAllHover above)
+        // 2. Mouse leaves map area (handled by handleMapMouseLeave)
+        // 3. Explicit clear is called
         
-        this._hoverTimeouts.set('global', globalTimeout);
+        if (this._isDebug) {
+            console.debug(`[StateManager] Hover states set for ${processedFeatures.length} features - will persist until mouse moves`);
+        }
     }
 
     /**
