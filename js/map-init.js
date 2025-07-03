@@ -172,7 +172,6 @@ async function loadConfiguration() {
     
             // Parse layers from URL parameter if provided
         if (layersParam) {
-            console.log('Parsing layers from URL parameter:', layersParam);
             const urlLayers = parseLayersFromUrl(layersParam);
             console.log('Parsed URL layers:', urlLayers);
             
@@ -197,10 +196,7 @@ async function loadConfiguration() {
                         layer.initiallyChecked = false;
                     }
                 });
-                
-                console.log('[MapInit] Set initial layer states based on URL parameters:', 
-                    existingLayers.map(l => ({ id: l.id, initiallyChecked: l.initiallyChecked })));
-            
+                            
             // Create minified layers parameter for URL rewriting
             const minifiedLayersParam = processedUrlLayers.map(layer => {
                 return layer._originalJson || layer.id;
@@ -226,8 +222,7 @@ async function loadConfiguration() {
                     newUrl += url.hash;
                 }
                 
-                console.log('Rewriting URL from:', window.location.href);
-                console.log('Rewriting URL to:', newUrl);
+                console.debug('Updated URL', newUrl);
                 window.history.replaceState({}, '', newUrl);
             }
             
@@ -285,7 +280,7 @@ async function loadConfiguration() {
             
             config.layers = finalLayers;
             
-            console.log('Final merged layers with URL order preserved:', config.layers);
+            console.debug('Final merged layers with URL order preserved:', config.layers);
         }
     }
 
@@ -348,7 +343,7 @@ async function loadConfiguration() {
             
             // If we found invalid layers from URL, update the URL to remove them
             if (invalidLayers.length > 0 && layersParam) {
-                console.log(`Removing invalid layer IDs from URL: ${invalidLayers.join(', ')}`);
+                console.warn(`Removing invalid layer IDs from URL: ${invalidLayers.join(', ')}`);
                 
                 // Get the remaining valid layers that were originally from URL
                 const validUrlLayers = validLayers.filter(layer => layer.initiallyChecked === true);
@@ -384,7 +379,7 @@ async function loadConfiguration() {
                     newUrl += url.hash;
                 }
                 
-                console.log('Updated URL to remove invalid layers:', newUrl);
+                console.debug('Updated URL to remove invalid layers:', newUrl);
                 window.history.replaceState({}, '', newUrl);
             }
         }
@@ -485,9 +480,7 @@ async function initializeMap() {
         map.addControl(new ViewControl(), 'top-right');
         
         // Initialize centralized state manager (NEW ARCHITECTURE)
-        const stateManager = new MapFeatureStateManager(map);
-        console.log('[MapInit] Initialized centralized feature state manager');
-        
+        const stateManager = new MapFeatureStateManager(map);        
         // Initialize layer control
         const layerControl = new MapLayerControl(layers);
         const container = document.getElementById('layer-controls-container');
@@ -516,9 +509,7 @@ async function initializeMap() {
         // Make components globally accessible
         window.featureControl = featureControl;
         window.stateManager = stateManager;
-        
-        console.log('[MapInit] Initialized event-driven architecture');
-        
+                
         // Initialize URL manager after layer control is ready
         const urlManager = new URLManager(layerControl, map);
         urlManager.setupLayerControlEventListeners();
@@ -594,29 +585,6 @@ function initializeSearch() {
         // Initialize the feature state manager
         const featureStateManager = new MapFeatureStateManager(window.map);
         
-        // Enable debug logging for development
-        featureStateManager.setDebug(true);
-        
-        // Register the cadastral layer for selection
-        featureStateManager.registerSelectableLayers([
-            {
-                id: 'cadastral-fill', // Adjust this to match your actual layer ID
-                source: 'vector-plot',
-                sourceLayer: 'Onemapgoa_GA_Cadastrals',
-                idProperty: 'id'
-            }
-        ]);
-        
-        // Register the cadastral layer for hover effects too
-        featureStateManager.registerHoverableLayers([
-            {
-                id: 'cadastral-fill', // Adjust this to match your actual layer ID
-                source: 'vector-plot',
-                sourceLayer: 'Onemapgoa_GA_Cadastrals',
-                idProperty: 'id'
-            }
-        ]);
-        
         // Start watching for layer additions
         featureStateManager.watchLayerAdditions();
         
@@ -635,9 +603,7 @@ function initializeSearch() {
         window.searchControl = searchControl;
         window.featureStateManager = featureStateManager;
         
-        console.log('Enhanced search control initialized with cadastral layer support');
-        console.log('Feature state manager initialized and connected to search control');
-    };
+  };
 
     // Wait for style to load before setting up search
     if (window.map) {

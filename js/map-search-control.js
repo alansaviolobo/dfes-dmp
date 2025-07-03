@@ -50,7 +50,7 @@ class MapSearchControl {
      */
     setFeatureStateManager(featureStateManager) {
         this.featureStateManager = featureStateManager;
-        console.log('Feature state manager set for search control');
+        console.debug('Feature state manager set for search control');
     }
     
     /**
@@ -81,7 +81,7 @@ class MapSearchControl {
         .setPopup(new mapboxgl.Popup({ offset: 25 }).setHTML(`<div><strong>${title}</strong></div>`))
         .addTo(this.map);
         
-        console.log('Added search marker at:', coordinates, 'with title:', title);
+        console.debug('Added search marker at:', coordinates, 'with title:', title);
     }
 
     /**
@@ -96,7 +96,7 @@ class MapSearchControl {
             
             if (searchBoxInput) {
                 searchBoxInput.value = value;
-                console.log('Updated search box input to:', value);
+                console.debug('Updated search box input to:', value);
                 
                 // Trigger an input event to update the component's internal state
                 const inputEvent = new Event('input', { bubbles: true });
@@ -113,8 +113,8 @@ class MapSearchControl {
      * Reset the search state to allow for new searches
      */
     resetSearchState() {
-        console.log('=== RESETTING SEARCH STATE ===');
-        console.log('Previous state:', {
+        console.debug('=== RESETTING SEARCH STATE ===');
+        console.debug('Previous state:', {
             query: this.currentQuery,
             localSuggestionsCount: this.localSuggestions.length,
             suggestionMarkersCount: this.suggestionMarkers.length,
@@ -137,7 +137,7 @@ class MapSearchControl {
         if (this.injectionTimeout) {
             clearTimeout(this.injectionTimeout);
             this.injectionTimeout = null;
-            console.log('Cleared injection timeout');
+            console.debug('Cleared injection timeout');
         }
         
         // Reset search state flags but don't change map location
@@ -153,14 +153,14 @@ class MapSearchControl {
             if ($resultsList.length > 0) {
                 const removedCount = $resultsList.find('.local-suggestion').length;
                 $resultsList.find('.local-suggestion').remove();
-                console.log(`Cleared ${removedCount} injected suggestions from DOM`);
+                console.debug(`Cleared ${removedCount} injected suggestions from DOM`);
             }
         } catch (error) {
             console.error('Error clearing injected suggestions:', error);
         }
         
-        console.log('Search state reset complete - ready for new search');
-        console.log('=== SEARCH STATE RESET COMPLETE ===');
+        console.debug('Search state reset complete - ready for new search');
+        console.debug('=== SEARCH STATE RESET COMPLETE ===');
     }
     
     /**
@@ -215,7 +215,7 @@ class MapSearchControl {
         // Add map moveend listener to refresh search results when viewport changes
         this.map.on('moveend', this.handleMapMoveEnd.bind(this));
         
-        console.log('MapSearchControl initialized');
+        console.debug('MapSearchControl initialized');
     }
     
 
@@ -227,7 +227,7 @@ class MapSearchControl {
     handleKeyDown(event) {
         // If we've detected a coordinate input and the user presses Enter
         if (this.isCoordinateInput && event.key === 'Enter' && this.coordinateSuggestion) {
-            console.log('Enter key pressed for coordinate input');
+            console.debug('Enter key pressed for coordinate input');
             
             // Prevent the default behavior
             event.preventDefault();
@@ -250,7 +250,7 @@ class MapSearchControl {
      * @param {Event} event - The clear event
      */
     handleClear(event) {
-        console.log('Search box clear event received');
+        console.debug('Search box clear event received');
         this.handleEmptyInput();
     }
 
@@ -260,14 +260,14 @@ class MapSearchControl {
     handleMapMoveEnd() {
         // Only refresh if we have an active search query that's not a coordinate
         if (this.hasActiveSearch && this.currentQuery && !this.isCoordinateInput && this.currentQuery.length > 0) {
-            console.log('Map moved, refreshing search results for current viewport');
+            console.debug('Map moved, refreshing search results for current viewport');
             
             // Re-query local suggestions with the new viewport
             const newLocalSuggestions = this.queryLocalCadastralSuggestions(this.currentQuery);
             
             // Only update if suggestions have changed
             if (this.haveSuggestionsChanged(this.localSuggestions, newLocalSuggestions)) {
-                console.log(`Search results updated: ${this.localSuggestions.length} -> ${newLocalSuggestions.length} suggestions`);
+                console.debug(`Search results updated: ${this.localSuggestions.length} -> ${newLocalSuggestions.length} suggestions`);
                 
                 this.localSuggestions = newLocalSuggestions;
                 
@@ -335,7 +335,7 @@ class MapSearchControl {
             if ($resultsList.length > 0) {
                 const removedCount = $resultsList.find('.local-suggestion').length;
                 $resultsList.find('.local-suggestion').remove();
-                console.log(`Cleared ${removedCount} injected suggestions from UI`);
+                console.debug(`Cleared ${removedCount} injected suggestions from UI`);
             }
         } catch (error) {
             console.error('Error clearing injected suggestions:', error);
@@ -365,7 +365,7 @@ class MapSearchControl {
                 
                 // If the value is empty and we haven't handled it yet
                 if (!currentValue && this.currentQuery) {
-                    console.log('Detected empty input, triggering clear');
+                    console.debug('Detected empty input, triggering clear');
                     this.handleEmptyInput();
                 }
             }
@@ -378,8 +378,8 @@ class MapSearchControl {
      * Handle empty input state
      */
     handleEmptyInput() {
-        console.log('=== HANDLING EMPTY INPUT ===');
-        console.log('Current state before clear:', {
+        console.debug('=== HANDLING EMPTY INPUT ===');
+        console.debug('Current state before clear:', {
             searchMarkerExists: !!this.searchMarker,
             suggestionMarkersCount: this.suggestionMarkers.length,
             currentQuery: this.currentQuery,
@@ -397,11 +397,11 @@ class MapSearchControl {
         // Clear feature state when input is cleared
         if (this.featureStateManager) {
             this.featureStateManager._resetSelectionState();
-            console.log('Cleared feature state due to empty search input');
+            console.debug('Cleared feature state due to empty search input');
         }
         
-        console.log('Empty input handling complete - all markers and state cleared (map location unchanged)');
-        console.log('=== EMPTY INPUT HANDLING COMPLETE ===');
+        console.debug('Empty input handling complete - all markers and state cleared (map location unchanged)');
+        console.debug('=== EMPTY INPUT HANDLING COMPLETE ===');
     }
     
     /**
@@ -436,18 +436,18 @@ class MapSearchControl {
         
         // Save reference view when search starts (first time with non-empty query)
         if (!this.hasActiveSearch && query.length > 0) {
-            console.log('Starting new search - saving reference view');
+            console.debug('Starting new search - saving reference view');
             this.saveReferenceView();
             this.hasActiveSearch = true;
         }
         
         this.currentQuery = query;
-        console.log('Input value:', query);
+        console.debug('Input value:', query);
         
         // Check if the query matches the coordinate pattern
         const match = query.match(this.coordinateRegex);
         if (match) {
-            console.log('Coordinate pattern detected:', match);
+            console.debug('Coordinate pattern detected:', match);
             this.isCoordinateInput = true;
             
             const lat = parseFloat(match[1]);
@@ -455,7 +455,7 @@ class MapSearchControl {
             
             // Validate coordinates are within reasonable bounds
             if (lat >= -90 && lat <= 90 && lng >= -180 && lng <= 180) {
-                console.log('Valid coordinates:', lat, lng);
+                console.debug('Valid coordinates:', lat, lng);
                 
                 // Create a custom suggestion for coordinates
                 this.coordinateSuggestion = {
@@ -480,7 +480,7 @@ class MapSearchControl {
                 if (this.referenceView) {
                     const bounds = this.calculateContextBounds([[lng, lat]]);
                     if (bounds) {
-                        console.log('Fitting map to show reference and coordinate location');
+                        console.debug('Fitting map to show reference and coordinate location');
                         this.map.fitBounds(bounds, {
                             padding: { top: 50, bottom: 50, left: 50, right: 50 },
                             maxZoom: 16,
@@ -489,7 +489,7 @@ class MapSearchControl {
                     }
                 }
             } else {
-                console.log('Invalid coordinates (out of bounds):', lat, lng);
+                console.debug('Invalid coordinates (out of bounds):', lat, lng);
                 this.isCoordinateInput = false;
                 this.coordinateSuggestion = null;
             }
@@ -499,11 +499,11 @@ class MapSearchControl {
             
             // Query local cadastral suggestions for non-coordinate input
             this.localSuggestions = this.queryLocalCadastralSuggestions(query);
-            console.log(`Found ${this.localSuggestions.length} local suggestions for query: "${query}"`);
+            console.debug(`Found ${this.localSuggestions.length} local suggestions for query: "${query}"`);
             
             // If we have local suggestions, create markers and inject them into UI
             if (this.localSuggestions.length > 0) {
-                console.log('=== PROCESSING LOCAL SUGGESTIONS ===');
+                console.debug('=== PROCESSING LOCAL SUGGESTIONS ===');
                 
                 // Create suggestion markers for visual context
                 this.createSuggestionMarkers();
@@ -511,23 +511,23 @@ class MapSearchControl {
                 // Clear any existing injection timeout
                 if (this.injectionTimeout) {
                     clearTimeout(this.injectionTimeout);
-                    console.log('Cleared existing injection timeout');
+                    console.debug('Cleared existing injection timeout');
                 }
                 
                 // Set a new timeout to inject suggestions into UI and show markers
                 this.injectionTimeout = setTimeout(() => {
-                    console.log('Injecting suggestions into UI after delay');
+                    console.debug('Injecting suggestions into UI after delay');
                     this.injectLocalSuggestionsIntoUI();
                     
                     // Ensure markers are shown on the map (critical step)
-                    console.log('Showing suggestion markers on map');
+                    console.debug('Showing suggestion markers on map');
                     this.showSuggestionMarkers();
                     
                     // Fit bounds to show reference and all suggestions
-                    console.log('Fitting map to show reference and all suggestions');
+                    console.debug('Fitting map to show reference and all suggestions');
                     this.fitToContextWithAllSuggestions();
                     
-                    console.log('=== LOCAL SUGGESTIONS PROCESSING COMPLETE ===');
+                    console.debug('=== LOCAL SUGGESTIONS PROCESSING COMPLETE ===');
                 }, 300); // Reduced delay for faster response
                 
                 // Also show markers immediately if no Mapbox suggestions expected
@@ -536,7 +536,7 @@ class MapSearchControl {
                     if (this.suggestionMarkers.length > 0) {
                         const visibleCount = this.suggestionMarkers.filter(m => m.visible).length;
                         if (visibleCount === 0) {
-                            console.log('Fallback: Showing markers immediately as they were not shown yet');
+                            console.debug('Fallback: Showing markers immediately as they were not shown yet');
                             this.showSuggestionMarkers();
                             // Also trigger fitBounds as fallback
                             this.fitToContextWithAllSuggestions();
@@ -545,7 +545,7 @@ class MapSearchControl {
                 }, 100); // Quick fallback check
                 
             } else {
-                console.log('No local suggestions found - clearing any existing suggestion markers');
+                console.debug('No local suggestions found - clearing any existing suggestion markers');
                 this.clearSuggestionMarkers();
             }
         }
@@ -556,42 +556,42 @@ class MapSearchControl {
      */
     updateSearchBoxState() {
         try {
-            console.log('Attempting to update search box state');
+            console.debug('Attempting to update search box state');
             
             // Try to access the internal search box component
             const searchBoxComponent = this.searchBox.shadowRoot.querySelector('mapbox-search-box-core');
             if (searchBoxComponent) {
-                console.log('Found search box component, attempting to update state');
+                console.debug('Found search box component, attempting to update state');
                 
                 // Try to set the suggestions directly
                 if (searchBoxComponent._searchSession) {
-                    console.log('Found search session, updating suggestions');
+                    console.debug('Found search session, updating suggestions');
                     searchBoxComponent._searchSession._suggestions = [this.coordinateSuggestion];
-                    console.log('Updated search session suggestions');
+                    console.debug('Updated search session suggestions');
                 } else {
-                    console.log('Search session not found');
+                    console.debug('Search session not found');
                 }
                 
                 // Try to update the UI
                 const listbox = this.searchBox.shadowRoot.querySelector('mapbox-search-listbox');
                 if (listbox) {
-                    console.log('Found listbox, updating suggestions');
+                    console.debug('Found listbox, updating suggestions');
                     listbox.suggestions = [this.coordinateSuggestion];
-                    console.log('Updated listbox suggestions');
+                    console.debug('Updated listbox suggestions');
                 } else {
-                    console.log('Listbox not found');
+                    console.debug('Listbox not found');
                 }
                 
                 // Try to find and update the input element
                 const inputElement = this.searchBox.shadowRoot.querySelector('input');
                 if (inputElement) {
-                    console.log('Found input element');
+                    console.debug('Found input element');
                     // We don't need to modify the input value as it's already set
                 } else {
-                    console.log('Input element not found');
+                    console.debug('Input element not found');
                 }
             } else {
-                console.log('Search box component not found');
+                console.debug('Search box component not found');
             }
         } catch (error) {
             console.error('Error updating search box state:', error);
@@ -603,12 +603,12 @@ class MapSearchControl {
      * @param {Event} event - The suggest event
      */
     handleSuggest(event) {
-        console.log('Suggest event received:', event);
+        console.debug('Suggest event received:', event);
         
         // Only handle coordinate suggestions via events now
         // Local cadastral suggestions are handled via direct DOM injection
         if (this.isCoordinateInput && this.coordinateSuggestion) {
-            console.log('Handling coordinate suggestion via event');
+            console.debug('Handling coordinate suggestion via event');
             
             // Prevent the default suggest behavior
             event.preventDefault();
@@ -623,7 +623,7 @@ class MapSearchControl {
                 cancelable: true
             });
             
-            console.log('Creating custom suggest event for coordinate');
+            console.debug('Creating custom suggest event for coordinate');
             
             // Dispatch the custom event asynchronously
             setTimeout(() => {
@@ -635,7 +635,7 @@ class MapSearchControl {
         
         // For non-coordinate input, let Mapbox handle normally
         // Our local suggestions will be injected via DOM manipulation
-        console.log('Allowing default suggest behavior, local suggestions handled via DOM injection');
+        console.debug('Allowing default suggest behavior, local suggestions handled via DOM injection');
         
         // If we have local suggestions, re-inject them after Mapbox updates
         if (!this.isCoordinateInput && this.localSuggestions.length > 0) {
@@ -659,19 +659,19 @@ class MapSearchControl {
      * @param {Event} event - The retrieve event
      */
     handleRetrieve(event) {
-        console.log('Retrieve event received:', event);
+        console.debug('Retrieve event received:', event);
         
         if (event.detail && event.detail.features && event.detail.features.length > 0) {
             const feature = event.detail.features[0];
             const coordinates = feature.geometry.coordinates;
             
-            console.log('Flying to coordinates:', coordinates);
+            console.debug('Flying to coordinates:', coordinates);
             
             // Check if this is a local cadastral suggestion
             const isLocalSuggestion = feature.properties && feature.properties._isLocalSuggestion;
             
             if (isLocalSuggestion) {
-                console.log('Selected local cadastral suggestion:', feature.properties.name);
+                console.debug('Selected local cadastral suggestion:', feature.properties.name);
                 
                 // Update the search box input to show the selected result
                 this.updateSearchBoxInput(feature.properties.name);
@@ -689,7 +689,7 @@ class MapSearchControl {
                 
                 // Set feature state to selected if we have the feature state manager and feature ID
                 if (this.featureStateManager && feature.properties._featureId) {
-                    console.log('Setting feature state for plot:', feature.properties._featureId);
+                    console.debug('Setting feature state for plot:', feature.properties._featureId);
                     
                     // Clear any existing selection first
                     this.featureStateManager._resetSelectionState();
@@ -708,7 +708,7 @@ class MapSearchControl {
                             },
                             { selected: true }
                         );
-                        console.log('Successfully set feature state to selected');
+                        console.debug('Successfully set feature state to selected');
                     } catch (error) {
                         console.error('Error setting feature state:', error);
                     }
@@ -738,7 +738,7 @@ class MapSearchControl {
      */
     highlightCadastralPlot(plotProperties) {
         try {
-            console.log('Highlighting cadastral plot:', plotProperties);
+            console.debug('Highlighting cadastral plot:', plotProperties);
             
             // You could add custom highlighting logic here if desired
             // For example, temporarily change the style of the selected plot
@@ -746,7 +746,7 @@ class MapSearchControl {
             
             // Example: Log the plot information
             if (plotProperties) {
-                console.log('Plot details:', {
+                console.debug('Plot details:', {
                     plot: plotProperties.plot,
                     // Add other relevant properties as needed
                     ...plotProperties
@@ -770,7 +770,7 @@ class MapSearchControl {
         try {
             // Get the current map bounds for spatial filtering
             const bounds = this.map.getBounds();
-            console.log('Querying cadastral features within current viewport bounds:', {
+            console.debug('Querying cadastral features within current viewport bounds:', {
                 southwest: bounds.getSouthWest().toArray(),
                 northeast: bounds.getNorthEast().toArray()
             });
@@ -781,7 +781,7 @@ class MapSearchControl {
                 filter: ['has', 'plot'] // Only get features that have a plot property
             });
 
-            console.log(`Found ${features.length} cadastral features with 'plot' property in current viewport`);
+            console.debug(`Found ${features.length} cadastral features with 'plot' property in current viewport`);
             
             // Additional spatial filtering to ensure features are within bounds
             // (querySourceFeatures should already filter by viewport, but let's be explicit)
@@ -793,16 +793,16 @@ class MapSearchControl {
                 return bounds.contains([lng, lat]);
             });
             
-            console.log(`After spatial filtering: ${featuresInBounds.length} features within bounds`);
+            console.debug(`After spatial filtering: ${featuresInBounds.length} features within bounds`);
             
             // Log some sample features and their properties (only on first query to avoid spam)
             if (featuresInBounds.length > 0 && !this.hasActiveSearch) {
-                console.log('Sample feature properties:', featuresInBounds[0].properties);
-                console.log('All property keys in first feature:', Object.keys(featuresInBounds[0].properties || {}));
+                console.debug('Sample feature properties:', featuresInBounds[0].properties);
+                console.debug('All property keys in first feature:', Object.keys(featuresInBounds[0].properties || {}));
                 
                 // Log first few plot values to see what we're working with
                 const plotValues = featuresInBounds.slice(0, 10).map(f => f.properties?.plot).filter(Boolean);
-                console.log('Sample plot values from first 10 features:', plotValues);
+                console.debug('Sample plot values from first 10 features:', plotValues);
             }
 
             // Filter features by plot property that starts with the query (case insensitive)
@@ -818,18 +818,18 @@ class MapSearchControl {
                 
                 // Log detailed matching info for debugging (only for small datasets or matches)
                 if (featuresInBounds.length <= 10 || isMatch) {
-                    console.log(`Plot "${plotValue}" -> "${plotString}" ${isMatch ? 'MATCHES' : 'does not match'} query "${queryLower}"`);
+                    console.debug(`Plot "${plotValue}" -> "${plotString}" ${isMatch ? 'MATCHES' : 'does not match'} query "${queryLower}"`);
                 }
                 
                 return isMatch;
             });
 
-            console.log(`Found ${matchingFeatures.length} matching cadastral plots within viewport for query: "${query}"`);
+            console.debug(`Found ${matchingFeatures.length} matching cadastral plots within viewport for query: "${query}"`);
             
             // If we have matching features, log their plot values
             if (matchingFeatures.length > 0) {
                 const matchingPlots = matchingFeatures.map(f => f.properties.plot);
-                console.log(`Matching plot values in viewport:`, matchingPlots);
+                console.debug(`Matching plot values in viewport:`, matchingPlots);
             }
 
             // Group features by unique location to avoid duplicates
@@ -853,7 +853,7 @@ class MapSearchControl {
                 }
             }
             
-            console.log(`Reduced ${matchingFeatures.length} matching features to ${uniqueFeatures.length} unique locations`);
+            console.debug(`Reduced ${matchingFeatures.length} matching features to ${uniqueFeatures.length} unique locations`);
             
             // Convert to suggestion format and limit results
             const suggestions = uniqueFeatures
@@ -875,7 +875,7 @@ class MapSearchControl {
                         `Plot ${plotValue}, ${locationString}` : 
                         `Plot ${plotValue}, Cadastral Survey, Goa`;
                     
-                    console.log(`Creating suggestion for plot ${plotValue} with feature ID: ${featureId}`);
+                    console.debug(`Creating suggestion for plot ${plotValue} with feature ID: ${featureId}`);
                     
                     return {
                         type: 'Feature',
@@ -1011,8 +1011,8 @@ class MapSearchControl {
      * Clean up the search control
      */
     cleanup() {
-        console.log('=== CLEANING UP MAP SEARCH CONTROL ===');
-        console.log('Cleanup state:', {
+        console.debug('=== CLEANING UP MAP SEARCH CONTROL ===');
+        console.debug('Cleanup state:', {
             searchMarkerExists: !!this.searchMarker,
             suggestionMarkersCount: this.suggestionMarkers.length,
             injectionTimeoutActive: !!this.injectionTimeout,
@@ -1023,29 +1023,29 @@ class MapSearchControl {
         
         // Remove search marker
         this.removeSearchMarker();
-        console.log('Removed search marker');
+        console.debug('Removed search marker');
         
         // Clear all suggestion markers
         this.clearSuggestionMarkers();
-        console.log('Cleared all suggestion markers');
+        console.debug('Cleared all suggestion markers');
         
         // Clear timeouts and intervals
         if (this.injectionTimeout) {
             clearTimeout(this.injectionTimeout);
             this.injectionTimeout = null;
-            console.log('Cleared injection timeout');
+            console.debug('Cleared injection timeout');
         }
         
         if (this.inputMonitorInterval) {
             clearInterval(this.inputMonitorInterval);
             this.inputMonitorInterval = null;
-            console.log('Cleared input monitor interval');
+            console.debug('Cleared input monitor interval');
         }
         
         // Reset map context state
         this.hasActiveSearch = false;
         this.referenceView = null;
-        console.log('Reset map context state');
+        console.debug('Reset map context state');
         
         // Remove event listeners if search box exists
         if (this.searchBox) {
@@ -1054,15 +1054,15 @@ class MapSearchControl {
             this.searchBox.removeEventListener('input', this.handleInput.bind(this));
             this.searchBox.removeEventListener('keydown', this.handleKeyDown.bind(this));
             this.searchBox.removeEventListener('clear', this.handleClear.bind(this));
-            console.log('Removed event listeners from search box');
+            console.debug('Removed event listeners from search box');
         }
         
         // Remove map event listeners
         this.map.off('moveend', this.handleMapMoveEnd.bind(this));
-        console.log('Removed map event listeners');
+        console.debug('Removed map event listeners');
         
-        console.log('MapSearchControl cleanup complete');
-        console.log('=== MAP SEARCH CONTROL CLEANUP COMPLETE ===');
+        console.debug('MapSearchControl cleanup complete');
+        console.debug('=== MAP SEARCH CONTROL CLEANUP COMPLETE ===');
     }
 
     /**
@@ -1070,11 +1070,11 @@ class MapSearchControl {
      */
     injectLocalSuggestionsIntoUI() {
         try {
-            console.log('Attempting to inject local suggestions into UI');
+            console.debug('Attempting to inject local suggestions into UI');
             
             // Check if we've already injected for this query
             if (this.lastInjectedQuery === this.currentQuery) {
-                console.log('Already injected suggestions for this query, skipping');
+                console.debug('Already injected suggestions for this query, skipping');
                 return;
             }
             
@@ -1090,7 +1090,7 @@ class MapSearchControl {
                     if (shadowResults) {
                         $resultsList = $(shadowResults);
                         $resultsContainer = $resultsList.parent();
-                        console.log('Found results list in shadow DOM');
+                        console.debug('Found results list in shadow DOM');
                         return true;
                     }
                 }
@@ -1099,7 +1099,7 @@ class MapSearchControl {
                 $resultsList = $('[role="listbox"]').first();
                 if ($resultsList.length > 0) {
                     $resultsContainer = $resultsList.parent();
-                    console.log('Found results list in regular DOM');
+                    console.debug('Found results list in regular DOM');
                     return true;
                 }
                 
@@ -1111,7 +1111,7 @@ class MapSearchControl {
                     if (listbox.length > 0) {
                         $resultsList = listbox.first();
                         $resultsContainer = $container;
-                        console.log('Found results list via search container class');
+                        console.debug('Found results list via search container class');
                         return true;
                     }
                 }
@@ -1145,7 +1145,7 @@ class MapSearchControl {
                     
                     $resultsList = $(listbox);
                     $resultsContainer = $resultsList.parent();
-                    console.log('Created new results list in shadow DOM');
+                    console.debug('Created new results list in shadow DOM');
                     return true;
                 }
                 
@@ -1153,7 +1153,7 @@ class MapSearchControl {
             };
             
             if (!findResultsContainer()) {
-                console.log('Could not find or create results list to inject suggestions');
+                console.debug('Could not find or create results list to inject suggestions');
                 return;
             }
             
@@ -1167,7 +1167,7 @@ class MapSearchControl {
             // If there are more than 5 Mapbox suggestions, remove the extras
             if (existingCount > 5) {
                 existingSuggestions.slice(5).remove();
-                console.log(`Trimmed Mapbox suggestions from ${existingCount} to 5`);
+                console.debug(`Trimmed Mapbox suggestions from ${existingCount} to 5`);
             }
             
             // Recalculate after trimming
@@ -1175,7 +1175,7 @@ class MapSearchControl {
             const localSuggestionsToAdd = Math.min(5, this.localSuggestions.length);
             const totalCount = remainingMapboxSuggestions + localSuggestionsToAdd;
             
-            console.log(`Found ${remainingMapboxSuggestions} Mapbox suggestions, adding ${localSuggestionsToAdd} local suggestions for total of ${totalCount}`);
+            console.debug(`Found ${remainingMapboxSuggestions} Mapbox suggestions, adding ${localSuggestionsToAdd} local suggestions for total of ${totalCount}`);
             
             // Make sure the results container is visible
             if ($resultsContainer) {
@@ -1235,7 +1235,7 @@ class MapSearchControl {
                     
                     if (localIndex >= 0 && localIndex < this.localSuggestions.length) {
                         const selectedSuggestion = this.localSuggestions[localIndex];
-                        console.log('Local suggestion clicked:', selectedSuggestion.properties.name);
+                        console.debug('Local suggestion clicked:', selectedSuggestion.properties.name);
                         
                         // Clear suggestion markers before navigation
                         this.clearSuggestionMarkers();
@@ -1274,8 +1274,8 @@ class MapSearchControl {
                     this.handleSuggestionHover(localIndex, false);
                 });
             
-            console.log(`Successfully injected ${this.localSuggestions.length} local suggestions into UI with hover handlers`);
-            console.log('Suggestion markers status:', {
+            console.debug(`Successfully injected ${this.localSuggestions.length} local suggestions into UI with hover handlers`);
+            console.debug('Suggestion markers status:', {
                 markersCreated: this.suggestionMarkers.length,
                 markersVisible: this.suggestionMarkers.filter(m => m.visible).length,
                 hoveredIndex: this.hoveredMarkerIndex
@@ -1293,7 +1293,7 @@ class MapSearchControl {
      * Create suggestion markers for all local suggestions
      */
     createSuggestionMarkers() {
-        console.log(`Creating suggestion markers for ${this.localSuggestions.length} local suggestions`);
+        console.debug(`Creating suggestion markers for ${this.localSuggestions.length} local suggestions`);
         
         // Clear any existing suggestion markers first
         this.clearSuggestionMarkers();
@@ -1303,7 +1303,7 @@ class MapSearchControl {
                 const coordinates = suggestion.geometry.coordinates;
                 const title = suggestion.properties.name;
                 
-                console.log(`Creating suggestion marker ${index + 1}/${this.localSuggestions.length}:`, {
+                console.debug(`Creating suggestion marker ${index + 1}/${this.localSuggestions.length}:`, {
                     coordinates: coordinates,
                     title: title,
                     plotId: suggestion.properties._featureId
@@ -1331,21 +1331,21 @@ class MapSearchControl {
                     visible: false
                 });
                 
-                console.log(`Successfully created suggestion marker ${index} for plot:`, title);
+                console.debug(`Successfully created suggestion marker ${index} for plot:`, title);
                 
             } catch (error) {
                 console.error(`Error creating suggestion marker ${index}:`, error);
             }
         });
         
-        console.log(`Finished creating ${this.suggestionMarkers.length} suggestion markers`);
+        console.debug(`Finished creating ${this.suggestionMarkers.length} suggestion markers`);
     }
 
     /**
      * Show all suggestion markers on the map
      */
     showSuggestionMarkers() {
-        console.log('Showing suggestion markers on map');
+        console.debug('Showing suggestion markers on map');
         
         let visibleCount = 0;
         
@@ -1363,21 +1363,21 @@ class MapSearchControl {
                         markerElement.style.transition = 'opacity 0.2s ease-in-out';
                     }
                     
-                    console.log(`Showed suggestion marker ${index} for plot:`, markerData.title);
+                    console.debug(`Showed suggestion marker ${index} for plot:`, markerData.title);
                 }
             } catch (error) {
                 console.error(`Error showing suggestion marker ${index}:`, error);
             }
         });
         
-        console.log(`Successfully showed ${visibleCount} suggestion markers on map with initial opacity 0.7`);
+        console.debug(`Successfully showed ${visibleCount} suggestion markers on map with initial opacity 0.7`);
     }
 
     /**
      * Hide all suggestion markers without removing them
      */
     hideSuggestionMarkers() {
-        console.log('Hiding suggestion markers from map');
+        console.debug('Hiding suggestion markers from map');
         
         let hiddenCount = 0;
         
@@ -1388,21 +1388,21 @@ class MapSearchControl {
                     markerData.visible = false;
                     hiddenCount++;
                     
-                    console.log(`Hidden suggestion marker ${index} for plot:`, markerData.title);
+                    console.debug(`Hidden suggestion marker ${index} for plot:`, markerData.title);
                 }
             } catch (error) {
                 console.error(`Error hiding suggestion marker ${index}:`, error);
             }
         });
         
-        console.log(`Successfully hidden ${hiddenCount} suggestion markers from map`);
+        console.debug(`Successfully hidden ${hiddenCount} suggestion markers from map`);
     }
 
     /**
      * Clear all suggestion markers completely
      */
     clearSuggestionMarkers() {
-        console.log(`Clearing ${this.suggestionMarkers.length} suggestion markers`);
+        console.debug(`Clearing ${this.suggestionMarkers.length} suggestion markers`);
         
         let clearedCount = 0;
         
@@ -1412,7 +1412,7 @@ class MapSearchControl {
                     markerData.marker.remove();
                     clearedCount++;
                     
-                    console.log(`Cleared suggestion marker ${index} for plot:`, markerData.title);
+                    console.debug(`Cleared suggestion marker ${index} for plot:`, markerData.title);
                 }
             } catch (error) {
                 console.error(`Error clearing suggestion marker ${index}:`, error);
@@ -1423,7 +1423,7 @@ class MapSearchControl {
         this.suggestionMarkers = [];
         this.hoveredMarkerIndex = -1;
         
-        console.log(`Successfully cleared ${clearedCount} suggestion markers and reset hover state`);
+        console.debug(`Successfully cleared ${clearedCount} suggestion markers and reset hover state`);
     }
 
     /**
@@ -1434,7 +1434,7 @@ class MapSearchControl {
     handleSuggestionHover(suggestionIndex, isHovering) {
         // Only log on hover enter, not on every hover event to reduce noise
         if (isHovering) {
-            console.log(`Hovering over suggestion ${suggestionIndex}`);
+            console.debug(`Hovering over suggestion ${suggestionIndex}`);
         }
         
         try {
@@ -1468,7 +1468,7 @@ class MapSearchControl {
                             }
                             
                             // Fit bounds to show reference and only the hovered suggestion
-                            console.log(`Fitting map context to hovered suggestion ${suggestionIndex}`);
+                            console.debug(`Fitting map context to hovered suggestion ${suggestionIndex}`);
                             this.fitToContextWithHoveredSuggestion(suggestionIndex);
                             
                         } else {
@@ -1482,7 +1482,7 @@ class MapSearchControl {
                             }
                             
                             // Return to showing all suggestions when hover ends
-                            console.log('Returning to show all suggestions context');
+                            console.debug('Returning to show all suggestions context');
                             this.fitToContextWithAllSuggestions();
                         }
                     } else {
@@ -1521,7 +1521,7 @@ class MapSearchControl {
                 bounds: this.map.getBounds()
             };
             
-            console.log('Saved reference view:', {
+            console.debug('Saved reference view:', {
                 center: this.referenceView.center,
                 zoom: this.referenceView.zoom,
                 bounds: [
@@ -1556,7 +1556,7 @@ class MapSearchControl {
                 }
             });
             
-            console.log('Calculated context bounds:', {
+            console.debug('Calculated context bounds:', {
                 referenceCenter: this.referenceView.center,
                 coordinatesCount: coordinates.length,
                 boundsArray: [bounds.getSouthWest().toArray(), bounds.getNorthEast().toArray()]
@@ -1575,7 +1575,7 @@ class MapSearchControl {
     fitToContextWithAllSuggestions() {
         try {
             if (!this.referenceView || this.localSuggestions.length === 0) {
-                console.log('Cannot fit to context: no reference view or suggestions');
+                console.debug('Cannot fit to context: no reference view or suggestions');
                 return;
             }
             
@@ -1586,7 +1586,7 @@ class MapSearchControl {
             const bounds = this.calculateContextBounds(suggestionCoordinates);
             
             if (bounds) {
-                console.log('Fitting map to context with all suggestions');
+                console.debug('Fitting map to context with all suggestions');
                 this.map.fitBounds(bounds, {
                     padding: {
                         top: 50,
@@ -1612,7 +1612,7 @@ class MapSearchControl {
             if (!this.referenceView || 
                 suggestionIndex < 0 || 
                 suggestionIndex >= this.localSuggestions.length) {
-                console.log('Cannot fit to hovered suggestion: invalid parameters');
+                console.debug('Cannot fit to hovered suggestion: invalid parameters');
                 return;
             }
             
@@ -1623,7 +1623,7 @@ class MapSearchControl {
             const bounds = this.calculateContextBounds(hoveredCoordinates);
             
             if (bounds) {
-                console.log(`Fitting map to context with hovered suggestion ${suggestionIndex}:`, 
+                console.debug(`Fitting map to context with hovered suggestion ${suggestionIndex}:`, 
                            hoveredSuggestion.properties.name);
                 this.map.fitBounds(bounds, {
                     padding: {
@@ -1647,11 +1647,11 @@ class MapSearchControl {
     resetToReferenceView() {
         try {
             if (!this.referenceView) {
-                console.log('No reference view to reset to');
+                console.debug('No reference view to reset to');
                 return;
             }
             
-            console.log('Resetting map to reference view');
+            console.debug('Resetting map to reference view');
             this.map.flyTo({
                 center: this.referenceView.center,
                 zoom: this.referenceView.zoom,

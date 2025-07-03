@@ -1,13 +1,13 @@
 # amche-goa
 
-**amche-atlas** is designed to be a flexible and interactive web based GIS software to quickly visualize spatial data layers from a vareity of sources using the latest open source 
+**amche-atlas** is designed to be a flexible and interactive web based GIS software to quickly visualize spatial data layers from a vareity of sources using the latest open web map technologies.
 
 amche-atlas is currently deployed at the following urls:
 - Homepage: https://amche.in/
 - Development preview: https://amche.in/dev
 
 **Forks**
-- [Goa Department of Fire and Rescue services](https://github.com/alansaviolobo/dfes-dmp)
+- [Goa Disaster Management Dashboard](https://github.com/alansaviolobo/dfes-dmp)
 
 `amche` translates to 'ours' in the Indian language of [Konkani](https://en.wikipedia.org/wiki/Konkani_language), the native language in Goa.
 
@@ -57,9 +57,19 @@ At the grassroots level, citizens continue to face difficulties in reliable acce
 The various map layers are sourced from available open data published by government and community sources. Please check the individual layer details on amche.in for more complete source information. Please verify the accuracy of any dataset with the respective source. 
 
 **State Level**
-- [Town & Country Planning Department, Government of Goa (TCP)](https://tcp.goa.gov.in/)
 - [Bhunaksha, Directorate of Settlement & Land Records, Government of Goa](https://bhunaksha.goa.gov.in/bhunaksha/)
-- [amche.in Community](https://github.com/publicmap/amche-goa/issues)
+  - Cadastral plot boundaries
+- [Town & Country Planning Department, Government of Goa (TCP)](https://tcp.goa.gov.in/)
+  - Regional Plan for Goa 2021
+- [Department of Water Resources, Government of Goa](https://goawrd.gov.in/)
+  - Waterbody Atlas of Goa 2023
+  - Tillari Project Command Area Development Scheme
+- [Government of Goa Gazette Notifications](https://archive.org/search?query=creator%3A%22Government+of+Goa%22&sort=-date)
+  - Private Forests
+  - Notified Wetlands
+  - Notified Khazans
+
+Notified layers have been manually georeferenced and digitized from public records by the [amche.in Community](https://github.com/publicmap/amche-goa/issues)
 
 **National level**
 - [ISRO Space Based Earth Observation Applications](https://www.isro.gov.in/SpaceBasedEarthObservationServices.html) | [Bhuvan](https://bhuvan-app1.nrsc.gov.in/) ([Wiki](https://bhuvan.nrsc.gov.in/wiki/index.php/List_of_Vector_(Thematic_Maps)_datasets))

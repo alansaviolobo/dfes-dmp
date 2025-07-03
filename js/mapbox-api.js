@@ -13,6 +13,7 @@ export class MapboxAPI {
         this._layerCache = new Map(); // Cache for layer configurations
         this._sourceCache = new Map(); // Cache for sources
         this._refreshTimers = new Map(); // Cache for refresh timers
+        this._eventListeners = new Map(); // Cache for event listeners
         
         // Initialize style property mapping for different layer types
         this._stylePropertyMapping = this._initializeStylePropertyMapping();
@@ -264,16 +265,25 @@ export class MapboxAPI {
         // Get default styles for checking what layer types should be created
         const defaultStyles = this._defaultStyles.vector || {};
         
-        // Check if fill layer should be created (user styles or defaults)
-        const hasFillStyles = (config.style && (config.style['fill-color'] || config.style['fill-opacity'])) ||
-                             (defaultStyles.fill && (defaultStyles.fill['fill-color'] || defaultStyles.fill['fill-opacity']));
+        // Check if user has explicitly defined any styles
+        const userHasFillStyles = config.style && (config.style['fill-color'] || config.style['fill-opacity']);
+        const userHasLineStyles = config.style && (config.style['line-color'] || config.style['line-width']);
+        const userHasTextStyles = config.style && config.style['text-field'];
+        
+        // If user has only line styles defined, treat this as a linestring layer and don't apply fill styles
+        const userOnlyHasLineStyles = userHasLineStyles && !userHasFillStyles && !userHasTextStyles;
+        
+        // Check if fill layer should be created
+        // If user only has line styles, don't create fill layer even if defaults exist
+        const hasFillStyles = userHasFillStyles || 
+                             (!userOnlyHasLineStyles && defaultStyles.fill && (defaultStyles.fill['fill-color'] || defaultStyles.fill['fill-opacity']));
         
         // Check if line layer should be created (user styles or defaults)
-        const hasLineStyles = (config.style && (config.style['line-color'] || config.style['line-width'])) ||
+        const hasLineStyles = userHasLineStyles ||
                              (defaultStyles.line && (defaultStyles.line['line-color'] || defaultStyles.line['line-width']));
         
         // Check if text layer should be created (user styles or defaults)
-        const hasTextStyles = (config.style && config.style['text-field']) ||
+        const hasTextStyles = userHasTextStyles ||
                              (defaultStyles.text && defaultStyles.text['text-field']);
 
         // Add fill layer
@@ -1416,9 +1426,20 @@ export class MapboxAPI {
     }
 
     /**
-     * Cleanup resources
+     * Cleanup all layer groups and dispose of the API
      */
     cleanup() {
+        // Clean up all event listeners
+        this._eventListeners.forEach((listeners, eventType) => {
+            listeners.forEach(listener => {
+                try {
+                    this._map.off(eventType, listener);
+                } catch (error) {
+                    console.warn(`Failed to remove event listener for ${eventType}:`, error);
+                }
+            });
+        });
+        
         // Clear all refresh timers
         this._refreshTimers.forEach(timer => clearInterval(timer));
         this._refreshTimers.clear();
@@ -1426,5 +1447,323 @@ export class MapboxAPI {
         // Clear caches
         this._layerCache.clear();
         this._sourceCache.clear();
+        
+        // Clean up all layer groups
+        this._layerGroups.forEach((groupData, groupId) => {
+            this.removeLayerGroup(groupId, groupData.config);
+        });
+        
+        this._layerGroups.clear();
+        this._eventListeners.clear();
+        this._map = null;
+    }
+
+    // ===========================================
+    // MAP QUERY AND INTERACTION METHODS
+    // ===========================================
+
+    /**
+     * Query rendered features at a point or within a geometry
+     * @param {Array|Object} pointOrGeometry - Point [x, y] or geometry object
+     * @param {Object} options - Query options
+     * @returns {Array} Array of features
+     */
+    queryRenderedFeatures(pointOrGeometry, options = {}) {
+        return this._map.queryRenderedFeatures(pointOrGeometry, options);
+    }
+
+    /**
+     * Get current map zoom level
+     * @returns {number} Current zoom level
+     */
+    getZoom() {
+        return this._map.getZoom();
+    }
+
+    /**
+     * Get current map center
+     * @returns {LngLat} Current center coordinates
+     */
+    getCenter() {
+        return this._map.getCenter();
+    }
+
+    /**
+     * Ease map to a location with options
+     * @param {Object} options - Ease options (center, zoom, duration, offset, etc.)
+     */
+    easeTo(options) {
+        return this._map.easeTo(options);
+    }
+
+    /**
+     * Fly to a location with options
+     * @param {Object} options - Fly options (center, zoom, duration, etc.)
+     */
+    flyTo(options) {
+        return this._map.flyTo(options);
+    }
+
+    // ===========================================
+    // MAP STYLE AND LAYER INSPECTION METHODS
+    // ===========================================
+
+    /**
+     * Get the current map style
+     * @returns {Object} Current style object
+     */
+    getStyle() {
+        return this._map.getStyle();
+    }
+
+    /**
+     * Get a specific layer by ID
+     * @param {string} layerId - Layer ID
+     * @returns {Object|null} Layer object or null if not found
+     */
+    getLayer(layerId) {
+        return this._map.getLayer(layerId);
+    }
+
+    /**
+     * Get paint property value for a layer
+     * @param {string} layerId - Layer ID
+     * @param {string} property - Paint property name
+     * @returns {*} Property value
+     */
+    getPaintProperty(layerId, property) {
+        return this._map.getPaintProperty(layerId, property);
+    }
+
+    /**
+     * Get layout property value for a layer
+     * @param {string} layerId - Layer ID
+     * @param {string} property - Layout property name
+     * @returns {*} Property value
+     */
+    getLayoutProperty(layerId, property) {
+        return this._map.getLayoutProperty(layerId, property);
+    }
+
+    /**
+     * Set paint property for a layer
+     * @param {string} layerId - Layer ID
+     * @param {string} property - Paint property name
+     * @param {*} value - Property value
+     */
+    setPaintProperty(layerId, property, value) {
+        return this._map.setPaintProperty(layerId, property, value);
+    }
+
+    /**
+     * Set layout property for a layer
+     * @param {string} layerId - Layer ID
+     * @param {string} property - Layout property name
+     * @param {*} value - Property value
+     */
+    setLayoutProperty(layerId, property, value) {
+        return this._map.setLayoutProperty(layerId, property, value);
+    }
+
+    // ===========================================
+    // FEATURE STATE MANAGEMENT METHODS
+    // ===========================================
+
+    /**
+     * Set feature state for a specific feature
+     * @param {Object} feature - Feature identifier with source and sourceLayer
+     * @param {Object} state - State object to set
+     */
+    setFeatureState(feature, state) {
+        return this._map.setFeatureState(feature, state);
+    }
+
+    /**
+     * Remove feature state for a specific feature
+     * @param {Object} feature - Feature identifier with source and sourceLayer
+     * @param {string} stateKey - Optional state key to remove (removes all if not specified)
+     */
+    removeFeatureState(feature, stateKey = null) {
+        if (stateKey) {
+            return this._map.removeFeatureState(feature, stateKey);
+        } else {
+            return this._map.removeFeatureState(feature);
+        }
+    }
+
+    /**
+     * Get feature state for a specific feature
+     * @param {Object} feature - Feature identifier with source and sourceLayer
+     * @returns {Object} Current feature state
+     */
+    getFeatureState(feature) {
+        return this._map.getFeatureState(feature);
+    }
+
+    // ===========================================
+    // EVENT HANDLING METHODS
+    // ===========================================
+
+    /**
+     * Add event listener to the map
+     * @param {string} type - Event type
+     * @param {Function} listener - Event listener function
+     * @param {Object} layerIdOrOptions - Layer ID or options object
+     */
+    on(type, listener, layerIdOrOptions) {
+        // Store the listener for cleanup
+        if (!this._eventListeners.has(type)) {
+            this._eventListeners.set(type, new Set());
+        }
+        this._eventListeners.get(type).add(listener);
+
+        if (layerIdOrOptions) {
+            return this._map.on(type, layerIdOrOptions, listener);
+        } else {
+            return this._map.on(type, listener);
+        }
+    }
+
+    /**
+     * Remove event listener from the map
+     * @param {string} type - Event type
+     * @param {Function} listener - Event listener function
+     * @param {Object} layerIdOrOptions - Layer ID or options object
+     */
+    off(type, listener, layerIdOrOptions) {
+        // Remove from our tracking
+        if (this._eventListeners.has(type)) {
+            this._eventListeners.get(type).delete(listener);
+        }
+
+        if (layerIdOrOptions) {
+            return this._map.off(type, layerIdOrOptions, listener);
+        } else {
+            return this._map.off(type, listener);
+        }
+    }
+
+    /**
+     * Add one-time event listener to the map
+     * @param {string} type - Event type
+     * @param {Function} listener - Event listener function
+     * @param {Object} layerIdOrOptions - Layer ID or options object
+     */
+    once(type, listener, layerIdOrOptions) {
+        const wrappedListener = (...args) => {
+            // Remove from our tracking when it fires
+            if (this._eventListeners.has(type)) {
+                this._eventListeners.get(type).delete(wrappedListener);
+            }
+            return listener(...args);
+        };
+
+        // Store the wrapped listener for cleanup
+        if (!this._eventListeners.has(type)) {
+            this._eventListeners.set(type, new Set());
+        }
+        this._eventListeners.get(type).add(wrappedListener);
+
+        if (layerIdOrOptions) {
+            return this._map.once(type, layerIdOrOptions, wrappedListener);
+        } else {
+            return this._map.once(type, wrappedListener);
+        }
+    }
+
+    // ===========================================
+    // CONTAINER AND DOM METHODS
+    // ===========================================
+
+    /**
+     * Get the map container element
+     * @returns {HTMLElement} Map container
+     */
+    getContainer() {
+        return this._map.getContainer();
+    }
+
+    /**
+     * Get the map canvas element
+     * @returns {HTMLCanvasElement} Map canvas
+     */
+    getCanvas() {
+        return this._map.getCanvas();
+    }
+
+    // ===========================================
+    // UTILITY METHODS
+    // ===========================================
+
+    /**
+     * Check if a layer exists on the map
+     * @param {string} layerId - Layer ID to check
+     * @returns {boolean} True if layer exists
+     */
+    hasLayer(layerId) {
+        return !!this._map.getLayer(layerId);
+    }
+
+    /**
+     * Check if a source exists on the map
+     * @param {string} sourceId - Source ID to check
+     * @returns {boolean} True if source exists
+     */
+    hasSource(sourceId) {
+        return !!this._map.getSource(sourceId);
+    }
+
+    /**
+     * Get a source by ID
+     * @param {string} sourceId - Source ID
+     * @returns {Object|null} Source object or null if not found
+     */
+    getSource(sourceId) {
+        return this._map.getSource(sourceId);
+    }
+
+    /**
+     * Get all layer IDs that match a specific pattern or criteria
+     * @param {string|RegExp|Function} matcher - String pattern, RegExp, or function to match layers
+     * @returns {Array} Array of matching layer IDs
+     */
+    getMatchingLayerIds(matcher) {
+        const style = this.getStyle();
+        if (!style.layers) return [];
+
+        return style.layers
+            .filter(layer => {
+                if (typeof matcher === 'string') {
+                    return layer.id.includes(matcher);
+                } else if (matcher instanceof RegExp) {
+                    return matcher.test(layer.id);
+                } else if (typeof matcher === 'function') {
+                    return matcher(layer);
+                }
+                return false;
+            })
+            .map(layer => layer.id);
+    }
+
+    /**
+     * Batch update multiple paint properties for a layer
+     * @param {string} layerId - Layer ID
+     * @param {Object} properties - Object with property names as keys and values as values
+     */
+    batchSetPaintProperties(layerId, properties) {
+        Object.entries(properties).forEach(([property, value]) => {
+            this.setPaintProperty(layerId, property, value);
+        });
+    }
+
+    /**
+     * Batch update multiple layout properties for a layer
+     * @param {string} layerId - Layer ID
+     * @param {Object} properties - Object with property names as keys and values as values
+     */
+    batchSetLayoutProperties(layerId, properties) {
+        Object.entries(properties).forEach(([property, value]) => {
+            this.setLayoutProperty(layerId, property, value);
+        });
     }
 } 

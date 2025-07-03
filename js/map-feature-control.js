@@ -537,7 +537,6 @@ export class MapFeatureControl {
         // Only update if the switch state differs from the drawer state
         if (this._drawerSwitch.checked !== isOpen) {
             this._drawerSwitch.checked = isOpen;
-            console.log('[MapFeatureControl] Updated drawer switch to match drawer state:', isOpen);
         }
     }
 
@@ -548,7 +547,7 @@ export class MapFeatureControl {
         // Listen to drawer state changes from the centralized manager
         this._drawerStateListener = (event) => {
             const { isOpen, eventType } = event.detail;
-            console.log('[MapFeatureControl] Received drawer state change:', eventType, 'isOpen:', isOpen);
+            console.debug('[MapFeatureControl] Received drawer state change:', eventType, 'isOpen:', isOpen);
             this._updateDrawerSwitch(); // Update switch state based on drawer state
         };
 
@@ -560,7 +559,7 @@ export class MapFeatureControl {
      * Toggle the layer drawer using centralized manager
      */
     _toggleLayerDrawer() {
-        console.log('[MapFeatureControl] Toggling drawer, current state:', drawerStateManager.isOpen());
+        console.debug('[MapFeatureControl] Toggling drawer, current state:', drawerStateManager.isOpen());
         drawerStateManager.toggle();
     }
 
@@ -2026,7 +2025,7 @@ export class MapFeatureControl {
                 $toggleInput = $layerElement.find('input');
             }
             
-            console.log(`[FeatureControl] Debug - Layer ${layerId}:`, {
+            console.debug(`[FeatureControl] Debug - Layer ${layerId}:`, {
                 layerElement: !!layerElement,
                 toggleInput: $toggleInput.length > 0,
                 isChecked: $toggleInput.length > 0 ? $toggleInput.prop('checked') : 'N/A',
@@ -2043,14 +2042,14 @@ export class MapFeatureControl {
                 $layerElement.prop('open', false);
                 $layerElement.removeClass('active');
                 
-                console.log(`[FeatureControl] Layer ${layerId} toggled off successfully`);
+                console.debug(`[FeatureControl] Layer ${layerId} toggled off successfully`);
             } else {
                 console.error(`[FeatureControl] No checkbox input found for layer ${layerId}`);
                 
                 // Last resort: try to find any clickable element that might toggle the layer
                 const $anyToggle = $layerElement.find('[type="checkbox"], .toggle-switch, .toggle-slider');
                 if ($anyToggle.length > 0) {
-                    console.log(`[FeatureControl] Attempting to click any toggle element for ${layerId}`);
+                    console.debug(`[FeatureControl] Attempting to click any toggle element for ${layerId}`);
                     $anyToggle.first().click();
                 }
             }
@@ -2508,14 +2507,14 @@ export class MapFeatureControl {
                 $layerElement.prop('open', false);
                 $layerElement.removeClass('active');
                 
-                console.log(`[FeatureControl] Layer ${layerId} toggled off successfully`);
+                console.debug(`[FeatureControl] Layer ${layerId} toggled off successfully`);
             } else {
                 console.error(`[FeatureControl] No checkbox input found for layer ${layerId}`);
                 
                 // Last resort: try to find any clickable element that might toggle the layer
                 const $anyToggle = $layerElement.find('[type="checkbox"], .toggle-switch, .toggle-slider');
                 if ($anyToggle.length > 0) {
-                    console.log(`[FeatureControl] Attempting to click any toggle element for ${layerId}`);
+                    console.debug(`[FeatureControl] Attempting to click any toggle element for ${layerId}`);
                     $anyToggle.first().click();
                 }
             }
@@ -4034,11 +4033,11 @@ export class MapFeatureControl {
 
         // Get matching style layers for the hovered config layer
         const hoveredLayerIds = this._getMatchingLayerIds(config);
-        console.log(`Hovered layer ${layerId} matches style layers:`, hoveredLayerIds);
+        console.debug(`Hovered layer ${layerId} matches style layers:`, hoveredLayerIds);
         
         // Get all basemap layer IDs from config
         const basemapLayerIds = this._getBasemapLayerIds();
-        console.log(`Basemap layer IDs to preserve:`, basemapLayerIds);
+        console.debug(`Basemap layer IDs to preserve:`, basemapLayerIds);
         
         // Get all currently visible layers from the map
         const style = this._map.getStyle();
@@ -4072,8 +4071,8 @@ export class MapFeatureControl {
             layersToHide.push(styleLayerId);
         });
 
-        console.log(`Layers to keep visible:`, layersToKeep);
-        console.log(`Layers to hide:`, layersToHide);
+        console.debug(`Layers to keep visible:`, layersToKeep);
+        console.debug(`Layers to hide:`, layersToHide);
 
         // Hide the layers
         layersToHide.forEach(styleLayerId => {
@@ -4094,7 +4093,7 @@ export class MapFeatureControl {
             hoveredLayerId: layerId
         };
 
-        console.log(`Isolated layer ${layerId}, hidden ${layersToHide.length} layers`);
+        console.debug(`Isolated layer ${layerId}, hidden ${layersToHide.length} layers`);
     }
 
     /**
@@ -4112,7 +4111,7 @@ export class MapFeatureControl {
             }
         });
 
-        console.log(`Restored ${this._layerHoverState.hiddenLayers.length} layers`);
+        console.debug(`Restored ${this._layerHoverState.hiddenLayers.length} layers`);
 
         // Restore opacity of all layer details UI elements
         this._restoreLayerDetailsOpacity();
@@ -4149,7 +4148,7 @@ export class MapFeatureControl {
                 if (layer.tags && layer.tags.includes('basemap')) {
                     basemapConfigs.push(layer);
                     const matchingIds = this._getMatchingLayerIds(layer);
-                    console.log(`Basemap config layer ${layer.id} matches style layers:`, matchingIds);
+                    console.debug(`Basemap config layer ${layer.id} matches style layers:`, matchingIds);
                     basemapLayerIds.push(...matchingIds);
                 }
             });
@@ -4161,15 +4160,15 @@ export class MapFeatureControl {
                 if (group.tags && group.tags.includes('basemap')) {
                     basemapConfigs.push(group);
                     const matchingIds = this._getMatchingLayerIds(group);
-                    console.log(`Basemap config group ${group.id} matches style layers:`, matchingIds);
+                    console.debug(`Basemap config group ${group.id} matches style layers:`, matchingIds);
                     basemapLayerIds.push(...matchingIds);
                 }
             });
         }
 
-        console.log(`Found ${basemapConfigs.length} basemap config entries:`, basemapConfigs.map(c => c.id));
+        console.debug(`Found ${basemapConfigs.length} basemap config entries:`, basemapConfigs.map(c => c.id));
         const uniqueBasemapIds = [...new Set(basemapLayerIds)];
-        console.log(`Total unique basemap style layer IDs:`, uniqueBasemapIds);
+        console.debug(`Total unique basemap style layer IDs:`, uniqueBasemapIds);
         
         return uniqueBasemapIds;
     }
@@ -4198,7 +4197,7 @@ export class MapFeatureControl {
             }
         });
 
-        console.log(`Applied opacity effect - ${hoveredLayerId} remains opaque, others set to 0.5`);
+        console.debug(`Applied opacity effect - ${hoveredLayerId} remains opaque, others set to 0.5`);
     }
 
     /**
@@ -4216,7 +4215,7 @@ export class MapFeatureControl {
             element.style.opacity = '1';
         });
 
-        console.log(`Restored opacity for all layer details elements`);
+        console.debug(`Restored opacity for all layer details elements`);
     }
 }
 

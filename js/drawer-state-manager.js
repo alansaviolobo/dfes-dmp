@@ -131,7 +131,7 @@ export class DrawerStateManager {
             
             this._isOpen = initialState;
             
-            console.log('[DrawerStateManager] Initial state check:', {
+            console.debug('[DrawerStateManager] Initial state check:', {
                 isMobile,
                 shoelaceOpen,
                 hasOpenAttribute,
@@ -161,7 +161,6 @@ export class DrawerStateManager {
         this._eventTarget.dispatchEvent(event);
         window.dispatchEvent(event);
         
-        console.log('[DrawerStateManager] State change emitted:', eventType, 'isOpen:', this._isOpen);
     }
 
     /**
