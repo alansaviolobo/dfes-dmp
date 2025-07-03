@@ -222,6 +222,51 @@
       "attribution": "<a href='https://dpremarks.mcgm.gov.in/srdp1991/'>BMC SRDP 1991</a> via <a href='https://mapwarper.net/maps/67753'>Map Warper</a>"
     },
     {
+      "title": "Surface Temperature 2023",
+      "description": "Mean land surface temperature for 2023.",
+      "headerImage": "assets/map-layers/map-layer-mumbai-lst-2023.png",
+      "type": "vector",
+      "id": "mumbai-lst-2023",
+      "url": "https://api-main-432878571563.europe-west4.run.app/tiler/vector/{z}/{x}/{y}?map_id=44fe011b-6d8e-44a3-8ea4-fa600d1a33c2",
+      "sourceLayer": "vector",
+      "maxzoom": 14,
+      "attribution": "<a href=''>NASA LST 2023</a> via <a href='https://www.maphub.co/map/44fe011b-6d8e-44a3-8ea4-fa600d1a33c2'>Maphub</a>",
+      "style": {
+        "line-color": "white",
+        "line-width": 0.5,
+        "fill-color": [
+          "interpolate",
+          [
+            "linear"
+          ],
+          [
+            "get",
+            "TEMP_C_MIN"
+          ],
+          20,
+          "#000080",
+          25,
+          "#0000FF",
+          30,
+          "#00FFFF",
+          35,
+          "#00FF00",
+          40,
+          "#FFFF00",
+          45,
+          "#FF8000",
+          50,
+          "#FF0000"
+        ],
+        "fill-opacity": 0.8
+      },
+      "inspect": {
+        "id": "TEMP_C_MIN",
+        "title": "Land Surface Temperature",
+        "label": "TEMP_C_MIN"
+      }
+    },
+    {
       "title": "Mumbai Land Surface Temperature 2023",
       "description": "Median LST for 2023.",
       "headerImage": "",
@@ -327,6 +372,10 @@
           "State"
         ]
       }
+    },
+    {
+      "id": "mapbox-satellite",
+      "initiallyChecked": true
     },
     {
       "id": "3d-terrain"
