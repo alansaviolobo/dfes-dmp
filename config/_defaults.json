@@ -164,29 +164,7 @@
               1
             ]
           ],
-          "line-opacity": 1,
-          "line-sort-key": [
-            "case",
-            [
-              "boolean",
-              [
-                "feature-state",
-                "selected"
-              ],
-              false
-            ],
-            10,
-            [
-              "boolean",
-              [
-                "feature-state",
-                "hover"
-              ],
-              false
-            ],
-            9,
-            0
-          ]
+          "line-opacity": 1
         },
         "text": {
           "text-field": [

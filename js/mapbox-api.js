@@ -261,9 +261,20 @@ export class MapboxAPI {
     }
 
     _addVectorLayers(groupId, config, sourceId, visible) {
-        const hasFillStyles = config.style && (config.style['fill-color'] || config.style['fill-opacity']);
-        const hasLineStyles = config.style && (config.style['line-color'] || config.style['line-width']);
-        const hasTextStyles = config.style && config.style['text-field'];
+        // Get default styles for checking what layer types should be created
+        const defaultStyles = this._defaultStyles.vector || {};
+        
+        // Check if fill layer should be created (user styles or defaults)
+        const hasFillStyles = (config.style && (config.style['fill-color'] || config.style['fill-opacity'])) ||
+                             (defaultStyles.fill && (defaultStyles.fill['fill-color'] || defaultStyles.fill['fill-opacity']));
+        
+        // Check if line layer should be created (user styles or defaults)
+        const hasLineStyles = (config.style && (config.style['line-color'] || config.style['line-width'])) ||
+                             (defaultStyles.line && (defaultStyles.line['line-color'] || defaultStyles.line['line-width']));
+        
+        // Check if text layer should be created (user styles or defaults)
+        const hasTextStyles = (config.style && config.style['text-field']) ||
+                             (defaultStyles.text && defaultStyles.text['text-field']);
 
         // Add fill layer
         if (hasFillStyles) {
@@ -1226,7 +1237,13 @@ export class MapboxAPI {
      * @returns {Object} - Layer configuration with separated paint/layout
      */
     _createLayerConfig(config, layerType) {
-        const { paint, layout } = this._categorizeStyleProperties(config.style || {}, layerType);
+        // Get default styles for this layer type
+        const defaultStyles = this._getDefaultStylesForLayerType(layerType);
+        
+        // Intelligently merge user styles with defaults (preserving feature-state logic)
+        const mergedStyles = this._intelligentStyleMerge(config.style || {}, defaultStyles);
+        
+        const { paint, layout } = this._categorizeStyleProperties(mergedStyles, layerType);
 
         const layerConfig = {
             id: config.id,
@@ -1257,6 +1274,145 @@ export class MapboxAPI {
         }
 
         return layerConfig;
+    }
+
+    /**
+     * Get default styles for a specific layer type
+     * @param {string} layerType - The layer type (fill, line, symbol, circle, etc.)
+     * @returns {Object} - Default styles for this layer type
+     */
+    _getDefaultStylesForLayerType(layerType) {
+        if (!this._defaultStyles || !this._defaultStyles.vector) {
+            return {};
+        }
+
+        // Map layer types to default style categories
+        const styleMap = {
+            'fill': this._defaultStyles.vector.fill || {},
+            'line': this._defaultStyles.vector.line || {},
+            'symbol': this._defaultStyles.vector.text || {},
+            'circle': this._defaultStyles.vector.circle || {},
+            'raster': this._defaultStyles.raster || {}
+        };
+
+        return styleMap[layerType] || {};
+    }
+
+    /**
+     * Intelligently combine user color with default style expression (preserving feature-state logic)
+     * @param {*} userColor - User-provided color value
+     * @param {*} defaultStyleExpression - Default style expression (may contain feature-state logic)
+     * @returns {*} - Combined style expression
+     */
+    _combineWithDefaultStyle(userColor, defaultStyleExpression) {
+        // If no user color is provided, return the default style unchanged
+        if (!userColor) return defaultStyleExpression;
+
+        // If default style is not an expression (just a simple color), return user color
+        if (!Array.isArray(defaultStyleExpression)) return userColor;
+
+        // If user color contains a zoom expression (interpolate/step with zoom), use it directly
+        if (Array.isArray(userColor) && this._hasZoomExpression(userColor)) {
+            return userColor;
+        }
+
+        // Clone the default style expression to avoid modifying the original
+        const result = JSON.parse(JSON.stringify(defaultStyleExpression));
+
+        // Handle different types of expressions
+        if (result[0] === 'case') {
+            // Simple case expression - replace the fallback color (last value)
+            result[result.length - 1] = userColor;
+        } else if (result[0] === 'interpolate' && result[2] && Array.isArray(result[2]) && result[2][0] === 'zoom') {
+            // Interpolate expression with zoom - replace fallback colors in nested case expressions
+            this._replaceColorsInInterpolateExpression(result, userColor);
+        } else {
+            // For other expression types, return user color directly
+            return userColor;
+        }
+
+        return result;
+    }
+
+    /**
+     * Check if an expression contains zoom-based logic
+     * @param {*} expression - The expression to check
+     * @returns {boolean} - True if expression has zoom logic
+     */
+    _hasZoomExpression(expression) {
+        if (!Array.isArray(expression)) return false;
+
+        // Check if this is an interpolate or step expression with zoom
+        if ((expression[0] === 'interpolate' || expression[0] === 'step') &&
+            expression.length > 2 &&
+            Array.isArray(expression[2]) &&
+            expression[2][0] === 'zoom') {
+            return true;
+        }
+
+        // Recursively check nested expressions
+        for (let i = 1; i < expression.length; i++) {
+            if (Array.isArray(expression[i]) && this._hasZoomExpression(expression[i])) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    /**
+     * Replace colors in interpolate expressions while preserving structure
+     * @param {Array} interpolateExpr - The interpolate expression to modify
+     * @param {*} newColor - The new color to use
+     */
+    _replaceColorsInInterpolateExpression(interpolateExpr, newColor) {
+        // For interpolate expressions like: ["interpolate", ["linear"], ["zoom"], 6, caseExpr1, 16, caseExpr2]
+        // We need to replace the fallback color in each case expression
+        for (let i = 4; i < interpolateExpr.length; i += 2) {
+            const valueExpr = interpolateExpr[i];
+            if (Array.isArray(valueExpr) && valueExpr[0] === 'case') {
+                // Replace the fallback color (last value) in the case expression
+                valueExpr[valueExpr.length - 1] = newColor;
+            }
+        }
+    }
+
+    /**
+     * Intelligently merge user styles with default styles
+     * @param {Object} userStyles - User-provided styles
+     * @param {Object} defaultStyles - Default styles with feature-state logic
+     * @returns {Object} - Merged styles
+     */
+    _intelligentStyleMerge(userStyles, defaultStyles) {
+        if (!defaultStyles || typeof defaultStyles !== 'object') {
+            return userStyles || {};
+        }
+        if (!userStyles || typeof userStyles !== 'object') {
+            return defaultStyles;
+        }
+
+        const mergedStyles = {};
+
+        // First, add all default styles
+        Object.keys(defaultStyles).forEach(property => {
+            mergedStyles[property] = defaultStyles[property];
+        });
+
+        // Then, intelligently merge user styles
+        Object.keys(userStyles).forEach(property => {
+            const userValue = userStyles[property];
+            const defaultValue = defaultStyles[property];
+
+            // For color properties, use intelligent combining
+            if (property.includes('-color') && defaultValue) {
+                mergedStyles[property] = this._combineWithDefaultStyle(userValue, defaultValue);
+            } else {
+                // For non-color properties, user value takes precedence
+                mergedStyles[property] = userValue;
+            }
+        });
+
+        return mergedStyles;
     }
 
     /**

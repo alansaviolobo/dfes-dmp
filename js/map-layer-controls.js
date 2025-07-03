@@ -1,6 +1,7 @@
 import { localization } from './localization.js';
 import { LayerSettingsModal } from './layer-settings.js';
 import { MapboxAPI } from './mapbox-api.js';
+import { deepMerge } from './map-utils.js';
 
 /**
  * MapLayerControl - UI control for managing map layers using MapboxAPI abstraction
@@ -55,6 +56,9 @@ export class MapLayerControl {
         this._container = container;
         this._map = map;
 
+        // Make sure default styles are loaded BEFORE creating MapboxAPI
+        await this._ensureDefaultStylesLoaded();
+
         // Initialize MapboxAPI with the map and atlas configuration
         this._mapboxAPI = new MapboxAPI(map, {
             styles: this._defaultStyles
@@ -62,9 +66,6 @@ export class MapLayerControl {
 
         // Initialize layer settings modal
         this._layerSettingsModal = new LayerSettingsModal(this);
-
-        // Make sure default styles are loaded before proceeding
-        await this._ensureDefaultStylesLoaded();
 
         // Add global click handler early
         this._addGlobalClickHandler();
