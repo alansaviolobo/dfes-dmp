@@ -503,7 +503,7 @@ async function initializeMap() {
         // Initialize the feature control with state manager and config
         const featureControl = new MapFeatureControl({
             position: 'bottom-right',
-            maxHeight: '500px',
+            maxHeight: '600px',
             maxWidth: '350px'
         });
         featureControl.addTo(map);

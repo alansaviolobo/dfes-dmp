@@ -163,7 +163,22 @@
       "headerImage": "https://api-main-432878571563.europe-west4.run.app/maps/03f1d864-8e66-490b-b770-4ef18865901b/thumbnail"
     },
     {
-      "title": "GMLR Project Plan",
+      "title": "GMLR Project Alignment",
+      "description": "Goregaon-Mulund Link Road Project Alignment",
+      "headerImage": "assets/map-layers/map-layer-gmlr.png",
+      "type": "geojson",
+      "id": "gmlr-project-alignment",
+      "url": "https://gist.githubusercontent.com/planemad/ce1ff2afcb14d3a7935ef6fbf845a6cd/raw/88ed1eb734a1d25005af9e76f5a2825c9691e832/gmlr-tunnel-alignment.geojson",
+      "attribution": "<a href='https://forestsclearance.nic.in/viewreport_B.aspx?pid=FP/MH/ROAD/27126/2017'>Parivesh, MoEFCC</a>",
+      "style": {
+        "line-color": "black"
+      },
+      "inspect": {
+        "id": "Name"
+      }
+    },
+    {
+      "title": "GMLR Project Drawings",
       "description": "Detailed project plan of Goregaon-Mulund Link Road Project",
       "headerImage": "assets/map-layers/map-layer-gmlr.png",
       "type": "tms",
