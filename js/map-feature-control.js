@@ -173,6 +173,11 @@ export class MapFeatureControl {
         // Initial render
         this._render();
         
+        // Set initial clear button visibility (should be hidden initially)
+        setTimeout(() => {
+            this._updateClearSelectionButtonVisibility();
+        }, 100);
+        
         return this;
     }
 
@@ -479,14 +484,15 @@ export class MapFeatureControl {
         });
 
         // Create clear selection button
-        const clearSelectionBtn = document.createElement('sl-button');
-        clearSelectionBtn.size = 'small';
-        clearSelectionBtn.variant = 'text';
-        clearSelectionBtn.style.cssText = `
+        this._clearSelectionBtn = document.createElement('sl-button');
+        this._clearSelectionBtn.size = 'small';
+        this._clearSelectionBtn.variant = 'text';
+        this._clearSelectionBtn.style.cssText = `
             --sl-color-danger-600: #ef4444;
             --sl-color-danger-500: #ef4444;
             color: #ef4444;
             font-size: 11px;
+            display: none;
         `;
         
         const clearIcon = document.createElement('sl-icon');
@@ -494,11 +500,11 @@ export class MapFeatureControl {
         clearIcon.setAttribute('slot', 'prefix');
         clearIcon.style.fontSize = '12px';
         
-        clearSelectionBtn.appendChild(clearIcon);
-        clearSelectionBtn.appendChild(document.createTextNode('Clear Selection'));
+        this._clearSelectionBtn.appendChild(clearIcon);
+        this._clearSelectionBtn.appendChild(document.createTextNode('Clear Selection'));
         
         // Add click handler to clear all selections
-        clearSelectionBtn.addEventListener('click', (e) => {
+        this._clearSelectionBtn.addEventListener('click', (e) => {
             e.preventDefault();
             e.stopPropagation();
             this._clearAllSelections();
@@ -521,7 +527,7 @@ export class MapFeatureControl {
         separator2.style.cssText = 'width: 1px; height: 16px; background: rgba(0,0,0,0.1); margin: 0 4px;';
         actionsSection.appendChild(separator2);
         
-        actionsSection.appendChild(clearSelectionBtn);
+        actionsSection.appendChild(this._clearSelectionBtn);
 
         return actionsSection;
     }
@@ -587,6 +593,22 @@ export class MapFeatureControl {
     _clearAllSelections() {
         if (this._stateManager) {
             this._stateManager.clearAllSelections();
+        }
+    }
+
+    /**
+     * Update clear selection button visibility based on whether any layers have selections
+     */
+    _updateClearSelectionButtonVisibility() {
+        if (!this._clearSelectionBtn) return;
+        
+        // Check if any layer elements have the 'has-selection' class
+        const hasSelections = this._mainDetails.querySelector('.has-selection') !== null;
+        
+        if (hasSelections) {
+            this._clearSelectionBtn.style.display = 'inline-flex';
+        } else {
+            this._clearSelectionBtn.style.display = 'none';
         }
     }
 
@@ -749,8 +771,12 @@ export class MapFeatureControl {
         // Selection state is sticky - only changes when explicitly set
         if (states.hasSelection === true) {
             layerElement.classList.add('has-selection');
+            // Update clear button visibility when selections change
+            this._updateClearSelectionButtonVisibility();
         } else if (states.hasSelection === false) {
             layerElement.classList.remove('has-selection');
+            // Update clear button visibility when selections change
+            this._updateClearSelectionButtonVisibility();
         }
     }
 
@@ -808,6 +834,9 @@ export class MapFeatureControl {
         if (affectedLayerIds.length === 0) {
             this._scheduleRender();
         }
+        
+        // Update clear button visibility after selections are cleared
+        this._updateClearSelectionButtonVisibility();
     }
 
     /**
@@ -2042,6 +2071,9 @@ export class MapFeatureControl {
                 $layerElement.prop('open', false);
                 $layerElement.removeClass('active');
                 
+                // IMPORTANT: Restore all layers that may have been hidden by layer isolation
+                this._restoreAllLayers();
+                
                 console.debug(`[FeatureControl] Layer ${layerId} toggled off successfully`);
             } else {
                 console.error(`[FeatureControl] No checkbox input found for layer ${layerId}`);
@@ -2057,6 +2089,9 @@ export class MapFeatureControl {
         } catch (error) {
             console.error(`[FeatureControl] Error removing layer ${layerId}:`, error);
         }
+        
+        // IMPORTANT: Always restore all layers after removal attempt to fix layer isolation issue
+        this._restoreAllLayers();
     }
 
     /**

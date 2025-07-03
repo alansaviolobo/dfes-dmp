@@ -480,7 +480,10 @@ async function initializeMap() {
         map.addControl(new ViewControl(), 'top-right');
         
         // Initialize centralized state manager (NEW ARCHITECTURE)
-        const stateManager = new MapFeatureStateManager(map);        
+        const stateManager = new MapFeatureStateManager(map);
+        
+        // Enable debug logging temporarily to diagnose layer matching issues
+        stateManager.setDebug(true);        
         // Initialize layer control
         const layerControl = new MapLayerControl(layers);
         const container = document.getElementById('layer-controls-container');

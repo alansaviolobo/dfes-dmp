@@ -706,6 +706,19 @@ export class MapFeatureStateManager extends EventTarget {
         const layerId = layerConfig.id;
         const matchingIds = [];
         
+        // Debug logging to understand what layers exist
+        if (this._isDebug) {
+            console.debug(`[StateManager] Looking for matches for layer: ${layerId}`);
+            const allLayerIds = style.layers.map(l => l.id);
+            const relevantLayers = allLayerIds.filter(id => 
+                id.includes(layerId) || 
+                id.includes('vector-layer') || 
+                id.includes('tms-layer') ||
+                id === layerId
+            );
+            console.debug(`[StateManager] Relevant layers found:`, relevantLayers);
+        }
+        
         // Strategy 1: Direct ID match (HIGHEST PRIORITY)
         const directMatches = style.layers.filter(l => l.id === layerId).map(l => l.id);
         matchingIds.push(...directMatches);
@@ -716,8 +729,20 @@ export class MapFeatureStateManager extends EventTarget {
             .map(l => l.id);
         matchingIds.push(...prefixMatches);
         
+        // Strategy 2.5: MapboxAPI generated layer names (vector-layer-{id}, tms-layer-{id}, etc.)
+        const generatedMatches = style.layers
+            .filter(l => 
+                l.id.startsWith(`vector-layer-${layerId}`) ||
+                l.id.startsWith(`tms-layer-${layerId}`) ||
+                l.id.startsWith(`geojson-${layerId}`) ||
+                l.id.startsWith(`csv-${layerId}`) ||
+                l.id.startsWith(`markers-${layerId}`)
+            )
+            .map(l => l.id);
+        matchingIds.push(...generatedMatches);
+        
         // If we have direct matches, prioritize them and be more restrictive with fallback strategies
-        const hasDirectMatches = directMatches.length > 0 || prefixMatches.length > 0;
+        const hasDirectMatches = directMatches.length > 0 || prefixMatches.length > 0 || generatedMatches.length > 0;
         
         // Strategy 3: Source layer matches (ONLY if no direct matches found)
         if (!hasDirectMatches && layerConfig.sourceLayer) {
@@ -756,7 +781,13 @@ export class MapFeatureStateManager extends EventTarget {
         }
         
         // Remove duplicates and return
-        return [...new Set(matchingIds)];
+        const finalMatches = [...new Set(matchingIds)];
+        
+        if (this._isDebug) {
+            console.debug(`[StateManager] Final matches for ${layerId}:`, finalMatches);
+        }
+        
+        return finalMatches;
     }
 
     /**
