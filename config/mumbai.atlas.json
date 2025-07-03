@@ -233,7 +233,7 @@
       "attribution": "<a href=''>NASA LST 2023</a> via <a href='https://www.maphub.co/map/44fe011b-6d8e-44a3-8ea4-fa600d1a33c2'>Maphub</a>",
       "style": {
         "line-color": "white",
-        "line-width": 0.5,
+        "line-width": 0.1,
         "fill-color": [
           "interpolate",
           [
