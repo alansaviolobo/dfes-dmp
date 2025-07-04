@@ -1828,6 +1828,29 @@
       }
     },
     {
+      "title": "Environmental Clearance",
+      "description": "Applications for environmental clearance from parivesh",
+      "type": "vector",
+      "id": "parivesh",
+      "url": "https://api-main-432878571563.europe-west4.run.app/tiler/vector/{z}/{x}/{y}?map_id=5245a55a-4eee-4856-8095-fde7711ff7b9",
+      "sourceLayer": "vector",
+      "maxzoom": 8,
+      "attribution": "<a href='https://environmentclearance.nic.in/'>Parivesh, Ministry of Environment,Forest and Climate Change,Government of India</a> - Collected by <a href='https://datameet.org'>Datameet Community</a>",
+      "style": {
+        "text-field": ["get", "Organization Name"],
+        "line-color": "maroon",
+        "line-width": 2,
+        "fill-color": "maroon",
+        "fill-opacity": 0.1
+      },
+      "inspect": {
+        "id": "Proposal Number",
+        "title": "Organization Name",
+        "label": "Organization Name",
+        "fields": ["Project Category", "Project Name", "Project Description"]
+      }
+    },
+    {
       "title": "Rivers",
       "description": "Rivers and streams with stream order",
       "headerImage": "assets/map-layers/map-layer-rivers.png",

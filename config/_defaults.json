@@ -167,6 +167,7 @@
           "line-opacity": 1
         },
         "text": {
+          "text-font": ["Open Sans Bold"],
           "text-field": [
             "get",
             "name"
@@ -194,8 +195,8 @@
             "yellow",
             "white"
           ],
-          "text-halo-width": 1,
-          "text-halo-blur": 1,
+          "text-halo-width": 2,
+          "text-halo-blur": 0,
           "text-opacity": [
             "case",
             [

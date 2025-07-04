@@ -1591,8 +1591,8 @@ export class MapFeatureControl {
             }
         });
         
-        // 3. Add remaining fields for completeness (limited to prevent clutter)
-        Object.entries(properties).slice(0, 5).forEach(([key, value]) => {
+        // 3. Add remaining fields for completeness
+        Object.entries(properties).forEach(([key, value]) => {
             // Skip if already added as label or priority field
             if (key === labelField || priorityFields.includes(key)) {
                 return;
