@@ -525,45 +525,74 @@ export class MapboxAPI {
     }
 
     _addGeoJSONLayers(groupId, config, sourceId, visible) {
-        // Add fill layer
-        const fillLayerConfig = this._createLayerConfig({
-            id: `${sourceId}-fill`,
-            type: 'fill',
-            source: sourceId,
-            style: {
-                'fill-color': config.style?.['fill-color'] || this._defaultStyles.vector?.fill?.['fill-color'] || '#000000',
-                'fill-opacity': config.style?.['fill-opacity'] || 0.5
-            },
-            visible
-        }, 'fill');
+        // Get default styles for checking what layer types should be created
+        const defaultStyles = this._defaultStyles.vector || {};
+        
+        // Check if user has explicitly defined any styles
+        const userHasFillStyles = config.style && (config.style['fill-color'] || config.style['fill-opacity']);
+        const userHasLineStyles = config.style && (config.style['line-color'] || config.style['line-width']);
+        const userHasTextStyles = config.style && config.style['text-field'];
+        const userHasCircleStyles = config.style && (config.style['circle-radius'] || config.style['circle-color']);
+        
+        // Check if fill layer should be created (user styles or defaults)
+        const hasFillStyles = userHasFillStyles || 
+                             (defaultStyles.fill && (defaultStyles.fill['fill-color'] || defaultStyles.fill['fill-opacity']));
+        
+        // Check if line layer should be created (user styles or defaults)
+        const hasLineStyles = userHasLineStyles ||
+                             (defaultStyles.line && (defaultStyles.line['line-color'] || defaultStyles.line['line-width']));
+        
+        // Check if text layer should be created (user styles or defaults)
+        const hasTextStyles = userHasTextStyles ||
+                             (defaultStyles.text && defaultStyles.text['text-field']);
+        
+        // Check if circle layer should be created (only if user explicitly defines circle properties)
+        const hasCircleStyles = userHasCircleStyles;
 
-        this._map.addLayer(fillLayerConfig, getInsertPosition(this._map, 'vector', 'fill', config, []));
+        // Add fill layer
+        if (hasFillStyles) {
+            // Filter style to only include fill-related properties
+            const fillStyle = this._filterStyleForLayerType(config.style, 'fill');
+            
+            const fillLayerConfig = this._createLayerConfig({
+                id: `${sourceId}-fill`,
+                type: 'fill',
+                source: sourceId,
+                style: fillStyle,
+                visible
+            }, 'fill');
+
+            this._map.addLayer(fillLayerConfig, getInsertPosition(this._map, 'vector', 'fill', config, []));
+        }
 
         // Add line layer
-        const lineLayerConfig = this._createLayerConfig({
-            id: `${sourceId}-line`,
-            type: 'line',
-            source: sourceId,
-            style: {
-                'line-color': config.style?.['line-color'] || this._defaultStyles.vector?.line?.['line-color'] || '#000000',
-                'line-width': config.style?.['line-width'] || 1
-            },
-            visible
-        }, 'line');
+        if (hasLineStyles) {
+            // Filter style to only include line-related properties
+            const lineStyle = this._filterStyleForLayerType(config.style, 'line');
+            
+            const lineLayerConfig = this._createLayerConfig({
+                id: `${sourceId}-line`,
+                type: 'line',
+                source: sourceId,
+                style: lineStyle,
+                visible
+            }, 'line');
 
-        this._map.addLayer(lineLayerConfig, getInsertPosition(this._map, 'vector', 'line', config, []));
+            console.log(`[MapboxAPI] Final layer config for geojson layer. The final line-width is`, lineLayerConfig.paint['line-width']);
+
+            this._map.addLayer(lineLayerConfig, getInsertPosition(this._map, 'vector', 'line', config, []));
+        }
 
         // Add circle layer if circle properties are defined
-        if (config.style?.['circle-radius'] || config.style?.['circle-color']) {
+        if (hasCircleStyles) {
+            // Filter style to only include circle-related properties
+            const circleStyle = this._filterStyleForLayerType(config.style, 'circle');
+            
             const circleLayerConfig = this._createLayerConfig({
                 id: `${sourceId}-circle`,
                 type: 'circle',
                 source: sourceId,
-                style: {
-                    'circle-radius': config.style['circle-radius'] || 5,
-                    'circle-color': config.style['circle-color'] || '#FF0000',
-                    'circle-opacity': config.style['circle-opacity'] || 0.8
-                },
+                style: circleStyle,
                 visible
             }, 'circle');
 
@@ -571,17 +600,15 @@ export class MapboxAPI {
         }
 
         // Add text layer if text properties are defined
-        if (config.style?.['text-field']) {
+        if (hasTextStyles) {
+            // Filter style to only include symbol/text-related properties
+            const symbolStyle = this._filterStyleForLayerType(config.style, 'symbol');
+            
             const textLayerConfig = this._createLayerConfig({
                 id: `${sourceId}-label`,
                 type: 'symbol',
                 source: sourceId,
-                style: {
-                    'text-field': config.style['text-field'],
-                    'text-color': config.style['text-color'] || '#000000',
-                    'text-halo-color': config.style['text-halo-color'] || '#ffffff',
-                    'text-halo-width': config.style['text-halo-width'] || 1
-                },
+                style: symbolStyle,
                 visible
             }, 'symbol');
 
