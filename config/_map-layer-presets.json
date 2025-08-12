@@ -1860,13 +1860,24 @@
       "url": "https://api-main-432878571563.europe-west4.run.app/tiler/vector/{z}/{x}/{y}?map_id=5245a55a-4eee-4856-8095-fde7711ff7b9",
       "sourceLayer": "vector",
       "maxzoom": 8,
-      "attribution": "<a href='https://environmentclearance.nic.in/'>Parivesh, Ministry of Environment,Forest and Climate Change,Government of India</a> - Collected by <a href='https://datameet.org'>Datameet Community</a>",
+      "attribution": "<a href='https://environmentclearance.nic.in/'>Parivesh, Ministry of Environment,Forest and Climate Change,Government of India</a> - Collected by <a href='https://datameet.org'>Datameet Community</a> via <a href='https://github.com/datameet/parivesh-geojson'>MapHub</a>",
       "style": {
         "text-field": ["get", "Organization Name"],
-        "line-color": "maroon",
-        "line-width": 2,
-        "fill-color": "maroon",
-        "fill-opacity": 0.1
+        "text-halo-color": "crimson",
+        "line-color": "crimson",
+        "line-width": 4,
+        "fill-color": [
+          "case",
+          ["==", ["geometry-type"], "Polygon"],
+          "crimson",
+          "transparent"
+        ],
+        "fill-opacity": [
+          "case",
+          ["==", ["geometry-type"], "Polygon"],
+          0.1,
+          0
+        ]
       },
       "inspect": {
         "id": "Proposal Number",
