@@ -178,6 +178,11 @@ export class MapLinks {
                 icon: 'https://upload.wikimedia.org/wikipedia/commons/a/aa/Google_Maps_icon_%282020%29.svg'
             },
             {
+                name: 'Google Earth Studio',
+                url: `https://earth.google.com/web/@${lat},${lng},67.01062587a,1688.30584472d,35y,-0h,0t,0r/data=CgwqBggBEgAYAUICCAFCAggASg0I____________ARAA`,
+                text: 'GE'
+            },
+            {
                 name: 'ISRO Bhuvan',
                 url: `https://bhuvanmaps.nrsc.gov.in/?mode=Hybrid#${zoom}/${lat}/${lng}`,
                 icon: './assets/map-layers/icon-bhuvan.png'
