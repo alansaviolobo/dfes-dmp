@@ -1713,10 +1713,6 @@
           "rgba(0, 0, 0, 0.1)"
         ],
         "line-color": "blue",
-        "line-dasharray": [
-          6,
-          6
-        ],
         "line-width": [
           "interpolate",
           [
@@ -1726,51 +1722,9 @@
             "zoom"
           ],
           8,
-          [
-            "case",
-            [
-              "boolean",
-              [
-                "feature-state",
-                "selected"
-              ],
-              false
-            ],
-            4,
-            [
-              "boolean",
-              [
-                "feature-state",
-                "hover"
-              ],
-              false
-            ],
-            4,
-            3
-          ],
-          12,
-          [
-            "case",
-            [
-              "boolean",
-              [
-                "feature-state",
-                "selected"
-              ],
-              false
-            ],
-            6,
-            [
-              "boolean",
-              [
-                "feature-state",
-                "hover"
-              ],
-              false
-            ],
-            6,
-            5
-          ]
+          4,
+          16,
+          8
         ]
       },
       "inspect": {
