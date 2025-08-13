@@ -1291,8 +1291,6 @@
           "vilnam_soi"
         ],
         "text-color": "white",
-        "text-halo-color": "black",
-        "text-halo-width": 5,
         "text-size": 13,
         "fill-color": [
           "interpolate",
@@ -1413,7 +1411,6 @@
         ],
         "text-color": "white",
         "text-halo-color": "purple",
-        "text-halo-width": 5,
         "text-size": 13,
         "fill-color": [
           "interpolate",
@@ -1527,7 +1524,6 @@
         ],
         "text-color": "white",
         "text-halo-color": "purple",
-        "text-halo-width": 5,
         "text-transform": "uppercase",
         "text-size": 14,
         "text-opacity": [
@@ -1650,8 +1646,6 @@
           "ac_name"
         ],
         "text-color": "white",
-        "text-halo-color": "blue",
-        "text-halo-width": 5,
         "text-size": 15,
         "fill-color": [
           "interpolate",
@@ -1667,65 +1661,7 @@
           "rgba(0, 0, 0, 0.1)"
         ],
         "line-color": "blue",
-        "line-dasharray": [
-          6,
-          6
-        ],
-        "line-width": [
-          "interpolate",
-          [
-            "linear"
-          ],
-          [
-            "zoom"
-          ],
-          8,
-          [
-            "case",
-            [
-              "boolean",
-              [
-                "feature-state",
-                "selected"
-              ],
-              false
-            ],
-            1.5,
-            [
-              "boolean",
-              [
-                "feature-state",
-                "hover"
-              ],
-              false
-            ],
-            1,
-            0.1
-          ],
-          12,
-          [
-            "case",
-            [
-              "boolean",
-              [
-                "feature-state",
-                "selected"
-              ],
-              false
-            ],
-            3.5,
-            [
-              "boolean",
-              [
-                "feature-state",
-                "hover"
-              ],
-              false
-            ],
-            2.5,
-            1.5
-          ]
-        ]
+        "line-width": 2
       },
       "inspect": {
         "title": "Name",
@@ -1762,7 +1698,6 @@
         ],
         "text-color": "white",
         "text-halo-color": "blue",
-        "text-halo-width": 5,
         "text-size": 18,
         "fill-color": [
           "interpolate",
