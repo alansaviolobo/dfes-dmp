@@ -28,7 +28,7 @@ export class MapboxAPI {
                 common: ['visibility'],
                 fill: ['fill-sort-key'],
                 line: ['line-cap', 'line-join', 'line-miter-limit', 'line-round-limit', 'line-sort-key'],
-                symbol: ['icon-allow-overlap', 'icon-anchor', 'icon-image', 'icon-size', 'text-field', 'text-font', 'text-size', 'text-anchor', 'text-line-height', 'text-max-width', 'text-justify', 'text-allow-overlap', 'text-transform', 'text-offset', 'text-rotation-alignment', 'text-pitch-alignment', 'text-writing-mode', 'text-variable-anchor', 'text-radial-offset', 'text-keep-upright'],
+                symbol: ['icon-allow-overlap', 'icon-anchor', 'icon-image', 'icon-size', 'text-field', 'text-font', 'text-size', 'text-anchor', 'text-line-height', 'text-max-width', 'text-justify', 'text-allow-overlap', 'text-transform', 'text-offset', 'text-rotation-alignment', 'text-pitch-alignment', 'text-writing-mode', 'text-variable-anchor', 'text-radial-offset', 'text-keep-upright', 'text-padding'],
                 circle: ['circle-sort-key'],
                 raster: [],
                 background: [],
