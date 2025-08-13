@@ -1645,7 +1645,7 @@
           "get",
           "ac_name"
         ],
-        "text-color": "white",
+        "text-color": "blue",
         "text-size": 15,
         "fill-color": [
           "interpolate",
@@ -4554,7 +4554,7 @@
       "headerImage": "assets/map-layers/map-layer-soi.png",
       "legendImage": "assets/map-layers/map-layer-soi-legend.png",
       "type": "tms",
-      "id": "goa-soi-map",
+      "id": "soi-map",
       "url": "https://indianopenmaps.fly.dev/soi/osm/{z}/{x}/{y}.webp",
       "attribution": "<a href='https://onlinemaps.surveyofindia.gov.in/FreeMapSpecification.aspx'>Open Series Toposheets from Survey of India</a>"
     },
