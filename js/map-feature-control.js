@@ -3354,20 +3354,36 @@ export class MapFeatureControl {
         // If we have direct matches, prioritize them and be more restrictive with fallback strategies
         const hasDirectMatches = directMatches.length > 0 || prefixMatches.length > 0;
         
-        // Strategy 3: Source layer matches (ONLY if no direct matches found)
+        // Strategy 3: Source layer matches with additional layer ID filtering (ONLY if no direct matches found)
         // This prevents cross-matches when multiple configs share the same sourceLayer
         if (!hasDirectMatches && layerConfig.sourceLayer) {
             const sourceLayerMatches = style.layers
-                .filter(l => l['source-layer'] === layerConfig.sourceLayer)
+                .filter(l => {
+                    // Must match the sourceLayer
+                    if (l['source-layer'] !== layerConfig.sourceLayer) return false;
+                    
+                    // Additional filtering to prevent cross-matches:
+                    // Only include style layers that contain the config layerId in their ID
+                    // This ensures we don't pick up style layers from other config layers
+                    return l.id.includes(layerId) || l.id === layerId;
+                })
                 .map(l => l.id);
             matchingIds.push(...sourceLayerMatches);
         }
         
-        // Strategy 4: Source matches (ONLY if no direct matches found)
+        // Strategy 4: Source matches with additional layer ID filtering (ONLY if no direct matches found)
         // This prevents cross-matches when multiple configs share the same source
         if (!hasDirectMatches && layerConfig.source) {
             const sourceMatches = style.layers
-                .filter(l => l.source === layerConfig.source)
+                .filter(l => {
+                    // Must match the source
+                    if (l.source !== layerConfig.source) return false;
+                    
+                    // Additional filtering to prevent cross-matches:
+                    // Only include style layers that contain the config layerId in their ID
+                    // This ensures we don't pick up style layers from other config layers
+                    return l.id.includes(layerId) || l.id === layerId;
+                })
                 .map(l => l.id);
             matchingIds.push(...sourceMatches);
         }
