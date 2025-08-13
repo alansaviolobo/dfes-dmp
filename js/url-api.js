@@ -2,9 +2,10 @@
 // Supports deep linking with ?atlas=X and ?layers=X parameters
 
 class URLManager {
-    constructor(mapLayerControl, map) {
+    constructor(mapLayerControl, map, geolocationManager = null) {
         this.mapLayerControl = mapLayerControl;
         this.map = map;
+        this.geolocationManager = geolocationManager;
         this.isUpdatingFromURL = false; // Prevent circular updates
         this.pendingURLUpdate = null; // Debounce URL updates
         
@@ -220,6 +221,7 @@ class URLManager {
         let hasChanges = false;
         let layersParam = null;
         let atlasParam = null;
+        let geolocateParam = null;
 
         // Handle layers parameter
         if (options.updateLayers !== false) {
@@ -246,6 +248,21 @@ class URLManager {
             }
         }
 
+        // Handle geolocate parameter
+        if (options.geolocate !== undefined) {
+            const currentGeolocateParam = urlParams.get('geolocate');
+            if (options.geolocate) {
+                geolocateParam = 'true';
+                if (currentGeolocateParam !== 'true') {
+                    hasChanges = true;
+                }
+            } else {
+                if (currentGeolocateParam !== null) {
+                    hasChanges = true;
+                }
+            }
+        }
+
         // Update URL if there are changes
         if (hasChanges) {
             // Build URL manually to avoid URL encoding issues (like %2C for commas)
@@ -255,6 +272,7 @@ class URLManager {
             // Always remove the parameters we're managing to avoid duplicates
             otherParams.delete('layers');
             otherParams.delete('atlas');
+            otherParams.delete('geolocate');
             
             // Build the new URL manually to avoid URL encoding
             let newUrl = baseUrl;
@@ -274,6 +292,12 @@ class URLManager {
             // Add layers parameter if present
             if (layersParam) {
                 params.push('layers=' + layersParam);
+            }
+            
+            // Add geolocate parameter if active (either new or preserved from current URL)
+            const currentGeolocate = geolocateParam || (options.geolocate === undefined ? urlParams.get('geolocate') : null);
+            if (currentGeolocate === 'true') {
+                params.push('geolocate=true');
             }
             
             // Combine all parameters
@@ -321,8 +345,9 @@ class URLManager {
     async applyURLParameters() {
         const urlParams = new URLSearchParams(window.location.search);
         const layersParam = urlParams.get('layers');
+        const geolocateParam = urlParams.get('geolocate');
         
-        if (!layersParam) {
+        if (!layersParam && !geolocateParam) {
             return false;
         }
 
@@ -335,10 +360,20 @@ class URLManager {
             await this.waitForMapReady();
             
             // Parse layers from URL
-            const urlLayers = this.parseLayersFromUrl(layersParam);
+            if (layersParam) {
+                const urlLayers = this.parseLayersFromUrl(layersParam);
+                // Apply the layer state
+                applied = await this.applyLayerState(urlLayers);
+            }
             
-            // Apply the layer state
-            applied = await this.applyLayerState(urlLayers);
+            // Handle geolocate parameter
+            if (geolocateParam === 'true') {
+                applied = true;
+                // Trigger geolocation after a short delay to ensure everything is loaded
+                setTimeout(() => {
+                    this.triggerGeolocation();
+                }, 1000);
+            }
 
         } catch (error) {
             console.error('🔗 Error applying URL parameters:', error);
@@ -461,6 +496,24 @@ class URLManager {
      */
     syncURL() {
         this.updateURL({ updateLayers: true });
+    }
+
+    /**
+     * Trigger geolocation from URL parameter
+     */
+    triggerGeolocation() {
+        if (this.geolocationManager) {
+            this.geolocationManager.trigger();
+        } else {
+            console.warn('🔗 GeolocationManager not available for URL-triggered geolocation');
+        }
+    }
+
+    /**
+     * Update geolocate parameter in URL
+     */
+    updateGeolocateParam(isActive) {
+        this.updateURL({ geolocate: isActive });
     }
 }
 

@@ -501,7 +501,7 @@ async function initializeMap() {
             canvas.style.cursor = 'grab';
         });
         
-        // Initialize geolocation
+        // Initialize geolocation (will be connected to URL manager later)
         const geolocationManager = new GeolocationManager(map);
         
         // Make geolocation manager globally accessible
@@ -545,8 +545,14 @@ async function initializeMap() {
         window.stateManager = stateManager;
                 
         // Initialize URL manager after layer control is ready
-        const urlManager = new URLManager(layerControl, map);
+        const urlManager = new URLManager(layerControl, map, geolocationManager);
         urlManager.setupLayerControlEventListeners();
+        
+        // Connect geolocation manager to URL manager
+        geolocationManager.urlManager = urlManager;
+        
+        // Apply URL parameters (including geolocate parameter)
+        urlManager.applyURLParameters();
         
         // Make URL manager globally accessible for ShareLink
         window.urlManager = urlManager;

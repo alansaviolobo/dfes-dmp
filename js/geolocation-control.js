@@ -1,6 +1,7 @@
 class GeolocationManager {
-    constructor(map) {
+    constructor(map, urlManager = null) {
         this.map = map;
+        this.urlManager = urlManager;
         this.setupGeolocation();
         this.locationLabelSet = false;
         this.isTracking = false;
@@ -29,11 +30,13 @@ class GeolocationManager {
         this.geolocate.on('trackuserlocationstart', () => {
             this.isTracking = true;
             $(window).on('deviceorientationabsolute', this.handleOrientation);
+            this.updateGeolocateURLParam(true);
         });
 
         this.geolocate.on('trackuserlocationend', () => {
             this.isTracking = false;
             $(window).off('deviceorientationabsolute', this.handleOrientation);
+            this.updateGeolocateURLParam(false);
             // Reset map orientation
             this.map.easeTo({
                 bearing: 0,
@@ -169,6 +172,19 @@ class GeolocationManager {
                 bearing: bearing,
                 duration: 100
             });
+        }
+    }
+
+    updateGeolocateURLParam(isActive) {
+        if (!this.urlManager) return;
+        
+        // Use the URLManager's URL building system to preserve pretty formatting
+        this.urlManager.updateGeolocateParam(isActive);
+    }
+
+    trigger() {
+        if (this.geolocate) {
+            this.geolocate.trigger();
         }
     }
 } 
