@@ -1,0 +1,2176 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mapbox GL Georeferencer</title>
+    
+    <!-- Mapbox GL JS -->
+    <script src='https://api.mapbox.com/mapbox-gl-js/v3.0.1/mapbox-gl.js'></script>
+    <link href='https://api.mapbox.com/mapbox-gl-js/v3.0.1/mapbox-gl.css' rel='stylesheet' />
+    
+    <!-- Mapbox Geocoder -->
+    <script src="https://api.mapbox.com/mapbox-gl-js/plugins/mapbox-gl-geocoder/v5.0.0/mapbox-gl-geocoder.min.js"></script>
+    <link rel="stylesheet" href="https://api.mapbox.com/mapbox-gl-js/plugins/mapbox-gl-geocoder/v5.0.0/mapbox-gl-geocoder.css" type="text/css">
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- DataTables -->
+    <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.13.7/css/jquery.dataTables.min.css">
+    <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/buttons/2.4.2/css/buttons.dataTables.min.css">
+    <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/searchbuilder/1.6.0/css/searchBuilder.dataTables.min.css">
+    <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/colreorder/1.7.0/css/colReorder.dataTables.min.css">
+    
+    <!-- jQuery (required for DataTables) -->
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+    
+    <!-- DataTables JS -->
+    <script type="text/javascript" src="https://cdn.datatables.net/1.13.7/js/jquery.dataTables.min.js"></script>
+    <script type="text/javascript" src="https://cdn.datatables.net/buttons/2.4.2/js/dataTables.buttons.min.js"></script>
+    <script type="text/javascript" src="https://cdn.datatables.net/buttons/2.4.2/js/buttons.colVis.min.js"></script>
+    <script type="text/javascript" src="https://cdn.datatables.net/searchbuilder/1.6.0/js/dataTables.searchBuilder.min.js"></script>
+    <script type="text/javascript" src="https://cdn.datatables.net/colreorder/1.7.0/js/dataTables.colReorder.min.js"></script>
+    
+    <!-- Custom DataTable Plugin -->
+    <script src="dataTable.js"></script>
+    
+    <!-- Navbar Component -->
+    <script src="./navbar.js"></script>
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: Arial, sans-serif;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        /* Ensure DataTable modal is above everything */
+        #warper-datatable-modal {
+            z-index: 99999 !important;
+        }
+        
+        /* Style for DataTable */
+        .dataTables_wrapper {
+            font-size: 14px;
+        }
+        
+        .dataTables_filter input {
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            padding: 6px 12px;
+            font-size: 14px;
+            width: 300px;
+        }
+        
+        .dataTables_filter label {
+            font-weight: bold;
+            margin-right: 10px;
+        }
+        
+        /* Action button styles */
+        .load-map-btn, .view-map-btn {
+            transition: all 0.2s;
+        }
+        
+        .load-map-btn:hover, .view-map-btn:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        }
+        
+        .control-mode {
+            background-color: #e5e7eb;
+            color: #374151;
+        }
+        
+        .control-mode:hover {
+            background-color: #d1d5db;
+        }
+        
+        .control-mode.active {
+            background-color: #2563eb !important;
+            color: white !important;
+        }
+        
+        .control-mode.active:hover {
+            background-color: #1d4ed8 !important;
+        }
+        
+        .output-section {
+            background: #f8f9fa;
+            padding: 15px;
+            border-top: 1px solid #ddd;
+            height: 200px;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .output-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+        
+        .csv-container {
+            flex: 1;
+            display: flex;
+            background: white;
+            border: 1px solid #ddd;
+            border-radius: 3px;
+        }
+        
+        .row-numbers {
+            width: 40px;
+            background: #f8f9fa;
+            border-right: 1px solid #ddd;
+            padding: 10px 5px;
+            font-family: monospace;
+            font-size: 12px;
+            line-height: 16px;
+            overflow: hidden;
+        }
+        
+        .row-number {
+            height: 16px;
+            cursor: pointer;
+            padding: 0 2px;
+            text-align: center;
+            border-radius: 2px;
+            margin-bottom: 1px;
+        }
+        
+        .row-number:hover {
+            background: #e9ecef;
+        }
+        
+        .row-number.delete-btn {
+            background: #dc3545;
+            color: white;
+            font-size: 10px;
+        }
+        
+        .row-number.delete-btn:hover {
+            background: #c82333;
+        }
+        
+        .output-textarea {
+            flex: 1;
+            font-family: monospace;
+            font-size: 12px;
+            border: none;
+            padding: 10px;
+            resize: none;
+            line-height: 16px;
+            outline: none;
+        }
+        
+
+        
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 10000;
+        }
+        
+        .modal-content {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: white;
+            padding: 20px;
+            border-radius: 5px;
+            width: 400px;
+        }
+        
+        .modal-header {
+            margin-bottom: 15px;
+            font-weight: bold;
+            border-bottom: 1px solid #eee;
+            padding-bottom: 10px;
+        }
+        
+
+        
+        /* Geocoder styling */
+        .mapboxgl-ctrl-geocoder {
+            min-width: 100% !important;
+            max-width: 100% !important;
+            width: 100% !important;
+        }
+    </style>
+</head>
+<body>
+    <!-- First row: Map load controls -->
+    <div class="bg-gray-100 p-4 border-b border-gray-300">
+        <div class="flex items-center gap-4">
+            <button class="px-4 py-2 bg-gray-600 text-white rounded hover:bg-gray-700" id="map-list-btn">Map List</button>
+            or
+            <input type="text" id="mapwarper-url" value="https://warper.wmflabs.org/maps/8933" 
+                   placeholder="Enter MapWarper URL (e.g., https://mapwarper.net/maps/12345 or https://warper.wmflabs.org/maps/8933)"
+                   class="flex-1 px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500">
+        </div>
+        
+        <!-- Helper text for mapwarper URL input -->
+        <div class="mt-2">
+            <p class="text-sm text-gray-600">Paste a map link from <a href="https://mapwarper.net" target="_blank" class="text-blue-600 hover:text-blue-800">https://mapwarper.net</a> or <a href="https://warper.wmflabs.org" target="_blank" class="text-blue-600 hover:text-blue-800">https://warper.wmflabs.org/</a></p>
+        </div>
+        
+        <!-- Map Metadata Display -->
+        <div id="map-metadata" class="hidden mt-3 p-4 bg-white border border-gray-200 rounded-lg shadow-sm">
+            <div class="flex items-start gap-4">
+                <div id="map-thumbnail" class="flex-shrink-0"></div>
+                <div class="flex-1 min-w-0">
+                    <h3 id="map-title" class="text-lg font-semibold text-gray-900 mb-2"></h3>
+                    <p id="map-description" class="text-sm text-gray-600 mb-3"></p>
+                    <div class="flex flex-wrap gap-4 text-xs text-gray-500">
+                        <span id="map-status" class="px-2 py-1 bg-gray-100 rounded"></span>
+                        <span id="map-dimensions"></span>
+                        <span id="map-updated"></span>
+                    </div>
+                    <div class="mt-3 flex gap-2">
+                        <a id="map-source-link" href="#" target="_blank" class="text-blue-600 hover:text-blue-800 text-sm">View Source</a>
+                        <span class="text-gray-400">•</span>
+                        <a id="mapwarper-link" href="#" target="_blank" class="text-blue-600 hover:text-blue-800 text-sm">Open in MapWarper</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Second row: Maps and Controls -->
+    <div class="flex h-[calc(100vh-140px)]">
+        <!-- Source Map - 40% -->
+        <div class="w-2/5 relative border-r-2 border-gray-300">
+            <div class="absolute top-2 left-2 bg-white/90 px-3 py-1 rounded text-sm font-semibold z-10">
+                Source Map (WMS)
+            </div>
+            <div id="source-map" class="w-full h-full"></div>
+        </div>
+        
+        <!-- Reference Map - 40% -->
+        <div class="w-2/5 relative border-r-2 border-gray-300">
+            <div class="absolute top-2 left-2 bg-white/90 px-3 py-1 rounded text-sm font-semibold z-10">
+                Reference Map (Mapbox)
+            </div>
+            <div id="reference-map" class="w-full h-full"></div>
+        </div>
+        
+        <!-- Controls Panel - 20% -->
+        <div class="w-1/5 bg-gray-50 p-4 overflow-y-auto">
+            <div class="space-y-6">
+                <!-- Geocoder -->
+                <div>
+                    <div id="geocoder"></div>
+                </div>
+                
+                <!-- Map Control Modes -->
+                <div>
+                    <h3 class="text-sm font-semibold mb-3 text-gray-700">Control Mode</h3>
+                    <div class="space-y-2">
+                        <div class="control-mode px-3 py-2 rounded cursor-pointer transition-colors text-sm" data-mode="add" data-key="1">
+                            1 - Add Control Point
+                        </div>
+                        <div class="control-mode px-3 py-2 rounded cursor-pointer transition-colors text-sm" data-mode="move" data-key="2">
+                            2 - Move Control Point
+                        </div>
+                        <div class="control-mode active px-3 py-2 rounded cursor-pointer transition-colors text-sm" data-mode="pan" data-key="3">
+                            3 - Pan Map
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Overlay Layers -->
+                <div>
+                    <h3 class="text-sm font-semibold mb-3 text-gray-700">Overlay Layers</h3>
+                    <button class="w-full mb-3 px-3 py-2 bg-gray-600 text-white rounded hover:bg-gray-700 text-sm" onclick="showAddLayerModal()">Add Layer</button>
+                    <div class="space-y-2">
+                        <label class="flex items-center text-xs text-gray-600">
+                            <input type="checkbox" id="local-body-toggle" checked onchange="toggleLocalBodyLayer()" class="mr-2">
+                            Local Body Boundaries (Goa)
+                        </label>
+                        <label class="flex items-center text-xs text-gray-600">
+                            <input type="checkbox" id="village-toggle" onchange="toggleVillageLayer()" class="mr-2">
+                            Village Boundaries
+                        </label>
+                        <label class="flex items-center text-xs text-gray-600">
+                            <input type="checkbox" id="cadastral-toggle" checked onchange="toggleCadastralLayer()" class="mr-2">
+                            Cadastral Plot Boundaries
+                        </label>
+                        <label class="flex items-center text-xs text-gray-600">
+                            <input type="checkbox" id="warped-map-toggle" checked onchange="toggleWarpedMap()" class="mr-2">
+                            Warped Map
+                        </label>
+                    </div>
+                </div>
+                
+                <!-- Instructions -->
+                <div class="space-y-3">
+                    <p class="text-xs text-gray-600 leading-relaxed">
+                        Add at least 3 matching pairs of control points that are spaced as far apart from each other for best results.
+                    </p>
+                    <p class="text-xs text-gray-600 leading-relaxed">
+                        Use keyboard shortcuts 1, 2, 3 to change the control mode.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="output-section">
+        <div class="output-header">
+            <h3>Control Points (CSV Format)</h3>
+            <div>
+                <button class="btn secondary" onclick="clearControlPoints()">Clear All</button>
+                <button class="btn" onclick="saveCSV()">Save CSV</button>
+            </div>
+        </div>
+        <div class="csv-container">
+            <div class="row-numbers" id="row-numbers">
+                <div class="row-number" style="font-weight: bold;">#</div>
+            </div>
+            <textarea class="output-textarea" id="csv-output" placeholder="x,y,lon,lat">x,y,lon,lat</textarea>
+        </div>
+    </div>
+    
+    <!-- Add Layer Modal -->
+    <div id="add-layer-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">Add Vector Layer</div>
+            <div class="input-group">
+                <label>URL:</label>
+                <input type="text" id="layer-url" value="https://indianopenmaps.fly.dev/not-so-open/cadastrals/goa/onemapgoagis/{z}/{x}/{y}.pbf" style="width: 100%;">
+            </div>
+            <div class="input-group">
+                <label>Source Layer:</label>
+                <input type="text" id="source-layer" value="Onemapgoa_GA_Cadastrals" style="width: 100%;">
+            </div>
+            <div class="input-group">
+                <label>Max Zoom:</label>
+                <input type="number" id="max-zoom" value="15" style="width: 100%;">
+            </div>
+            <div style="text-align: right; margin-top: 20px;">
+                <button class="btn secondary" onclick="hideAddLayerModal()">Cancel</button>
+                <button class="btn" onclick="addVectorLayer()">Add Layer to Map</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Set Center Modal -->
+    <div id="center-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">Set Map Center</div>
+            <div class="input-group">
+                <label>Longitude:</label>
+                <input type="number" id="center-lng" step="0.000001" placeholder="e.g., 74.0" style="width: 100%;">
+            </div>
+            <div class="input-group">
+                <label>Latitude:</label>
+                <input type="number" id="center-lat" step="0.000001" placeholder="e.g., 15.3" style="width: 100%;">
+            </div>
+            <div class="input-group">
+                <label>Zoom Level:</label>
+                <input type="number" id="center-zoom" min="1" max="20" value="12" style="width: 100%;">
+            </div>
+            <div style="text-align: right; margin-top: 20px;">
+                <button class="btn secondary" onclick="hideCenterModal()">Cancel</button>
+                <button class="btn" onclick="setCenterFromModal()">Set Center</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Configuration
+        const MAPBOX_TOKEN = 'pk.eyJ1IjoicGxhbmVtYWQiLCJhIjoiY2x2MzZwbGRyMGdheDJtbXVwdDA4aDNyaCJ9.nbvz6aNGQo68xa4NtWH26A';
+        mapboxgl.accessToken = MAPBOX_TOKEN;
+        
+        // Global variables
+        let sourceMap, referenceMap;
+        let currentMode = 'pan';
+        let controlPoints = [];
+        let selectedPointIndex = -1;
+        let focusedMap = null;
+        let nextPointId = 1;
+        let sourceMarkers = new Map();
+        let referenceMarkers = new Map();
+        let deletedRowNumbers = new Set();
+        
+        // Camera position save/restore for marker selection
+        let savedCameraPositions = {
+            sourceMap: null,
+            referenceMap: null
+        };
+        
+        // Undo functionality for marker positions
+        let markerPositionHistory = [];
+        
+        // Initialize maps
+        function initializeMaps() {
+            // Initialize source map (for WMS overlay)
+            sourceMap = new mapboxgl.Map({
+                container: 'source-map',
+                style: 'mapbox://styles/mapbox/light-v11',
+                center: [74.0, 15.3],
+                zoom: 10,
+                transformRequest: (url, resourceType) => {
+                    // Debug all mapwarper requests
+                    if (url.includes('/maps/') || url.includes('/api/v1/maps/')) {                        
+                        // Check for unsubstituted placeholders
+                        if (url.includes('{bbox-epsg-4326}') || url.includes('{bbox}') || url.includes('{z}') || url.includes('{x}') || url.includes('{y}')) {
+                            console.warn('❌ Unsubstituted placeholders found:', url);
+                        }
+                        
+                        // Return the URL with appropriate headers
+                        return { 
+                            url: url,
+                            headers: {
+                                'Accept': url.includes('/wms/') ? 'image/png,image/*;q=0.8,*/*;q=0.5' : 'image/*'
+                            }
+                        };
+                    }
+                    return { url: url };
+                }
+            });
+            
+            // Initialize reference map
+            referenceMap = new mapboxgl.Map({
+                container: 'reference-map',
+                style: 'mapbox://styles/mapbox/satellite-v9',
+                center: [74.0, 15.3],
+                zoom: 10,
+                hash: true
+            });
+            
+            // Add geocoder to reference map
+            const geocoder = new MapboxGeocoder({
+                accessToken: mapboxgl.accessToken,
+                mapboxgl: mapboxgl,
+                marker: false
+            });
+            
+            document.getElementById('geocoder').appendChild(geocoder.onAdd(referenceMap));
+            
+            // Add village, cadastral and local body layers to reference map when it loads
+            referenceMap.on('load', () => {
+                // Add village source
+                referenceMap.addSource('village-source', {
+                    type: 'vector',
+                    tiles: ['https://indianopenmaps.fly.dev/not-so-open/villages/lgd/{z}/{x}/{y}.pbf'],
+                    maxzoom: 10
+                });
+                
+                // Add village fill layer
+                referenceMap.addLayer({
+                    id: 'village-fill',
+                    type: 'fill',
+                    source: 'village-source',
+                    'source-layer': 'LGD_Villages',
+                    layout: {
+                        'visibility': 'none'
+                    },
+                    paint: {
+                        'fill-color': [
+                            'interpolate',
+                            ['linear'],
+                            ['zoom'],
+                            8, 'rgba(0, 0, 0, 0)',
+                            12, 'rgba(0, 0, 0, 0.1)'
+                        ]
+                    }
+                });
+                
+                // Add village boundary lines
+                referenceMap.addLayer({
+                    id: 'village-lines',
+                    type: 'line',
+                    source: 'village-source',
+                    'source-layer': 'LGD_Villages',
+                    layout: {
+                        'visibility': 'none'
+                    },
+                    paint: {
+                        'line-color': 'white',
+                        'line-width': [
+                            'interpolate',
+                            ['linear'],
+                            ['zoom'],
+                            8, 1,
+                            12, 2
+                        ]
+                    }
+                });
+                
+                // Add village labels
+                referenceMap.addLayer({
+                    id: 'village-labels',
+                    type: 'symbol',
+                    source: 'village-source',
+                    'source-layer': 'LGD_Villages',
+                    layout: {
+                        'visibility': 'none',
+                        'text-field': ['get', 'vilnam_soi'],
+                        'text-font': ['Open Sans SemiBold'],
+                        'text-size': 13
+                    },
+                    paint: {
+                        'text-color': 'white',
+                        'text-halo-color': 'black',
+                        'text-halo-width': 5
+                    }
+                });
+                
+                // Add cadastral source
+                referenceMap.addSource('cadastral-source', {
+                    type: 'vector',
+                    tiles: ['https://indianopenmaps.fly.dev/not-so-open/cadastrals/goa/onemapgoagis/{z}/{x}/{y}.pbf'],
+                    maxzoom: 15
+                });
+                
+                // Add cadastral layer
+                referenceMap.addLayer({
+                    id: 'cadastral-layer',
+                    type: 'line',
+                    source: 'cadastral-source',
+                    'source-layer': 'Onemapgoa_GA_Cadastrals',
+                    paint: {
+                        'line-color': 'black',
+                        'line-width': 1,
+                        'line-opacity': 0.7
+                    }
+                });
+                
+                // Add cadastral labels
+                referenceMap.addLayer({
+                    id: 'cadastral-labels',
+                    type: 'symbol',
+                    source: 'cadastral-source',
+                    'source-layer': 'Onemapgoa_GA_Cadastrals',
+                    layout: {
+                        'text-field': ['step', ['zoom'], '', 16, ['to-string', ['get', 'plot']]],
+                        'text-font': ['Open Sans SemiBold'],
+                        'text-size': 10,
+                        'text-padding': 10
+                    },
+                    paint: {
+                        'text-color': '#333',
+                        'text-halo-color': '#fff',
+                        'text-halo-width': 1
+                    }
+                });
+                
+                // Add local body source
+                referenceMap.addSource('local-body-source', {
+                    type: 'vector',
+                    url: 'mapbox://planemad.2bqa1pq1',
+                    maxzoom: 10
+                });
+                
+                // Add local body boundary lines
+                referenceMap.addLayer({
+                    id: 'local-body-lines',
+                    type: 'line',
+                    source: 'local-body-source',
+                    'source-layer': 'goa-local-body-boundaries',
+                    paint: {
+                        'line-color': 'white',
+                        'line-width': [
+                            'interpolate',
+                            ['linear'],
+                            ['zoom'],
+                            8, 2,
+                            12, 3
+                        ]
+                    }
+                });
+                
+                // Add local body labels
+                referenceMap.addLayer({
+                    id: 'local-body-labels',
+                    type: 'symbol',
+                    source: 'local-body-source',
+                    'source-layer': 'goa-local-body-boundaries',
+                    layout: {
+                        'text-field': ['step', ['zoom'], '', 9, ['to-string', ['get', 'Name']]],
+                        'text-font': ['Open Sans SemiBold'],
+                        'text-size': 12,
+                        'text-transform': 'uppercase'
+                    },
+                    paint: {
+                        'text-color': 'white',
+                        'text-halo-color': 'black',
+                        'text-halo-width': 1,
+                        'text-opacity': 0.7
+                    }
+                });
+            });
+            
+            // Set up event listeners for both maps
+            setupMapEventListeners(sourceMap, 'source');
+            setupMapEventListeners(referenceMap, 'reference');
+            
+            // Load default map
+            loadMapWarperMap();
+            
+            // Initialize row numbers display
+            updateRowNumbers();
+            
+            // Set up URL input auto-loading
+            setupURLInputHandlers();
+        }
+        
+        function setupURLInputHandlers() {
+            const urlInput = document.getElementById('mapwarper-url');
+            
+            // Auto-load on paste
+            urlInput.addEventListener('paste', (e) => {
+                setTimeout(() => {
+                    const url = urlInput.value.trim();
+                    if (url && extractMapId(url)) {
+                        loadMapWarperMap();
+                    }
+                }, 100); // Small delay to let paste complete
+            });
+            
+            // Auto-load on input change (when URL is typed or modified)
+            let inputTimeout;
+            urlInput.addEventListener('input', (e) => {
+                clearTimeout(inputTimeout);
+                inputTimeout = setTimeout(() => {
+                    const url = urlInput.value.trim();
+                    if (url && extractMapId(url)) {
+                        loadMapWarperMap();
+                    }
+                }, 1000); // 1 second delay to avoid too many requests while typing
+            });
+        }
+        
+        function convertUrlsToLinks(text) {
+            if (!text) return text;
+            
+            // Escape HTML to prevent XSS attacks
+            const escapeHtml = (unsafe) => {
+                return unsafe
+                    .replace(/&/g, "&amp;")
+                    .replace(/</g, "&lt;")
+                    .replace(/>/g, "&gt;")
+                    .replace(/"/g, "&quot;")
+                    .replace(/'/g, "&#039;");
+            };
+            
+            // Escape the text first
+            const escapedText = escapeHtml(text);
+            
+            // Regular expression to match URLs (http and https)
+            const urlRegex = /(https?:\/\/[^\s<>"']+)/gi;
+            
+            // Replace URLs with clickable links
+            return escapedText.replace(urlRegex, (url) => {
+                // Clean up common punctuation at the end of URLs
+                const cleanedUrl = url.replace(/[.,;:!?)]+$/, '');
+                const punctuation = url.substring(cleanedUrl.length);
+                
+                return `<a href="${cleanedUrl}" target="_blank" rel="noopener noreferrer" class="text-blue-600 hover:text-blue-800 underline">${cleanedUrl}</a>${punctuation}`;
+            });
+        }
+        
+        function displayMapMetadata(mapData, mapId, baseUrl) {
+            const metadata = mapData.data.attributes;
+            const metadataDiv = document.getElementById('map-metadata');
+            
+            // Populate metadata fields
+            document.getElementById('map-title').textContent = metadata.title || 'Untitled Map';
+            
+            // Convert URLs in description to clickable links
+            const description = metadata.description || 'No description available';
+            document.getElementById('map-description').innerHTML = convertUrlsToLinks(description);
+            
+            // Status with appropriate styling
+            const statusElement = document.getElementById('map-status');
+            statusElement.textContent = metadata.status.toUpperCase();
+            statusElement.className = `px-2 py-1 rounded text-xs ${
+                metadata.status === 'warped' ? 'bg-green-100 text-green-800' :
+                metadata.status === 'available' ? 'bg-blue-100 text-blue-800' :
+                metadata.status === 'warping' ? 'bg-yellow-100 text-yellow-800' :
+                'bg-gray-100 text-gray-800'
+            }`;
+            
+            // Dimensions
+            document.getElementById('map-dimensions').textContent = 
+                metadata.width && metadata.height ? `${metadata.width} × ${metadata.height}px` : '';
+            
+            // Last updated
+            const updatedDate = new Date(metadata.updated_at);
+            document.getElementById('map-updated').textContent = 
+                `Updated: ${updatedDate.toLocaleDateString()}`;
+            
+            // Thumbnail
+            const thumbnailDiv = document.getElementById('map-thumbnail');
+            if (metadata.thumb_url) {
+                thumbnailDiv.innerHTML = `<img src="${metadata.thumb_url}" alt="Map thumbnail" class="w-16 h-16 object-cover rounded border">`;
+            } else {
+                thumbnailDiv.innerHTML = '';
+            }
+            
+            // Links
+            if (metadata.source_uri) {
+                const sourceLink = document.getElementById('map-source-link');
+                sourceLink.href = metadata.source_uri;
+                sourceLink.style.display = 'inline';
+            } else {
+                document.getElementById('map-source-link').style.display = 'none';
+            }
+            
+            const mapwarperLink = document.getElementById('mapwarper-link');
+            mapwarperLink.href = `${baseUrl}/maps/${mapId}`;
+            
+            // Show the metadata div
+            metadataDiv.classList.remove('hidden');
+        }
+        
+        function hideMapMetadata() {
+            document.getElementById('map-metadata').classList.add('hidden');
+        }
+        
+        function fitMapToControlPoints() {
+            if (controlPoints.length === 0) {
+                return;
+            }
+            
+            let bounds = new mapboxgl.LngLatBounds();
+            let hasValidPoints = false;
+            
+            controlPoints.forEach(point => {
+                // Add reference coordinates to bounds
+                if (point.referenceCoords) {
+                    bounds.extend(point.referenceCoords);
+                    hasValidPoints = true;
+                }
+                
+                // Add source coordinates to bounds if they exist
+                if (point.sourceCoords) {
+                    bounds.extend(point.sourceCoords);
+                    hasValidPoints = true;
+                }
+            });
+            
+            if (hasValidPoints) {
+                const padding = 50; // 50px padding
+                const options = {
+                    padding: padding,
+                    maxZoom: 13 // Don't zoom in too much
+                };
+                
+                // Fit both maps to the same bounds
+                sourceMap.fitBounds(bounds, options);
+                referenceMap.fitBounds(bounds, options);
+                
+                console.log(`Fitted maps to bounds of ${controlPoints.length} control points`);
+            }
+        }
+        
+        function setupMapEventListeners(map, mapType) {
+            // Map focus tracking
+            map.getContainer().addEventListener('mouseenter', () => {
+                focusedMap = mapType;
+            });
+            
+            // Double click handler
+            map.on('dblclick', (e) => {
+                e.preventDefault();
+                addControlPoint(e, mapType);
+            });
+            
+            // Single click handler for move mode
+            map.on('click', (e) => {
+                // Only handle map clicks, not marker clicks
+                if (e.originalEvent && e.originalEvent.target && 
+                    (e.originalEvent.target.closest('.mapboxgl-marker') || 
+                     e.originalEvent.target.classList.contains('mapboxgl-marker'))) {
+                    return; // Ignore clicks on markers
+                }
+                
+                if (currentMode === 'move' && selectedPointIndex >= 0) {
+                    // If we have an active marker, move it to the clicked location
+                    moveControlPoint(e, mapType, selectedPointIndex);
+                } else if (currentMode === 'move') {
+                    // If no active marker, try to select one near the click
+                    selectControlPoint(e, mapType);
+                }
+            });
+            
+            // Disable default double-click zoom
+            map.doubleClickZoom.disable();
+        }
+        
+        async function loadMapWarperMap() {
+            const url = document.getElementById('mapwarper-url').value;
+            const urlData = parseMapwarperUrl(url);
+            
+            if (!urlData) {
+                // Only show alert if user explicitly clicked the load button
+                // Don't show alert for auto-loading attempts
+                const wasTriggeredByUser = event && event.type === 'click';
+                if (wasTriggeredByUser) {
+                    alert('Invalid MapWarper URL. Please use format: https://[mapwarper-server]/maps/[ID]');
+                }
+                hideMapMetadata();
+                return;
+            }
+            
+            const { baseUrl, mapId } = urlData;
+            
+            // Fetch and display map metadata
+            try {
+                const response = await fetch(`${baseUrl}/api/v1/maps/${mapId}.json`);
+                if (response.ok) {
+                    const mapData = await response.json();
+                    displayMapMetadata(mapData, mapId, baseUrl);
+                } else {
+                    console.warn('Failed to fetch map metadata:', response.status);
+                    hideMapMetadata();
+                }
+            } catch (error) {
+                console.warn('Error fetching map metadata:', error);
+                hideMapMetadata();
+            }
+            
+            // Remove existing layers if any
+            if (sourceMap.getLayer('wms-layer')) {
+                sourceMap.removeLayer('wms-layer');
+                sourceMap.removeSource('wms-source');
+            }
+            if (referenceMap.getLayer('warped-layer')) {
+                referenceMap.removeLayer('warped-layer');
+                referenceMap.removeSource('warped-source');
+            }
+            
+            // Load unwarped map via WMS to source map
+            loadUnwarpedMap(mapId, baseUrl);
+            
+            // Add warped map to reference map
+            referenceMap.addSource('warped-source', {
+                type: 'raster',
+                tiles: [
+                    `${baseUrl}/maps/tile/${mapId}/{z}/{x}/{y}`
+                ],
+                tileSize: 256
+            });
+            
+            // Add warped layer before overlay layers so overlays remain visible on top
+            // Insert before the first overlay layer (village-fill) if it exists, otherwise add normally
+            const beforeLayerId = referenceMap.getLayer('village-fill') ? 'village-fill' : undefined;
+            
+            referenceMap.addLayer({
+                id: 'warped-layer',
+                type: 'raster',
+                source: 'warped-source',
+                paint: {
+                    'raster-opacity': 0.5
+                }
+            }, beforeLayerId);
+            
+            // Center maps based on map ID or use defaults
+            const center = getMapCenter(mapId);
+            sourceMap.setCenter(center.coords);
+            referenceMap.setCenter(center.coords);
+            sourceMap.setZoom(center.zoom);
+            referenceMap.setZoom(center.zoom);
+            
+            // Wait a moment for maps to settle before loading control points
+            setTimeout(() => {
+                clearControlPoints();
+                fetchExistingControlPoints(mapId, baseUrl);
+            }, 1000);
+            
+            // Enable warped map toggle
+            document.getElementById('warped-map-toggle').checked = true;
+        }
+        
+        function extractMapId(url) {
+            const match = url.match(/\/maps\/(\d+)/);
+            return match ? match[1] : null;
+        }
+        
+        // New function to parse mapwarper URLs from different servers
+        function parseMapwarperUrl(url) {
+            // Support different mapwarper servers
+            const mapwarperPattern = /^(https?:\/\/[^\/]+)\/maps\/(\d+)/;
+            const match = url.match(mapwarperPattern);
+            
+            if (match) {
+                return {
+                    baseUrl: match[1],
+                    mapId: match[2]
+                };
+            }
+            return null;
+        }
+        
+        function getMapCenter(mapId) {
+            // Known map centers - add more as needed
+            const mapCenters = {
+                '94232': { coords: [74.02, 15.32], zoom: 13 }, // Shiroda RDP
+                '95531': { coords: [73.8, 15.6], zoom: 14 },   // Siolim Sodiem Landuse
+                // Add more known maps here
+            };
+            
+            // Return specific center if known, otherwise default to Goa
+            return mapCenters[mapId] || { 
+                coords: [74.0, 15.3], // Central Goa
+                zoom: 12 
+            };
+        }
+        
+        async function fetchExistingControlPoints(mapId, baseUrl) {
+            try {
+                console.log(`Fetching existing control points for map ${mapId}...`);
+                
+                // Show loading indicator
+                const csvOutput = document.getElementById('csv-output');
+                const originalPlaceholder = csvOutput.placeholder;
+                csvOutput.placeholder = 'Loading existing control points...';
+                
+                const response = await fetch(`${baseUrl}/api/v1/maps/${mapId}/gcps`);
+                
+                if (!response.ok) {
+                    console.warn(`No existing control points found for map ${mapId}. Status: ${response.status}`);
+                    csvOutput.placeholder = originalPlaceholder;
+                    return;
+                }
+                
+                const data = await response.json();
+                
+                if (data.data && data.data.length > 0) {
+                    console.log(`Found ${data.data.length} existing control points`);
+                    
+                    // Wait for the warped layer to be loaded before converting coordinates
+                    await convertMapWarperGCPs(data.data, mapId);
+                    
+                    // Update the UI
+                    updateMarkers();
+                    updateCSVFromPoints();
+                    updateRowNumbers();
+                    
+                    console.log(`Successfully loaded ${controlPoints.length} control points`);
+                    
+                    // Auto-fit map to include all control points
+                    fitMapToControlPoints();
+                } else {
+                    console.log('No control points found in the response');
+                }
+                
+                // Restore original placeholder
+                csvOutput.placeholder = originalPlaceholder;
+            } catch (error) {
+                console.error('Error fetching control points:', error);
+                
+                // Only show alert for network errors or other serious issues
+                if (error.message && !error.message.includes('404')) {
+                    alert(`Error loading control points: ${error.message}`);
+                }
+                
+                // Restore original placeholder on error
+                const csvOutput = document.getElementById('csv-output');
+                csvOutput.placeholder = 'x,y,lon,lat';
+            }
+        }
+        
+        let isLoadingUnwarpedMap = false;
+        
+        async function loadUnwarpedMap(mapId, baseUrl) {
+            if (isLoadingUnwarpedMap) {
+                console.log('loadUnwarpedMap already in progress, skipping...');
+                return;
+            }
+            
+            isLoadingUnwarpedMap = true;
+            try {
+                console.log(`Loading unwarped map for ${mapId}...`);
+                
+                // Remove existing layers if any
+                if (sourceMap.getLayer('wms-layer')) {
+                    sourceMap.removeLayer('wms-layer');
+                    sourceMap.removeSource('wms-source');
+                }
+                if (sourceMap.getLayer('image-layer')) {
+                    sourceMap.removeLayer('image-layer');
+                    sourceMap.removeSource('image-source');
+                }
+                
+                // Set a minimal style that loads quickly, but avoid conflicts if already loading
+                if (!sourceMap.isStyleLoaded()) {
+                    console.log('Waiting for current style to finish loading...');
+                    await new Promise(resolve => {
+                        const checkCurrent = () => {
+                            if (sourceMap.isStyleLoaded()) {
+                                resolve();
+                            } else {
+                                setTimeout(checkCurrent, 100);
+                            }
+                        };
+                        checkCurrent();
+                    });
+                }
+                
+                console.log('Setting minimal style for source map...');
+                sourceMap.setStyle({
+                    version: 8,
+                    sources: {},
+                    layers: []
+                });
+                
+                // Wait for new style to load completely before adding sources
+                console.log('Waiting for minimal style to load...');
+                await new Promise(resolve => {
+                    const checkStyle = () => {
+                        if (sourceMap.isStyleLoaded()) {
+                            console.log('Style loaded, ready to add WMS source');
+                            resolve();
+                        } else {
+                            setTimeout(checkStyle, 100);
+                        }
+                    };
+                    checkStyle();
+                });
+                
+                // Attempt to load WMS tiles directly (let them fail naturally if needed)
+                console.log('Attempting to load WMS tiles for unwarped map...');
+                
+                try {
+                    // Since bbox substitution isn't working properly, let's try using TMS-style tiles instead
+                    // MapWarper often supports TMS endpoints alongside WMS
+                    const tileTemplates = [
+                        // Try TMS tiles first (similar to how warped tiles work)
+                        `${baseUrl}/maps/tile/${mapId}/{z}/{x}/{y}?unwarped=true`,
+                        // Fallback to WMS with different bbox format
+                        `${baseUrl}/maps/wms/${mapId}?FORMAT=image%2Fpng&STATUS=unwarped&SERVICE=WMS&VERSION=1.1.1&REQUEST=GetMap&STYLES=&EXCEPTIONS=application%2Fvnd.ogc.se_inimage&SRS=EPSG%3A4326&BBOX={bbox-epsg-4326}&WIDTH=256&HEIGHT=256`
+                    ];
+                    
+                    console.log('Trying TMS-style tiles first:', tileTemplates[0]);
+                    
+                    sourceMap.addSource('wms-source', {
+                        type: 'raster',
+                        tiles: [tileTemplates[0]],
+                        tileSize: 256,
+                        scheme: 'xyz',
+                        attribution: 'MapWarper'
+                    });
+                    
+                    sourceMap.addLayer({
+                        id: 'wms-layer',
+                        type: 'raster',
+                        source: 'wms-source',
+                        paint: {}
+                    });
+                    
+                    console.log('WMS source and layer added. Checking for tile loading...');
+                    
+                    // Set up error handling for tile failures with multiple fallbacks
+                    let tileFailureDetected = false;
+                    let fallbackAttempted = false;
+                    
+                    const tileErrorHandler = (e) => {
+                        if (e.source && e.source.id === 'wms-source' && !tileFailureDetected) {
+                            tileFailureDetected = true;
+                            console.warn('Tile loading failed:', e);
+                            
+                            if (!fallbackAttempted) {
+                                fallbackAttempted = true;
+                                console.log('Attempting fallback to WMS service...');
+                                
+                                // Try the WMS fallback
+                                sourceMap.removeLayer('wms-layer');
+                                sourceMap.removeSource('wms-source');
+                                
+                                // Add WMS source as fallback
+                                sourceMap.addSource('wms-fallback-source', {
+                                    type: 'raster',
+                                    tiles: [tileTemplates[1]], // Use the WMS template
+                                    tileSize: 256,
+                                    scheme: 'xyz'
+                                });
+                                
+                                sourceMap.addLayer({
+                                    id: 'wms-fallback-layer',
+                                    type: 'raster',
+                                    source: 'wms-fallback-source',
+                                    paint: {}
+                                });
+                                
+                                console.log('WMS fallback added');
+                                
+                                // Set up error handling for WMS fallback
+                                const wmsFallbackHandler = (e2) => {
+                                    if (e2.source && e2.source.id === 'wms-fallback-source') {
+                                        console.warn('WMS fallback also failed. Switching to direct image.');
+                                        // Remove WMS fallback
+                                        if (sourceMap.getLayer('wms-fallback-layer')) {
+                                            sourceMap.removeLayer('wms-fallback-layer');
+                                            sourceMap.removeSource('wms-fallback-source');
+                                        }
+                                        // Load image directly as final fallback
+                                        loadMapImageDirectly(mapId, baseUrl);
+                                        sourceMap.off('error', wmsFallbackHandler);
+                                    }
+                                };
+                                sourceMap.on('error', wmsFallbackHandler);
+                                
+                            } else {
+                                console.warn('All tile methods failed. Switching to direct image fallback.');
+                                // Load image directly as final fallback
+                                loadMapImageDirectly(mapId, baseUrl);
+                            }
+                            
+                            // Remove the error listener
+                            sourceMap.off('error', tileErrorHandler);
+                        }
+                    };
+                    
+                    sourceMap.on('error', tileErrorHandler);
+                    
+                    // Also set a timeout to fall back if no tiles load within reasonable time
+                    setTimeout(() => {
+                        if (!tileFailureDetected && sourceMap.getLayer('wms-layer')) {
+                            console.log('WMS timeout reached, checking if tiles loaded successfully...');
+                            // If we reach here and no errors occurred, WMS might be working
+                            // Let's keep it, but if there are still issues, user will see the network errors
+                        }
+                    }, 5000);
+                    
+                } catch (wmsError) {
+                    console.error('Error setting up WMS source:', wmsError);
+                    await loadMapImageDirectly(mapId, baseUrl);
+                }
+                
+                console.log(`Successfully loaded unwarped map ${mapId}`);
+                
+            } catch (error) {
+                console.error('Error loading unwarped map:', error);
+                // Fallback: try to load map image directly
+                await loadMapImageDirectly(mapId);
+            } finally {
+                isLoadingUnwarpedMap = false;
+            }
+        }
+        
+        async function loadMapImageDirectly(mapId, baseUrl) {
+            try {
+                console.log(`Attempting to load map ${mapId} using direct image...`);
+                
+                // Try to get map metadata to find the original image
+                const response = await fetch(`${baseUrl}/api/v1/maps/${mapId}.json`);
+                if (response.ok) {
+                    const mapData = await response.json();
+                    const imageUrl = mapData.data.attributes.image_url;
+                    
+                    if (imageUrl) {
+                        console.log(`Loading direct image: ${imageUrl}`);
+                        console.log(`Map data:`, mapData.data.attributes);
+                        
+                        // Set a minimal style first
+                        sourceMap.setStyle({
+                            version: 8,
+                            sources: {},
+                            layers: []
+                        });
+                        
+                        // Wait for style to load
+                        await new Promise(resolve => {
+                            const checkStyle = () => {
+                                if (sourceMap.isStyleLoaded()) {
+                                    resolve();
+                                } else {
+                                    setTimeout(checkStyle, 50);
+                                }
+                            };
+                            checkStyle();
+                        });
+                        
+                        // Try to get the map bounds from the API
+                        let imageCoords = [
+                            [74.0, 15.35],   // top-left
+                            [74.06, 15.35],  // top-right  
+                            [74.06, 15.31],  // bottom-right
+                            [74.0, 15.31]    // bottom-left
+                        ];
+                        
+                        // If bbox is available, use it for better positioning
+                        const bbox = mapData.data.attributes.bbox;
+                        if (bbox) {
+                            const bounds = bbox.split(',').map(parseFloat);
+                            if (bounds.length === 4) {
+                                // bbox format: "minLng,minLat,maxLng,maxLat"
+                                imageCoords = [
+                                    [bounds[0], bounds[3]], // top-left: minLng, maxLat
+                                    [bounds[2], bounds[3]], // top-right: maxLng, maxLat
+                                    [bounds[2], bounds[1]], // bottom-right: maxLng, minLat  
+                                    [bounds[0], bounds[1]]  // bottom-left: minLng, minLat
+                                ];
+                                console.log(`Using bbox coordinates: ${bbox}`);
+                            }
+                        }
+                        
+                        // Add the image as an overlay
+                        console.log('Image coordinates being used:', imageCoords);
+                        try {
+                            sourceMap.addSource('image-source', {
+                                type: 'image',
+                                url: imageUrl,
+                                coordinates: imageCoords
+                            });
+                            
+                            sourceMap.addLayer({
+                                id: 'image-layer',
+                                type: 'raster',
+                                source: 'image-source',
+                                paint: {}
+                            });
+                            
+                            console.log('Image layer added to source map');
+                            console.log('Successfully loaded unwarped map using direct image');
+                            
+                            // Listen for source errors (e.g., CORS issues)
+                            sourceMap.on('error', (e) => {
+                                if (e.source && e.source.id === 'image-source') {
+                                    console.warn('Image loading failed, likely due to CORS. Using basemap fallback.');
+                                    // Remove the failed image layer and use basemap
+                                    if (sourceMap.getLayer('image-layer')) {
+                                        sourceMap.removeLayer('image-layer');
+                                        sourceMap.removeSource('image-source');
+                                    }
+                                    sourceMap.setStyle('mapbox://styles/mapbox/light-v11');
+                                }
+                            });
+                            
+                        } catch (imageError) {
+                            console.warn('Could not add image source:', imageError);
+                            sourceMap.setStyle('mapbox://styles/mapbox/light-v11');
+                        }
+                    } else {
+                        console.warn('No image URL found in map data');
+                        // Fallback to basic basemap
+                        sourceMap.setStyle('mapbox://styles/mapbox/light-v11');
+                    }
+                } else {
+                    console.warn('Could not fetch map metadata for fallback');
+                    // Just use a basic basemap
+                    sourceMap.setStyle('mapbox://styles/mapbox/light-v11');
+                }
+            } catch (error) {
+                console.error('Error in fallback image loading:', error);
+                // Final fallback: just use a basic basemap
+                sourceMap.setStyle('mapbox://styles/mapbox/light-v11');
+            }
+        }
+
+        async function convertMapWarperGCPs(gcpData, mapId) {
+            // For each GCP from MapWarper, preserve the original pixel coordinates
+            gcpData.forEach((gcp) => {
+                const attrs = gcp.attributes;
+                
+                // The reference coordinates are straightforward - they're already geographic
+                const referenceCoords = [parseFloat(attrs.lon), parseFloat(attrs.lat)];
+                
+                // IMPORTANT: Preserve the original pixel coordinates from MapWarper
+                // These are in the original image pixel space, not screen coordinates
+                const sourcePixelCoords = [parseFloat(attrs.x), parseFloat(attrs.y)];
+                
+                // Create control point with preserved pixel coordinates
+                const point = {
+                    id: nextPointId,
+                    rowNumber: getNextRowNumber(),
+                    sourcePixelCoords: sourcePixelCoords, // Store original pixel coordinates
+                    referenceCoords: referenceCoords
+                };
+                
+                controlPoints.push(point);
+                nextPointId++;
+            });
+            
+            console.log(`Successfully converted and loaded ${controlPoints.length} control points with original pixel coordinates preserved`);
+        }
+
+        
+        function addControlPoint(e, mapType) {
+            // Find existing incomplete point or create new one
+            let pointIndex = controlPoints.findIndex(p => 
+                (mapType === 'source' && !p.sourceCoords) || 
+                (mapType === 'reference' && !p.referenceCoords)
+            );
+            
+            let point;
+            let isNewPoint = pointIndex === -1;
+            
+            if (isNewPoint) {
+                point = {
+                    id: nextPointId,
+                    rowNumber: getNextRowNumber(),
+                    sourceCoords: null,
+                    referenceCoords: null
+                };
+                pointIndex = controlPoints.length;
+                controlPoints.push(point);
+                nextPointId++;
+            } else {
+                point = controlPoints[pointIndex];
+            }
+            
+            // Update coordinates
+            if (mapType === 'source') {
+                point.sourceCoords = [e.lngLat.lng, e.lngLat.lat];
+            } else {
+                point.referenceCoords = [e.lngLat.lng, e.lngLat.lat];
+            }
+            
+            updateMarkers();
+            updateCSVFromPoints();
+            updateRowNumbers();
+        }
+        
+        function getNextRowNumber() {
+            let rowNum = 1;
+            while (deletedRowNumbers.has(rowNum) || controlPoints.some(p => p.rowNumber === rowNum)) {
+                rowNum++;
+            }
+            return rowNum;
+        }
+        
+        function moveControlPoint(e, mapType, pointIndex) {
+            if (pointIndex >= 0 && pointIndex < controlPoints.length) {
+                // Save position to history before making changes
+                saveMarkerPositionToHistory(pointIndex);
+                
+                const point = controlPoints[pointIndex];
+                
+                if (mapType === 'source') {
+                    // For source map, always store as geographic coordinates
+                    // This will override any existing pixel coordinates
+                    point.sourceCoords = [e.lngLat.lng, e.lngLat.lat];
+                    // Clear pixel coordinates if they exist since we're now using geographic
+                    if (point.sourcePixelCoords) {
+                        delete point.sourcePixelCoords;
+                    }
+                } else {
+                    point.referenceCoords = [e.lngLat.lng, e.lngLat.lat];
+                }
+                
+                updateMarkers();
+                updateCSVFromPoints();
+                // Keep marker selected after moving - don't reset selectedPointIndex
+            }
+        }
+        
+        function selectControlPoint(e, mapType) {
+            // Find closest control point by checking marker positions
+            const clickPoint = e.lngLat;
+            let closestIndex = -1;
+            let closestDistance = Infinity;
+            
+            controlPoints.forEach((point, index) => {
+                let pointCoords;
+                if (mapType === 'source') {
+                    if (point.sourceCoords) {
+                        pointCoords = point.sourceCoords;
+                    } else if (point.sourcePixelCoords && point.referenceCoords) {
+                        // For MapWarper points with pixel coordinates, use reference coordinates as approximation
+                        pointCoords = point.referenceCoords;
+                    } else {
+                        return;
+                    }
+                } else if (mapType === 'reference' && point.referenceCoords) {
+                    pointCoords = point.referenceCoords;
+                } else {
+                    return;
+                }
+                
+                const distance = Math.sqrt(
+                    Math.pow(clickPoint.lng - pointCoords[0], 2) + 
+                    Math.pow(clickPoint.lat - pointCoords[1], 2)
+                );
+                
+                if (distance < 0.001 && distance < closestDistance) { // Adjust threshold as needed
+                    closestDistance = distance;
+                    closestIndex = index;
+                }
+            });
+            
+            selectedPointIndex = closestIndex;
+            updateMarkers();
+        }
+        
+        function saveMarkerPositionToHistory(pointIndex) {
+            // Save the current position of the specified marker to history
+            if (pointIndex >= 0 && pointIndex < controlPoints.length) {
+                const point = controlPoints[pointIndex];
+                const historyEntry = {
+                    pointIndex: pointIndex,
+                    sourceCoords: point.sourceCoords ? [...point.sourceCoords] : null,
+                    referenceCoords: point.referenceCoords ? [...point.referenceCoords] : null,
+                    sourcePixelCoords: point.sourcePixelCoords ? [...point.sourcePixelCoords] : null
+                };
+                markerPositionHistory.push(historyEntry);
+                
+                // Keep only the last 10 history entries to prevent memory issues
+                if (markerPositionHistory.length > 10) {
+                    markerPositionHistory.shift();
+                }
+            }
+        }
+        
+        function undoLastMarkerPositionChange() {
+            if (markerPositionHistory.length === 0) return false;
+            
+            const lastChange = markerPositionHistory.pop();
+            if (lastChange.pointIndex >= 0 && lastChange.pointIndex < controlPoints.length) {
+                const point = controlPoints[lastChange.pointIndex];
+                
+                // Restore the previous position
+                if (lastChange.sourceCoords) {
+                    point.sourceCoords = [...lastChange.sourceCoords];
+                } else if (point.sourceCoords) {
+                    delete point.sourceCoords;
+                }
+                
+                if (lastChange.referenceCoords) {
+                    point.referenceCoords = [...lastChange.referenceCoords];
+                } else if (point.referenceCoords) {
+                    delete point.referenceCoords;
+                }
+                
+                if (lastChange.sourcePixelCoords) {
+                    point.sourcePixelCoords = [...lastChange.sourcePixelCoords];
+                } else if (point.sourcePixelCoords) {
+                    delete point.sourcePixelCoords;
+                }
+                
+                // Deselect the marker and switch to pan mode
+                deselectMarkerAndSwitchToPan();
+                
+                // Update the CSV and markers
+                updateCSVFromPoints();
+                updateMarkers();
+                
+                return true;
+            }
+            return false;
+        }
+        
+        function deselectMarkerAndSwitchToPan() {
+            // Restore saved camera positions before deselecting
+            restoreSavedCameraPositions();
+            
+            selectedPointIndex = -1;
+            currentMode = 'pan';
+            
+            // Update active state for all control buttons
+            document.querySelectorAll('.control-mode').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            document.querySelectorAll('[data-mode="pan"]').forEach(btn => {
+                btn.classList.add('active');
+            });
+            
+            // Update cursor style
+            updateMapCursor();
+        }
+        
+        function switchToMoveMode() {
+            currentMode = 'move';
+            
+            // Update active state for all control buttons
+            document.querySelectorAll('.control-mode').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            document.querySelectorAll('[data-mode="move"]').forEach(btn => {
+                btn.classList.add('active');
+            });
+            
+            // Update cursor style
+            updateMapCursor();
+        }
+        
+        function saveCameraPositionsAndPanToMarker(markerIndex) {
+            const point = controlPoints[markerIndex];
+            if (!point) return;
+            
+            // Save current camera positions
+            savedCameraPositions.sourceMap = {
+                center: sourceMap.getCenter(),
+                zoom: sourceMap.getZoom(),
+                bearing: sourceMap.getBearing(),
+                pitch: sourceMap.getPitch()
+            };
+            
+            savedCameraPositions.referenceMap = {
+                center: referenceMap.getCenter(),
+                zoom: referenceMap.getZoom(),
+                bearing: referenceMap.getBearing(),
+                pitch: referenceMap.getPitch()
+            };
+            
+            // Pan and zoom to marker on both maps (zoom to z17)
+            const targetZoom = 17;
+            
+            if (point.sourceCoords) {
+                const sourceCoords = point.sourceCoords;
+                sourceMap.flyTo({
+                    center: sourceCoords,
+                    zoom: targetZoom,
+                    duration: 1000
+                });
+            } else if (point.sourcePixelCoords && point.referenceCoords) {
+                // For MapWarper points with pixel coordinates, use reference coordinates as approximation on source map
+                const refCoords = point.referenceCoords;
+                sourceMap.flyTo({
+                    center: refCoords,
+                    zoom: targetZoom,
+                    duration: 1000
+                });
+            }
+            
+            if (point.referenceCoords) {
+                const refCoords = point.referenceCoords;
+                referenceMap.flyTo({
+                    center: refCoords,
+                    zoom: targetZoom,
+                    duration: 1000
+                });
+            }
+        }
+        
+        function restoreSavedCameraPositions() {
+            if (savedCameraPositions.sourceMap) {
+                sourceMap.flyTo({
+                    center: savedCameraPositions.sourceMap.center,
+                    zoom: savedCameraPositions.sourceMap.zoom,
+                    bearing: savedCameraPositions.sourceMap.bearing,
+                    pitch: savedCameraPositions.sourceMap.pitch,
+                    duration: 1000
+                });
+            }
+            
+            if (savedCameraPositions.referenceMap) {
+                referenceMap.flyTo({
+                    center: savedCameraPositions.referenceMap.center,
+                    zoom: savedCameraPositions.referenceMap.zoom,
+                    bearing: savedCameraPositions.referenceMap.bearing,
+                    pitch: savedCameraPositions.referenceMap.pitch,
+                    duration: 1000
+                });
+            }
+            
+            // Clear saved positions
+            savedCameraPositions.sourceMap = null;
+            savedCameraPositions.referenceMap = null;
+        }
+        
+        function updateMapCursor() {
+            const shouldShowCrosshair = currentMode === 'move' && selectedPointIndex >= 0;
+            
+            // Update cursor for both map containers
+            const sourceContainer = sourceMap.getContainer();
+            const referenceContainer = referenceMap.getContainer();
+            
+            if (shouldShowCrosshair) {
+                sourceContainer.style.cursor = 'crosshair';
+                referenceContainer.style.cursor = 'crosshair';
+            } else {
+                sourceContainer.style.cursor = '';
+                referenceContainer.style.cursor = '';
+            }
+        }
+        
+        function updateMarkers() {
+            // Clear existing markers
+            sourceMarkers.forEach(marker => marker.remove());
+            referenceMarkers.forEach(marker => marker.remove());
+            sourceMarkers.clear();
+            referenceMarkers.clear();
+            
+            controlPoints.forEach((point, index) => {
+                // Add marker to source map
+                let sourceMapCoords = null;
+                
+                if (point.sourceCoords) {
+                    // Use geographic coordinates directly for manually added points
+                    sourceMapCoords = point.sourceCoords;
+                } else if (point.sourcePixelCoords && point.referenceCoords) {
+                    // For MapWarper points with pixel coordinates, use reference coordinates
+                    // as an approximation since we don't have the exact image-to-geo transformation
+                    sourceMapCoords = point.referenceCoords;
+                }
+                
+                if (sourceMapCoords) {
+                    const marker = createNumberedMarker(
+                        sourceMapCoords, 
+                        point.rowNumber, 
+                        index === selectedPointIndex,
+                        sourceMap
+                    );
+                    
+                    marker.getElement().onclick = (e) => {
+                        // Prevent map click event from firing when clicking marker
+                        e.stopPropagation();
+                        
+                        if (index === selectedPointIndex) {
+                            // Deselect and switch to pan mode
+                            deselectMarkerAndSwitchToPan();
+                        } else {
+                            // Select marker and switch to move mode
+                            saveCameraPositionsAndPanToMarker(index);
+                            selectedPointIndex = index;
+                            switchToMoveMode();
+                        }
+                        updateMarkers();
+                    };
+                    
+                    // Add drag event handlers for selected markers
+                    if (index === selectedPointIndex) {
+                        // Save position before drag starts
+                        marker.on('dragstart', () => {
+                            saveMarkerPositionToHistory(index);
+                        });
+                        
+                        marker.on('dragend', () => {
+                            const lngLat = marker.getLngLat();
+                            // Update the control point coordinates
+                            if (point.sourceCoords) {
+                                point.sourceCoords = [lngLat.lng, lngLat.lat];
+                            } else {
+                                // Create sourceCoords if only pixel coords existed
+                                point.sourceCoords = [lngLat.lng, lngLat.lat];
+                                // Clear pixel coordinates since we're now using geographic
+                                if (point.sourcePixelCoords) {
+                                    delete point.sourcePixelCoords;
+                                }
+                            }
+                            updateCSVFromPoints();
+                        });
+                    }
+                    
+                    sourceMarkers.set(point.id, marker);
+                }
+                
+                // Add marker to reference map
+                if (point.referenceCoords) {
+                    const marker = createNumberedMarker(
+                        point.referenceCoords, 
+                        point.rowNumber, 
+                        index === selectedPointIndex,
+                        referenceMap
+                    );
+                    
+                    marker.getElement().onclick = (e) => {
+                        // Prevent map click event from firing when clicking marker
+                        e.stopPropagation();
+                        
+                        if (index === selectedPointIndex) {
+                            // Deselect and switch to pan mode
+                            deselectMarkerAndSwitchToPan();
+                        } else {
+                            // Select marker and switch to move mode
+                            saveCameraPositionsAndPanToMarker(index);
+                            selectedPointIndex = index;
+                            switchToMoveMode();
+                        }
+                        updateMarkers();
+                    };
+                    
+                    // Add drag event handlers for selected markers
+                    if (index === selectedPointIndex) {
+                        // Save position before drag starts
+                        marker.on('dragstart', () => {
+                            saveMarkerPositionToHistory(index);
+                        });
+                        
+                        marker.on('dragend', () => {
+                            const lngLat = marker.getLngLat();
+                            // Update the control point coordinates
+                            point.referenceCoords = [lngLat.lng, lngLat.lat];
+                            updateCSVFromPoints();
+                        });
+                    }
+                    
+                    referenceMarkers.set(point.id, marker);
+                }
+            });
+            
+            // Update cursor style after markers are updated
+            updateMapCursor();
+        }
+        
+        function createNumberedMarker(lngLat, number, isSelected, map) {
+            // Create the main marker using Mapbox's default marker
+            const marker = new mapboxgl.Marker({
+                color: isSelected ? '#00ff00' : '#ff0000',
+                draggable: isSelected // Make selected markers draggable
+            }).setLngLat(lngLat);
+            
+            // Add the marker to the map first
+            marker.addTo(map);
+            
+            // Create number overlay and add it to the marker element
+            const markerElement = marker.getElement();
+            const numberEl = document.createElement('div');
+            numberEl.style.position = 'absolute';
+            numberEl.style.top = '-25px';
+            numberEl.style.left = '50%';
+            numberEl.style.transform = 'translateX(-50%)';
+            numberEl.style.background = 'white';
+            numberEl.style.border = '2px solid #007cba';
+            numberEl.style.borderRadius = '50%';
+            numberEl.style.width = '20px';
+            numberEl.style.height = '20px';
+            numberEl.style.display = 'flex';
+            numberEl.style.alignItems = 'center';
+            numberEl.style.justifyContent = 'center';
+            numberEl.style.fontSize = '10px';
+            numberEl.style.fontWeight = 'bold';
+            numberEl.style.color = '#007cba';
+            numberEl.style.zIndex = '1000';
+            numberEl.style.pointerEvents = 'none'; // Allow clicks to pass through to marker
+            numberEl.textContent = number;
+            
+            markerElement.appendChild(numberEl);
+            
+            return marker;
+        }
+        
+        function updateCSVFromPoints() {
+            const lines = ['x,y,lon,lat'];
+            
+            // Sort points by row number for consistent output
+            const sortedPoints = [...controlPoints].sort((a, b) => a.rowNumber - b.rowNumber);
+            
+            sortedPoints.forEach(point => {
+                if (point.sourcePixelCoords && point.referenceCoords) {
+                    // Use original pixel coordinates from MapWarper (preserved exactly)
+                    lines.push(`${point.sourcePixelCoords[0].toFixed(1)},${point.sourcePixelCoords[1].toFixed(1)},${point.referenceCoords[0].toFixed(7)},${point.referenceCoords[1].toFixed(7)}`);
+                } else if (point.sourceCoords && point.referenceCoords) {
+                    // For manually added points, convert geographic coordinates to pixel coordinates
+                    const sourcePixel = sourceMap.project(point.sourceCoords);
+                    lines.push(`${sourcePixel.x.toFixed(1)},${sourcePixel.y.toFixed(1)},${point.referenceCoords[0].toFixed(7)},${point.referenceCoords[1].toFixed(7)}`);
+                } else if (point.sourcePixelCoords || point.sourceCoords || point.referenceCoords) {
+                    // Partial point - add placeholder
+                    let sourceX = '', sourceY = '';
+                    if (point.sourcePixelCoords) {
+                        sourceX = point.sourcePixelCoords[0];
+                        sourceY = point.sourcePixelCoords[1];
+                    } else if (point.sourceCoords) {
+                        const sourcePixel = sourceMap.project(point.sourceCoords);
+                        sourceX = sourcePixel.x;
+                        sourceY = sourcePixel.y;
+                    }
+                    const refCoords = point.referenceCoords || ['', ''];
+                    lines.push(`${sourceX || ''},${sourceY || ''},${refCoords[0] || ''},${refCoords[1] || ''}`);
+                }
+            });
+            
+            document.getElementById('csv-output').value = lines.join('\n');
+        }
+        
+        function updatePointsFromCSV() {
+            const csvText = document.getElementById('csv-output').value;
+            const lines = csvText.split('\n').filter(line => line.trim());
+            
+            if (lines.length === 0 || !lines[0].includes('x,y,lon,lat')) return;
+            
+            // Clear existing points and markers
+            controlPoints = [];
+            updateMarkers();
+            
+            // Parse CSV lines (skip header)
+            for (let i = 1; i < lines.length; i++) {
+                const parts = lines[i].split(',').map(p => p.trim());
+                if (parts.length >= 4) {
+                    const x = parseFloat(parts[0]);
+                    const y = parseFloat(parts[1]);
+                    const lon = parseFloat(parts[2]);
+                    const lat = parseFloat(parts[3]);
+                    
+                    if (!isNaN(x) && !isNaN(y) && !isNaN(lon) && !isNaN(lat)) {
+                        // Convert pixel coordinates back to geographic coordinates for source map
+                        const sourceCoords = sourceMap.unproject([x, y]);
+                        
+                        const point = {
+                            id: nextPointId++,
+                            rowNumber: i, // Use line number as row number
+                            sourceCoords: [sourceCoords.lng, sourceCoords.lat],
+                            referenceCoords: [lon, lat]
+                        };
+                        
+                        controlPoints.push(point);
+                    }
+                }
+            }
+            
+            updateMarkers();
+            updateRowNumbers();
+        }
+        
+        function updateRowNumbers() {
+            const rowNumbersDiv = document.getElementById('row-numbers');
+            rowNumbersDiv.innerHTML = '<div class="row-number" style="font-weight: bold;">#</div>';
+            
+            // Sort points by row number for consistent display
+            const sortedPoints = [...controlPoints].sort((a, b) => a.rowNumber - b.rowNumber);
+            
+            sortedPoints.forEach(point => {
+                const rowDiv = document.createElement('div');
+                rowDiv.className = 'row-number';
+                rowDiv.textContent = point.rowNumber;
+                rowDiv.dataset.pointId = point.id;
+                
+                let deleteMode = false;
+                
+                rowDiv.onclick = () => {
+                    if (deleteMode) {
+                        deleteControlPoint(point.id);
+                    } else {
+                        deleteMode = true;
+                        rowDiv.textContent = 'DEL';
+                        rowDiv.classList.add('delete-btn');
+                        
+                        // Reset after 3 seconds
+                        setTimeout(() => {
+                            if (controlPoints.find(p => p.id === point.id)) {
+                                deleteMode = false;
+                                rowDiv.textContent = point.rowNumber;
+                                rowDiv.classList.remove('delete-btn');
+                            }
+                        }, 3000);
+                    }
+                };
+                
+                rowNumbersDiv.appendChild(rowDiv);
+            });
+        }
+        
+        function deleteControlPoint(pointId) {
+            const pointIndex = controlPoints.findIndex(p => p.id === pointId);
+            if (pointIndex >= 0) {
+                const point = controlPoints[pointIndex];
+                deletedRowNumbers.add(point.rowNumber);
+                controlPoints.splice(pointIndex, 1);
+                
+                updateMarkers();
+                updateCSVFromPoints();
+                updateRowNumbers();
+                
+                if (selectedPointIndex === pointIndex) {
+                    selectedPointIndex = -1;
+                } else if (selectedPointIndex > pointIndex) {
+                    selectedPointIndex--;
+                }
+            }
+        }
+        
+        function clearControlPoints() {
+            controlPoints = [];
+            selectedPointIndex = -1;
+            nextPointId = 1;
+            deletedRowNumbers.clear();
+            updateMarkers();
+            updateCSVFromPoints();
+            updateRowNumbers();
+        }
+        
+        function saveCSV() {
+            const csv = document.getElementById('csv-output').value;
+            const blob = new Blob([csv], { type: 'text/csv' });
+            const url = window.URL.createObjectURL(blob);
+            
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'control_points.csv';
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            window.URL.revokeObjectURL(url);
+        }
+        
+        function showAddLayerModal() {
+            document.getElementById('add-layer-modal').style.display = 'block';
+        }
+        
+        function hideAddLayerModal() {
+            document.getElementById('add-layer-modal').style.display = 'none';
+        }
+        
+        function toggleWarpedMap() {
+            const checkbox = document.getElementById('warped-map-toggle');
+            const isVisible = checkbox.checked;
+            
+            if (referenceMap.getLayer('warped-layer')) {
+                referenceMap.setLayoutProperty('warped-layer', 'visibility', isVisible ? 'visible' : 'none');
+            }
+        }
+        
+        function toggleCadastralLayer() {
+            const checkbox = document.getElementById('cadastral-toggle');
+            const isVisible = checkbox.checked;
+            
+            if (referenceMap.getLayer('cadastral-layer')) {
+                referenceMap.setLayoutProperty('cadastral-layer', 'visibility', isVisible ? 'visible' : 'none');
+            }
+            
+            if (referenceMap.getLayer('cadastral-labels')) {
+                referenceMap.setLayoutProperty('cadastral-labels', 'visibility', isVisible ? 'visible' : 'none');
+            }
+        }
+        
+        function toggleVillageLayer() {
+            const checkbox = document.getElementById('village-toggle');
+            const isVisible = checkbox.checked;
+            
+            if (referenceMap.getLayer('village-fill')) {
+                referenceMap.setLayoutProperty('village-fill', 'visibility', isVisible ? 'visible' : 'none');
+            }
+            
+            if (referenceMap.getLayer('village-lines')) {
+                referenceMap.setLayoutProperty('village-lines', 'visibility', isVisible ? 'visible' : 'none');
+            }
+            
+            if (referenceMap.getLayer('village-labels')) {
+                referenceMap.setLayoutProperty('village-labels', 'visibility', isVisible ? 'visible' : 'none');
+            }
+        }
+        
+        function toggleLocalBodyLayer() {
+            const checkbox = document.getElementById('local-body-toggle');
+            const isVisible = checkbox.checked;
+            
+            if (referenceMap.getLayer('local-body-fill')) {
+                referenceMap.setLayoutProperty('local-body-fill', 'visibility', isVisible ? 'visible' : 'none');
+            }
+            
+            if (referenceMap.getLayer('local-body-lines')) {
+                referenceMap.setLayoutProperty('local-body-lines', 'visibility', isVisible ? 'visible' : 'none');
+            }
+            
+            if (referenceMap.getLayer('local-body-labels')) {
+                referenceMap.setLayoutProperty('local-body-labels', 'visibility', isVisible ? 'visible' : 'none');
+            }
+        }
+        
+        function showCenterModal() {
+            // Pre-fill current center
+            const center = sourceMap.getCenter();
+            const zoom = sourceMap.getZoom();
+            
+            document.getElementById('center-lng').value = center.lng.toFixed(6);
+            document.getElementById('center-lat').value = center.lat.toFixed(6);
+            document.getElementById('center-zoom').value = Math.round(zoom);
+            
+            document.getElementById('center-modal').style.display = 'block';
+        }
+        
+        function hideCenterModal() {
+            document.getElementById('center-modal').style.display = 'none';
+        }
+        
+        function setCenterFromModal() {
+            const lng = parseFloat(document.getElementById('center-lng').value);
+            const lat = parseFloat(document.getElementById('center-lat').value);
+            const zoom = parseInt(document.getElementById('center-zoom').value);
+            
+            if (isNaN(lng) || isNaN(lat) || isNaN(zoom)) {
+                alert('Please enter valid coordinates and zoom level');
+                return;
+            }
+            
+            // Set center for both maps
+            sourceMap.setCenter([lng, lat]);
+            referenceMap.setCenter([lng, lat]);
+            sourceMap.setZoom(zoom);
+            referenceMap.setZoom(zoom);
+            
+            hideCenterModal();
+        }
+        
+        function addVectorLayer() {
+            const url = document.getElementById('layer-url').value;
+            const sourceLayer = document.getElementById('source-layer').value;
+            const maxZoom = parseInt(document.getElementById('max-zoom').value);
+            
+            const layerId = 'vector-layer-' + Date.now();
+            
+            // Remove existing vector layer if any
+            if (referenceMap.getLayer('vector-layer')) {
+                referenceMap.removeLayer('vector-layer');
+                referenceMap.removeSource('vector-source');
+            }
+            
+            referenceMap.addSource('vector-source', {
+                type: 'vector',
+                tiles: [url],
+                maxzoom: maxZoom
+            });
+            
+            // Add fill layer
+            referenceMap.addLayer({
+                id: 'vector-layer-fill',
+                type: 'fill',
+                source: 'vector-source',
+                'source-layer': sourceLayer,
+                paint: {
+                    'fill-color': '#088',
+                    'fill-opacity': 0.3
+                }
+            });
+            
+            // Add line layer
+            referenceMap.addLayer({
+                id: 'vector-layer-line',
+                type: 'line',
+                source: 'vector-source',
+                'source-layer': sourceLayer,
+                paint: {
+                    'line-color': '#088',
+                    'line-width': 2
+                }
+            });
+            
+            hideAddLayerModal();
+        }
+        
+        // Control mode handlers
+        document.querySelectorAll('.control-mode').forEach(button => {
+            button.addEventListener('click', function() {
+                const mode = this.dataset.mode;
+                currentMode = mode;
+                
+                // Update active state for all control buttons
+                document.querySelectorAll('.control-mode').forEach(btn => {
+                    btn.classList.remove('active');
+                });
+                document.querySelectorAll(`[data-mode="${mode}"]`).forEach(btn => {
+                    btn.classList.add('active');
+                });
+                
+                // Reset selection when changing modes
+                selectedPointIndex = -1;
+                updateMarkers();
+                updateMapCursor();
+            });
+        });
+        
+        // Keyboard shortcuts
+        document.addEventListener('keydown', (e) => {
+            // Mode selection (1-3 keys)
+            if (e.key >= '1' && e.key <= '3' && focusedMap) {
+                e.preventDefault();
+                const modes = ['add', 'move', 'pan'];
+                const mode = modes[parseInt(e.key) - 1];
+                currentMode = mode;
+                
+                // Update active state
+                document.querySelectorAll('.control-mode').forEach(btn => {
+                    btn.classList.remove('active');
+                });
+                document.querySelectorAll(`[data-mode="${mode}"]`).forEach(btn => {
+                    btn.classList.add('active');
+                });
+                
+                selectedPointIndex = -1;
+                updateMarkers();
+                updateMapCursor();
+            }
+            
+            // Undo marker position change (Ctrl+Z / Cmd+Z)
+            if ((e.ctrlKey || e.metaKey) && e.key === 'z' && !e.shiftKey) {
+                e.preventDefault();
+                undoLastMarkerPositionChange();
+            }
+            
+            // Deselect active marker (Escape)
+            if (e.key === 'Escape' && selectedPointIndex >= 0) {
+                e.preventDefault();
+                deselectMarkerAndSwitchToPan();
+                updateMarkers();
+            }
+            
+            // Delete selected point
+            if (e.key === 'Delete' && selectedPointIndex >= 0) {
+                controlPoints.splice(selectedPointIndex, 1);
+                selectedPointIndex = -1;
+                updateMarkers();
+                updateCSVFromPoints();
+            }
+        });
+        
+        // Initialize DataTable plugin
+        let warperDataTable = null;
+        
+        function initializeDataTable() {
+            warperDataTable = new WarperDataTable({
+                url: 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTChLW_Qr9M9huy7LZIlR3-1_JW_8hmospOHSZmbL0-VRbjyHtTfv2tzh3VVlO-g0LP2GXcyfX8P6Te/pub?output=csv',
+                title: 'Goa Reference Map Index',
+                name: ['Name', 'Taluka', 'District','Collection','Year','Level'],
+                type: 'Level',
+                click: 'Mapwarper'
+            });
+        }
+        
+        async function showMapList() {
+            if (warperDataTable) {
+                await warperDataTable.show();
+            }
+        }
+        
+        // Initialize when page loads
+        window.addEventListener('load', () => {
+            initializeMaps();
+            
+            // Initialize DataTable plugin
+            initializeDataTable();
+            
+            // Set up Map List button
+            const mapListBtn = document.getElementById('map-list-btn');
+            if (mapListBtn) {
+                mapListBtn.addEventListener('click', showMapList);
+            }
+            
+            // Listen for loadMapwarperUrl event from DataTable
+            document.addEventListener('loadMapwarperUrl', (event) => {
+                const url = event.detail.url;
+                if (url) {
+                    // Update the input field
+                    const urlInput = document.getElementById('mapwarper-url');
+                    if (urlInput) {
+                        urlInput.value = url;
+                        // Trigger map loading
+                        loadMapWarperMap();
+                    }
+                }
+            });
+            
+            // Set up CSV textarea event listener for live sync
+            const csvTextarea = document.getElementById('csv-output');
+            csvTextarea.addEventListener('input', () => {
+                updatePointsFromCSV();
+            });
+            
+            // Close modals when clicking outside
+            window.addEventListener('click', (e) => {
+                if (e.target.classList.contains('modal')) {
+                    e.target.style.display = 'none';
+                }
+            });
+        });
+    </script>
+</body>
+</html>
