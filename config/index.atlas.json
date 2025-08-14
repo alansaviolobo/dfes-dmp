@@ -964,6 +964,46 @@
       "id": "soi-map"
     },
     {
+      "title": "Forest Cover Map of Goa",
+      "description": "Based on digital interpretation of IRS P6 LISS-III remote sensing data.",
+      "source": "https://forest.goa.gov.in/sites/default/files/inline-images/fcm.jpg",
+      "dateDepicted": "",
+      "type": "tms",
+      "id": "goa-forest-cover",
+      "url": "https://mapwarper.net/maps/tile/95898/{z}/{x}/{y}.png",
+      "style": {
+        "raster-opacity": [
+          "interpolate",
+          [
+            "linear"
+          ],
+          [
+            "zoom"
+          ],
+          6,
+          0.95,
+          14,
+          0.8,
+          15,
+          0.1
+        ]
+      },
+      "attribution": "Forest Survey of India - <a href=\"https://mapwarper.net/maps/95898#Rectify_tab\" target=\"_blank\">View Original</a>",
+      "headerImage": "https://mapwarper.net/uploads/95898/thumb/fcm.png",
+      "metadata": {
+        "title": "Forest Cover Map of Goa",
+        "description": "Based on digital interpretation of IRS P6 LISS-III remote sensing data.",
+        "source": "https://forest.goa.gov.in/sites/default/files/inline-images/fcm.jpg",
+        "attribution": "",
+        "dateDepicted": "",
+        "thumbnail": "https://mapwarper.net/uploads/95898/thumb/fcm.png",
+        "baseUrl": "https://mapwarper.net",
+        "mapId": "95898",
+        "originalUrl": "https://mapwarper.net/maps/95898#Rectify_tab",
+        "bbox": "73.4672411,14.7715102,74.6140524,15.91013"
+      }
+    },
+    {
       "title": "Tillari Command Area Development Scheme",
       "description": "Notified Command Area Development Scheme for the Tillari Irrigation Project covering talukas of Bicholim, Pernem and Bardez in North Goa.",
       "headerImage": "assets/map-layers/map-layer-tillari.png",
