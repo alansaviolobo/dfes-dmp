@@ -964,6 +964,46 @@
       "id": "soi-map"
     },
     {
+      "title": "Forest Type Map of Goa",
+      "description": "Based on digital interpretation of IRS P6 LISS-III remote sensing data.",
+      "source": "https://forest.goa.gov.in/sites/default/files/inline-images/fcm.jpg",
+      "dateDepicted": "",
+      "type": "tms",
+      "id": "goa-forest-type",
+      "url": "https://mapwarper.net/maps/tile/95901/{z}/{x}/{y}.png",
+      "style": {
+        "raster-opacity": [
+          "interpolate",
+          [
+            "linear"
+          ],
+          [
+            "zoom"
+          ],
+          6,
+          0.95,
+          14,
+          0.8,
+          15,
+          0.1
+        ]
+      },
+      "attribution": "Forest Survey of India - <a href=\"https://mapwarper.net/maps/95901#Rectify_tab\" target=\"_blank\">View Original</a>",
+      "headerImage": "https://mapwarper.net/uploads/95901/thumb/ftm_0.png",
+      "metadata": {
+        "title": "Forest Cover Map of Goa",
+        "description": "Based on digital interpretation of IRS P6 LISS-III remote sensing data.",
+        "source": "https://forest.goa.gov.in/sites/default/files/inline-images/ftm_0.jpg",
+        "attribution": "",
+        "dateDepicted": "",
+        "thumbnail": "https://mapwarper.net/uploads/95901/thumb/ftm_0.png",
+        "baseUrl": "https://mapwarper.net",
+        "mapId": "95901",
+        "originalUrl": "https://mapwarper.net/maps/95901#Rectify_tab",
+        "bbox": "73.4672411,14.7715102,74.6140524,15.91013"
+      }
+    },
+    {
       "title": "Forest Cover Map of Goa",
       "description": "Based on digital interpretation of IRS P6 LISS-III remote sensing data.",
       "source": "https://forest.goa.gov.in/sites/default/files/inline-images/fcm.jpg",
