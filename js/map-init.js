@@ -602,17 +602,97 @@ async function initializeMap() {
         document.addEventListener('keydown', (event) => {
             // Toggle layer drawer with '/' key
             if (event.key === '/' && !event.ctrlKey && !event.metaKey && !event.altKey) {
-                // Prevent default behavior (e.g., quick search in browsers)
-                event.preventDefault();
+                // First, check if the event target itself is an input field
+                const target = event.target;
+                const isTargetInput = target && (
+                    target.tagName === 'INPUT' ||
+                    target.tagName === 'TEXTAREA' ||
+                    target.contentEditable === 'true' ||
+                    target.tagName === 'SL-INPUT' ||
+                    target.tagName === 'SL-TEXTAREA' ||
+                    target.tagName === 'MAPBOX-SEARCH-BOX' ||
+                    target.type === 'text' ||
+                    target.type === 'search' ||
+                    target.type === 'email' ||
+                    target.type === 'password' ||
+                    target.type === 'number' ||
+                    target.type === 'tel' ||
+                    target.type === 'url'
+                );
                 
-                // Check if we're in an input field
+                if (isTargetInput) {
+                    console.debug('Keyboard shortcut blocked: event target is input field', {
+                        targetTag: target.tagName,
+                        targetType: target.type,
+                        targetId: target.id
+                    });
+                    return; // Don't prevent default, let the input handle the key
+                }
+                // Check if we're in an input field or search box
                 const activeElement = document.activeElement;
+                
+                // Comprehensive check for input fields including shadow DOM
                 const isInputField = activeElement && (
+                    // Direct input elements
                     activeElement.tagName === 'INPUT' ||
                     activeElement.tagName === 'TEXTAREA' ||
                     activeElement.contentEditable === 'true' ||
-                    activeElement.tagName === 'SL-INPUT'
+                    activeElement.tagName === 'SL-INPUT' ||
+                    activeElement.tagName === 'SL-TEXTAREA' ||
+                    activeElement.tagName === 'MAPBOX-SEARCH-BOX' ||
+                    
+                    // Check if element is inside any input container
+                    activeElement.closest('mapbox-search-box') ||
+                    activeElement.closest('input') ||
+                    activeElement.closest('textarea') ||
+                    activeElement.closest('[contenteditable="true"]') ||
+                    activeElement.closest('sl-input') ||
+                    activeElement.closest('sl-textarea') ||
+                    activeElement.closest('sl-select') ||
+                    activeElement.closest('sl-combobox') ||
+                    
+                    // Check if element is inside a shadow DOM input
+                    activeElement.closest('*').shadowRoot?.querySelector('input:focus') ||
+                    activeElement.closest('*').shadowRoot?.querySelector('textarea:focus') ||
+                    
+                    // Check for common input-related classes and attributes
+                    activeElement.classList.contains('search-input') ||
+                    activeElement.classList.contains('geocoder-input') ||
+                    activeElement.hasAttribute('data-input') ||
+                    activeElement.hasAttribute('role') && activeElement.getAttribute('role') === 'combobox' ||
+                    
+                    // Check if the element or its parent has input-related properties
+                    activeElement.type === 'text' ||
+                    activeElement.type === 'search' ||
+                    activeElement.type === 'email' ||
+                    activeElement.type === 'password' ||
+                    activeElement.type === 'number' ||
+                    activeElement.type === 'tel' ||
+                    activeElement.type === 'url'
                 );
+                
+                // If we're in any input field, don't trigger the shortcut
+                if (isInputField) {
+                    console.debug('Keyboard shortcut blocked: user is typing in input field', {
+                        activeElement: activeElement.tagName,
+                        activeElementId: activeElement.id,
+                        activeElementClass: activeElement.className
+                    });
+                    return; // Don't prevent default, let the input handle the key
+                }
+                
+                // Additional check for Mapbox search box shadow DOM
+                const mapboxSearchBox = document.querySelector('mapbox-search-box');
+                if (mapboxSearchBox && mapboxSearchBox.shadowRoot) {
+                    const shadowInput = mapboxSearchBox.shadowRoot.querySelector('input:focus');
+                    if (shadowInput) {
+                        console.debug('Keyboard shortcut blocked: user is typing in Mapbox search box shadow DOM');
+                        return; // Don't prevent default, let the input handle the key
+                    }
+                }
+                
+                // Prevent default behavior (e.g., quick search in browsers)
+                event.preventDefault();
                 
                 // Special case: if focused on the layer search input, blur it and toggle
                 const isLayerSearchInput = activeElement && activeElement.id === 'layer-search-input';
@@ -623,7 +703,7 @@ async function initializeMap() {
                     if (window.drawerStateManager) {
                         window.drawerStateManager.toggle();
                     }
-                } else if (!isInputField && window.drawerStateManager) {
+                } else if (window.drawerStateManager) {
                     // Normal case: not in any input field
                     window.drawerStateManager.toggle();
                 }
