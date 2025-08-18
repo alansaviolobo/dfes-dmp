@@ -18,7 +18,7 @@ export class MapFeatureControl {
     constructor(options = {}) {
         this.options = {
             position: 'bottom-right',
-            maxHeight: '300px',
+            maxHeight: '50vh', // Use viewport height instead of fixed pixels
             maxWidth: '350px',
             minWidth: '250px',
             collapsed: false,
@@ -83,6 +83,11 @@ export class MapFeatureControl {
         this._isAnimating = false;
         
         // Initialized
+        
+        // Set up resize listener for responsive height adjustments
+        this._resizeListener = this._handleResize.bind(this);
+        window.addEventListener('resize', this._resizeListener);
+        window.addEventListener('orientationchange', this._resizeListener);
     }
 
     /**
@@ -323,11 +328,27 @@ export class MapFeatureControl {
         this._container = document.createElement('div');
         this._container.className = 'mapboxgl-ctrl mapboxgl-ctrl-group map-feature-control';
         
+        // Calculate responsive max height based on screen height
+        const screenHeight = window.innerHeight;
+        const maxHeightValue = this.options.maxHeight;
+        
+        // Handle both pixel and viewport height values
+        let responsiveMaxHeight;
+        if (maxHeightValue.includes('vh')) {
+            // Extract viewport height percentage
+            const vhPercentage = parseFloat(maxHeightValue) / 100;
+            responsiveMaxHeight = screenHeight * vhPercentage;
+        } else {
+            // Handle pixel values
+            const pixelValue = parseInt(maxHeightValue);
+            responsiveMaxHeight = Math.min(screenHeight * 0.5, pixelValue);
+        }
+        
         // Add custom styles for the container
         this._container.style.cssText = `
             background: #666;
             box-shadow: 0 0 0 2px rgba(0,0,0,.1);
-            max-height: ${this.options.maxHeight};
+            max-height: ${responsiveMaxHeight}px;
             max-width: ${this.options.maxWidth};
             min-width: ${this.options.minWidth};
             overflow: hidden;
@@ -387,7 +408,7 @@ export class MapFeatureControl {
         this._layersContainer.style.cssText = `
             flex: 1;
             overflow-y: auto;
-            max-height: calc(${this.options.maxHeight} - 90px);
+            max-height: calc(50vh - 90px);
             background: transparent;
             padding: 0;
         `;
@@ -3520,6 +3541,13 @@ export class MapFeatureControl {
             this._drawerStateListener = null;
         }
         
+        // Clean up resize listener
+        if (this._resizeListener) {
+            window.removeEventListener('resize', this._resizeListener);
+            window.removeEventListener('orientationchange', this._resizeListener);
+            this._resizeListener = null;
+        }
+        
         // Clean up layer isolation state
         this._restoreAllLayers();
         
@@ -4331,6 +4359,39 @@ export class MapFeatureControl {
         });
 
         console.debug(`Restored opacity for all layer details elements`);
+    }
+
+    /**
+     * Handle window resize and orientation changes to update responsive height
+     */
+    _handleResize() {
+        if (!this._container) return;
+        
+        // Calculate new responsive max height based on current screen height
+        const screenHeight = window.innerHeight;
+        const maxHeightValue = this.options.maxHeight;
+        
+        // Handle both pixel and viewport height values
+        let responsiveMaxHeight;
+        if (maxHeightValue.includes('vh')) {
+            // Extract viewport height percentage
+            const vhPercentage = parseFloat(maxHeightValue) / 100;
+            responsiveMaxHeight = screenHeight * vhPercentage;
+        } else {
+            // Handle pixel values
+            const pixelValue = parseInt(maxHeightValue);
+            responsiveMaxHeight = Math.min(screenHeight * 0.5, pixelValue);
+        }
+        
+        // Update container max height
+        this._container.style.maxHeight = `${responsiveMaxHeight}px`;
+        
+        // Update layers container max height
+        if (this._layersContainer) {
+            this._layersContainer.style.maxHeight = `calc(50vh - 90px)`;
+        }
+        
+        console.debug(`[MapFeatureControl] Updated responsive height: ${responsiveMaxHeight}px (screen: ${screenHeight}px)`);
     }
 }
 

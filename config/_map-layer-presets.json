@@ -870,7 +870,7 @@
     },
     {
       "title": "Cadastral Plot Boundaries",
-      "description": "Cadastral Boundaries from the <a href='Directorate of Settlement & Land Records'>Department of Land Records</a>. The map is provided for information purpose only. An official copy can be obtained from <a href='https://goaonline.gov.in' target='_blank' rel='noopener noreferrer'>Goa Online</a>",
+      "description": "Cadastral Boundaries from the <a href='Directorate of Settlement & Land Records'>Department of Land Records</a>. The map is provided for information purpose only. An official copy can be obtained from <a href='https://goaonline.gov.in/Appln/UIL/propertyregister?_Key=&_Mode=&_cscKey=&__cscKey=' target='_blank' rel='noopener noreferrer'>Goa Online</a> and <a href='https://dslr.goa.gov.in/f114new.aspx' target='_blank' rel='noopener noreferrer'>Directorate of Settlement & Land Records (Form 1 & 14)</a>",
       "headerImage": "assets/map-layers/map-layer-survey.png",
       "type": "vector",
       "id": "plot",
