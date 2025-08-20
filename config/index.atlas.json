@@ -1068,6 +1068,23 @@
       "initiallyChecked": true
     },
     {
+      "title": "Taluka Land Use Plans 2021",
+      "description": "Taluka level regional plans",
+      "dateDepicted": "",
+      "type": "tms",
+      "id": "taluka-plan",
+      "url": "https://mapwarper.net/maps/tile/87245/{z}/{x}/{y}.png",
+      "style": {
+        "raster-contrast": 0.0,
+        "raster-saturation": 0.3,
+        "raster-max-brightness": 0.4,
+        "raster-min-brightness": 0
+      },
+      "attribution": "<a href='https://tcp.goa.gov.in/'>Regional Development Plan for Goa 2021, Goa Town & Country Planning Department</a>. Georeferenced using <a href='https://mapwarper.net/layers/2054#Show_tab'>Mapwarper</a>",
+      "headerImage": "https://mapwarper.net/uploads/87245/thumb/tiswadi-taluka_jsrtploe.png",
+      "initiallyChecked": false
+    },
+    {
       "id": "goa-ams-map"
     },
     {
