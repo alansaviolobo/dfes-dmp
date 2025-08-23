@@ -10,6 +10,7 @@ export class MapboxAPI {
         this._map = map;
         this._atlasConfig = atlasConfig;
         this._defaultStyles = atlasConfig.styles || {};
+        this._orderedGroups = atlasConfig.orderedGroups || []; // Store ordered groups for layer positioning
         this._layerCache = new Map(); // Cache for layer configurations
         this._sourceCache = new Map(); // Cache for sources
         this._refreshTimers = new Map(); // Cache for refresh timers
@@ -316,7 +317,7 @@ export class MapboxAPI {
                 visible
             }, 'fill');
 
-            this._map.addLayer(layerConfig, getInsertPosition(this._map, 'vector', 'fill', config, []));
+            this._map.addLayer(layerConfig, getInsertPosition(this._map, 'vector', 'fill', config, this._orderedGroups));
         }
 
         // Add line layer
@@ -334,7 +335,7 @@ export class MapboxAPI {
                 visible
             }, 'line');
 
-            this._map.addLayer(layerConfig, getInsertPosition(this._map, 'vector', 'line', config, []));
+            this._map.addLayer(layerConfig, getInsertPosition(this._map, 'vector', 'line', config, this._orderedGroups));
         }
 
         // Add text layer
@@ -352,7 +353,7 @@ export class MapboxAPI {
                 visible
             }, 'symbol');
 
-            this._map.addLayer(layerConfig, getInsertPosition(this._map, 'vector', 'symbol', config, []));
+            this._map.addLayer(layerConfig, getInsertPosition(this._map, 'vector', 'symbol', config, this._orderedGroups));
         }
     }
 
@@ -439,7 +440,7 @@ export class MapboxAPI {
                 visible
             }, 'raster');
 
-            this._map.addLayer(layerConfig, getInsertPosition(this._map, 'tms', null, config, []));
+            this._map.addLayer(layerConfig, getInsertPosition(this._map, 'tms', null, config, this._orderedGroups));
         } else {
             this._updateTMSLayerVisibility(groupId, config, visible);
         }
@@ -562,7 +563,7 @@ export class MapboxAPI {
                 visible
             }, 'fill');
 
-            this._map.addLayer(fillLayerConfig, getInsertPosition(this._map, 'vector', 'fill', config, []));
+            this._map.addLayer(fillLayerConfig, getInsertPosition(this._map, 'vector', 'fill', config, this._orderedGroups));
         }
 
         // Add line layer
@@ -580,7 +581,7 @@ export class MapboxAPI {
 
             console.log(`[MapboxAPI] Final layer config for geojson layer. The final line-width is`, lineLayerConfig.paint['line-width']);
 
-            this._map.addLayer(lineLayerConfig, getInsertPosition(this._map, 'vector', 'line', config, []));
+            this._map.addLayer(lineLayerConfig, getInsertPosition(this._map, 'vector', 'line', config, this._orderedGroups));
         }
 
         // Add circle layer if circle properties are defined
@@ -596,7 +597,7 @@ export class MapboxAPI {
                 visible
             }, 'circle');
 
-            this._map.addLayer(circleLayerConfig, getInsertPosition(this._map, 'vector', 'circle', config, []));
+            this._map.addLayer(circleLayerConfig, getInsertPosition(this._map, 'vector', 'circle', config, this._orderedGroups));
         }
 
         // Add text layer if text properties are defined
@@ -612,7 +613,7 @@ export class MapboxAPI {
                 visible
             }, 'symbol');
 
-            this._map.addLayer(textLayerConfig, getInsertPosition(this._map, 'vector', 'symbol', config, []));
+            this._map.addLayer(textLayerConfig, getInsertPosition(this._map, 'vector', 'symbol', config, this._orderedGroups));
         }
     }
 
@@ -704,7 +705,7 @@ export class MapboxAPI {
                     visible
                 }, 'circle');
 
-                this._map.addLayer(layerConfig, getInsertPosition(this._map, 'csv', null, config, []));
+                this._map.addLayer(layerConfig, getInsertPosition(this._map, 'csv', null, config, this._orderedGroups));
 
                 // Set up refresh if specified
                 if (config.refresh && config.url) {
@@ -913,7 +914,7 @@ export class MapboxAPI {
                     visible
                 }, 'raster');
 
-                this._map.addLayer(layerConfig, getInsertPosition(this._map, 'img', null, config, []));
+                this._map.addLayer(layerConfig, getInsertPosition(this._map, 'img', null, config, this._orderedGroups));
 
                 if (config.refresh) {
                     this._setupImageRefresh(groupId, config);
@@ -1204,7 +1205,13 @@ export class MapboxAPI {
                     property.includes('-placement') || property.includes('-anchor') ||
                     property.includes('-field') || property.includes('-font') ||
                     property.includes('-size') || property.includes('-image') ||
-                    property.includes('-cap') || property.includes('-join')) {
+                    property.includes('-cap') || property.includes('-join') ||
+                    property.includes('-allow-overlap') || property.includes('-keep-upright') ||
+                    property.includes('-writing-mode') || property.includes('-transform') ||
+                    property.includes('-offset') || property.includes('-alignment') ||
+                    property.includes('-justify') || property.includes('-line-height') ||
+                    property.includes('-max-width') || property.includes('-variable-anchor') ||
+                    property.includes('-radial-offset') || property.includes('-padding')) {
                     layout[property] = style[property];
                 } else {
                     paint[property] = style[property];
@@ -1234,19 +1241,22 @@ export class MapboxAPI {
                 /^line-/,        // line-color, line-width, etc.
                 /^icon-/,        // icon-image, icon-color, etc.
                 /^circle-/,      // circle-radius, circle-color, etc.
-                /^text-/         // text-field, text-color, etc.
+                /^text-/,        // text-field, text-color, etc.
+                /^symbol-/       // symbol-sort-key, etc.
             ],
             line: [
                 /^fill-/,        // fill-color, fill-opacity, etc.
                 /^icon-/,        // icon-image, icon-color, etc.
                 /^circle-/,      // circle-radius, circle-color, etc.
-                /^text-/         // text-field, text-color, etc.
+                /^text-/,        // text-field, text-color, etc.
+                /^symbol-/       // symbol-sort-key, etc.
             ],
             circle: [
                 /^fill-/,        // fill-color, fill-opacity, etc.
                 /^line-/,        // line-color, line-width, etc.
                 /^icon-/,        // icon-image, icon-color, etc.
-                /^text-/         // text-field, text-color, etc.
+                /^text-/,        // text-field, text-color, etc.
+                /^symbol-/       // symbol-sort-key, etc.
             ]
         };
 

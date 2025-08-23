@@ -61,7 +61,8 @@ export class MapLayerControl {
 
         // Initialize MapboxAPI with the map and atlas configuration
         this._mapboxAPI = new MapboxAPI(map, {
-            styles: this._defaultStyles
+            styles: this._defaultStyles,
+            orderedGroups: this._state.groups
         });
 
         // Initialize layer settings modal
@@ -165,6 +166,11 @@ export class MapLayerControl {
                 return existingGroup ? { ...existingGroup, ...newGroup } : newGroup;
             })
         };
+
+        // Update the ordered groups in MapboxAPI
+        if (this._mapboxAPI) {
+            this._mapboxAPI._orderedGroups = this._state.groups;
+        }
 
         this._cleanupLayers();
         this._rebuildUI();
