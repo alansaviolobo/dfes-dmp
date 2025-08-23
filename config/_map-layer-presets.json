@@ -1497,6 +1497,85 @@
       }
     },
     {
+      "initiallyChecked": true,
+      "title": "Local Body Boundaries",
+      "description": "Municipal and Panchayat local body boundaries. Please see <a href='https://grammanchitra.gov.in/gm4MVC' target='_blank'>Gramanchiitra</a> for panchayat demographic profile and information on elected representatives.",
+      "headerImage": "assets/map-layers/map-layer-local-boundaries.png",
+      "type": "vector",
+      "id": "goa-local-body",
+      "url": "mapbox://planemad.2bqa1pq1",
+      "sourceLayer": "goa-local-body-boundaries",
+      "maxzoom": 10,
+      "attribution": "<a href='https://onemapgoagis.goa.gov.in/map/?c=0%2C0&s=0'>OneMapGoa</a> - Collected by <a href='https://datameet.org'>Datameet Community</a>",
+      "style": {
+        "text-field": [
+          "step",
+          [
+            "zoom"
+          ],
+          "",
+          9,
+          [
+            "to-string",
+            [
+              "get",
+              "Name"
+            ]
+          ]
+        ],
+        "symbol-sort-key": [
+          "match",
+          ["get", "Class"],
+          ["Urban"],
+          2,
+          ["Rurban"],
+          3,
+          4
+        ],
+        "text-color": "white",
+        "text-padding": 5,
+        "text-halo-color": "purple",
+        "text-transform": "uppercase",
+        "text-size": [
+          "match",
+          ["get", "Class"],
+          ["Urban"],
+          12,
+          ["Rurban"],
+          11,
+          10
+        ],
+        "text-font": [
+          "match",
+          ["get", "Class"],
+          ["Urban"],
+          ["Open Sans Bold"],
+          ["Open Sans Regular"]
+        ],
+        "fill-color": "rgba(255, 255, 255, 0.2)",
+        "line-color": "purple"
+      },
+      "inspect": {
+        "title": "Local Body Name",
+        "label": "Name",
+        "id": "fid",
+        "fields": [
+          "Village Names",
+          "Ward Count",
+          "Subdistrict Name",
+          "District Name",
+          "Code"
+        ],
+        "fieldTitles": [
+          "Villages",
+          "Ward Count",
+          "Sub District",
+          "District",
+          "LGD Code"
+        ]
+      }
+    },
+    {
       "title": "Local Body Boundaries",
       "description": "Municipal and Panchayat local body boundaries. Please see <a href='https://grammanchitra.gov.in/gm4MVC' target='_blank'>Gramanchiitra</a> for panchayat demographic profile and information on elected representatives.",
       "headerImage": "assets/map-layers/map-layer-local-boundaries.png",

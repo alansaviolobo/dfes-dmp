@@ -303,6 +303,10 @@
       }
     },
     {
+      "id": "goa-local-body",
+      "initiallyChecked": true
+    },
+    {
       "id": "weather-satellite"
     },
     {
@@ -310,6 +314,47 @@
     },
     {
       "id": "bus"
+    },
+    {
+      "title": "Wildlife Map of Goa",
+      "description": "Illustrated for <a href='https://www.mrugayaxpeditions.com/'>Mrugaya Xpeditions</a> by <a href='https://www.greenhumour.com/2023/06/the-wildlife-map-of-goa.html'>Rohan Chakravarty</a>.",
+      "source": "https://www.greenhumour.com/2023/06/the-wildlife-map-of-goa.html",
+      "dateDepicted": "2023",
+      "type": "tms",
+      "id": "goa-wildlife-map",
+      "url": "https://mapwarper.net/maps/tile/96197/{z}/{x}/{y}.png",
+      "style": {
+        "raster-opacity": [
+          "interpolate",
+          [
+            "linear"
+          ],
+          [
+            "zoom"
+          ],
+          6,
+          0.95,
+          18,
+          0.8,
+          19,
+          0.3
+        ]
+      },
+      "attribution": "© MapWarper - <a href=\"https://mapwarper.net/maps/96197#Rectify_tab\" target=\"_blank\">View Original</a>",
+      "headerImage": "https://mapwarper.net/uploads/96197/thumb/goa_biodiversity_map_final_web_1_copy.png",
+      "metadata": {
+        "title": "Wildlife Map of Goa",
+        "description": "Illustrated for Mrugaya Xpeditions by Rohan Chakravarty  ",
+        "source": "https://www.greenhumour.com/2023/06/the-wildlife-map-of-goa.html",
+        "attribution": "",
+        "dateDepicted": "2023",
+        "thumbnail": "https://mapwarper.net/uploads/96197/thumb/goa_biodiversity_map_final_web_1_copy.png",
+        "baseUrl": "https://mapwarper.net",
+        "mapId": "96197",
+        "originalUrl": "https://mapwarper.net/maps/96197#Rectify_tab",
+        "bbox": "73.582331,14.8063453,74.3893568,15.8940955"
+      },
+      "initiallyChecked": false
     },
     {
       "initiallyChecked": true,

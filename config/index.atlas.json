@@ -451,187 +451,37 @@
             ]
           ]
         ],
+        "symbol-sort-key": [
+          "match",
+          ["get", "Class"],
+          ["Urban"],
+          2,
+          ["Rurban"],
+          3,
+          4
+        ],
         "text-color": "white",
+        "text-padding": 5,
         "text-halo-color": "purple",
-        "text-halo-width": [
-          "case",
-          [
-            "boolean",
-            [
-              "feature-state",
-              "selected"
-            ],
-            false
-          ],
-          5,
-          [
-            "boolean",
-            [
-              "feature-state",
-              "hover"
-            ],
-            false
-          ],
-          4,
-          1
-        ],
         "text-transform": "uppercase",
-        "text-size": 12,
-        "text-opacity": [
-          "case",
-          [
-            "boolean",
-            [
-              "feature-state",
-              "selected"
-            ],
-            false
-          ],
-          1,
-          [
-            "boolean",
-            [
-              "feature-state",
-              "hover"
-            ],
-            false
-          ],
-          0.9,
-          0.7
-        ],
-        "fill-opacity": [
-          "case",
-          [
-            "boolean",
-            [
-              "feature-state",
-              "selected"
-            ],
-            false
-          ],
-          0,
-          [
-            "boolean",
-            [
-              "feature-state",
-              "hover"
-            ],
-            false
-          ],
-          0.6,
-          0.3
-        ],
-        "fill-color": [
-          "interpolate",
-          [
-            "linear"
-          ],
-          [
-            "zoom"
-          ],
-          9,
-          [
-            "case",
-            [
-              "boolean",
-              [
-                "feature-state",
-                "selected"
-              ],
-              false
-            ],
-            "rgba(255, 0, 0, 0)",
-            [
-              "boolean",
-              [
-                "feature-state",
-                "hover"
-              ],
-              false
-            ],
-            "rgba(255, 255, 255, 1)",
-            "rgba(255, 255, 255, 0.2)"
-          ],
-          14,
-          [
-            "case",
-            [
-              "boolean",
-              [
-                "feature-state",
-                "selected"
-              ],
-              false
-            ],
-            "rgba(255, 255, 255, 0)",
-            [
-              "boolean",
-              [
-                "feature-state",
-                "hover"
-              ],
-              false
-            ],
-            "rgba(255, 255, 255, 0.1)",
-            "rgba(255, 255, 255, 0.4)"
-          ]
-        ],
-        "line-color": "purple",
-        "line-width": [
-          "interpolate",
-          [
-            "linear"
-          ],
-          [
-            "zoom"
-          ],
+        "text-size": [
+          "match",
+          ["get", "Class"],
+          ["Urban"],
+          12,
+          ["Rurban"],
           11,
-          [
-            "case",
-            [
-              "boolean",
-              [
-                "feature-state",
-                "selected"
-              ],
-              false
-            ],
-            1.5,
-            [
-              "boolean",
-              [
-                "feature-state",
-                "hover"
-              ],
-              false
-            ],
-            1,
-            0
-          ],
-          14,
-          [
-            "case",
-            [
-              "boolean",
-              [
-                "feature-state",
-                "selected"
-              ],
-              false
-            ],
-            4,
-            [
-              "boolean",
-              [
-                "feature-state",
-                "hover"
-              ],
-              false
-            ],
-            3,
-            1
-          ]
-        ]
+          10
+        ],
+        "text-font": [
+          "match",
+          ["get", "Class"],
+          ["Urban"],
+          ["Open Sans Bold"],
+          ["Open Sans Regular"]
+        ],
+        "fill-color": "rgba(255, 255, 255, 0.2)",
+        "line-color": "purple"
       },
       "inspect": {
         "title": "Local Body Name",
@@ -1055,6 +905,18 @@
     },
     {
       "id": "goa-czmp-map"
+    },
+    {
+      "title": "Village Panchayat Landuse Survey",
+      "description": "Salvador Do Mundo VP Landuse Survey",
+      "type": "tms",
+      "id": "vp-landuse",
+      "url": "https://mapwarper.net/maps/tile/96085/{z}/{x}/{y}.png",
+      "style": {
+      },
+      "attribution": "© MapWarper - <a href=\"https://mapwarper.net/maps/96085#Rectify_tab\" target=\"_blank\">View Original</a>",
+      "headerImage": "https://mapwarper.net/uploads/96085/thumb/Salvador_M_lulc__1_.png",
+      "initiallyChecked": false
     },
     {
       "title": "Regional Development Plan for Goa 2021",
