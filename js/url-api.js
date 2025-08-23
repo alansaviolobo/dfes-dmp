@@ -223,6 +223,7 @@ class URLManager {
         let atlasParam = null;
         let geolocateParam = null;
         let terrainParam = null;
+        let animateParam = null;
 
         // Handle layers parameter
         if (options.updateLayers !== false) {
@@ -281,6 +282,21 @@ class URLManager {
             }
         }
 
+        // Handle animate parameter
+        if (options.animate !== undefined) {
+            const currentAnimateParam = urlParams.get('animate');
+            if (options.animate) {
+                animateParam = 'true';
+                if (currentAnimateParam !== 'true') {
+                    hasChanges = true;
+                }
+            } else {
+                if (currentAnimateParam !== null) {
+                    hasChanges = true;
+                }
+            }
+        }
+
         // Update URL if there are changes
         if (hasChanges) {
             // Build URL manually to avoid URL encoding issues (like %2C for commas)
@@ -292,6 +308,7 @@ class URLManager {
             otherParams.delete('atlas');
             otherParams.delete('geolocate');
             otherParams.delete('terrain');
+            otherParams.delete('animate');
             
             // Build the new URL manually to avoid URL encoding
             let newUrl = baseUrl;
@@ -323,6 +340,12 @@ class URLManager {
             const currentTerrain = terrainParam || (options.terrain === undefined ? urlParams.get('terrain') : null);
             if (currentTerrain) {
                 params.push('terrain=' + currentTerrain);
+            }
+            
+            // Add animate parameter (either new or preserved from current URL)
+            const currentAnimate = animateParam || (options.animate === undefined ? urlParams.get('animate') : null);
+            if (currentAnimate === 'true') {
+                params.push('animate=true');
             }
             
             // Combine all parameters
@@ -372,6 +395,7 @@ class URLManager {
         const layersParam = urlParams.get('layers');
         const geolocateParam = urlParams.get('geolocate');
         const terrainParam = urlParams.get('terrain');
+        const animateParam = urlParams.get('animate');
         
         // Auto-add terrain parameter if not present
         if (!terrainParam) {
@@ -379,7 +403,7 @@ class URLManager {
             this.autoAddTerrainParameter();
         }
         
-        if (!layersParam && !geolocateParam && !terrainParam) {
+        if (!layersParam && !geolocateParam && !terrainParam && !animateParam) {
             return false;
         }
 
@@ -418,6 +442,16 @@ class URLManager {
                         window.terrain3DControl.setExaggeration(exaggeration);
                         window.terrain3DControl.setEnabled(true);
                     }
+                }
+            }
+
+            // Handle animate parameter
+            if (animateParam && window.terrain3DControl) {
+                applied = true;
+                if (animateParam === 'true') {
+                    window.terrain3DControl.setAnimate(true);
+                } else {
+                    window.terrain3DControl.setAnimate(false);
                 }
             }
 
@@ -598,6 +632,13 @@ class URLManager {
      */
     updateTerrainParam(exaggeration) {
         this.updateURL({ terrain: exaggeration });
+    }
+
+    /**
+     * Update animate parameter in URL
+     */
+    updateAnimateParam(animate) {
+        this.updateURL({ animate: animate });
     }
 }
 

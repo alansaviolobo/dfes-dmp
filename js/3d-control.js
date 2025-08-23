@@ -2,14 +2,16 @@ export class Terrain3DControl {
     constructor(options = {}) {
         this.options = {
             initialExaggeration: 1.5,
-            minExaggeration: 0.1,
-            maxExaggeration: 5.0,
-            step: 0.1,
+            minExaggeration: 0,
+            maxExaggeration: 100.0,
+            step: 0.5,
             ...options
         };
         
         this._enabled = true; // Default to enabled
         this._exaggeration = this.options.initialExaggeration;
+        this._animate = false; // Default to disabled
+        this._animationFrame = null; // For requestAnimationFrame
         this._panel = null;
         this._map = null;
     }
@@ -26,7 +28,7 @@ export class Terrain3DControl {
         const $button = $('<button>', {
             class: 'mapboxgl-ctrl-icon',
             type: 'button',
-            'aria-label': '3D Terrain Controls',
+            'aria-label': '3D Controls',
             css: {
                 display: 'flex',
                 alignItems: 'center',
@@ -69,6 +71,9 @@ export class Terrain3DControl {
     }
 
     onRemove() {
+        // Stop animation if running
+        this._stopAnimation();
+        
         if (this._panel) {
             $(this._panel).remove();
         }
@@ -101,7 +106,7 @@ export class Terrain3DControl {
 
         // Title
         const $title = $('<h3>', {
-            text: '3D Terrain Controls',
+            text: '3D Controls',
             css: {
                 margin: '0 0 15px 0',
                 fontSize: '16px',
@@ -109,6 +114,34 @@ export class Terrain3DControl {
                 color: '#333'
             }
         });
+
+        // Animation checkbox
+        const $animateContainer = $('<div>', {
+            css: {
+                marginBottom: '15px',
+                display: 'flex',
+                alignItems: 'center'
+            }
+        });
+
+        const $animateCheckbox = $('<input>', {
+            type: 'checkbox',
+            id: 'terrain-3d-animate',
+            css: {
+                marginRight: '8px'
+            }
+        });
+
+        const $animateLabel = $('<label>', {
+            text: 'Animate around location',
+            'for': 'terrain-3d-animate',
+            css: {
+                cursor: 'pointer',
+                fontWeight: '500'
+            }
+        });
+
+        $animateContainer.append($animateCheckbox, $animateLabel);
 
         // Enable checkbox
         const $checkboxContainer = $('<div>', {
@@ -147,7 +180,7 @@ export class Terrain3DControl {
         });
 
         const $sliderLabel = $('<label>', {
-            text: 'Terrain Exaggeration',
+            text: 'Vertical Exaggeration',
             css: {
                 display: 'block',
                 marginBottom: '5px',
@@ -198,10 +231,15 @@ export class Terrain3DControl {
         });
 
         // Assemble panel
-        $content.append($title, $checkboxContainer, $sliderContainer);
+        $content.append($title, $animateContainer, $checkboxContainer, $sliderContainer);
         this._panel.append($closeButton, $content);
 
         // Add event handlers
+        $animateCheckbox.on('change', (e) => {
+            this._animate = e.target.checked;
+            this._updateAnimation();
+        });
+
         $checkbox.on('change', (e) => {
             this._enabled = e.target.checked;
             // Show/hide slider based on checkbox state
@@ -307,6 +345,57 @@ export class Terrain3DControl {
         }
     }
 
+    _updateAnimation() {
+        if (this._animate) {
+            this._startAnimation();
+        } else {
+            this._stopAnimation();
+        }
+        
+        // Update URL parameter
+        this._updateAnimationURLParameter();
+    }
+
+    _startAnimation() {
+        if (!this._map || this._animationFrame) return;
+        
+        const rotateCamera = (timestamp) => {
+            // clamp the rotation between 0 -360 degrees
+            // Divide timestamp by 100 to slow rotation to ~10 degrees / sec
+            this._map.rotateTo((timestamp / 100) % 360, { duration: 0 });
+            // Request the next frame of the animation.
+            this._animationFrame = requestAnimationFrame(rotateCamera);
+        };
+        
+        // Start the animation
+        this._animationFrame = requestAnimationFrame(rotateCamera);
+    }
+
+    _stopAnimation() {
+        if (this._animationFrame) {
+            cancelAnimationFrame(this._animationFrame);
+            this._animationFrame = null;
+        }
+    }
+
+    _updateAnimationURLParameter() {
+        // Use URL API if available, otherwise fall back to direct URL manipulation
+        if (window.urlManager && window.urlManager.updateAnimateParam) {
+            window.urlManager.updateAnimateParam(this._animate);
+        } else {
+            // Fallback to direct URL manipulation
+            const url = new URL(window.location);
+            if (this._animate) {
+                url.searchParams.set('animate', 'true');
+            } else {
+                url.searchParams.delete('animate');
+            }
+            
+            // Update URL without reloading the page
+            window.history.replaceState({}, '', url);
+        }
+    }
+
     // Public methods for external control
     setEnabled(enabled) {
         this._enabled = enabled;
@@ -334,12 +423,23 @@ export class Terrain3DControl {
         return this._exaggeration;
     }
 
+    setAnimate(animate) {
+        this._animate = animate;
+        $('#terrain-3d-animate').prop('checked', animate);
+        this._updateAnimation();
+    }
+
+    getAnimate() {
+        return this._animate;
+    }
+
     // Method to initialize from URL parameter
     initializeFromURL() {
         const urlParams = new URLSearchParams(window.location.search);
         const terrainParam = urlParams.get('terrain');
+        const animateParam = urlParams.get('animate');
         
-        console.log('[3D Control] Initializing from URL, terrain param:', terrainParam);
+        console.log('[3D Control] Initializing from URL, terrain param:', terrainParam, 'animate param:', animateParam);
         
         if (terrainParam) {
             const exaggeration = parseFloat(terrainParam);
@@ -361,6 +461,15 @@ export class Terrain3DControl {
             console.log('[3D Control] No terrain param, using default enabled state');
             this.setEnabled(true);
             this.setExaggeration(this.options.initialExaggeration);
+        }
+
+        // Handle animate parameter
+        if (animateParam === 'true') {
+            console.log('[3D Control] Setting animation enabled');
+            this.setAnimate(true);
+        } else {
+            console.log('[3D Control] Setting animation disabled (default)');
+            this.setAnimate(false);
         }
     }
 }
