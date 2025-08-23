@@ -338,7 +338,7 @@
         ]
       },
       "attribution": "© <a href='https://www.mrugayaxpeditions.com/'>Mrugaya Xpeditions</a>, <a href='https://www.greenhumour.com/2023/06/the-wildlife-map-of-goa.html'>Rohan Chakravarty</a> via <a href=\"https://mapwarper.net/maps/96197#Rectify_tab\" target=\"_blank\">Mapwarper</a>",
-      "headerImage": "https://mapwarper.net/uploads/96197/thumb/goa_biodiversity_map_final_web_1_copy.png",
+      "headerImage": "assets/map-layers/map-layer-goa-wildlife-map.png",
       "metadata": {
         "title": "Wildlife Map of Goa",
         "description": "Illustrated for Mrugaya Xpeditions by Rohan Chakravarty  ",
