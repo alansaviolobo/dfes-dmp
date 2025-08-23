@@ -72,18 +72,18 @@ function getLayerFormat(layer) {
 function createLayerCreatorDialog() {
     if (document.getElementById('layer-creator-dialog')) return;
     const dialogHtml = `
-    <sl-dialog id="layer-creator-dialog" label="Add new data source or atlas">
+    <sl-dialog id="layer-creator-dialog" label="Add new data source or atlas" class="layer-creator-modal">
         <form id="layer-creator-form" class="flex flex-col gap-4">
             <sl-select id="layer-preset-dropdown" placeholder="Select from current atlas layers">
                 <sl-icon slot="prefix" name="layers"></sl-icon>
             </sl-select>
-            <div class="text-xs text-gray-500">
+            <div class="text-xs text-gray-300">
                 Or add a new data source:
             </div>
             <sl-input id="layer-url" placeholder="URL to map data or atlas configuration JSON">
                 <sl-icon slot="prefix" name="link"></sl-icon>
             </sl-input>
-            <div id="layer-url-help" class="text-xs text-gray-500">
+            <div id="layer-url-help" class="text-xs text-gray-300">
                 Supported: Raster/Vector tile URLs, GeoJSON, Atlas JSON, MapWarper URLs.<br>
                 Examples:<br>
                 <span class="block">Raster: <code>https://warper.wmflabs.org/maps/tile/4749/{z}/{x}/{y}.png</code></span>
@@ -95,13 +95,99 @@ function createLayerCreatorDialog() {
             </div>
             <sl-textarea id="layer-config-json" rows="10" resize="vertical" class="font-mono text-xs" placeholder="Atlas Layer JSON"></sl-textarea>
             <div class="flex justify-end gap-2">
-                <sl-button type="button" variant="default" id="cancel-layer-creator">Cancel</sl-button>
-                <sl-button type="submit" variant="primary" id="submit-layer-creator">Add to map</sl-button>
+                <sl-button type="button" variant="default" id="cancel-layer-creator" class="layer-creator-btn">Cancel</sl-button>
+                <sl-button type="submit" variant="primary" id="submit-layer-creator" class="layer-creator-btn">Add to map</sl-button>
             </div>
         </form>
     </sl-dialog>
     `;
     $(document.body).append(dialogHtml);
+    
+    // Add consistent modal styling
+    const style = document.createElement('style');
+    style.textContent = `
+        .layer-creator-modal::part(panel) {
+            max-width: 95vw;
+            max-height: 95vh;
+            width: 100%;
+            height: auto;
+            background-color: hsl(218, 12.30%, 30.40%);
+            border: 1px solid #4b5563;
+            border-radius: 8px;
+        }
+        
+        .layer-creator-modal::part(header) {
+            background-color: hsl(218, 12.30%, 30.40%);
+            color: #f9fafb;
+            border-bottom: 1px solid #4b5563;
+        }
+        
+        .layer-creator-modal::part(body) {
+            background-color: hsl(218, 12.30%, 30.40%);
+            color: #f9fafb;
+        }
+        
+        .layer-creator-modal::part(footer) {
+            background-color: hsl(218, 12.30%, 30.40%);
+            border-top: 1px solid #4b5563;
+        }
+        
+        .layer-creator-btn {
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        
+        .layer-creator-btn::part(base) {
+            transition: all 0.2s ease;
+            border: 1px solid #4b5563;
+            border-color: hsl(0, 0%, 51%);
+            color: #f9fafb;
+            background-color: #6b7280;
+        }
+        
+        .layer-creator-btn:hover::part(base) {
+            border-color: #60a5fa;
+            background-color: #9ca3af;
+            border-color: hsl(0, 0%, 51%);
+            transform: translateY(-1px);
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+        }
+        
+        .layer-creator-btn[variant="primary"]::part(base) {
+            background-color: #3b82f6;
+            border-color: #3b82f6;
+        }
+        
+        .layer-creator-btn[variant="primary"]:hover::part(base) {
+            background-color: #2563eb;
+            border-color: #2563eb;
+        }
+        
+        .layer-creator-modal sl-input::part(base),
+        .layer-creator-modal sl-select::part(base),
+        .layer-creator-modal sl-textarea::part(base) {
+            background-color: #1f2937;
+            border-color: #4b5563;
+            color: #f9fafb;
+        }
+        
+        .layer-creator-modal sl-input::part(base):focus,
+        .layer-creator-modal sl-select::part(base):focus,
+        .layer-creator-modal sl-textarea::part(base):focus {
+            border-color: #60a5fa;
+            box-shadow: 0 0 0 2px rgba(96, 165, 250, 0.2);
+        }
+        
+        .layer-creator-modal code {
+            background-color: #1f2937;
+            color: #e5e7eb;
+            padding: 0.125rem 0.25rem;
+            border-radius: 0.25rem;
+            font-size: 0.875rem;
+            font-family: ui-monospace, SFMono-Regular, "SF Mono", Consolas, "Liberation Mono", Menlo, monospace;
+        }
+    `;
+    document.head.appendChild(style);
 }
 
 function guessLayerType(url) {

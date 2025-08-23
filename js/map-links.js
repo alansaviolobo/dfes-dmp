@@ -23,7 +23,7 @@ export class MapLinks {
                 <div class="map-links-grid">
                     <!-- Links will be populated here -->
                 </div>
-                <sl-button slot="footer" variant="neutral" id="${this.modalId}-close">Close</sl-button>
+                <sl-button slot="footer" variant="neutral" id="${this.modalId}-close" class="map-links-btn">Close</sl-button>
             </sl-dialog>
         `;
         
@@ -44,6 +44,50 @@ export class MapLinks {
             
             .map-links-modal::part(panel) {
                 max-width: 1200px;
+                max-width: 95vw;
+                max-height: 95vh;
+                width: 100%;
+                height: auto;
+                background-color: hsl(218, 12.30%, 30.40%);
+                border: 1px solid #4b5563;
+                border-radius: 8px;
+            }
+            
+            .map-links-modal::part(header) {
+                background-color: hsl(218, 12.30%, 30.40%);
+                color: #f9fafb;
+                border-bottom: 1px solid #4b5563;
+            }
+            
+            .map-links-modal::part(body) {
+                background-color: hsl(218, 12.30%, 30.40%);
+                color: #f9fafb;
+            }
+            
+            .map-links-modal::part(footer) {
+                background-color: hsl(218, 12.30%, 30.40%);
+                border-top: 1px solid #4b5563;
+            }
+            
+            .map-links-btn {
+                cursor: pointer;
+                transition: all 0.2s ease;
+            }
+            
+            .map-links-btn::part(base) {
+                transition: all 0.2s ease;
+                border: 1px solid #4b5563;
+                border-color: hsl(0, 0%, 51%);
+                color: #f9fafb;
+                background-color: #6b7280;
+            }
+            
+            .map-links-btn:hover::part(base) {
+                border-color: #60a5fa;
+                background-color: #9ca3af;
+                border-color: hsl(0, 0%, 51%);
+                transform: translateY(-1px);
+                box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
             }
             
             .map-links-grid {
@@ -66,7 +110,7 @@ export class MapLinks {
                 transition: all 0.2s ease;
                 text-decoration: none;
                 color: #f9fafb;
-                background:hsl(218, 12.30%, 30.40%);
+                background: hsl(218, 12.30%, 30.40%);
             }
             
             .map-link-card:hover {

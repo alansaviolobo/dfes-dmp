@@ -75,6 +75,22 @@
       ]
     },
     {
+      "id": "osm-places",
+      "title": "Places",
+      "description": "Places from the OpenStreetMap project. See <a href='https://wiki.openstreetmap.org/wiki/India/Tags/Place'>OpenStreetMap India Wiki</a> for details.",
+      "type": "vector",
+      "url": "https://vector.openstreetmap.org/shortbread_v1/{z}/{x}/{y}.mvt",
+      "sourceLayer": "place_labels",
+      "maxzoom": 15,
+      "attribution": "<a href='https://www.openstreetmap.org/#map=16/15.49493/73.82864'>© OpenStreetMap contributors</a> via <a href='https://shortbread-tiles.org/schema/1.0/'>Shortbread vector tiles</a>",
+      "style": {
+        "circle-radius": 10,
+        "circle-color": "#4c7fff",
+        "circle-stroke-width": 1.5,
+        "circle-stroke-color": "#ffffff"
+      }
+    },
+    {
       "id": "mapbox-traffic",
       "title": "Traffic",
       "description": "Live traffic map via <a href='https://docs.mapbox.com/data/tilesets/reference/mapbox-traffic-v1/' target='_blank'>Mapbox Traffic</a> vector tiles. Updated every 10 minutes.",
