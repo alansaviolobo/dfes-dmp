@@ -265,6 +265,11 @@ export class MapboxAPI {
                 sourceConfig.promoteId = { [config.sourceLayer]: config.inspect.id };
             }
 
+            // Add attribution if available
+            if (config.attribution) {
+                sourceConfig.attribution = config.attribution;
+            }
+
             this._map.addSource(sourceId, sourceConfig);
 
             // Add layers based on style properties
@@ -427,6 +432,11 @@ export class MapboxAPI {
                 sourceConfig.tiles = [config.url];
             }
 
+            // Add attribution if available
+            if (config.attribution) {
+                sourceConfig.attribution = config.attribution;
+            }
+
             this._map.addSource(sourceId, sourceConfig);
 
             const layerConfig = this._createLayerConfig({
@@ -500,6 +510,11 @@ export class MapboxAPI {
 
             if (config.inspect?.id) {
                 sourceConfig.promoteId = config.inspect.id;
+            }
+
+            // Add attribution if available
+            if (config.attribution) {
+                sourceConfig.attribution = config.attribution;
             }
 
             this._map.addSource(sourceId, sourceConfig);
@@ -688,7 +703,8 @@ export class MapboxAPI {
 
                 this._map.addSource(sourceId, {
                     type: 'geojson',
-                    data: geojson
+                    data: geojson,
+                    ...(config.attribution && { attribution: config.attribution })
                 });
 
                 const layerConfig = this._createLayerConfig({
@@ -827,6 +843,11 @@ export class MapboxAPI {
                     sourceConfig.promoteId = config.inspect.id;
                 }
 
+                // Add attribution if available
+                if (config.attribution) {
+                    sourceConfig.attribution = config.attribution;
+                }
+
                 this._map.addSource(sourceId, sourceConfig);
 
                 const layerConfig = this._createLayerConfig({
@@ -901,7 +922,8 @@ export class MapboxAPI {
                         [bounds[2], bounds[3]], // top-right
                         [bounds[2], bounds[1]], // bottom-right
                         [bounds[0], bounds[1]]  // bottom-left
-                    ]
+                    ],
+                    ...(config.attribution && { attribution: config.attribution })
                 });
 
                 const layerConfig = this._createLayerConfig({
