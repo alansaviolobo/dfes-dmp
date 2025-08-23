@@ -5,6 +5,7 @@ import { configControl } from './config-control.js';
 import { localization } from './localization.js';
 import { URLManager } from './url-api.js';
 import { permalinkHandler } from './permalink-handler.js';
+import { Terrain3DControl } from './3d-control.js';
 
 // Function to get URL parameters
 function getUrlParameter(name) {
@@ -453,27 +454,12 @@ async function initializeMap() {
         compact: true
     }), 'bottom-right');
 
-    // Add 3D terrain on map load
+            // Setup proper cursor handling for map dragging
     map.on('load', () => {
-        // Only add terrain if not already in style
-        const style = map.getStyle();
-        const hasTerrain = style.sources && style.sources['mapbox-dem'];
+        // Add 3D terrain control (will be initialized after URL manager is ready)
+        const terrain3DControl = new Terrain3DControl();
+        map.addControl(terrain3DControl, 'top-right');
         
-        if (!hasTerrain) {
-            map.addSource('mapbox-dem', {
-                'type': 'raster-dem',
-                'url': 'mapbox://mapbox.mapbox-terrain-dem-v1',
-                'tileSize': 512,
-                'maxzoom': 14
-            });
-            
-            map.setTerrain({
-                'source': 'mapbox-dem',
-                'exaggeration': 1.5
-            });
-        }
-        
-        // Setup proper cursor handling for map dragging
         const canvas = map.getCanvas();
         
         // Set default cursor
@@ -509,6 +495,8 @@ async function initializeMap() {
         
         // Add view control
         map.addControl(new ViewControl(), 'top-right');
+        
+
         
         // Initialize centralized state manager (NEW ARCHITECTURE)
         const stateManager = new MapFeatureStateManager(map);
@@ -556,6 +544,12 @@ async function initializeMap() {
         
         // Make URL manager globally accessible for ShareLink
         window.urlManager = urlManager;
+        
+        // Make 3D control globally accessible
+        window.terrain3DControl = terrain3DControl;
+        
+        // Initialize 3D control from URL parameters after URL manager is ready
+        terrain3DControl.initializeFromURL();
         
         // Force update localization after DOM elements are ready
         setTimeout(() => {

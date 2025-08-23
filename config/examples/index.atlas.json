@@ -66,10 +66,6 @@
     },
     {
       "id": "osm"
-    },
-    {
-      "initiallyChecked": false,
-      "id": "3d-terrain"
-    }
-  ]
+          }
+    ]
 }

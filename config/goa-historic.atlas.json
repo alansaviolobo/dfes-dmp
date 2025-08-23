@@ -42,9 +42,6 @@
     {
       "initiallyChecked": true,
       "id": "mapbox-satellite"
-    },
-    {
-      "id": "3d-terrain"
-    }
-  ]
+          }
+    ]
 }

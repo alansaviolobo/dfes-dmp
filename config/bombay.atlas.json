@@ -143,9 +143,6 @@
     { "id": "1792-general-atlas" },
     {
       "id": "osm"      
-    },
-    {
-      "id": "3d-terrain"
-    }
-  ]
+          }
+    ]
 }

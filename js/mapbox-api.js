@@ -75,8 +75,7 @@ export class MapboxAPI {
                     return this._createImageLayer(groupId, config, visible);
                 case 'raster-style-layer':
                     return this._createRasterStyleLayer(groupId, config, visible);
-                case 'terrain':
-                    return this._createTerrainLayer(groupId, config, visible);
+
                 case 'layer-group':
                     return this._createLayerGroupToggle(groupId, config, visible);
                 default:
@@ -115,8 +114,7 @@ export class MapboxAPI {
                     return this._updateImageLayerVisibility(groupId, config, visible);
                 case 'raster-style-layer':
                     return this._updateRasterStyleLayerVisibility(groupId, config, visible);
-                case 'terrain':
-                    return this._updateTerrainLayerVisibility(groupId, config, visible);
+
                 case 'layer-group':
                     return this._updateLayerGroupToggleVisibility(groupId, config, visible);
                 default:
@@ -159,8 +157,7 @@ export class MapboxAPI {
                     return this._removeImageLayer(groupId, config);
                 case 'raster-style-layer':
                     return this._removeRasterStyleLayer(groupId, config);
-                case 'terrain':
-                    return this._removeTerrainLayer(groupId, config);
+
                 default:
                     return true; // No-op for unknown types
             }
@@ -1088,27 +1085,7 @@ export class MapboxAPI {
         return true;
     }
 
-    // Terrain layer methods
-    _createTerrainLayer(groupId, config, visible) {
-        this._map.setTerrain(visible ? { source: 'mapbox-dem', exaggeration: 1.5 } : null);
-        this._map.setFog(visible ? {
-            'color': 'white',
-            'horizon-blend': 0.1,
-            'high-color': '#add8e6',
-            'star-intensity': 0.1
-        } : null);
-        return true;
-    }
 
-    _updateTerrainLayerVisibility(groupId, config, visible) {
-        return this._createTerrainLayer(groupId, config, visible);
-    }
-
-    _removeTerrainLayer(groupId, config) {
-        this._map.setTerrain(null);
-        this._map.setFog(null);
-        return true;
-    }
 
     // Layer group toggle methods
     _createLayerGroupToggle(groupId, config, visible) {

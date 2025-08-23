@@ -323,21 +323,7 @@
           18,
           0.1
         ]
-      },
-      "terrain": {
-        "exaggeration": 1.5,
-        "fog": {
-          "range": [
-            -1,
-            2
-          ],
-          "horizon-blend": 0.3,
-          "color": "#ffffff",
-          "high-color": "#add8e6",
-          "space-color": "#d8f2ff",
-          "star-intensity": 0.0
-        }
+              }
       }
-    }
   }
 }

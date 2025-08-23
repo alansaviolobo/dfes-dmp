@@ -382,11 +382,6 @@
         ],
         "raster-opacity": 1
       }
-    },
-    {
-      "id": "3d-terrain",
-      "title": "3D Terrain",
-      "type": "terrain"
-    }
-  ]
+          }
+    ]
 }

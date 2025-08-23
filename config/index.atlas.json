@@ -954,12 +954,6 @@
     },
     {
       "id": "mapbox-satellite"
-    },
-    {
-      "initiallyChecked": true,
-      "id": "3d-terrain",
-      "title": "3D Terrain",
-      "type": "terrain"
-    }
-  ]
+          }
+    ]
 }

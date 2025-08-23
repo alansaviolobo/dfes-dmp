@@ -182,10 +182,7 @@ export class MapLayerControl {
     _cleanupLayers() {
         if (!this._mapboxAPI) return;
 
-        // Disable terrain first
-        if (this._map.getTerrain()) {
-            this._map.setTerrain(null);
-        }
+
 
         // Remove all custom layers and sources using MapboxAPI
         this._state.groups.forEach(group => {
@@ -598,9 +595,7 @@ export class MapLayerControl {
             case 'style':
                 this._addStyleLayerContent($groupHeader, group);
                 break;
-            case 'terrain':
-                this._addTerrainContent($groupHeader, group);
-                break;
+            
             default:
                 // Most layer types don't need special content
                 break;
@@ -795,54 +790,9 @@ export class MapLayerControl {
     /**
      * Add terrain specific content
      */
-    _addTerrainContent($groupHeader, group) {
-        const $sourceControl = $('<div>', { class: 'source-control mt-3 terrain-control-container' });
-        
-        // Add contours toggle
-        const $contoursContainer = this._createContoursControl();
-        $sourceControl.append($contoursContainer);
-        
-        // Add terrain controls
-        const $terrainControls = this._createTerrainControls();
-        $sourceControl.append($terrainControls);
-        
-        $groupHeader.append($sourceControl);
-    }
 
-    /**
-     * Create contours control
-     */
-    _createContoursControl() {
-        const $contoursContainer = $('<div>', { class: 'mb-4' });
-        const $contoursLabel = $('<label>', { class: 'flex items-center' });
-        
-        const $contoursToggleLabel = $('<label>', { class: 'toggle-switch mr-2' });
-        const $contoursToggleInput = $('<input>', { type: 'checkbox', checked: false });
-        const $contoursToggleSlider = $('<span>', { class: 'toggle-slider' });
-        
-        $contoursToggleLabel.append($contoursToggleInput, $contoursToggleSlider);
-        
-        $contoursToggleInput.on('change', (e) => {
-            const contourLayers = ['contour lines', 'contour labels'];
-            contourLayers.forEach(layerId => {
-                if (this._map.getLayer(layerId)) {
-                    this._map.setLayoutProperty(
-                        layerId,
-                        'visibility',
-                        e.target.checked ? 'visible' : 'none'
-                    );
-                }
-            });
-        });
-        
-        $contoursLabel.append(
-            $contoursToggleLabel,
-            $('<span>', { class: 'text-sm text-gray-700', text: 'Contours' })
-        );
-        
-        $contoursContainer.append($contoursLabel);
-        return $contoursContainer;
-    }
+
+
 
     /**
      * Create terrain controls (simplified version)
@@ -1106,8 +1056,8 @@ export class MapLayerControl {
     _registerLayerWithStateManager(layerConfig) {
         if (!this._stateManager) return;
         
-        // Skip terrain and style layers as they don't have their own sources/features
-        if (layerConfig.type === 'terrain' || layerConfig.type === 'style') {
+        // Skip style layers as they don't have their own sources/features
+        if (layerConfig.type === 'style') {
             if (layerConfig.type === 'style') {
                 console.debug(`[LayerControl] Skipping state manager registration for style layer ${layerConfig.id} (uses base map sources)`);
             }

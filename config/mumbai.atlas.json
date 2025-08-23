@@ -370,9 +370,6 @@
     {
       "id": "mapbox-satellite",
       "initiallyChecked": true
-    },
-    {
-      "id": "3d-terrain"
-    }
-  ]
+          }
+    ]
 }

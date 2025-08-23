@@ -222,6 +222,7 @@ class URLManager {
         let layersParam = null;
         let atlasParam = null;
         let geolocateParam = null;
+        let terrainParam = null;
 
         // Handle layers parameter
         if (options.updateLayers !== false) {
@@ -263,6 +264,23 @@ class URLManager {
             }
         }
 
+        // Handle terrain parameter
+        if (options.terrain !== undefined) {
+            const currentTerrainParam = urlParams.get('terrain');
+            if (options.terrain !== null && options.terrain !== 0) {
+                terrainParam = options.terrain.toString();
+                if (currentTerrainParam !== terrainParam) {
+                    hasChanges = true;
+                }
+            } else {
+                // Set to 0 when disabled
+                terrainParam = '0';
+                if (currentTerrainParam !== '0') {
+                    hasChanges = true;
+                }
+            }
+        }
+
         // Update URL if there are changes
         if (hasChanges) {
             // Build URL manually to avoid URL encoding issues (like %2C for commas)
@@ -273,6 +291,7 @@ class URLManager {
             otherParams.delete('layers');
             otherParams.delete('atlas');
             otherParams.delete('geolocate');
+            otherParams.delete('terrain');
             
             // Build the new URL manually to avoid URL encoding
             let newUrl = baseUrl;
@@ -298,6 +317,12 @@ class URLManager {
             const currentGeolocate = geolocateParam || (options.geolocate === undefined ? urlParams.get('geolocate') : null);
             if (currentGeolocate === 'true') {
                 params.push('geolocate=true');
+            }
+            
+            // Add terrain parameter (either new or preserved from current URL)
+            const currentTerrain = terrainParam || (options.terrain === undefined ? urlParams.get('terrain') : null);
+            if (currentTerrain) {
+                params.push('terrain=' + currentTerrain);
             }
             
             // Combine all parameters
@@ -346,8 +371,15 @@ class URLManager {
         const urlParams = new URLSearchParams(window.location.search);
         const layersParam = urlParams.get('layers');
         const geolocateParam = urlParams.get('geolocate');
+        const terrainParam = urlParams.get('terrain');
         
-        if (!layersParam && !geolocateParam) {
+        // Auto-add terrain parameter if not present
+        if (!terrainParam) {
+            console.log('[URL API] No terrain parameter found, auto-adding default');
+            this.autoAddTerrainParameter();
+        }
+        
+        if (!layersParam && !geolocateParam && !terrainParam) {
             return false;
         }
 
@@ -373,6 +405,20 @@ class URLManager {
                 setTimeout(() => {
                     this.triggerGeolocation();
                 }, 1000);
+            }
+            
+            // Handle terrain parameter
+            if (terrainParam && window.terrain3DControl) {
+                applied = true;
+                const exaggeration = parseFloat(terrainParam);
+                if (!isNaN(exaggeration)) {
+                    if (exaggeration === 0) {
+                        window.terrain3DControl.setEnabled(false);
+                    } else {
+                        window.terrain3DControl.setExaggeration(exaggeration);
+                        window.terrain3DControl.setEnabled(true);
+                    }
+                }
             }
 
         } catch (error) {
@@ -514,6 +560,44 @@ class URLManager {
      */
     updateGeolocateParam(isActive) {
         this.updateURL({ geolocate: isActive });
+    }
+
+    /**
+     * Auto-add terrain parameter with default exaggeration from style
+     */
+    autoAddTerrainParameter() {
+        if (!this.map) return;
+        
+        // Get the default exaggeration from the map style or use 1.5 as fallback
+        let defaultExaggeration = 1.5;
+        
+        try {
+            const style = this.map.getStyle();
+            if (style && style.terrain && style.terrain.exaggeration) {
+                defaultExaggeration = style.terrain.exaggeration;
+            }
+        } catch (error) {
+            console.debug('Could not get terrain exaggeration from style, using default:', defaultExaggeration);
+        }
+        
+        console.log('[URL API] Auto-adding terrain parameter with exaggeration:', defaultExaggeration);
+        
+        // Add terrain parameter to URL
+        this.updateURL({ terrain: defaultExaggeration });
+        
+        // Also initialize the 3D control if available
+        if (window.terrain3DControl) {
+            console.log('[URL API] Initializing 3D control with exaggeration:', defaultExaggeration);
+            window.terrain3DControl.setExaggeration(defaultExaggeration);
+            window.terrain3DControl.setEnabled(true);
+        }
+    }
+
+    /**
+     * Update terrain parameter in URL
+     */
+    updateTerrainParam(exaggeration) {
+        this.updateURL({ terrain: exaggeration });
     }
 }
 

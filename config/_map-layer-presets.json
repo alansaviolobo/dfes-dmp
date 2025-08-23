@@ -4739,15 +4739,6 @@
         ],
         "raster-opacity": 1
       }
-    },
-    {
-      "id": "3d-terrain",
-      "tags": ["satellite","basemap"],
-      "title": "3D Terrain",
-      "description": "Terrain Controls",
-      "headerImage": "assets/map-layers/map-layer-3d-terrain.png",
-      "type": "terrain",
-      "initiallyChecked": true
     }
   ],
   "styles": {
