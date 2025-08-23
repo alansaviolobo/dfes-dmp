@@ -1497,7 +1497,6 @@
       }
     },
     {
-      "initiallyChecked": true,
       "title": "Local Body Boundaries",
       "description": "Municipal and Panchayat local body boundaries. Please see <a href='https://grammanchitra.gov.in/gm4MVC' target='_blank'>Gramanchiitra</a> for panchayat demographic profile and information on elected representatives.",
       "headerImage": "assets/map-layers/map-layer-local-boundaries.png",

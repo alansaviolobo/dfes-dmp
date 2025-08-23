@@ -174,7 +174,8 @@
       "id": "municipal-wards"
     },
     {
-      "id": "local-body"
+      "id": "goa-local-body",
+      "initiallyChecked": true
     },
     {
       "id": "rivers"
@@ -301,10 +302,6 @@
         "line-color": "black",
         "line-width": 0.2
       }
-    },
-    {
-      "id": "goa-local-body",
-      "initiallyChecked": true
     },
     {
       "id": "weather-satellite"
