@@ -18,7 +18,6 @@
     {
       "id": "osm-places"
     },
-
     {
       "id": "mapbox-traffic"
     },
@@ -93,7 +92,7 @@
       }
     },
     {
-      "id": "school-udise"
+      "id": "udise-schools"
     },
     {
       "title": "Schools",

@@ -287,9 +287,10 @@ export class MapboxAPI {
         const userHasFillStyles = config.style && (config.style['fill-color'] || config.style['fill-opacity']);
         const userHasLineStyles = config.style && (config.style['line-color'] || config.style['line-width']);
         const userHasTextStyles = config.style && config.style['text-field'];
+        const userHasCircleStyles = config.style && (config.style['circle-radius'] || config.style['circle-color']);
         
         // If user has only line styles defined, treat this as a linestring layer and don't apply fill styles
-        const userOnlyHasLineStyles = userHasLineStyles && !userHasFillStyles && !userHasTextStyles;
+        const userOnlyHasLineStyles = userHasLineStyles && !userHasFillStyles && !userHasTextStyles && !userHasCircleStyles;
         
         // Check if fill layer should be created
         // If user only has line styles, don't create fill layer even if defaults exist
@@ -303,6 +304,9 @@ export class MapboxAPI {
         // Check if text layer should be created (user styles or defaults)
         const hasTextStyles = userHasTextStyles ||
                              (defaultStyles.text && defaultStyles.text['text-field']);
+        
+        // Check if circle layer should be created (only if user explicitly defines circle properties)
+        const hasCircleStyles = userHasCircleStyles;
 
         // Add fill layer
         if (hasFillStyles) {
@@ -340,6 +344,24 @@ export class MapboxAPI {
             this._map.addLayer(layerConfig, getInsertPosition(this._map, 'vector', 'line', config, this._orderedGroups));
         }
 
+        // Add circle layer if circle properties are defined
+        if (hasCircleStyles) {
+            // Filter style to only include circle-related properties
+            const circleStyle = this._filterStyleForLayerType(config.style, 'circle');
+            
+            const layerConfig = this._createLayerConfig({
+                id: `vector-layer-${groupId}-circle`,
+                type: 'circle',
+                source: sourceId,
+                'source-layer': config.sourceLayer || 'default',
+                style: circleStyle,
+                filter: config.filter,
+                visible
+            }, 'circle');
+
+            this._map.addLayer(layerConfig, getInsertPosition(this._map, 'vector', 'circle', config, this._orderedGroups));
+        }
+
         // Add text layer
         if (hasTextStyles) {
             // Filter style to only include symbol/text-related properties
@@ -363,6 +385,7 @@ export class MapboxAPI {
         const layers = [
             `vector-layer-${groupId}`,
             `vector-layer-${groupId}-outline`,
+            `vector-layer-${groupId}-circle`,
             `vector-layer-${groupId}-text`
         ];
 
@@ -380,6 +403,7 @@ export class MapboxAPI {
         const layers = [
             `vector-layer-${groupId}`,
             `vector-layer-${groupId}-outline`,
+            `vector-layer-${groupId}-circle`,
             `vector-layer-${groupId}-text`
         ];
 
@@ -404,6 +428,9 @@ export class MapboxAPI {
         }
         if (this._map.getLayer(`vector-layer-${groupId}-outline`)) {
             this._map.setPaintProperty(`vector-layer-${groupId}-outline`, 'line-opacity', opacity);
+        }
+        if (this._map.getLayer(`vector-layer-${groupId}-circle`)) {
+            this._map.setPaintProperty(`vector-layer-${groupId}-circle`, 'circle-opacity', opacity);
         }
         if (this._map.getLayer(`vector-layer-${groupId}-text`)) {
             this._map.setPaintProperty(`vector-layer-${groupId}-text`, 'text-opacity', opacity);
@@ -1132,6 +1159,7 @@ export class MapboxAPI {
                 return [
                     `vector-layer-${groupId}`,
                     `vector-layer-${groupId}-outline`,
+                    `vector-layer-${groupId}-circle`,
                     `vector-layer-${groupId}-text`
                 ].filter(id => this._map.getLayer(id));
             case 'tms':

@@ -194,19 +194,18 @@
       }
     },
     {
-      "id": "school-udise",
+      "id": "udise-schools",
       "title": "Schools (Udise)",
-      "description": "Place locations from Karmashape",
+      "description": "School locations from UDISE (Unified District Information System for Education). Check <a href='https://dashboard.udiseplus.gov.in/#/NIC'>NIC school dashboard</a> for latest data and <a href='https://kys.udiseplus.gov.in/#/home'>UDISE Plus: Know Your School</a> for school level report cards.",
       "type": "vector",
       "url": "https://indianopenmaps.fly.dev/not-so-open/education/schools/udise/ncog/{z}/{x}/{y}.pbf",
       "sourceLayer": "NCOG_UDISE_Schools",
-      "attribution": "<a href='https://www.data.gov.in/resource/delivery-post-office-pincode-boundary'>Ministry of Communications Department of Posts</a> - Collected by <a href='https://github.com/ramSeraph/indian_admin_boundaries/releases/tag/postal'>Datameet Community</a>",
-      "maxzoom": 14,
+      "attribution": "<a href='https://schoolgis.nic.in'>Ministry of Education, Department of School Education & Literacy</a> - Collected by <a href='https://github.com/ramSeraph/indian_admin_boundaries/releases/tag/postal'>Datameet Community</a>",
+      "maxzoom": 10,
       "style": {
+        "text-field": ["get","school_nam"],
         "circle-radius": 10,
-        "circle-color": "#4c7fff",
-        "circle-stroke-width": 1.5,
-        "circle-stroke-color": "#ffffff"
+        "circle-color": "#4c7fff"
       },
       "inspect": {
         "id": "Name",
