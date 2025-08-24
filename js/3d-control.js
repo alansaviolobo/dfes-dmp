@@ -11,6 +11,7 @@ export class Terrain3DControl {
         this._enabled = true; // Default to enabled
         this._exaggeration = this.options.initialExaggeration;
         this._animate = false; // Default to disabled
+        this._showWireframe = false; // Default to disabled
         this._animationFrame = null; // For requestAnimationFrame
         this._panel = null;
         this._map = null;
@@ -209,7 +210,35 @@ export class Terrain3DControl {
             }
         });
 
-        $sliderContainer.append($sliderLabel, $slider, $sliderValue);
+        // Wireframe checkbox (grouped with exaggeration controls)
+        const $wireframeContainer = $('<div>', {
+            css: {
+                marginTop: '15px',
+                display: 'flex',
+                alignItems: 'center'
+            }
+        });
+
+        const $wireframeCheckbox = $('<input>', {
+            type: 'checkbox',
+            id: 'terrain-3d-wireframe',
+            css: {
+                marginRight: '8px'
+            }
+        });
+
+        const $wireframeLabel = $('<label>', {
+            text: 'Show terrain mesh',
+            'for': 'terrain-3d-wireframe',
+            css: {
+                cursor: 'pointer',
+                fontWeight: '500'
+            }
+        });
+
+        $wireframeContainer.append($wireframeCheckbox, $wireframeLabel);
+
+        $sliderContainer.append($sliderLabel, $slider, $sliderValue, $wireframeContainer);
 
         // Close button
         const $closeButton = $('<button>', {
@@ -240,9 +269,14 @@ export class Terrain3DControl {
             this._updateAnimation();
         });
 
+        $wireframeCheckbox.on('change', (e) => {
+            this._showWireframe = e.target.checked;
+            this._updateWireframe();
+        });
+
         $checkbox.on('change', (e) => {
             this._enabled = e.target.checked;
-            // Show/hide slider based on checkbox state
+            // Show/hide slider container (which includes wireframe checkbox) based on checkbox state
             $sliderContainer.css('display', this._enabled ? 'block' : 'none');
             this._updateTerrain();
         });
@@ -396,12 +430,40 @@ export class Terrain3DControl {
         }
     }
 
+    _updateWireframe() {
+        if (!this._map) return;
+        
+        // Toggle the terrain wireframe debug feature
+        this._map.showTerrainWireframe = this._showWireframe;
+        
+        // Update URL parameter
+        this._updateWireframeURLParameter();
+    }
+
+    _updateWireframeURLParameter() {
+        // Use URL API if available, otherwise fall back to direct URL manipulation
+        if (window.urlManager && window.urlManager.updateWireframeParam) {
+            window.urlManager.updateWireframeParam(this._showWireframe);
+        } else {
+            // Fallback to direct URL manipulation
+            const url = new URL(window.location);
+            if (this._showWireframe) {
+                url.searchParams.set('wireframe', 'true');
+            } else {
+                url.searchParams.delete('wireframe');
+            }
+            
+            // Update URL without reloading the page
+            window.history.replaceState({}, '', url);
+        }
+    }
+
     // Public methods for external control
     setEnabled(enabled) {
         this._enabled = enabled;
         $('#terrain-3d-enabled').prop('checked', enabled);
-        // Show/hide slider based on enabled state
-        $('.terrain-3d-panel input[type="range"]').parent().css('display', enabled ? 'block' : 'none');
+        // Show/hide slider container (which includes wireframe checkbox) based on enabled state
+        $('.terrain-3d-panel input[type="range"]').closest('div').css('display', enabled ? 'block' : 'none');
         this._updateTerrain();
     }
 
@@ -433,13 +495,24 @@ export class Terrain3DControl {
         return this._animate;
     }
 
+    setWireframe(wireframe) {
+        this._showWireframe = wireframe;
+        $('#terrain-3d-wireframe').prop('checked', wireframe);
+        this._updateWireframe();
+    }
+
+    getWireframe() {
+        return this._showWireframe;
+    }
+
     // Method to initialize from URL parameter
     initializeFromURL() {
         const urlParams = new URLSearchParams(window.location.search);
         const terrainParam = urlParams.get('terrain');
         const animateParam = urlParams.get('animate');
+        const wireframeParam = urlParams.get('wireframe');
         
-        console.log('[3D Control] Initializing from URL, terrain param:', terrainParam, 'animate param:', animateParam);
+        console.log('[3D Control] Initializing from URL, terrain param:', terrainParam, 'animate param:', animateParam, 'wireframe param:', wireframeParam);
         
         if (terrainParam) {
             const exaggeration = parseFloat(terrainParam);
@@ -470,6 +543,15 @@ export class Terrain3DControl {
         } else {
             console.log('[3D Control] Setting animation disabled (default)');
             this.setAnimate(false);
+        }
+
+        // Handle wireframe parameter
+        if (wireframeParam === 'true') {
+            console.log('[3D Control] Setting wireframe enabled');
+            this.setWireframe(true);
+        } else {
+            console.log('[3D Control] Setting wireframe disabled (default)');
+            this.setWireframe(false);
         }
     }
 }
