@@ -15,6 +15,34 @@ export class Terrain3DControl {
         this._animationFrame = null; // For requestAnimationFrame
         this._panel = null;
         this._map = null;
+        this._terrainSource = 'mapbox'; // Default to Mapbox terrain
+        
+        // Define terrain sources
+        this._terrainSources = {
+            'mapbox': {
+                name: 'Mapbox Terrain',
+                sourceConfig: {
+                    'type': 'raster-dem',
+                    'url': 'mapbox://mapbox.mapbox-terrain-dem-v1',
+                    'tileSize': 512,
+                    'maxzoom': 14
+                },
+                sourceId: 'mapbox-dem'
+            },
+            'cartodem': {
+                name: 'ISRO CartoDEM 30m',
+                sourceConfig: {
+                    'type': 'raster-dem',
+                    'tiles': [
+                        'https://indianopenmaps.fly.dev/dem/terrain-rgb/cartodem-v3r1/bhuvan/{z}/{x}/{y}.webp'
+                    ],
+                    'tileSize': 512,
+                    'attribution': 'ISRO/Bhuvan CartoDEM'
+                },
+                sourceId: 'cartodem',
+                hillshadeLayerId: 'cartodem-hillshade'
+            }
+        };
     }
 
     onAdd(map) {
@@ -115,6 +143,45 @@ export class Terrain3DControl {
                 color: '#333'
             }
         });
+
+        // Terrain source selector
+        const $terrainSourceContainer = $('<div>', {
+            css: {
+                marginBottom: '15px'
+            }
+        });
+
+        const $terrainSourceLabel = $('<label>', {
+            text: 'Terrain Source',
+            css: {
+                display: 'block',
+                marginBottom: '5px',
+                fontWeight: '500'
+            }
+        });
+
+        const $terrainSourceSelect = $('<select>', {
+            id: 'terrain-source-select',
+            css: {
+                width: '100%',
+                padding: '5px',
+                borderRadius: '3px',
+                border: '1px solid #ccc',
+                fontSize: '14px'
+            }
+        });
+
+        // Populate terrain source options
+        Object.keys(this._terrainSources).forEach(key => {
+            const option = $('<option>', {
+                value: key,
+                text: this._terrainSources[key].name,
+                selected: key === this._terrainSource
+            });
+            $terrainSourceSelect.append(option);
+        });
+
+        $terrainSourceContainer.append($terrainSourceLabel, $terrainSourceSelect);
 
         // Animation checkbox
         const $animateContainer = $('<div>', {
@@ -260,10 +327,16 @@ export class Terrain3DControl {
         });
 
         // Assemble panel
-        $content.append($title, $animateContainer, $checkboxContainer, $sliderContainer);
+        $content.append($title, $terrainSourceContainer, $animateContainer, $checkboxContainer, $sliderContainer);
         this._panel.append($closeButton, $content);
 
         // Add event handlers
+        $terrainSourceSelect.on('change', (e) => {
+            this._terrainSource = e.target.value;
+            this._updateTerrain();
+            this._updateTerrainSourceURLParameter();
+        });
+
         $animateCheckbox.on('change', (e) => {
             this._animate = e.target.checked;
             this._updateAnimation();
@@ -324,19 +397,34 @@ export class Terrain3DControl {
         if (!this._map) return;
 
         if (this._enabled) {
-            // Ensure DEM source exists
-            if (!this._map.getSource('mapbox-dem')) {
-                this._map.addSource('mapbox-dem', {
-                    'type': 'raster-dem',
-                    'url': 'mapbox://mapbox.mapbox-terrain-dem-v1',
-                    'tileSize': 512,
-                    'maxzoom': 14
-                });
+            const terrainConfig = this._terrainSources[this._terrainSource];
+            if (!terrainConfig) {
+                console.warn(`Unknown terrain source: ${this._terrainSource}`);
+                return;
+            }
+
+            // Remove existing terrain sources and layers
+            this._removeExistingTerrainSources();
+
+            // Add the selected terrain source
+            if (!this._map.getSource(terrainConfig.sourceId)) {
+                this._map.addSource(terrainConfig.sourceId, terrainConfig.sourceConfig);
+            }
+
+            // For CartoDEM, also add hillshade layer
+            if (this._terrainSource === 'cartodem' && terrainConfig.hillshadeLayerId) {
+                if (!this._map.getLayer(terrainConfig.hillshadeLayerId)) {
+                    this._map.addLayer({
+                        'id': terrainConfig.hillshadeLayerId,
+                        'type': 'hillshade',
+                        'source': terrainConfig.sourceId
+                    });
+                }
             }
 
             // Set terrain
             this._map.setTerrain({
-                'source': 'mapbox-dem',
+                'source': terrainConfig.sourceId,
                 'exaggeration': this._exaggeration
             });
 
@@ -348,13 +436,29 @@ export class Terrain3DControl {
                 'star-intensity': 0.1
             });
         } else {
-            // Disable terrain and fog
+            // Disable terrain and fog, remove sources
             this._map.setTerrain(null);
             this._map.setFog(null);
+            this._removeExistingTerrainSources();
         }
 
         // Update URL parameter
         this._updateURLParameter();
+    }
+
+    _removeExistingTerrainSources() {
+        // Remove all terrain sources and associated layers
+        Object.values(this._terrainSources).forEach(config => {
+            // Remove hillshade layer if it exists
+            if (config.hillshadeLayerId && this._map.getLayer(config.hillshadeLayerId)) {
+                this._map.removeLayer(config.hillshadeLayerId);
+            }
+            
+            // Remove source if it exists
+            if (this._map.getSource(config.sourceId)) {
+                this._map.removeSource(config.sourceId);
+            }
+        });
     }
 
     _updateURLParameter() {
@@ -458,6 +562,24 @@ export class Terrain3DControl {
         }
     }
 
+    _updateTerrainSourceURLParameter() {
+        // Use URL API if available, otherwise fall back to direct URL manipulation
+        if (window.urlManager && window.urlManager.updateTerrainSourceParam) {
+            window.urlManager.updateTerrainSourceParam(this._terrainSource);
+        } else {
+            // Fallback to direct URL manipulation
+            const url = new URL(window.location);
+            if (this._terrainSource !== 'mapbox') { // Only set if not default
+                url.searchParams.set('terrainSource', this._terrainSource);
+            } else {
+                url.searchParams.delete('terrainSource');
+            }
+            
+            // Update URL without reloading the page
+            window.history.replaceState({}, '', url);
+        }
+    }
+
     // Public methods for external control
     setEnabled(enabled) {
         this._enabled = enabled;
@@ -505,14 +627,37 @@ export class Terrain3DControl {
         return this._showWireframe;
     }
 
+    setTerrainSource(source) {
+        if (this._terrainSources[source]) {
+            this._terrainSource = source;
+            $('#terrain-source-select').val(source);
+            this._updateTerrain();
+            this._updateTerrainSourceURLParameter();
+        }
+    }
+
+    getTerrainSource() {
+        return this._terrainSource;
+    }
+
     // Method to initialize from URL parameter
     initializeFromURL() {
         const urlParams = new URLSearchParams(window.location.search);
         const terrainParam = urlParams.get('terrain');
         const animateParam = urlParams.get('animate');
         const wireframeParam = urlParams.get('wireframe');
+        const terrainSourceParam = urlParams.get('terrainSource');
         
-        console.log('[3D Control] Initializing from URL, terrain param:', terrainParam, 'animate param:', animateParam, 'wireframe param:', wireframeParam);
+        console.log('[3D Control] Initializing from URL, terrain param:', terrainParam, 'animate param:', animateParam, 'wireframe param:', wireframeParam, 'terrainSource param:', terrainSourceParam);
+        
+        // Handle terrain source parameter first
+        if (terrainSourceParam && this._terrainSources[terrainSourceParam]) {
+            console.log('[3D Control] Setting terrain source:', terrainSourceParam);
+            this.setTerrainSource(terrainSourceParam);
+        } else {
+            console.log('[3D Control] Using default terrain source: mapbox');
+            this.setTerrainSource('mapbox');
+        }
         
         if (terrainParam) {
             const exaggeration = parseFloat(terrainParam);
