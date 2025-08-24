@@ -2941,8 +2941,16 @@
       "maxzoom": 14,
       "attribution": "CC-BY <a href='https://sites.research.google/open-buildings/'>Google Open Buildings</a> - Collected by <a href='https://datameet.org'>Datameet Community</a>",
       "style": {
-        "line-color": "black",
-        "line-width": 0.5,
+        "line-color": "#eada92",
+        "line-join": "round",
+        "line-width": [
+          "interpolate",
+          ["linear"],
+          ["zoom"],
+          4,3,
+          7, 5,
+          15, 2
+        ],
         "fill-color": [
           "case",
           [">", ["get", "confidence"], 0.8],
