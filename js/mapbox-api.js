@@ -1553,7 +1553,19 @@ export class MapboxAPI {
      * @returns {Array} Array of features
      */
     queryRenderedFeatures(pointOrGeometry, options = {}) {
-        return this._map.queryRenderedFeatures(pointOrGeometry, options);
+        try {
+            return this._map.queryRenderedFeatures(pointOrGeometry, options);
+        } catch (error) {
+            // Handle DEM data range errors gracefully
+            if (error.message && error.message.includes('out of range source coordinates for DEM data')) {
+                console.debug('[MapboxAPI] DEM data out of range, returning empty features array');
+                return [];
+            } else {
+                // Re-throw other errors as they might be more serious
+                console.error('[MapboxAPI] Error querying rendered features:', error);
+                throw error;
+            }
+        }
     }
 
     /**

@@ -3227,8 +3227,23 @@ export class MapFeatureControl {
         if (this._globalClickHandlerAdded) return;
         
         this._map.on('click', (e) => {
-            // Query all features at the click point
-            const features = this._map.queryRenderedFeatures(e.point);
+            // Query all features at the click point with error handling for DEM data
+            let features = [];
+            try {
+                features = this._map.queryRenderedFeatures(e.point);
+            } catch (error) {
+                // Handle DEM data range errors gracefully
+                if (error.message && error.message.includes('out of range source coordinates for DEM data')) {
+                    console.debug('[MapFeatureControl] DEM data out of range at click location, clearing selections');
+                    // Clear selections if DEM query fails at click location
+                    this._stateManager.clearAllSelections();
+                    return;
+                } else {
+                    // Re-throw other errors as they might be more serious
+                    console.error('[MapFeatureControl] Error querying rendered features on click:', error);
+                    throw error;
+                }
+            }
             
             // Filter for interactive features from registered layers
             const interactiveFeatures = [];
@@ -4000,21 +4015,21 @@ export class MapFeatureControl {
             return;
         }
         
-        // Query all features at the mouse point once with error handling for DEM coordinate issues
+        // Query all features at the mouse point once with error handling for DEM data
         let features = [];
         try {
             features = this._map.queryRenderedFeatures(e.point);
         } catch (error) {
-            // Handle DEM coordinate range errors when 3D terrain is active
+            // Handle DEM data range errors gracefully
             if (error.message && error.message.includes('out of range source coordinates for DEM data')) {
-                console.debug('[MapFeatureControl] DEM coordinate out of range, skipping query at this location');
-                // Clear any existing hover states since we can't query at this location
+                console.debug('[MapFeatureControl] DEM data out of range at this location, skipping query');
+                // Clear any existing hover states when DEM query fails
                 this._stateManager.handleMapMouseLeave();
                 this._updateCursorForFeatures([]);
                 return;
             } else {
-                // Re-throw other errors
-                console.error('[MapFeatureControl] Error in queryRenderedFeatures:', error);
+                // Re-throw other errors as they might be more serious
+                console.error('[MapFeatureControl] Error querying rendered features:', error);
                 throw error;
             }
         }

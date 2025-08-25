@@ -1249,7 +1249,21 @@ export class MapLayerControl {
 
         this._map.on('click', (e) => {
             setTimeout(() => {
-                const features = this._map.queryRenderedFeatures(e.point);
+                // Query rendered features with error handling for DEM data
+                let features = [];
+                try {
+                    features = this._map.queryRenderedFeatures(e.point);
+                } catch (error) {
+                    // Handle DEM data range errors gracefully
+                    if (error.message && error.message.includes('out of range source coordinates for DEM data')) {
+                        console.debug('[MapLayerControls] DEM data out of range at click location, skipping query');
+                        return;
+                    } else {
+                        // Re-throw other errors as they might be more serious
+                        console.error('[MapLayerControls] Error querying rendered features on click:', error);
+                        throw error;
+                    }
+                }
                 const customFeatures = features.filter(feature => {
                     const layerId = feature.layer?.id;
                     return layerId && (
