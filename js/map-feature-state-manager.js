@@ -60,12 +60,12 @@ export class MapFeatureStateManager extends EventTarget {
         const layerId = layerConfig.id;
         
         if (this._registeredLayers.has(layerId)) {
-            console.debug(`[StateManager] Layer ${layerId} already registered, skipping`);
+            // Layer already registered, skipping
             return;
         }
         
         this._registeredLayers.set(layerId, layerConfig);
-        console.debug(`[StateManager] Registered layer: ${layerId} (${layerConfig.type})`);
+        // Layer registered successfully
         
         // Set up layer events with retry mechanism
         this._setupLayerEventsWithRetry(layerConfig);
@@ -98,7 +98,7 @@ export class MapFeatureStateManager extends EventTarget {
         // Remove retry attempts
         this._retryAttempts.delete(layerId);
         
-        console.debug(`[StateManager] Unregistered layer: ${layerId}`);
+        // Layer unregistered successfully
         
         // Emit unregistration event
         this._emitStateChange('layer-unregistered', {
@@ -144,9 +144,7 @@ export class MapFeatureStateManager extends EventTarget {
             lngLat
         });
         
-        if (this._isDebug) {
-            console.debug(`[StateManager] Feature hovered: ${featureId} (${layerId}) - will persist until mouse moves`);
-        }
+        // Removed verbose hover logging
         
         // DON'T set a timeout to clear hover state when mouse stops moving
         // Hover states should persist until mouse actually moves away from features
@@ -196,9 +194,7 @@ export class MapFeatureStateManager extends EventTarget {
                 feature
             });
             
-            if (this._isDebug) {
-                console.debug(`[StateManager] Batch hover: ${featureId} (${layerId})`);
-            }
+            // Removed verbose batch hover logging
         });
         
         // Emit batch hover event for more efficient UI updates
@@ -219,9 +215,7 @@ export class MapFeatureStateManager extends EventTarget {
         // 2. Mouse leaves map area (handled by handleMapMouseLeave)
         // 3. Explicit clear is called
         
-        if (this._isDebug) {
-            console.debug(`[StateManager] Hover states set for ${processedFeatures.length} features - will persist until mouse moves`);
-        }
+        // Removed verbose hover state logging
     }
 
     /**
@@ -265,9 +259,7 @@ export class MapFeatureStateManager extends EventTarget {
             }
         });
         
-        if (clearedFeatures.length > 0 && this._isDebug) {
-            console.debug(`[StateManager] Cleared hover for ${clearedFeatures.length} features`);
-        }
+        // Removed verbose cleared hover logging
         
         return clearedFeatures;
     }
@@ -348,9 +340,7 @@ export class MapFeatureStateManager extends EventTarget {
                 lngLat
             });
             
-            if (this._isDebug) {
-                console.debug(`[StateManager] Feature selected: ${featureId} (${layerId})`);
-            }
+            // Removed verbose selection logging
         });
         
         // Emit appropriate events based on number of features clicked
@@ -369,9 +359,7 @@ export class MapFeatureStateManager extends EventTarget {
             });
         }
         
-        if (this._isDebug) {
-            console.debug(`[StateManager] ${newSelections.length} features selected, ${clearedFeatures.length} cleared`);
-        }
+        // Removed verbose selection summary logging
     }
 
     /**
@@ -387,9 +375,7 @@ export class MapFeatureStateManager extends EventTarget {
             timestamp: Date.now()
         });
         
-        if (this._isDebug) {
-            console.debug(`[StateManager] Feature leave: ${layerId}`);
-        }
+        // Removed verbose feature leave logging
     }
 
     /**
@@ -446,9 +432,7 @@ export class MapFeatureStateManager extends EventTarget {
         // Remove mapbox feature state
         this._removeMapboxFeatureState(featureId, layerId, 'selected');
         
-        if (this._isDebug) {
-            console.debug(`[StateManager] Feature deselected: ${featureId} (${layerId})`);
-        }
+        // Removed verbose deselection logging
         
         return true;
     }
@@ -494,9 +478,7 @@ export class MapFeatureStateManager extends EventTarget {
             });
         }
         
-        if (clearedFeatures.length > 0 && this._isDebug) {
-            console.debug(`[StateManager] Cleared ${clearedFeatures.length} selections`);
-        }
+        // Removed verbose selection clearing logging
         
         return clearedFeatures;
     }
@@ -858,9 +840,7 @@ export class MapFeatureStateManager extends EventTarget {
             }
         });
         
-        if (clearedFeatures.length > 0 && this._isDebug) {
-            console.debug(`[StateManager] Cleared hover for ${clearedFeatures.length} features in layer ${layerId}`);
-        }
+        // Removed verbose layer hover clearing logging
     }
 
     /**
@@ -1052,9 +1032,7 @@ export class MapFeatureStateManager extends EventTarget {
             this._featureStates.delete(compositeKey);
         });
         
-        if (toRemove.length > 0 && this._isDebug) {
-            console.debug(`[StateManager] Cleaned up ${toRemove.length} stale features`);
-        }
+        // Removed verbose cleanup logging
     }
 
     /**
@@ -1102,9 +1080,7 @@ export class MapFeatureStateManager extends EventTarget {
 
             // Skip feature state for style layers since they don't have their own sources
             if (layerConfig.type === 'style') {
-                if (this._isDebug) {
-                    console.debug(`[StateManager] Skipping feature state for style layer ${layerId} (no custom source)`);
-                }
+                // Skipping feature state for style layer (no custom source)
                 return;
             }
 
@@ -1124,9 +1100,7 @@ export class MapFeatureStateManager extends EventTarget {
 
             this._mapboxAPI.setFeatureState(featureIdentifier, state);
             
-            if (this._isDebug) {
-                console.debug(`[StateManager] Set feature state for ${featureId}:`, state);
-            }
+            // Removed verbose feature state set logging
         } catch (error) {
             if (this._isDebug) {
                 console.warn(`[StateManager] Could not set feature state for ${featureId}:`, error);
@@ -1145,9 +1119,7 @@ export class MapFeatureStateManager extends EventTarget {
 
             // Skip feature state for style layers since they don't have their own sources
             if (layerConfig.type === 'style') {
-                if (this._isDebug) {
-                    console.debug(`[StateManager] Skipping feature state removal for style layer ${layerId} (no custom source)`);
-                }
+                // Skipping feature state removal for style layer (no custom source)
                 return;
             }
 
@@ -1167,9 +1139,7 @@ export class MapFeatureStateManager extends EventTarget {
 
             this._mapboxAPI.removeFeatureState(featureIdentifier, stateKey);
             
-            if (this._isDebug) {
-                console.debug(`[StateManager] Removed feature state ${stateKey || 'all'} for ${featureId}`);
-            }
+            // Removed verbose feature state removal logging
         } catch (error) {
             if (this._isDebug) {
                 console.warn(`[StateManager] Could not remove feature state for ${featureId}:`, error);
