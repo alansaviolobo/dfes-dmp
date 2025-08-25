@@ -403,7 +403,26 @@ export class Terrain3DControl {
                 return;
             }
 
-            // Remove existing terrain sources and layers
+            // Check if we already have the correct terrain source active
+            const currentTerrain = this._map.getTerrain();
+            const targetSourceExists = this._map.getSource(terrainConfig.sourceId);
+            
+            if (currentTerrain && currentTerrain.source === terrainConfig.sourceId && targetSourceExists) {
+                // Same source is already active, just update exaggeration
+                this._map.setTerrain({
+                    'source': terrainConfig.sourceId,
+                    'exaggeration': this._exaggeration
+                });
+                this._updateURLParameter();
+                return;
+            }
+
+            // First, disable terrain if it's currently active to avoid conflicts
+            if (currentTerrain) {
+                this._map.setTerrain(null);
+            }
+
+            // Remove existing terrain sources and layers (now safe since terrain is disabled)
             this._removeExistingTerrainSources();
 
             // Add the selected terrain source
@@ -422,7 +441,7 @@ export class Terrain3DControl {
                 }
             }
 
-            // Set terrain
+            // Set terrain with the new source
             this._map.setTerrain({
                 'source': terrainConfig.sourceId,
                 'exaggeration': this._exaggeration
@@ -449,14 +468,18 @@ export class Terrain3DControl {
     _removeExistingTerrainSources() {
         // Remove all terrain sources and associated layers
         Object.values(this._terrainSources).forEach(config => {
-            // Remove hillshade layer if it exists
-            if (config.hillshadeLayerId && this._map.getLayer(config.hillshadeLayerId)) {
-                this._map.removeLayer(config.hillshadeLayerId);
-            }
-            
-            // Remove source if it exists
-            if (this._map.getSource(config.sourceId)) {
-                this._map.removeSource(config.sourceId);
+            try {
+                // Remove hillshade layer if it exists
+                if (config.hillshadeLayerId && this._map.getLayer(config.hillshadeLayerId)) {
+                    this._map.removeLayer(config.hillshadeLayerId);
+                }
+                
+                // Remove source if it exists
+                if (this._map.getSource(config.sourceId)) {
+                    this._map.removeSource(config.sourceId);
+                }
+            } catch (error) {
+                console.warn(`Error removing terrain source ${config.sourceId}:`, error);
             }
         });
     }
