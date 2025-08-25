@@ -210,8 +210,6 @@ export class MapboxAPI {
 
                 if (layerIds.length === 0) {
                     console.debug(`[MapboxAPI] No style layers found for sourceLayer: ${layer.sourceLayer}`);
-                } else {
-                    console.debug(`[MapboxAPI] Found ${layerIds.length} style layers for sourceLayer: ${layer.sourceLayer}`, layerIds);
                 }
 
                 layerIds.forEach(layerId => {
@@ -219,7 +217,6 @@ export class MapboxAPI {
                         // When creating/showing a style layer, make sure visibility matches the expected state
                         this._map.setLayoutProperty(layerId, 'visibility', visible ? 'visible' : 'none');
                         totalLayersProcessed++;
-                        console.debug(`[MapboxAPI] Set layer ${layerId} visibility to ${visible ? 'visible' : 'none'}`);
                     } else {
                         console.warn(`[MapboxAPI] Layer ${layerId} not found in map style`);
                     }

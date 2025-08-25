@@ -719,8 +719,13 @@ export class MapFeatureStateManager extends EventTarget {
             .map(l => l.id);
         matchingIds.push(...generatedMatches);
         
+        // Strategy 2.6: raster-style-layer styleLayer property (for layers like mapbox-satellite)
+        const styleLayerMatches = layerConfig.styleLayer ? 
+            style.layers.filter(l => l.id === layerConfig.styleLayer).map(l => l.id) : [];
+        matchingIds.push(...styleLayerMatches);
+        
         // If we have direct matches, prioritize them and be more restrictive with fallback strategies
-        const hasDirectMatches = directMatches.length > 0 || prefixMatches.length > 0 || generatedMatches.length > 0;
+        const hasDirectMatches = directMatches.length > 0 || prefixMatches.length > 0 || generatedMatches.length > 0 || styleLayerMatches.length > 0;
         
         // Strategy 3: Source layer matches (ONLY if no direct matches found)
         if (!hasDirectMatches && layerConfig.sourceLayer) {

@@ -272,7 +272,6 @@ export class MapLayerControl {
             } else {
                 // Explicitly hide layers that should not be visible initially
                 // This is especially important for style layers which are visible by default
-                console.debug(`[LayerControl] Initializing layer ${group.id} as HIDDEN (initiallyChecked: false/undefined)`);
                 requestAnimationFrame(() => {
                     this._toggleLayerGroup(groupIndex, false);
                 });

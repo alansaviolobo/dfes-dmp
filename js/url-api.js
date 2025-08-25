@@ -34,6 +34,8 @@ class URLManager {
     parseLayersFromUrl(layersParam) {
         if (!layersParam) return [];
         
+        console.debug('[URL API] Parsing layers parameter:', layersParam);
+        
         const layers = [];
         let currentItem = '';
         let braceCount = 0;
@@ -106,6 +108,7 @@ class URLManager {
             }
         }
         
+        console.debug('[URL API] Parsed layers result:', layers);
         return layers;
     }
 
@@ -228,11 +231,23 @@ class URLManager {
         // Handle layers parameter
         if (options.updateLayers !== false) {
             const activeLayers = this.getCurrentActiveLayers();
-            layersParam = this.serializeLayersForURL(activeLayers);
+            const newLayersParam = this.serializeLayersForURL(activeLayers);
             const currentLayersParam = urlParams.get('layers');
 
-            if (layersParam !== currentLayersParam) {
-                hasChanges = true;
+            // Only update if the layers actually changed, not just formatting
+            // This prevents reverting pretty URLs back to encoded versions
+            if (newLayersParam !== currentLayersParam) {
+                // Check if this is just a formatting difference (encoded vs unencoded)
+                const normalizedNew = decodeURIComponent(newLayersParam || '');
+                const normalizedCurrent = decodeURIComponent(currentLayersParam || '');
+                
+                if (normalizedNew !== normalizedCurrent) {
+                    layersParam = newLayersParam;
+                    hasChanges = true;
+                    console.debug('[URL API] Layers content changed, updating URL');
+                } else {
+                    console.debug('[URL API] Layers unchanged (just formatting difference), keeping current URL');
+                }
             }
         }
 
@@ -299,35 +314,41 @@ class URLManager {
 
         // Update URL if there are changes
         if (hasChanges) {
-            // Build URL manually to avoid URL encoding issues (like %2C for commas)
+            // Create a pretty, readable URL without URL encoding
             const baseUrl = `${window.location.protocol}//${window.location.host}${window.location.pathname}`;
-            const otherParams = new URLSearchParams(window.location.search);
+            const params = [];
             
-            // Always remove the parameters we're managing to avoid duplicates
+            // Get other parameters (excluding the ones we manage)
+            const otherParams = new URLSearchParams(window.location.search);
             otherParams.delete('layers');
             otherParams.delete('atlas');
             otherParams.delete('geolocate');
             otherParams.delete('terrain');
             otherParams.delete('animate');
             
-            // Build the new URL manually to avoid URL encoding
-            let newUrl = baseUrl;
-            const params = [];
-            
-            // Add other parameters first
-            if (otherParams.toString()) {
-                params.push(otherParams.toString());
+            // Add other parameters first (these will be URL-encoded by URLSearchParams)
+            const otherParamsString = otherParams.toString();
+            if (otherParamsString) {
+                params.push(otherParamsString);
             }
             
             // Add atlas parameter if it exists (either new or preserved from current URL)
             const currentAtlas = atlasParam || (options.atlas === undefined ? urlParams.get('atlas') : null);
             if (currentAtlas) {
-                params.push('atlas=' + currentAtlas);
+                // For atlas, we may need to preserve JSON, so add it manually
+                params.push('atlas=' + encodeURIComponent(currentAtlas));
             }
             
-            // Add layers parameter if present
+            // Add layers parameter if present - this is the key fix for pretty URLs
             if (layersParam) {
+                // Don't URL-encode the layers parameter to keep it readable
                 params.push('layers=' + layersParam);
+            } else if (options.updateLayers === false) {
+                // If we're not updating layers, preserve the current layers parameter as-is
+                const currentLayersParam = urlParams.get('layers');
+                if (currentLayersParam) {
+                    params.push('layers=' + currentLayersParam);
+                }
             }
             
             // Add geolocate parameter if active (either new or preserved from current URL)
@@ -348,7 +369,8 @@ class URLManager {
                 params.push('animate=true');
             }
             
-            // Combine all parameters
+            // Build the final pretty URL
+            let newUrl = baseUrl;
             if (params.length > 0) {
                 newUrl += '?' + params.join('&');
             }
@@ -358,6 +380,7 @@ class URLManager {
                 newUrl += window.location.hash;
             }
             
+            console.debug('[URL API] Creating pretty URL:', newUrl);
             window.history.replaceState(null, '', newUrl);
             
             // Trigger custom event for other components (like ShareLink)
@@ -417,9 +440,18 @@ class URLManager {
             
             // Parse layers from URL
             if (layersParam) {
-                const urlLayers = this.parseLayersFromUrl(layersParam);
-                // Apply the layer state
-                applied = await this.applyLayerState(urlLayers);
+                console.debug('[URL API] Raw layers parameter from URL:', layersParam);
+                // Check if layers were already processed during initialization
+                // If the layer control already has layers loaded, skip re-processing
+                if (this.mapLayerControl && this.mapLayerControl._state && this.mapLayerControl._state.groups.length > 0) {
+                    console.debug('[URL API] Layers already loaded during initialization, skipping URL layer processing');
+                    applied = true;
+                } else {
+                    const urlLayers = this.parseLayersFromUrl(layersParam);
+                    console.debug('[URL API] Parsed URL layers:', urlLayers);
+                    // Apply the layer state
+                    applied = await this.applyLayerState(urlLayers);
+                }
             }
             
             // Handle geolocate parameter

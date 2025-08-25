@@ -17,6 +17,8 @@ function getUrlParameter(name) {
 function parseLayersFromUrl(layersParam) {
     if (!layersParam) return [];
     
+    console.debug('[map-init] Parsing layers parameter:', layersParam);
+    
     const layers = [];
     let currentItem = '';
     let braceCount = 0;
@@ -97,7 +99,14 @@ function parseLayersFromUrl(layersParam) {
         }
     }
     
+    console.debug('[map-init] Parsed layers result:', layers);
     return layers;
+}
+
+// Function to check if URL needs prettification (has URL-encoded parameters)
+function needsURLPrettification() {
+    const currentURL = window.location.href;
+    return currentURL.includes('%2C') || currentURL.includes('%7B') || currentURL.includes('%7D') || currentURL.includes('%22');
 }
 
 // Function to load configuration
@@ -116,6 +125,7 @@ async function loadConfiguration() {
         // Check if a specific config is requested via URL parameter
         var configParam = getUrlParameter('atlas');
         var layersParam = getUrlParameter('layers');
+        console.debug('[map-init] Raw layers parameter from URL:', layersParam);
     }
     
     let configPath = 'config/index.atlas.json';
@@ -186,6 +196,8 @@ async function loadConfiguration() {
                     ...(layer._originalJson && { _originalJson: layer._originalJson })
                 }));
                 
+                console.debug('[map-init] Processed URL layers:', processedUrlLayers);
+                
                 // When URL layers are specified, set ALL existing layers to initiallyChecked: false
                 // This ensures only URL-specified layers are visible
                 const existingLayers = config.layers || [];
@@ -203,19 +215,33 @@ async function loadConfiguration() {
                 return layer._originalJson || layer.id;
             }).join(',');
             
-            // Rewrite URL with minified layers parameter if it's different
-            if (minifiedLayersParam !== layersParam) {
+            // Check if we need to create a pretty URL (either layers changed or URL has encoded params)
+            const shouldPrettifyURL = minifiedLayersParam !== layersParam || needsURLPrettification();
+            
+            if (shouldPrettifyURL) {
                 const url = new URL(window.location);
                 const baseUrl = `${url.protocol}//${url.host}${url.pathname}`;
                 const otherParams = new URLSearchParams(url.search);
                 otherParams.delete('layers'); // Remove existing layers param
                 
-                // Build the new URL manually to avoid URL encoding the JSON
+                // Build a clean, pretty URL without URL encoding the layers parameter
                 let newUrl = baseUrl;
-                if (otherParams.toString()) {
-                    newUrl += '?' + otherParams.toString() + '&layers=' + minifiedLayersParam;
-                } else {
-                    newUrl += '?layers=' + minifiedLayersParam;
+                const params = [];
+                
+                // Add other parameters first (these may be URL-encoded)
+                const otherParamsString = otherParams.toString();
+                if (otherParamsString) {
+                    params.push(otherParamsString);
+                }
+                
+                // Add layers parameter without URL encoding to keep it readable
+                if (minifiedLayersParam) {
+                    params.push('layers=' + minifiedLayersParam);
+                }
+                
+                // Build the final URL
+                if (params.length > 0) {
+                    newUrl += '?' + params.join('&');
                 }
                 
                 // Add hash if it exists
@@ -223,7 +249,8 @@ async function loadConfiguration() {
                     newUrl += url.hash;
                 }
                 
-                console.debug('Updated URL', newUrl);
+                // Update to ensure we have a pretty URL
+                console.debug('[map-init] Creating pretty URL:', newUrl);
                 window.history.replaceState({}, '', newUrl);
             }
             
@@ -390,6 +417,39 @@ async function loadConfiguration() {
     
     // Load and apply localized UI strings
     localization.loadStrings(config);
+    
+    // Final check: prettify URL if it still has encoded parameters (e.g., terrain parameter)
+    if (needsURLPrettification()) {
+        const url = new URL(window.location);
+        const baseUrl = `${url.protocol}//${url.host}${url.pathname}`;
+        const params = new URLSearchParams(url.search);
+        
+        // Manually build pretty URL without re-encoding
+        let newUrl = baseUrl;
+        const prettyParams = [];
+        
+        for (const [key, value] of params.entries()) {
+            if (key === 'layers') {
+                // Keep layers parameter unencoded for readability
+                prettyParams.push(`${key}=${value}`);
+            } else {
+                // For other parameters, we can allow minimal encoding if needed
+                prettyParams.push(`${key}=${value}`);
+            }
+        }
+        
+        if (prettyParams.length > 0) {
+            newUrl += '?' + prettyParams.join('&');
+        }
+        
+        // Add hash if it exists
+        if (url.hash) {
+            newUrl += url.hash;
+        }
+        
+        console.debug('[map-init] Final URL prettification:', newUrl);
+        window.history.replaceState({}, '', newUrl);
+    }
     
     return config;
 }
