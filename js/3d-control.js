@@ -12,10 +12,12 @@ export class Terrain3DControl {
         this._exaggeration = this.options.initialExaggeration;
         this._animate = false; // Default to disabled
         this._showWireframe = false; // Default to disabled
+        this._enableFog = true; // Default to enabled
         this._animationFrame = null; // For requestAnimationFrame
         this._panel = null;
         this._map = null;
         this._terrainSource = 'mapbox'; // Default to Mapbox terrain
+        this._initializing = false; // Flag to prevent URL updates during initialization
         
         // Define terrain sources
         this._terrainSources = {
@@ -211,6 +213,35 @@ export class Terrain3DControl {
 
         $animateContainer.append($animateCheckbox, $animateLabel);
 
+        // Fog checkbox
+        const $fogContainer = $('<div>', {
+            css: {
+                marginBottom: '15px',
+                display: 'flex',
+                alignItems: 'center'
+            }
+        });
+
+        const $fogCheckbox = $('<input>', {
+            type: 'checkbox',
+            id: 'terrain-3d-fog',
+            checked: this._enableFog,
+            css: {
+                marginRight: '8px'
+            }
+        });
+
+        const $fogLabel = $('<label>', {
+            text: 'Enable Fog',
+            'for': 'terrain-3d-fog',
+            css: {
+                cursor: 'pointer',
+                fontWeight: '500'
+            }
+        });
+
+        $fogContainer.append($fogCheckbox, $fogLabel);
+
         // Enable checkbox
         const $checkboxContainer = $('<div>', {
             css: {
@@ -327,7 +358,7 @@ export class Terrain3DControl {
         });
 
         // Assemble panel
-        $content.append($title, $terrainSourceContainer, $animateContainer, $checkboxContainer, $sliderContainer);
+        $content.append($title, $terrainSourceContainer, $animateContainer, $fogContainer, $checkboxContainer, $sliderContainer);
         this._panel.append($closeButton, $content);
 
         // Add event handlers
@@ -340,6 +371,11 @@ export class Terrain3DControl {
         $animateCheckbox.on('change', (e) => {
             this._animate = e.target.checked;
             this._updateAnimation();
+        });
+
+        $fogCheckbox.on('change', (e) => {
+            this._enableFog = e.target.checked;
+            this._updateFog();
         });
 
         $wireframeCheckbox.on('change', (e) => {
@@ -395,6 +431,12 @@ export class Terrain3DControl {
 
     _updateTerrain() {
         if (!this._map) return;
+        
+        // Skip terrain updates during initialization to prevent interference with layer creation
+        if (this._initializing) {
+            console.debug('[3D Control] Skipping terrain update during initialization');
+            return;
+        }
 
         if (this._enabled) {
             const terrainConfig = this._terrainSources[this._terrainSource];
@@ -446,20 +488,14 @@ export class Terrain3DControl {
                 'source': terrainConfig.sourceId,
                 'exaggeration': this._exaggeration
             });
-
-            // Set fog for better 3D effect
-            this._map.setFog({
-                'color': 'white',
-                'horizon-blend': 0.1,
-                'high-color': '#add8e6',
-                'star-intensity': 0.1
-            });
         } else {
-            // Disable terrain and fog, remove sources
+            // Disable terrain, remove sources
             this._map.setTerrain(null);
-            this._map.setFog(null);
             this._removeExistingTerrainSources();
         }
+
+        // Update fog separately based on fog setting
+        this._updateFog();
 
         // Update URL parameter
         this._updateURLParameter();
@@ -485,6 +521,11 @@ export class Terrain3DControl {
     }
 
     _updateURLParameter() {
+        // Skip URL updates during initialization to prevent encoding issues
+        if (this._initializing) {
+            return;
+        }
+        
         // Use URL API if available, otherwise fall back to direct URL manipulation
         if (window.urlManager && window.urlManager.updateTerrainParam) {
             if (this._enabled) {
@@ -540,6 +581,11 @@ export class Terrain3DControl {
     }
 
     _updateAnimationURLParameter() {
+        // Skip URL updates during initialization to prevent encoding issues
+        if (this._initializing) {
+            return;
+        }
+        
         // Use URL API if available, otherwise fall back to direct URL manipulation
         if (window.urlManager && window.urlManager.updateAnimateParam) {
             window.urlManager.updateAnimateParam(this._animate);
@@ -557,6 +603,26 @@ export class Terrain3DControl {
         }
     }
 
+    _updateFog() {
+        if (!this._map) return;
+        
+        if (this._enableFog) {
+            // Set fog with the specified configuration
+            this._map.setFog({
+                'range': [-0.5, 10],
+                'color': '#def',
+                'high-color': '#def',
+                'space-color': '#def'
+            });
+        } else {
+            // Disable fog
+            this._map.setFog(null);
+        }
+        
+        // Update URL parameter
+        this._updateFogURLParameter();
+    }
+
     _updateWireframe() {
         if (!this._map) return;
         
@@ -568,6 +634,11 @@ export class Terrain3DControl {
     }
 
     _updateWireframeURLParameter() {
+        // Skip URL updates during initialization to prevent encoding issues
+        if (this._initializing) {
+            return;
+        }
+        
         // Use URL API if available, otherwise fall back to direct URL manipulation
         if (window.urlManager && window.urlManager.updateWireframeParam) {
             window.urlManager.updateWireframeParam(this._showWireframe);
@@ -585,7 +656,35 @@ export class Terrain3DControl {
         }
     }
 
+    _updateFogURLParameter() {
+        // Skip URL updates during initialization to prevent encoding issues
+        if (this._initializing) {
+            return;
+        }
+        
+        // Use URL API if available, otherwise fall back to direct URL manipulation
+        if (window.urlManager && window.urlManager.updateFogParam) {
+            window.urlManager.updateFogParam(this._enableFog);
+        } else {
+            // Fallback to direct URL manipulation
+            const url = new URL(window.location);
+            if (!this._enableFog) { // Only set if not default (default is true)
+                url.searchParams.set('fog', 'false');
+            } else {
+                url.searchParams.delete('fog');
+            }
+            
+            // Update URL without reloading the page
+            window.history.replaceState({}, '', url);
+        }
+    }
+
     _updateTerrainSourceURLParameter() {
+        // Skip URL updates during initialization to prevent encoding issues
+        if (this._initializing) {
+            return;
+        }
+        
         // Use URL API if available, otherwise fall back to direct URL manipulation
         if (window.urlManager && window.urlManager.updateTerrainSourceParam) {
             window.urlManager.updateTerrainSourceParam(this._terrainSource);
@@ -663,15 +762,29 @@ export class Terrain3DControl {
         return this._terrainSource;
     }
 
+    setFog(enableFog) {
+        this._enableFog = enableFog;
+        $('#terrain-3d-fog').prop('checked', enableFog);
+        this._updateFog();
+    }
+
+    getFog() {
+        return this._enableFog;
+    }
+
     // Method to initialize from URL parameter
     initializeFromURL() {
+        // Set initialization flag to prevent URL updates during initialization
+        this._initializing = true;
+        
         const urlParams = new URLSearchParams(window.location.search);
         const terrainParam = urlParams.get('terrain');
         const animateParam = urlParams.get('animate');
         const wireframeParam = urlParams.get('wireframe');
         const terrainSourceParam = urlParams.get('terrainSource');
+        const fogParam = urlParams.get('fog');
         
-        console.log('[3D Control] Initializing from URL, terrain param:', terrainParam, 'animate param:', animateParam, 'wireframe param:', wireframeParam, 'terrainSource param:', terrainSourceParam);
+        console.log('[3D Control] Initializing from URL, terrain param:', terrainParam, 'animate param:', animateParam, 'wireframe param:', wireframeParam, 'terrainSource param:', terrainSourceParam, 'fog param:', fogParam);
         
         // Handle terrain source parameter first
         if (terrainSourceParam && this._terrainSources[terrainSourceParam]) {
@@ -721,5 +834,18 @@ export class Terrain3DControl {
             console.log('[3D Control] Setting wireframe disabled (default)');
             this.setWireframe(false);
         }
+
+        // Handle fog parameter
+        if (fogParam === 'false') {
+            console.log('[3D Control] Setting fog disabled');
+            this.setFog(false);
+        } else {
+            console.log('[3D Control] Setting fog enabled (default)');
+            this.setFog(true);
+        }
+        
+        // Clear initialization flag to allow normal URL updates
+        this._initializing = false;
+        console.log('[3D Control] Initialization complete, URL updates now enabled');
     }
 }

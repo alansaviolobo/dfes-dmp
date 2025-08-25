@@ -227,6 +227,9 @@ class URLManager {
         let geolocateParam = null;
         let terrainParam = null;
         let animateParam = null;
+        let fogParam = null;
+        let wireframeParam = null;
+        let terrainSourceParam = null;
 
         // Handle layers parameter
         if (options.updateLayers !== false) {
@@ -312,6 +315,55 @@ class URLManager {
             }
         }
 
+        // Handle fog parameter
+        if (options.fog !== undefined) {
+            const currentFogParam = urlParams.get('fog');
+            if (options.fog === false) {
+                // Only set fog parameter when it's explicitly disabled (default is true)
+                fogParam = 'false';
+                if (currentFogParam !== 'false') {
+                    hasChanges = true;
+                }
+            } else {
+                // Remove fog parameter when enabled (default behavior)
+                if (currentFogParam !== null) {
+                    hasChanges = true;
+                }
+            }
+        }
+
+        // Handle wireframe parameter
+        if (options.wireframe !== undefined) {
+            const currentWireframeParam = urlParams.get('wireframe');
+            if (options.wireframe) {
+                wireframeParam = 'true';
+                if (currentWireframeParam !== 'true') {
+                    hasChanges = true;
+                }
+            } else {
+                if (currentWireframeParam !== null) {
+                    hasChanges = true;
+                }
+            }
+        }
+
+        // Handle terrain source parameter
+        if (options.terrainSource !== undefined) {
+            const currentTerrainSourceParam = urlParams.get('terrainSource');
+            if (options.terrainSource && options.terrainSource !== 'mapbox') {
+                // Only set if not default (mapbox is default)
+                terrainSourceParam = options.terrainSource;
+                if (currentTerrainSourceParam !== terrainSourceParam) {
+                    hasChanges = true;
+                }
+            } else {
+                // Remove parameter when using default mapbox terrain
+                if (currentTerrainSourceParam !== null) {
+                    hasChanges = true;
+                }
+            }
+        }
+
         // Update URL if there are changes
         if (hasChanges) {
             // Create a pretty, readable URL without URL encoding
@@ -325,6 +377,9 @@ class URLManager {
             otherParams.delete('geolocate');
             otherParams.delete('terrain');
             otherParams.delete('animate');
+            otherParams.delete('fog');
+            otherParams.delete('wireframe');
+            otherParams.delete('terrainSource');
             
             // Add other parameters first (these will be URL-encoded by URLSearchParams)
             const otherParamsString = otherParams.toString();
@@ -349,6 +404,22 @@ class URLManager {
                 if (currentLayersParam) {
                     params.push('layers=' + currentLayersParam);
                 }
+            } else {
+                // If updateLayers is not explicitly set, preserve existing layers parameter in pretty format
+                // Get the raw layers parameter from the current URL to avoid URL decoding issues
+                const currentURL = window.location.search;
+                const layersMatch = currentURL.match(/[?&]layers=([^&]*)/);
+                if (layersMatch) {
+                    const rawLayersParam = layersMatch[1];
+                    // Only preserve if it doesn't contain URL encoding (i.e., it's already pretty)
+                    if (!rawLayersParam.includes('%')) {
+                        params.push('layers=' + rawLayersParam);
+                    } else {
+                        // If it's URL encoded, decode it to make it pretty
+                        const decodedLayers = decodeURIComponent(rawLayersParam);
+                        params.push('layers=' + decodedLayers);
+                    }
+                }
             }
             
             // Add geolocate parameter if active (either new or preserved from current URL)
@@ -367,6 +438,24 @@ class URLManager {
             const currentAnimate = animateParam || (options.animate === undefined ? urlParams.get('animate') : null);
             if (currentAnimate === 'true') {
                 params.push('animate=true');
+            }
+            
+            // Add fog parameter (either new or preserved from current URL)
+            const currentFog = fogParam || (options.fog === undefined ? urlParams.get('fog') : null);
+            if (currentFog === 'false') {
+                params.push('fog=false');
+            }
+            
+            // Add wireframe parameter (either new or preserved from current URL)
+            const currentWireframe = wireframeParam || (options.wireframe === undefined ? urlParams.get('wireframe') : null);
+            if (currentWireframe === 'true') {
+                params.push('wireframe=true');
+            }
+            
+            // Add terrain source parameter (either new or preserved from current URL)
+            const currentTerrainSource = terrainSourceParam || (options.terrainSource === undefined ? urlParams.get('terrainSource') : null);
+            if (currentTerrainSource && currentTerrainSource !== 'mapbox') {
+                params.push('terrainSource=' + currentTerrainSource);
             }
             
             // Build the final pretty URL
@@ -419,6 +508,9 @@ class URLManager {
         const geolocateParam = urlParams.get('geolocate');
         const terrainParam = urlParams.get('terrain');
         const animateParam = urlParams.get('animate');
+        const fogParam = urlParams.get('fog');
+        const wireframeParam = urlParams.get('wireframe');
+        const terrainSourceParam = urlParams.get('terrainSource');
         
         // Auto-add terrain parameter if not present
         if (!terrainParam) {
@@ -426,7 +518,7 @@ class URLManager {
             this.autoAddTerrainParameter();
         }
         
-        if (!layersParam && !geolocateParam && !terrainParam && !animateParam) {
+        if (!layersParam && !geolocateParam && !terrainParam && !animateParam && !fogParam && !wireframeParam && !terrainSourceParam) {
             return false;
         }
 
@@ -485,6 +577,32 @@ class URLManager {
                 } else {
                     window.terrain3DControl.setAnimate(false);
                 }
+            }
+
+            // Handle fog parameter
+            if (fogParam && window.terrain3DControl) {
+                applied = true;
+                if (fogParam === 'false') {
+                    window.terrain3DControl.setFog(false);
+                } else {
+                    window.terrain3DControl.setFog(true);
+                }
+            }
+
+            // Handle wireframe parameter
+            if (wireframeParam && window.terrain3DControl) {
+                applied = true;
+                if (wireframeParam === 'true') {
+                    window.terrain3DControl.setWireframe(true);
+                } else {
+                    window.terrain3DControl.setWireframe(false);
+                }
+            }
+
+            // Handle terrain source parameter
+            if (terrainSourceParam && window.terrain3DControl) {
+                applied = true;
+                window.terrain3DControl.setTerrainSource(terrainSourceParam);
             }
 
         } catch (error) {
@@ -640,7 +758,14 @@ class URLManager {
         try {
             const style = this.map.getStyle();
             if (style && style.terrain && style.terrain.exaggeration) {
-                defaultExaggeration = style.terrain.exaggeration;
+                const styleExaggeration = style.terrain.exaggeration;
+                // Check if it's a simple number or a complex expression
+                if (typeof styleExaggeration === 'number') {
+                    defaultExaggeration = styleExaggeration;
+                } else {
+                    // If it's a complex expression (like interpolate), use the default
+                    console.debug('Style terrain exaggeration is complex expression, using default:', defaultExaggeration);
+                }
             }
         } catch (error) {
             console.debug('Could not get terrain exaggeration from style, using default:', defaultExaggeration);
@@ -671,6 +796,27 @@ class URLManager {
      */
     updateAnimateParam(animate) {
         this.updateURL({ animate: animate });
+    }
+
+    /**
+     * Update fog parameter in URL
+     */
+    updateFogParam(enableFog) {
+        this.updateURL({ fog: enableFog });
+    }
+
+    /**
+     * Update wireframe parameter in URL
+     */
+    updateWireframeParam(showWireframe) {
+        this.updateURL({ wireframe: showWireframe });
+    }
+
+    /**
+     * Update terrain source parameter in URL
+     */
+    updateTerrainSourceParam(terrainSource) {
+        this.updateURL({ terrainSource: terrainSource });
     }
 }
 
