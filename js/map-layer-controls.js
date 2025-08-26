@@ -23,6 +23,8 @@ export class MapLayerControl {
             this._config = {};
         }
 
+
+
         this._domCache = {};
         this._instanceId = (MapLayerControl.instances || 0) + 1;
         MapLayerControl.instances = this._instanceId;
@@ -76,7 +78,18 @@ export class MapLayerControl {
             this._initializeControl($(container));
             this._initializeFilterControls();
         } else {
+            // Add a fallback timeout in case style.load event doesn't fire
+            // This can happen when map.isStyleLoaded() returns false even though the style is loaded
+            const fallbackTimeout = setTimeout(() => {
+                if (this._map.getStyle()) {
+                    console.debug('[MapLayerControl] Style appears to be loaded despite isStyleLoaded() returning false, initializing control');
+                    this._initializeControl($(container));
+                    this._initializeFilterControls();
+                }
+            }, 1000);
+            
             this._map.on('style.load', () => {
+                clearTimeout(fallbackTimeout);
                 this._initializeControl($(container));
                 this._initializeFilterControls();
             });
