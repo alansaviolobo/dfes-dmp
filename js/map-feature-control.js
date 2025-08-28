@@ -790,6 +790,11 @@ export class MapFeatureControl {
             this._mainDetails.open = true;
             this._isCollapsed = false;
         }
+        
+        // Close the layer list drawer to prevent it from obscuring feature details
+        if (drawerStateManager && drawerStateManager.isOpen()) {
+            drawerStateManager.close();
+        }
     }
 
     /**

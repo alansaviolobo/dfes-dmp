@@ -1636,25 +1636,6 @@
         ],
         "fill-color": "rgba(255, 255, 255, 0.2)",
         "line-color": "purple"
-      },
-      "inspect": {
-        "title": "Local Body Name",
-        "label": "Name",
-        "id": "fid",
-        "fields": [
-          "Village Names",
-          "Ward Count",
-          "Subdistrict Name",
-          "District Name",
-          "Code"
-        ],
-        "fieldTitles": [
-          "Villages",
-          "Ward Count",
-          "Sub District",
-          "District",
-          "LGD Code"
-        ]
       }
     },
     {
