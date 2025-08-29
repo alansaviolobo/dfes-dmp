@@ -25,6 +25,47 @@
       "id": "1906-india-atlas"
     },
     {
+      "title": "Plan of Panjim (1888)",
+      "description": "From: https://commons.wikimedia.org/wiki/File:1888_Plan_of_Nova_Goa_(Panjim).jpg",
+      "source": "https://commons.wikimedia.org/wiki/File:1888_Plan_of_Nova_Goa_(Panjim).jpg",
+      "dateDepicted": "",
+      "type": "tms",
+      "id": "1888-panjim-plan",
+      "url": "https://warper.wmflabs.org/maps/tile/9009/{z}/{x}/{y}.png",
+      "style": {
+        "raster-opacity": [
+          "interpolate",
+          [
+            "linear"
+          ],
+          [
+            "zoom"
+          ],
+          6,
+          0.95,
+          18,
+          0.8,
+          19,
+          0.3
+        ]
+      },
+      "attribution": "© MapWarper - <a href=\"https://warper.wmflabs.org/maps/9009#Rectify_tab\" target=\"_blank\">View Original</a>",
+      "headerImage": null,
+      "metadata": {
+        "title": "File:1888 Plan of Nova Goa (Panjim).jpg",
+        "description": "From: https://commons.wikimedia.org/wiki/File:1888_Plan_of_Nova_Goa_(Panjim).jpg",
+        "source": "https://commons.wikimedia.org/wiki/File:1888_Plan_of_Nova_Goa_(Panjim).jpg",
+        "attribution": "",
+        "dateDepicted": "",
+        "thumbnail": null,
+        "baseUrl": "https://warper.wmflabs.org",
+        "mapId": "9009",
+        "originalUrl": "https://warper.wmflabs.org/maps/9009#Rectify_tab",
+        "bbox": "73.8134635,15.484491,73.8425532,15.5042235"
+      },
+      "initiallyChecked": false
+    },
+    {
       "title": "Plan of Mapusa (1888)",
       "description": "Plan of the town of Mapuçá: municipality of Bardez / reduced and drawn in the Public Works Directorate, on October 26, 1888, by the draftsman José Francisco da Silva",
       "source": "https://commons.wikimedia.org/wiki/File:1888_plan_of_Mapusa.jpg",
