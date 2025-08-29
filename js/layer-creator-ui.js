@@ -249,10 +249,74 @@ function makeLayerConfig(url, tilejson, metadata = null) {
             }
         }
     } else if (type === 'raster') {
+        // Helper function to clean title by removing 'File:' prefix and file extension
+        const cleanTitle = (title) => {
+            if (!title) return 'Raster Layer';
+            let cleaned = title;
+            // Remove 'File:' prefix
+            if (cleaned.startsWith('File:')) {
+                cleaned = cleaned.substring(5);
+            }
+            // Remove common file extensions
+            cleaned = cleaned.replace(/\.(jpg|jpeg|png|gif|tiff|tif|pdf)$/i, '');
+            return cleaned.trim();
+        };
+
+        // Helper function to format wiki links
+        const formatWikiLink = (url, text) => {
+            if (url && url.includes('commons.wikimedia.org/wiki/File:')) {
+                const fileName = url.split('/').pop();
+                const displayText = text || fileName;
+                return `<a href="${url}" target="_blank">${displayText}</a>`;
+            }
+            return text || url;
+        };
+
+        // Helper function to format description with wiki links
+        const formatDescription = (description, sourceUrl) => {
+            if (!description) return undefined;
+            
+            // Check if description contains "From:" pattern with a URL
+            const fromMatch = description.match(/From:\s*(https?:\/\/[^\s]+)/);
+            if (fromMatch) {
+                const url = fromMatch[1];
+                if (url.includes('commons.wikimedia.org/wiki/File:')) {
+                    const fileName = url.split('/').pop();
+                    return `From: ${formatWikiLink(url, fileName)}`;
+                }
+            }
+            
+            return description;
+        };
+
+        // Helper function to format attribution
+        const formatAttribution = (metadata) => {
+            if (!metadata) return undefined;
+            
+            const sourceUrl = metadata.source;
+            const originalUrl = metadata.originalUrl;
+            
+            let attribution = '';
+            
+            // Add source link if it's a commons wiki link
+            if (sourceUrl && sourceUrl.includes('commons.wikimedia.org/wiki/File:')) {
+                const fileName = sourceUrl.split('/').pop();
+                attribution += formatWikiLink(sourceUrl, fileName);
+            }
+            
+            // Add "via MapWarper" link
+            if (originalUrl) {
+                attribution += attribution ? ' via ' : '';
+                attribution += `<a href="${originalUrl}" target="_blank">MapWarper</a>`;
+            }
+            
+            return attribution || undefined;
+        };
+
         config = {
-            title: metadata ? metadata.title : 'Raster Layer',
-            description: metadata ? metadata.description : undefined,
-            source: metadata ? metadata.source : undefined,
+            title: metadata ? cleanTitle(metadata.title) : 'Raster Layer',
+            description: metadata ? formatDescription(metadata.description, metadata.source) : undefined,
+            source: metadata ? formatWikiLink(metadata.source) : undefined,
             dateDepicted: metadata ? metadata.dateDepicted : undefined,
             type: 'tms',
             id: metadata ? `mapwarper-${metadata.mapId}` : 'raster-' + Math.random().toString(36).slice(2, 8),
@@ -262,9 +326,9 @@ function makeLayerConfig(url, tilejson, metadata = null) {
                     'interpolate', ['linear'], ['zoom'], 6, 0.95, 18, 0.8, 19, 0.3
                 ]
             },
-            attribution: metadata ? (metadata.attribution || `© MapWarper - <a href="${metadata.originalUrl}" target="_blank">View Original</a>`) : undefined,
+            attribution: metadata ? formatAttribution(metadata) : undefined,
             headerImage: metadata ? metadata.thumbnail : undefined,
-            metadata: metadata, // Store full metadata including bbox
+            bbox: metadata && metadata.bbox ? metadata.bbox : undefined, // Add bbox directly
             initiallyChecked: false
         };
         
@@ -411,20 +475,20 @@ async function handleUrlInput(url) {
 }
 
 /**
- * Fit map bounds to mapwarper layer bbox if available and valid
+ * Fit map bounds to layer bbox if available and valid
  * @param {Object} layerConfig - The layer configuration object
  */
 function fitBoundsToMapwarperLayer(layerConfig) {
-    // Check if this is a mapwarper layer with bbox metadata
-    if (!layerConfig?.metadata?.bbox || !window.map) {
+    // Check if this is a layer with bbox (either direct bbox or in metadata)
+    const bbox = layerConfig?.bbox || layerConfig?.metadata?.bbox;
+    
+    if (!bbox || !window.map) {
         return;
     }
     
-    const bbox = layerConfig.metadata.bbox;
-    
     // Check if bbox is valid (not unrectified map)
-    if (!bbox || bbox === "0.0,0.0,0.0,0.0") {
-        console.log('Skipping fitBounds: mapwarper layer has no valid bbox (unrectified map)');
+    if (bbox === "0.0,0.0,0.0,0.0") {
+        console.log('Skipping fitBounds: layer has no valid bbox (unrectified map)');
         return;
     }
     
@@ -441,7 +505,7 @@ function fitBoundsToMapwarperLayer(layerConfig) {
         // Create bounds array for Mapbox: [[minLng, minLat], [maxLng, maxLat]]
         const bounds = [[minLng, minLat], [maxLng, maxLat]];
         
-        console.log('Fitting map to mapwarper layer bounds:', bounds);
+        console.log('Fitting map to layer bounds:', bounds);
         
         // Fit map to bounds with some padding
         window.map.fitBounds(bounds, {
@@ -455,7 +519,7 @@ function fitBoundsToMapwarperLayer(layerConfig) {
             duration: 1000 // Smooth animation
         });
     } catch (error) {
-        console.error('Error fitting bounds to mapwarper layer:', error);
+        console.error('Error fitting bounds to layer:', error);
     }
 }
 

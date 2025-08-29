@@ -1157,6 +1157,12 @@ export class MapFeatureControl {
         const opacityDropdown = this._createOpacityDropdown(layerId, config);
         actionsContainer.appendChild(opacityDropdown);
 
+        // Create zoom button if layer has bbox
+        if (config.bbox || config.metadata?.bbox) {
+            const zoomBtn = this._createZoomButton(layerId, config);
+            actionsContainer.appendChild(zoomBtn);
+        }
+
         // Create remove layer button
         const removeBtn = document.createElement('sl-button');
         removeBtn.size = 'small';
@@ -1261,6 +1267,86 @@ export class MapFeatureControl {
         dropdown.appendChild(menu);
 
         return dropdown;
+    }
+
+    /**
+     * Create zoom button for layers with bbox
+     */
+    _createZoomButton(layerId, config) {
+        const zoomBtn = document.createElement('sl-button');
+        zoomBtn.size = 'small';
+        zoomBtn.variant = 'text';
+        zoomBtn.innerHTML = '<sl-icon name="zoom-in"></sl-icon>';
+        zoomBtn.title = 'Zoom to layer extent';
+        zoomBtn.style.cssText = `
+            min-width: auto;
+            --sl-color-primary-600: #3b82f6;
+            --sl-color-primary-500: #3b82f6;
+        `;
+
+        // Add click handler for zooming to layer bounds
+        zoomBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            this._zoomToLayerBounds(layerId, config);
+        });
+
+        return zoomBtn;
+    }
+
+    /**
+     * Zoom to layer bounds using bbox
+     */
+    _zoomToLayerBounds(layerId, config) {
+        // Get bbox from either direct property or metadata
+        const bbox = config.bbox || config.metadata?.bbox;
+        
+        if (!bbox || !this._map) {
+            console.warn('No bbox available for layer or map not initialized');
+            return;
+        }
+        
+        // Check if bbox is valid (not unrectified map)
+        if (bbox === "0.0,0.0,0.0,0.0") {
+            console.log('Cannot zoom: layer has no valid bbox (unrectified map)');
+            this._showToast('Cannot zoom to layer: no valid geographic bounds available', 'warning');
+            return;
+        }
+        
+        try {
+            // Parse bbox string "minLng,minLat,maxLng,maxLat"
+            const [minLng, minLat, maxLng, maxLat] = bbox.split(',').map(parseFloat);
+            
+            // Validate coordinates
+            if (isNaN(minLng) || isNaN(minLat) || isNaN(maxLng) || isNaN(maxLat)) {
+                console.warn('Invalid bbox coordinates:', bbox);
+                this._showToast('Cannot zoom to layer: invalid coordinates', 'error');
+                return;
+            }
+            
+            // Create bounds array for Mapbox: [[minLng, minLat], [maxLng, maxLat]]
+            const bounds = [[minLng, minLat], [maxLng, maxLat]];
+            
+            console.log('Zooming to layer bounds:', bounds);
+            
+            // Fit map to bounds with some padding
+            this._map.fitBounds(bounds, {
+                padding: {
+                    top: 50,
+                    bottom: 50,
+                    left: 50,
+                    right: 50
+                },
+                maxZoom: 16, // Don't zoom in too close
+                duration: 1000 // Smooth animation
+            });
+            
+            // Show success toast
+            this._showToast(`Zoomed to ${config.title || layerId}`, 'success', 2000);
+            
+        } catch (error) {
+            console.error('Error zooming to layer bounds:', error);
+            this._showToast('Error zooming to layer', 'error');
+        }
     }
 
     /**
