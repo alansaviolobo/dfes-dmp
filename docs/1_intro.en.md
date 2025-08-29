@@ -1,11 +1,14 @@
 # Introduction 
 
-The amche.in interactive 3d atlas is a free citizen resource to find, create and share various reference maps and plans for the state of Goa, India
+The amche.in interactive 3d atlas is a free citizen resource to explore a curated list of reference maps and plans from various sources in a single interface.
 
 ![](../assets/img/intro-inspect-plot.gif)
 
 The source code is licensed under public domain CC-0 and available at [amche-atlas project](https://github.com/publicmap/amche-atlas/tree/main).
 
+## Atlas Coverage
+
+The atlas primarily covers the state of Goa, India. A growing collection of maps and data covering other regions are also available: Mumbai, Chennai and Delhi. You can request more maps with a [Github Ticket](https://github.com/publicmap/amche-atlas/issues)
 
 ## Available Data Layers
 

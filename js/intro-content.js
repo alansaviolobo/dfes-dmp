@@ -122,7 +122,7 @@ class IntroContentManager {
           <div class="flex items-center gap-2 text-xl intro-title">
               <div class="text-center">
                 <div class="text-base font-normal">amche.in</div>
-                <div class="text-xl font-bold">3D Atlas of Goa</div>
+                <div class="text-xl font-bold">Interactive 3D Atlas</div>
               </div>
             </div>
             

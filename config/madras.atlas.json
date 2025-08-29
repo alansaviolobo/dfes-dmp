@@ -226,7 +226,8 @@
       "initiallyChecked": false
     },
     {
-      "id": "osm"
+      "id": "osm",
+      "initiallyChecked": true
     },
     {
       "initiallyChecked": true,
