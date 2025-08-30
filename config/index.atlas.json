@@ -138,7 +138,7 @@
     {
       "title": "Civil Supplies Godowns",
       "description": "Location of Civil Supplies Godowns",
-      "headerImage": "assets/map-layer-civil-supplies-godowns.png",
+      "headerImage": "assets/map-layers/map-layer-civil-supplies-godowns.png",
       "type": "geojson",
       "id": "civil-supplies-godowns",
       "url": "https://gist.githubusercontent.com/alansaviolobo/4698b4ae8ce4dd3592d8848bb369a299/raw/bd7e39f9b151ac71bcbcb87f5a733146b7af782c/civil_supplies_godowns.geojson",
@@ -173,7 +173,7 @@
     {
       "title": "River Flooding Gauges",
       "description": "Location of River Flooding Gauges",
-      "headerImage": "assets/map-layer-river-flooding-gauges.png",
+      "headerImage": "assets/map-layers/map-layer-river-flooding-gauges.png",
       "type": "geojson",
       "id": "river-flooding-gauges",
       "url": "https://gist.githubusercontent.com/alansaviolobo/83a4067c36e906ba2a3287830d6245f3/raw/67c3be304f8a6f2f0f27c6201aa7001ee22e8071/river_gauges.geojson",
@@ -210,7 +210,7 @@
     {
       "title": "Cyclone Shelters",
       "description": "Location of Cyclone Shelters",
-      "headerImage": "assets/map-layer-cyclone-shelters.png",
+      "headerImage": "assets/map-layers/map-layer-cyclone-shelters.png",
       "type": "geojson",
       "id": "cyclone-shelters",
       "url": "https://gist.githubusercontent.com/alansaviolobo/7d045e0b6c6c53b14892b2f9591b5757/raw/29088daa72be07e6e59a732b542cd4a2a367c42c/cyclone_shelters.geojson",
@@ -247,7 +247,7 @@
     {
       "title": "Schools",
       "description": "Location of Schools",
-      "headerImage": "assets/map-layer-schools.png",
+      "headerImage": "assets/map-layers/map-layer-schools.png",
       "type": "geojson",
       "id": "schools",
       "url": "https://gist.githubusercontent.com/alansaviolobo/771a08edf43e34627b4fb748fadcef3b/raw/07ada7a19fc68adcd4d416cb5f3d9babaf7d0919/schools.geojson",
@@ -284,7 +284,7 @@
     {
       "title": "Water Resources",
       "description": "Location of Water Resources",
-      "headerImage": "assets/map-layer-water-resources.png",
+      "headerImage": "assets/map-layers/map-layer-water-resources.png",
       "type": "geojson",
       "id": "water-resources",
       "url": "https://gist.githubusercontent.com/alansaviolobo/294c6d0b934829d46ea74336c298513c/raw/10b478bae5abf59dd3db63bab22edeb75b46c766/water_resources.geojson",
@@ -321,7 +321,7 @@
     {
       "title": "Mutual Aid Agencies",
       "description": "Location of Mutual Aid Agencies",
-      "headerImage": "assets/map-layer-mutual-aid-agencies.png",
+      "headerImage": "assets/map-layers/map-layer-mutual-aid-agencies.png",
       "type": "geojson",
       "id": "mutual-aid-agencies",
       "url": "https://gist.githubusercontent.com/alansaviolobo/43acdb2c97c73ab163927f56178d707a/raw/c57c970cbc2cbaee3ab6cd906885b7b231491bfd/mutual_aid_agencies.geojson",
@@ -352,7 +352,7 @@
     {
       "title": "MHA Units",
       "description": "Location of MHA Units",
-      "headerImage": "assets/map-layer-mha-units.png",
+      "headerImage": "assets/map-layers/map-layer-mha-units.png",
       "type": "geojson",
       "id": "mha-units",
       "url": "https://gist.githubusercontent.com/alansaviolobo/a46fbea981c43226e3645a2b446aac4a/raw/36ce21431834803288a189b0bafe8eb6ed678865/mha_units.geojson",
@@ -387,7 +387,7 @@
     {
       "title": "Dam Levels",
       "description": "Dam Levels",
-      "headerImage": "assets/map-layer-dam-levels.png",
+      "headerImage": "assets/map-layers/map-layer-dam-levels.png",
       "type": "geojson",
       "id": "dam-levels",
       "url": "https://gist.githubusercontent.com/alansaviolobo/e7ffaf4015c46e0abefd7979519a363a/raw/8bc04d20ae3cb4a751760f643389232cf3486b2c/dam_levels.geojson",
@@ -420,7 +420,7 @@
     {
       "title": "Hospitals",
       "description": "Hospitals",
-      "headerImage": "assets/map-layer-hospitals.png",
+      "headerImage": "assets/map-layers/map-layer-hospitals.png",
       "type": "geojson",
       "id": "hospitals",
       "url": "https://gist.githubusercontent.com/alansaviolobo/5d179194f07f3fb37c0941b13ecf3bf8/raw/ce618ae5f383f283bd54f1edde5b1ba04ec197e7/hospitals.geojson",
@@ -453,7 +453,7 @@
     {
       "title": "Ambulances",
       "description": "Ambulances",
-      "headerImage": "assets/map-layer-ambulances.png",
+      "headerImage": "assets/map-layers/map-layer-ambulances.png",
       "type": "geojson",
       "id": "ambulances",
       "url": "https://gist.githubusercontent.com/alansaviolobo/7dff3b0135532f2c2ea79b808baa1745/raw/9f2ee678011a5a1e3fd9b8d80f56b21ca0f43691/ambulances.geojson",
@@ -488,7 +488,7 @@
     {
       "title": "Gas Pipelines",
       "description": "Gas Pipelines",
-      "headerImage": "assets/map-layer-gas-pipelines.png",
+      "headerImage": "assets/map-layers/map-layer-gas-pipelines.png",
       "type": "geojson",
       "id": "gas-pipelines",
       "url": "https://gist.githubusercontent.com/alansaviolobo/618378ae02a60efdd41b84e3cbee5350/raw/657eca5c0fc646c45a1ef9083707068be30f7612/gas_pipelines.geojson",
@@ -521,7 +521,7 @@
     {
       "title": "Heavy Machinery",
       "description": "Heavy Machinery",
-      "headerImage": "assets/map-layer-heavy-machinery.png",
+      "headerImage": "assets/map-layers/map-layer-heavy-machinery.png",
       "type": "geojson",
       "id": "heavy-machinery",
       "url": "https://gist.githubusercontent.com/alansaviolobo/ae72bcdc08628ccbb3a3765f2cc3575d/raw/644213d3f3413c990aaf319e94790a0de547e827/heavy_machinery.geojson",
@@ -556,7 +556,7 @@
     {
       "title": "Tree Cutters",
       "description": "Tree Cutters",
-      "headerImage": "assets/map-layer-tree-cutters.png",
+      "headerImage": "assets/map-layers/map-layer-tree-cutters.png",
       "type": "geojson",
       "id": "tree-cutters",
       "url": "https://gist.githubusercontent.com/alansaviolobo/bd6322d2588e3b56e99826b1f07cef8b/raw/79c1d8412aab51a7e99f97f63b901717b64f5ff3/tree_cutters.geojson",
@@ -589,7 +589,7 @@
     {
       "title": "Village Panchayats",
       "description": "Village Panchayat boundaries",
-      "headerImage": "assets/map-layer-village-panchayats.png",
+      "headerImage": "assets/map-layers/map-layer-village-panchayats.png",
       "type": "geojson",
       "id": "village-panchayats",
       "url": "https://gist.githubusercontent.com/alansaviolobo/7a324cc42b827e0eeb3a8c0f02b01918/raw/b54a0e5e4c82dbeace95403e73222033cbd1968a/village_panchayats.geojson",
@@ -622,7 +622,7 @@
     {
       "title": "Goa Mask",
       "description": "Mask for the state of Goa",
-      "headerImage": "assets/map-layer-mask.png",
+      "headerImage": "assets/map-layers/map-layer-mask.png",
       "type": "vector",
       "id": "mask",
       "url": "https://indianopenmaps.fly.dev/not-so-open/states/lgd/{z}/{x}/{y}.pbf",
@@ -690,7 +690,7 @@
       "title": "Street Map",
       "description": "Detailed street map showing places, landmarks, roads & rivers",
       "type": "style",
-      "headerImage": "assets/map-layer-osm.png",
+      "headerImage": "assets/map-layers/map-layer-osm.png",
       "initiallyChecked": true,
       "layers": [
         {
