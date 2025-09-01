@@ -117,8 +117,9 @@ function getInsertPosition(map, type, layerType, currentGroup, orderedGroups) {
             : LAYER_TYPE_ORDER[layer.metadata.layerType] || 0;
         
         // If this layer should be rendered before our new layer
+        // For same-type layers: layers defined later in config (higher index) should render before layers defined earlier (appear below)
         if (thisLayerOrderValue < orderValue || 
-            (thisLayerOrderValue === orderValue && layerGroupIndex <= currentGroupIndex)) {
+            (thisLayerOrderValue === orderValue && layerGroupIndex > currentGroupIndex)) {
             // Find the next layer that belongs to a different group
             for (let j = i + 1; j < layers.length; j++) {
                 if (layers[j].metadata?.groupId !== groupId) {
