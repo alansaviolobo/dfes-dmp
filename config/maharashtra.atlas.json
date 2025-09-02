@@ -1,0 +1,172 @@
+{
+  "name": "Maharashtra Atlas",
+  "areaOfInterest": "Maharashtra, India",
+  "version": "0.1.0",
+  "url": "https://github.com/publicmap/amche-goa/blob/main/config/index.atlas.json",
+  "map": {
+    "center": [
+      80.26,
+      13.07
+    ],
+    "zoom": 12.3
+  },
+  "layers": [
+    {
+      "id": "mapbox-streets",
+      "title": "Street Map"
+    },
+    {
+      "title": "Cadastral Plot Boundaries",
+      "description": "Cadastral Boundaries from the <a href='https://mrsac.gov.in/MRSAC/'>Maharashtra Remote Sensing Application Centre</a>. 1) Maps are only for viewing purposes. 2) The maps cannot be used for commercial or legal purposes. 3) Citizens can get authorized copy of maps from the concerned taluka Deputy Superintendent of Land Records Office.",
+      "headerImage": "assets/map-layers/map-layer-survey.png",
+      "type": "vector",
+      "id": "plot",
+      "url": "https://indianopenmaps.fly.dev/not-so-open/cadastrals/maharashtra/mrsac/{z}/{x}/{y}.pbf",
+      "sourceLayer": "MRSAC_Cadastrals",
+      "maxzoom": 13,
+      "attribution": "<a href='https://mrsac.gov.in/MRSAC/'>Maharashtra Remote Sensing Application Centre</a> - Collected by <a href='https://datameet.org'>Datameet Community</a>",
+      "style": {
+        "text-padding": 10,
+        "text-font": [
+          "Open Sans SemiBold"
+        ],
+        "text-field": [
+          "step",
+          [
+            "zoom"
+          ],
+          "",
+          14,
+          [
+            "to-string",
+            [
+              "get",
+              "PIN"
+            ]
+          ]
+        ],
+        "text-color": "black",
+        "text-size": 12,
+        "fill-color": [
+          "interpolate",
+          [
+            "linear"
+          ],
+          [
+            "zoom"
+          ],
+          15,
+          "rgba(0, 0, 0, 0.05)",
+          18,
+          "rgba(0, 0, 0, 0.1)"
+        ],
+        "line-color": "#333",
+        "line-width": [
+          "interpolate",
+          [
+            "linear"
+          ],
+          [
+            "zoom"
+          ],
+          13,
+          [
+            "case",
+            [
+              "boolean",
+              [
+                "feature-state",
+                "selected"
+              ],
+              false
+            ],
+            2,
+            [
+              "boolean",
+              [
+                "feature-state",
+                "hover"
+              ],
+              false
+            ],
+            1,
+            0
+          ],
+          18,
+          [
+            "case",
+            [
+              "boolean",
+              [
+                "feature-state",
+                "selected"
+              ],
+              false
+            ],
+            6,
+            [
+              "boolean",
+              [
+                "feature-state",
+                "hover"
+              ],
+              false
+            ],
+            5,
+            1
+          ]
+        ],
+        "circle-color": "black",
+        "circle-stroke-color": "black",
+        "circle-radius": [
+          "interpolate",
+          [
+            "linear"
+          ],
+          [
+            "zoom"
+          ],
+          15,
+          0,
+          18,
+          1
+        ],
+        "circle-stroke-width": [
+          "interpolate",
+          [
+            "linear"
+          ],
+          [
+            "zoom"
+          ],
+          15,
+          0,
+          18,
+          1
+        ]
+      },
+      "initiallyChecked": false,
+      "inspect": {
+        "id": "OBJECTID",
+        "title": "Survey Number",
+        "label": "PIN",
+        "fields": [
+          "villagenam",
+          "talname"
+        ],
+        "fieldTitles": [
+          "Village",
+          "Taluk"
+        ]
+      }
+    },
+    {
+      "id": "osm",
+      "initiallyChecked": true
+    },
+    {
+      "initiallyChecked": true,
+      "id": "mapbox-satellite"
+          }
+    ]
+}

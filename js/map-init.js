@@ -109,6 +109,94 @@ function needsURLPrettification() {
     return currentURL.includes('%2C') || currentURL.includes('%7B') || currentURL.includes('%7D') || currentURL.includes('%22');
 }
 
+// Helper function to get available config files
+async function getAvailableConfigs() {
+    // Return a list of known config files based on the file structure
+    // This could be made dynamic by fetching a directory listing in the future
+    return ['index', 'maharashtra', 'community', 'historic', 'bombay', 'mumbai', 'madras', 'gurugram', 'bengaluru-flood'].join(', ');
+}
+
+// Helper function to try loading a layer from a different config file
+async function tryLoadCrossConfigLayer(layerId, layerConfig) {
+    console.debug(`[map-init] Attempting to load cross-config layer: ${layerId}`);
+    
+    // Parse the layer ID to extract potential config prefix
+    const dashIndex = layerId.indexOf('-');
+    if (dashIndex === -1) return null;
+    
+    const configPrefix = layerId.substring(0, dashIndex);
+    const originalLayerId = layerId.substring(dashIndex + 1);
+    
+    console.debug(`[map-init] Parsed cross-config layer - config: ${configPrefix}, originalId: ${originalLayerId}`);
+    
+    // Try to load the config file
+    try {
+        const configPath = `config/${configPrefix}.atlas.json`;
+        const configResponse = await fetch(configPath);
+        
+        if (!configResponse.ok) {
+            console.debug(`[map-init] Config file not found: ${configPath}`);
+            return null;
+        }
+        
+        const crossConfig = await configResponse.json();
+        
+        // Look for the layer in the cross-config
+        if (crossConfig.layers && Array.isArray(crossConfig.layers)) {
+            const foundLayer = crossConfig.layers.find(layer => layer.id === originalLayerId);
+            
+            if (foundLayer) {
+                console.log(`[map-init] Successfully loaded cross-config layer: ${layerId} from ${configPath}`);
+                
+                // Create a merged layer with the prefixed ID and source config info
+                return {
+                    ...foundLayer,
+                    id: layerId, // Keep the prefixed ID
+                    title: `${foundLayer.title} (${configPrefix})`, // Add config source to title
+                    _sourceConfig: configPrefix,
+                    _originalId: originalLayerId,
+                    // Preserve important URL-specific properties
+                    ...(layerConfig._originalJson && { _originalJson: layerConfig._originalJson }),
+                    ...(layerConfig.initiallyChecked !== undefined && { initiallyChecked: layerConfig.initiallyChecked })
+                };
+            }
+        }
+        
+        // Also check if we need to load the cross-config's library
+        try {
+            const libraryResponse = await fetch('config/_map-layer-presets.json');
+            const layerLibrary = await libraryResponse.json();
+            
+            // Look for the original layer ID in the main library
+            const libraryLayer = layerLibrary.layers.find(lib => lib.id === originalLayerId);
+            
+            if (libraryLayer) {
+                console.log(`[map-init] Found cross-config layer in library: ${originalLayerId}`);
+                
+                return {
+                    ...libraryLayer,
+                    id: layerId, // Keep the prefixed ID
+                    title: `${libraryLayer.title} (${configPrefix})`, // Add config source to title
+                    _sourceConfig: configPrefix,
+                    _originalId: originalLayerId,
+                    // Preserve important URL-specific properties
+                    ...(layerConfig._originalJson && { _originalJson: layerConfig._originalJson }),
+                    ...(layerConfig.initiallyChecked !== undefined && { initiallyChecked: layerConfig.initiallyChecked })
+                };
+            }
+        } catch (libraryError) {
+            console.debug(`[map-init] Could not access layer library for cross-config lookup:`, libraryError);
+        }
+        
+        console.debug(`[map-init] Layer ${originalLayerId} not found in config ${configPrefix}`);
+        return null;
+        
+    } catch (error) {
+        console.debug(`[map-init] Error loading cross-config ${configPrefix}:`, error);
+        return null;
+    }
+}
+
 // Function to load configuration
 async function loadConfiguration() {
     // Check for permalink first - this takes precedence over direct URL parameters
@@ -335,11 +423,21 @@ async function loadConfiguration() {
             const validLayers = [];
             const invalidLayers = [];
             
-            config.layers.forEach(layerConfig => {
+            // Process layers one by one
+            for (const layerConfig of config.layers) {
                 // If the layer only has an id (or minimal properties), look it up in the library
                 if (layerConfig.id && !layerConfig.type) {
-                    // Find the matching layer in the library
-                    const libraryLayer = layerLibrary.layers.find(lib => lib.id === layerConfig.id);
+                    // First, try to find the matching layer in the current library
+                    let libraryLayer = layerLibrary.layers.find(lib => lib.id === layerConfig.id);
+                    
+                    // If not found and layer ID contains a dash, check if it's a cross-config reference
+                    if (!libraryLayer && layerConfig.id.includes('-')) {
+                        const crossConfigLayer = await tryLoadCrossConfigLayer(layerConfig.id, layerConfig);
+                        if (crossConfigLayer) {
+                            validLayers.push(crossConfigLayer);
+                            continue;
+                        }
+                    }
                     
                     if (libraryLayer) {
                         // Merge the library layer with any custom overrides from config
@@ -354,7 +452,7 @@ async function loadConfiguration() {
                     } else {
                         // Layer not found in library - check if it came from URL
                         if (layerConfig.initiallyChecked === true) {
-                            console.warn(`Unknown layer ID from URL: "${layerConfig.id}" - ignoring`);
+                            console.warn(`Unknown layer ID from URL: "${layerConfig.id}" - ignoring. Available configs: ${await getAvailableConfigs()}`);
                             invalidLayers.push(layerConfig.id);
                         } else {
                             // For non-URL layers, keep them as-is (they might be fully defined custom layers)
@@ -365,7 +463,7 @@ async function loadConfiguration() {
                     // If it's a fully defined layer, return as is
                     validLayers.push(layerConfig);
                 }
-            });
+            }
             
             config.layers = validLayers;
             
