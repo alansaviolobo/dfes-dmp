@@ -1,4 +1,4 @@
-// Handles the ordering of different map layers based on their types and properties
+// Handles the defaultordering of different map layers based on their types and properties
 
 // Define the order of different layer types (higher order = rendered later = appears on top)
 const LAYER_TYPE_ORDER = {
@@ -28,31 +28,7 @@ const LAYER_ID_ORDER = {
  * @returns {string|null} - The ID of the layer to insert before, or null for append
  */
 function getInsertPosition(map, type, layerType, currentGroup, orderedGroups) {
-    // Special case for landcover and osm-landuse ordering
-    if (currentGroup) {
-        // If we're adding landcover and osm-landuse already exists, insert landcover before osm-landuse
-        if (currentGroup.id === 'landcover') {
-            const allLayers = map.getStyle().layers;
-            const osmLanduseIndex = allLayers.findIndex(layer => 
-                layer.metadata && layer.metadata.groupId === 'osm-landuse');
-            
-            if (osmLanduseIndex !== -1) {
-                return allLayers[osmLanduseIndex].id;
-            }
-        }
-        
-        // If we're adding osm-landuse and landcover already exists, insert osm-landuse after landcover
-        if (currentGroup.id === 'osm-landuse') {
-            const allLayers = map.getStyle().layers;
-            const landcoverIndex = allLayers.findIndex(layer => 
-                layer.metadata && layer.metadata.groupId === 'landcover');
-            
-            if (landcoverIndex !== -1 && landcoverIndex < allLayers.length - 1) {
-                return allLayers[landcoverIndex + 1].id;
-            }
-        }
-    }
-    
+
     const layers = map.getStyle().layers;
     
     // Find current layer's index in the configuration
@@ -159,32 +135,6 @@ function fixLayerOrdering(map) {
     if (!map) {
         console.error('Map instance not provided to fixLayerOrdering');
         return;
-    }
-    
-    try {
-        // Make sure both layers exist before trying to reorder
-        const hasLandcover = map.getStyle().layers.some(layer => 
-            layer.id === 'vector-layer-landcover');
-        
-        const hasOsmLanduse = map.getStyle().layers.some(layer => 
-            layer.id === 'vector-layer-osm-landuse');
-            
-        if (hasLandcover && hasOsmLanduse) {
-            // Move osm-landuse AFTER landcover to ensure it appears on top
-            // This means we move osm-landuse one position later in the rendering order
-            map.moveLayer('vector-layer-osm-landuse', 'vector-layer-landcover-text');
-            
-            // Also move the outline and text layers
-            if (map.getLayer('vector-layer-osm-landuse-outline')) {
-                map.moveLayer('vector-layer-osm-landuse-outline', 'vector-layer-landcover-text');
-            }
-            
-            if (map.getLayer('vector-layer-osm-landuse-text')) {
-                map.moveLayer('vector-layer-osm-landuse-text', 'vector-layer-landcover-text');
-            }
-        }
-    } catch (error) {
-        console.error('Error fixing layer ordering:', error);
     }
 }
 

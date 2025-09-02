@@ -5,10 +5,10 @@
   "url": "https://github.com/publicmap/amche-goa/blob/main/config/index.atlas.json",
   "map": {
     "center": [
-      80.26,
-      13.07
+      74.6,
+      19.0
     ],
-    "zoom": 12.3
+    "zoom": 6
   },
   "layers": [
     {
