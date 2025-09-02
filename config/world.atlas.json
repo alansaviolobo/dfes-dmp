@@ -17,18 +17,18 @@
     },
     {
       "title": "Tactical Pilotage Charts",
-      "description": "Tactical Pilotage Charts 1:500K [Not for navigational use]",
-      "headerImage": "assets/map-layers/map-layer-soi.png",
-      "legendImage": "assets/map-layers/map-layer-soi-legend.png",
+      "description": "1:500K Tactical Pilotage Charts compiled between 1960-2000. Check <a href='https://maps.lib.utexas.edu/maps/tpc/'>individual charts</a> for specific details. <br><i>Not for navigational use</i>",
+      "headerImage": "assets/map-layers/map-layer-tpc.png",
+      "legendImage": "assets/map-layers/map-layer-tpc-legend.jpg",
       "type": "tms",
       "id": "tpc",
       "url": "https://indianopenmaps.fly.dev/world/topo/american/tpc/{z}/{x}/{y}.webp",
-      "attribution": "Tactical Pilotage Charts(TPC) 1:500K from the U.S. Defense Mapping Agency Aerospace Center sourced through <a href='https://maps.lib.utexas.edu/maps/onc/'>PCL</a> and <a href='https://archive.org/details/topographic-maps'>Mapstor Archive</a>"
+      "attribution": "Tactical Pilotage Charts(TPC) 1:500K from the U.S. Defense Mapping Agency Aerospace Center sourced through <a href='https://maps.lib.utexas.edu/maps/tpc/'>PCL</a> and <a href='https://archive.org/details/topographic-maps'>Mapstor Archive</a>"
     },
     {
       "title": "Operational Navigation Charts",
-      "description": "Operational Navigation Charts 1:1M compiled between 1960-1981. Check individual charts for specific details on https://maps.lib.utexas.edu/maps/onc/ <br><b>Not for navigational use</b>",
-      "headerImage": "assets/map-layers/map-layer-soi.png",
+      "description": "1:1M Operational Navigation Charts compiled between 1960-1981. Check <a href='https://maps.lib.utexas.edu/maps/onc/'>individual charts</a> for specific details. <br><i>Not for navigational use</i>",
+      "headerImage": "assets/map-layers/map-layer-onc.png",
       "legendImage": "assets/map-layers/map-layer-onc-legend.jpg",
       "type": "tms",
       "id": "onc",
