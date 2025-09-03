@@ -53,6 +53,16 @@ export class MapFeatureStateManager extends EventTarget {
     }
 
     /**
+     * Check if a layer is a raster layer that doesn't support feature interaction
+     * @param {Object} layerConfig - Layer configuration
+     * @returns {boolean} True if layer is raster-based
+     */
+    _isRasterLayer(layerConfig) {
+        const rasterTypes = ['tms', 'wmts', 'img', 'raster-style-layer'];
+        return rasterTypes.includes(layerConfig.type);
+    }
+
+    /**
      * Register a layer for feature interaction tracking
      * @param {Object} layerConfig - Layer configuration object with id, type, etc.
      */
@@ -67,13 +77,26 @@ export class MapFeatureStateManager extends EventTarget {
         this._registeredLayers.set(layerId, layerConfig);
         // Layer registered successfully
         
-        // Set up layer events with retry mechanism
+        // Check if this is a raster layer that doesn't need feature interaction
+        if (this._isRasterLayer(layerConfig)) {
+            console.debug(`[StateManager] Registered raster layer ${layerId} (no feature interaction needed)`);
+            // For raster layers, we still register them for inspection but don't set up feature events
+            this._emitStateChange('layer-registered', {
+                layerId,
+                layerConfig,
+                isRasterLayer: true
+            });
+            return;
+        }
+        
+        // Set up layer events with retry mechanism for vector layers
         this._setupLayerEventsWithRetry(layerConfig);
         
         // Emit registration event
         this._emitStateChange('layer-registered', {
             layerId,
-            layerConfig
+            layerConfig,
+            isRasterLayer: false
         });
     }
 
@@ -510,7 +533,7 @@ export class MapFeatureStateManager extends EventTarget {
 
     /**
      * Get all active layers with their features
-     * @returns {Map} Map of layerId -> { config, features }
+     * @returns {Map} Map of layerId -> { config, features, isRaster, isInteractive }
      */
     getActiveLayers() {
         const activeLayers = new Map();
@@ -518,10 +541,13 @@ export class MapFeatureStateManager extends EventTarget {
         // Include all visible layers (both inspectable and non-inspectable)
         this._registeredLayers.forEach((layerConfig, layerId) => {
             const features = this.getLayerFeatures(layerId);
+            const isRaster = this._isRasterLayer(layerConfig);
             
             activeLayers.set(layerId, {
                 config: layerConfig,
-                features
+                features,
+                isRaster,
+                isInteractive: !isRaster
             });
         });
         
@@ -540,9 +566,22 @@ export class MapFeatureStateManager extends EventTarget {
     /**
      * Check if a layer is interactive (registered for events)
      * @param {string} layerId - Layer ID
-     * @returns {boolean} True if layer is interactive
+     * @returns {boolean} True if layer is interactive (supports feature clicks/hovers)
      */
     isLayerInteractive(layerId) {
+        const layerConfig = this._registeredLayers.get(layerId);
+        if (!layerConfig) return false;
+        
+        // Raster layers are registered but not interactive for feature selection
+        return !this._isRasterLayer(layerConfig);
+    }
+
+    /**
+     * Check if a layer is registered (available for inspection)
+     * @param {string} layerId - Layer ID
+     * @returns {boolean} True if layer is registered
+     */
+    isLayerRegistered(layerId) {
         return this._registeredLayers.has(layerId);
     }
 
@@ -707,11 +746,12 @@ export class MapFeatureStateManager extends EventTarget {
             .map(l => l.id);
         matchingIds.push(...prefixMatches);
         
-        // Strategy 2.5: MapboxAPI generated layer names (vector-layer-{id}, tms-layer-{id}, etc.)
+        // Strategy 2.5: MapboxAPI generated layer names (vector-layer-{id}, tms-layer-{id}, wmts-layer-{id}, etc.)
         const generatedMatches = style.layers
             .filter(l => 
                 l.id.startsWith(`vector-layer-${layerId}`) ||
                 l.id.startsWith(`tms-layer-${layerId}`) ||
+                l.id.startsWith(`wmts-layer-${layerId}`) ||
                 l.id.startsWith(`geojson-${layerId}`) ||
                 l.id.startsWith(`csv-${layerId}`) ||
                 l.id.startsWith(`markers-${layerId}`)

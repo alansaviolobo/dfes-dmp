@@ -22,7 +22,7 @@
       "legendImage": null,
       "type": "wmts",
       "id": "modis-terra-truecolor",
-      "url": "https://gibs-c.earthdata.nasa.gov/wmts/epsg4326/best/wmts.cgi?TIME=2025-01-01T00:00:00Z&layer=MODIS_Terra_CorrectedReflectance_TrueColor&style=default&tilematrixset=250m&Service=WMTS&Request=GetTile&Version=1.0.0&Format=image%2Fjpeg&TileMatrix=5&TileCol=10&TileRow=8",
+      "url": "https://gibs-c.earthdata.nasa.gov/wmts/epsg3857/best/wmts.cgi?TIME=2025-01-01T00:00:00Z&layer=MODIS_Terra_CorrectedReflectance_TrueColor&style=default&tilematrixset=250m&Service=WMTS&Request=GetTile&Version=1.0.0&Format=image%2Fjpeg&TileMatrix=5&TileCol=10&TileRow=8",
       "attribution": "NASA MODIS Terra Corrected Reflectance (True Color)"
     },
     {

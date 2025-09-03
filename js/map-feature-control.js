@@ -3608,7 +3608,15 @@ export class MapFeatureControl {
             matchingIds.push(...imgMatches);
         }
         
-        // Strategy 12: Raster style layer matching
+        // Strategy 12: WMTS layer matching
+        if (layerConfig.type === 'wmts') {
+            const wmtsMatches = style.layers
+                .filter(l => l.id === `wmts-layer-${layerId}`)
+                .map(l => l.id);
+            matchingIds.push(...wmtsMatches);
+        }
+        
+        // Strategy 13: Raster style layer matching
         if (layerConfig.type === 'raster-style-layer') {
             const styleLayerId = layerConfig.styleLayer || layerId;
             const rasterMatches = style.layers
@@ -3617,7 +3625,7 @@ export class MapFeatureControl {
             matchingIds.push(...rasterMatches);
         }
         
-        // Strategy 13: Style layer matching (for layers with sublayers)
+        // Strategy 14: Style layer matching (for layers with sublayers)
         if (layerConfig.type === 'style' && layerConfig.layers) {
             layerConfig.layers.forEach(layer => {
                 if (layer.sourceLayer) {

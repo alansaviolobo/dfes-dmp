@@ -939,114 +939,8 @@ export class MapLayerControl {
      */
     setStateManager(stateManager) {
         this._stateManager = stateManager;
-        // Try immediate registration, but with intelligent retry
-        this._registerAllActiveLayersWithRetry();
-    }
-    
-    /**
-     * Register all active layers with intelligent retry mechanism
-     */
-    _registerAllActiveLayersWithRetry(attempt = 0) {
-        if (!this._stateManager) return;
-        
-        const maxAttempts = 5;
-        const delay = 100 * (attempt + 1); // Progressive delay: 100ms, 200ms, 300ms, etc.
-        
-        let layersNeedingRetry = [];
-        
-        this._state.groups.forEach(group => {
-            if (group.initiallyChecked) {
-                // Check if layers actually exist before registering
-                const mockMatchingIds = this._getLayerIdsForGroup(group);
-                if (mockMatchingIds.length > 0) {
-                    this._registerLayerWithStateManager(group);
-                } else if (attempt < maxAttempts) {
-                    layersNeedingRetry.push(group);
-                }
-            }
-        });
-        
-        // If some layers need retry and we haven't exceeded max attempts
-        if (layersNeedingRetry.length > 0 && attempt < maxAttempts) {
-            console.debug(`[LayerControl] Retrying registration for ${layersNeedingRetry.length} layers (attempt ${attempt + 1})`);
-            setTimeout(() => {
-                this._registerSpecificLayersWithRetry(layersNeedingRetry, attempt + 1);
-            }, delay);
-        }
-    }
-    
-    /**
-     * Retry registration for specific layers
-     */
-    _registerSpecificLayersWithRetry(layers, attempt) {
-        if (!this._stateManager) return;
-        
-        const maxAttempts = 5;
-        const delay = 100 * (attempt + 1);
-        
-        let layersStillNeedingRetry = [];
-        
-        layers.forEach(group => {
-            const mockMatchingIds = this._getLayerIdsForGroup(group);
-            if (mockMatchingIds.length > 0) {
-                this._registerLayerWithStateManager(group);
-            } else if (attempt < maxAttempts) {
-                layersStillNeedingRetry.push(group);
-            }
-        });
-        
-        if (layersStillNeedingRetry.length > 0 && attempt < maxAttempts) {
-            console.debug(`[LayerControl] Retrying registration for ${layersStillNeedingRetry.length} layers (attempt ${attempt + 1})`);
-            setTimeout(() => {
-                this._registerSpecificLayersWithRetry(layersStillNeedingRetry, attempt + 1);
-            }, delay);
-        }
-    }
-    
-    /**
-     * Get layer IDs that would match for a group (similar to MapFeatureStateManager logic)
-     */
-    _getLayerIdsForGroup(group) {
-        if (!this._mapboxAPI) return [];
-        
-        try {
-            const style = this._mapboxAPI.getStyle();
-            if (!style || !style.layers) return [];
-            
-            const layerId = group.id;
-            const allMatches = [];
-            
-            // Check for direct matches
-            const directMatches = style.layers.filter(l => l.id === layerId);
-            allMatches.push(...directMatches);
-            
-            // Check for generated matches
-            const generatedMatches = style.layers.filter(l => 
-                l.id.startsWith(`vector-layer-${layerId}`) ||
-                l.id.startsWith(`tms-layer-${layerId}`) ||
-                l.id.startsWith(`geojson-${layerId}`) ||
-                l.id.startsWith(`csv-${layerId}`) ||
-                l.id.startsWith(`markers-${layerId}`) ||
-                l.id.startsWith(layerId + '-') ||
-                l.id.startsWith(layerId + ' ')
-            );
-            allMatches.push(...generatedMatches);
-            
-            // For style layers, check for source-layer matches
-            if (group.type === 'style' && group.layers) {
-                const sourceLayerMatches = style.layers.filter(l => {
-                    return group.layers.some(sublayer => 
-                        sublayer.sourceLayer && l['source-layer'] === sublayer.sourceLayer
-                    );
-                });
-                allMatches.push(...sourceLayerMatches);
-            }
-            
-            return allMatches.map(l => l.id);
-        } catch (error) {
-            console.warn('[LayerControl] Error checking layer existence:', error);
-            return [];
-        }
+        // Register all active layers immediately
+        this._registerAllActiveLayers();
     }
 
     /**
@@ -1070,13 +964,13 @@ export class MapLayerControl {
         
         // Skip style layers as they don't have their own sources/features
         if (layerConfig.type === 'style') {
-            if (layerConfig.type === 'style') {
-                console.debug(`[LayerControl] Skipping state manager registration for style layer ${layerConfig.id} (uses base map sources)`);
-            }
+            console.debug(`[LayerControl] Skipping state manager registration for style layer ${layerConfig.id} (uses base map sources)`);
             return;
         }
         
+        // Register the layer - MapFeatureStateManager will handle raster vs vector distinction
         this._stateManager.registerLayer(layerConfig);
+        console.debug(`[LayerControl] Registered layer ${layerConfig.id} with state manager`);
     }
 
     /**
