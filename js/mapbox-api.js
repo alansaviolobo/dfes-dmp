@@ -65,6 +65,8 @@ export class MapboxAPI {
                     return this._createVectorLayer(groupId, config, visible);
                 case 'tms':
                     return this._createTMSLayer(groupId, config, visible);
+                case 'wmts':
+                    return this._createWMTSLayer(groupId, config, visible);
                 case 'geojson':
                     return this._createGeoJSONLayer(groupId, config, visible);
                 case 'csv':
@@ -104,6 +106,8 @@ export class MapboxAPI {
                     return this._updateVectorLayerVisibility(groupId, config, visible);
                 case 'tms':
                     return this._updateTMSLayerVisibility(groupId, config, visible);
+                case 'wmts':
+                    return this._updateWMTSLayerVisibility(groupId, config, visible);
                 case 'geojson':
                     return this._updateGeoJSONLayerVisibility(groupId, config, visible);
                 case 'csv':
@@ -147,6 +151,8 @@ export class MapboxAPI {
                     return this._removeVectorLayer(groupId, config);
                 case 'tms':
                     return this._removeTMSLayer(groupId, config);
+                case 'wmts':
+                    return this._removeWMTSLayer(groupId, config);
                 case 'geojson':
                     return this._removeGeoJSONLayer(groupId, config);
                 case 'csv':
@@ -181,6 +187,8 @@ export class MapboxAPI {
                     return this._updateVectorLayerOpacity(groupId, config, opacity);
                 case 'tms':
                     return this._updateTMSLayerOpacity(groupId, config, opacity);
+                case 'wmts':
+                    return this._updateWMTSLayerOpacity(groupId, config, opacity);
                 case 'geojson':
                     return this._updateGeoJSONLayerOpacity(groupId, config, opacity);
                 case 'img':
@@ -502,6 +510,152 @@ export class MapboxAPI {
 
     _updateTMSLayerOpacity(groupId, config, opacity) {
         const layerId = `tms-layer-${groupId}`;
+        if (this._map.getLayer(layerId)) {
+            this._map.setPaintProperty(layerId, 'raster-opacity', opacity);
+        }
+        return true;
+    }
+
+    // WMTS layer methods
+    _createWMTSLayer(groupId, config, visible) {
+        const sourceId = `wmts-${groupId}`;
+        const layerId = `wmts-layer-${groupId}`;
+
+        if (!this._map.getSource(sourceId)) {
+            // Store current config for URL conversion
+            this._currentConfig = config;
+            
+            // Convert WMTS URL to XYZ tile format for Mapbox GL JS
+            const tileUrl = this._convertWMTSToXYZ(config.url);
+            
+            const sourceConfig = {
+                type: 'raster',
+                tileSize: config.tileSize || 256,
+                maxzoom: config.maxzoom || 22
+            };
+
+            sourceConfig.tiles = [tileUrl];
+
+            // Add attribution if available
+            if (config.attribution) {
+                sourceConfig.attribution = config.attribution;
+            }
+
+            this._map.addSource(sourceId, sourceConfig);
+
+            const layerConfig = this._createLayerConfig({
+                id: layerId,
+                source: sourceId,
+                style: {
+                    ...(this._defaultStyles.raster || {}),
+                    ...(config.style || {}),
+                    'raster-opacity': config.style?.['raster-opacity'] || config.opacity || this._defaultStyles.raster?.['raster-opacity'] || 1
+                },
+                visible
+            }, 'raster');
+
+            this._map.addLayer(layerConfig, getInsertPosition(this._map, 'wmts', null, config, this._orderedGroups));
+
+            // Add error handling for failed tile requests
+            this._map.on('error', (e) => {
+                if (e.sourceId === sourceId) {
+                    console.warn(`[MapboxAPI] WMTS layer '${groupId}' tile load error:`, e.error);
+                    console.warn(`[MapboxAPI] If you see 400 errors, the layer may not be available in EPSG:3857 projection`);
+                    console.warn(`[MapboxAPI] Original URL: ${config.url}`);
+                    console.warn(`[MapboxAPI] Converted URL: ${tileUrl}`);
+                }
+            });
+        } else {
+            this._updateWMTSLayerVisibility(groupId, config, visible);
+        }
+
+        return true;
+    }
+
+    /**
+     * Convert WMTS URL to XYZ tile URL format for Mapbox GL JS
+     * @param {string} wmtsUrl - Original WMTS URL
+     * @returns {string} - XYZ tile URL
+     */
+    _convertWMTSToXYZ(wmtsUrl) {
+        let xyzUrl = wmtsUrl;
+        
+        // Replace WMTS tile matrix parameters with XYZ placeholders
+        xyzUrl = xyzUrl.replace(/TileMatrix=\d+/gi, 'TileMatrix={z}');
+        xyzUrl = xyzUrl.replace(/TileCol=\d+/gi, 'TileCol={x}');
+        xyzUrl = xyzUrl.replace(/TileRow=\d+/gi, 'TileRow={y}');
+        
+        // NASA GIBS: Keep EPSG:4326 for better compatibility
+        // GIBS doesn't natively store data in EPSG:3857, and many layers
+        // are not available for on-the-fly reprojection to Web Mercator
+        
+        // For layers that support EPSG:3857, we can try conversion
+        if (this._shouldConvertToWebMercator(wmtsUrl, this._currentConfig)) {
+            // Convert EPSG:4326 to EPSG:3857 for Web Mercator projection
+            xyzUrl = xyzUrl.replace(/epsg4326/gi, 'epsg3857');
+            xyzUrl = xyzUrl.replace(/epsg:4326/gi, 'epsg:3857');
+            
+            // Update tilematrixset for Web Mercator projection
+            if (xyzUrl.includes('tilematrixset=31.25m')) {
+                xyzUrl = xyzUrl.replace(/tilematrixset=31\.25m/, 'tilematrixset=GoogleMapsCompatible_Level9');
+            } else if (xyzUrl.includes('tilematrixset=15.625m')) {
+                xyzUrl = xyzUrl.replace(/tilematrixset=15\.625m/, 'tilematrixset=GoogleMapsCompatible_Level9');
+            } else if (!xyzUrl.includes('tilematrixset=GoogleMapsCompatible_Level')) {
+                // Default to Level9 for unknown tilematrixsets in Web Mercator
+                xyzUrl = xyzUrl.replace(/tilematrixset=[^&]+/, 'tilematrixset=GoogleMapsCompatible_Level9');
+            }
+        }
+        
+        // Log the converted URL for debugging
+        console.debug(`[MapboxAPI] Converted WMTS URL: ${wmtsUrl} -> ${xyzUrl}`);
+        
+        return xyzUrl;
+    }
+
+    /**
+     * Determine if a WMTS URL should be converted to Web Mercator (EPSG:3857)
+     * @param {string} wmtsUrl - Original WMTS URL
+     * @param {Object} config - Layer configuration that may override conversion
+     * @returns {boolean} - True if conversion should be attempted
+     */
+    _shouldConvertToWebMercator(wmtsUrl, config = {}) {
+        // Check if config explicitly forces projection conversion
+        if (config.forceWebMercator === true) {
+            return true;
+        }
+        if (config.forceWebMercator === false) {
+            return false;
+        }
+        
+        // Mapbox GL JS requires Web Mercator (EPSG:3857) tiles
+        // So we must attempt conversion for all layers
+        // Let individual layers fail gracefully if they don't support EPSG:3857
+        return true;
+    }
+
+    _updateWMTSLayerVisibility(groupId, config, visible) {
+        const layerId = `wmts-layer-${groupId}`;
+        if (this._map.getLayer(layerId)) {
+            this._map.setLayoutProperty(layerId, 'visibility', visible ? 'visible' : 'none');
+        }
+        return true;
+    }
+
+    _removeWMTSLayer(groupId, config) {
+        const sourceId = `wmts-${groupId}`;
+        const layerId = `wmts-layer-${groupId}`;
+
+        if (this._map.getLayer(layerId)) {
+            this._map.removeLayer(layerId);
+        }
+        if (this._map.getSource(sourceId)) {
+            this._map.removeSource(sourceId);
+        }
+        return true;
+    }
+
+    _updateWMTSLayerOpacity(groupId, config, opacity) {
+        const layerId = `wmts-layer-${groupId}`;
         if (this._map.getLayer(layerId)) {
             this._map.setPaintProperty(layerId, 'raster-opacity', opacity);
         }
@@ -1161,6 +1315,8 @@ export class MapboxAPI {
                 ].filter(id => this._map.getLayer(id));
             case 'tms':
                 return [`tms-layer-${groupId}`].filter(id => this._map.getLayer(id));
+            case 'wmts':
+                return [`wmts-layer-${groupId}`].filter(id => this._map.getLayer(id));
             case 'geojson':
                 const sourceId = `geojson-${groupId}`;
                 return [`${sourceId}-fill`, `${sourceId}-line`, `${sourceId}-label`, `${sourceId}-circle`]
