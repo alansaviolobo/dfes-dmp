@@ -6,6 +6,7 @@ import { localization } from './localization.js';
 import { URLManager } from './url-api.js';
 import { permalinkHandler } from './permalink-handler.js';
 import { Terrain3DControl } from './3d-control.js';
+import { TimeControl } from './timeControl.js';
 
 // Function to get URL parameters
 function getUrlParameter(name) {
@@ -617,6 +618,32 @@ async function initializeMap() {
         // Add 3D terrain control (will be initialized after URL manager is ready)
         const terrain3DControl = new Terrain3DControl();
         map.addControl(terrain3DControl, 'top-right');
+        
+        // Add time control for time-based layers
+        const timeControl = new TimeControl();
+        map.addControl(timeControl, 'top-right');
+        
+        // Store global reference for other components
+        window.timeControl = timeControl;
+        
+        // Add debugging method to global scope
+        window.debugTimeControl = () => {
+            console.log('=== TIME CONTROL DEBUG ===');
+            console.log('TimeControl instance:', timeControl);
+            console.log('Is visible:', timeControl.isVisible());
+            console.log('State manager:', timeControl._stateManager);
+            console.log('MapboxAPI available:', !!window.mapboxAPI);
+            console.log('LayerControl available:', !!window.layerControl);
+            
+            if (window.mapboxAPI && window.mapboxAPI._timeBasedLayers) {
+                console.log('Time-based layers:', window.mapboxAPI._timeBasedLayers);
+            }
+            
+            // Manually trigger check
+            console.log('Manually triggering visibility check...');
+            timeControl.updateVisibility();
+            console.log('=== END DEBUG ===');
+        };
         
         const canvas = map.getCanvas();
         

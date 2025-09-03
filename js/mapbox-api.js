@@ -15,9 +15,241 @@ export class MapboxAPI {
         this._sourceCache = new Map(); // Cache for sources
         this._refreshTimers = new Map(); // Cache for refresh timers
         this._eventListeners = new Map(); // Cache for event listeners
+        this._timeBasedLayers = new Map(); // Cache for layers with time parameters
         
         // Initialize style property mapping for different layer types
         this._stylePropertyMapping = this._initializeStylePropertyMapping();
+        
+        // Set up time change event listener
+        this._setupTimeChangeListener();
+    }
+
+    /**
+     * Set up time change event listener
+     */
+    _setupTimeChangeListener() {
+        // Listen for time change events from TimeControl
+        const timeChangeHandler = (event) => {
+            const { selectedDate, isoString, urlFormat } = event.detail;
+            console.log('[MapboxAPI] Time change event received:', urlFormat);
+            this._updateTimeBasedLayers(urlFormat);
+        };
+
+        // Listen on both map container and window for maximum compatibility
+        this._map.getContainer().addEventListener('timechange', timeChangeHandler);
+        window.addEventListener('timechange', timeChangeHandler);
+        
+        // Store handler for cleanup
+        this._timeChangeHandler = timeChangeHandler;
+    }
+
+    /**
+     * Update all time-based layers with new time parameter
+     * @param {string} timeString - ISO time string for URL parameters
+     */
+    _updateTimeBasedLayers(timeString) {
+        console.log('[MapboxAPI] Updating time-based layers with time:', timeString);
+        
+        this._timeBasedLayers.forEach((layerInfo, groupId) => {
+            const { config, visible } = layerInfo;
+            
+            if (!visible) {
+                console.log(`[MapboxAPI] Skipping invisible layer: ${groupId}`);
+                return;
+            }
+            
+            try {
+                this._updateLayerTime(groupId, config, timeString);
+            } catch (error) {
+                console.error(`[MapboxAPI] Error updating time for layer ${groupId}:`, error);
+            }
+        });
+    }
+
+    /**
+     * Update a specific layer's time parameter
+     * @param {string} groupId - Layer group identifier
+     * @param {Object} config - Layer configuration
+     * @param {string} timeString - ISO time string
+     */
+    _updateLayerTime(groupId, config, timeString) {
+        if (!config.urlTimeParam) {
+            return;
+        }
+
+        console.log(`[MapboxAPI] Updating time for layer ${groupId} with urlTimeParam: ${config.urlTimeParam}`);
+
+        // Generate new URL with time parameter
+        const newUrl = this._generateTimeBasedUrl(config.url, config.urlTimeParam, timeString);
+        
+        // Update the source based on layer type
+        switch (config.type) {
+            case 'wmts':
+                this._updateWMTSLayerTime(groupId, config, newUrl);
+                break;
+            case 'tms':
+                this._updateTMSLayerTime(groupId, config, newUrl);
+                break;
+            case 'img':
+                this._updateImageLayerTime(groupId, config, newUrl);
+                break;
+            default:
+                console.warn(`[MapboxAPI] Time updates not supported for layer type: ${config.type}`);
+        }
+    }
+
+    /**
+     * Generate a new URL with time parameter
+     * @param {string} baseUrl - Original URL
+     * @param {string} timeParam - Time parameter template (e.g., "TIME={time}")
+     * @param {string} timeString - Time value to insert
+     * @returns {string} Updated URL
+     */
+    _generateTimeBasedUrl(baseUrl, timeParam, timeString) {
+        // Replace the time placeholder in the timeParam with the actual time
+        const timeValue = timeParam.replace('{time}', timeString);
+        
+        // If the base URL already has the time parameter, replace it
+        if (baseUrl.includes(timeParam.split('=')[0] + '=')) {
+            // Find and replace existing time parameter
+            const timeParamKey = timeParam.split('=')[0];
+            const urlParts = baseUrl.split('&');
+            const updatedParts = urlParts.map(part => {
+                if (part.includes(timeParamKey + '=')) {
+                    return timeValue;
+                }
+                return part;
+            });
+            return updatedParts.join('&');
+        } else {
+            // Add new time parameter
+            const separator = baseUrl.includes('?') ? '&' : '?';
+            return `${baseUrl}${separator}${timeValue}`;
+        }
+    }
+
+    /**
+     * Update WMTS layer with new time-based URL
+     */
+    _updateWMTSLayerTime(groupId, config, newUrl) {
+        const sourceId = `wmts-${groupId}`;
+        const source = this._map.getSource(sourceId);
+        
+        if (source) {
+            // Store current config for URL conversion
+            this._currentConfig = config;
+            
+            // Convert WMTS URL to XYZ tile format
+            const tileUrl = this._convertWMTSToXYZ(newUrl);
+            
+            // Remove and re-add source with new URL
+            const layerId = `wmts-layer-${groupId}`;
+            if (this._map.getLayer(layerId)) {
+                this._map.removeLayer(layerId);
+            }
+            this._map.removeSource(sourceId);
+            
+            // Add source with new URL
+            const sourceConfig = {
+                type: 'raster',
+                tileSize: config.tileSize || 256,
+                maxzoom: config.maxzoom || 22,
+                tiles: [tileUrl]
+            };
+
+            if (config.attribution) {
+                sourceConfig.attribution = config.attribution;
+            }
+
+            this._map.addSource(sourceId, sourceConfig);
+
+            // Re-add layer
+            const layerConfig = this._createLayerConfig({
+                id: layerId,
+                source: sourceId,
+                style: {
+                    ...(this._defaultStyles.raster || {}),
+                    ...(config.style || {}),
+                    'raster-opacity': config.style?.['raster-opacity'] || config.opacity || this._defaultStyles.raster?.['raster-opacity'] || 1
+                },
+                visible: true
+            }, 'raster');
+
+            this._map.addLayer(layerConfig, getInsertPosition(this._map, 'wmts', null, config, this._orderedGroups));
+            
+            console.log(`[MapboxAPI] Updated WMTS layer ${groupId} with new time URL: ${tileUrl}`);
+        }
+    }
+
+    /**
+     * Update TMS layer with new time-based URL
+     */
+    _updateTMSLayerTime(groupId, config, newUrl) {
+        const sourceId = `tms-${groupId}`;
+        const source = this._map.getSource(sourceId);
+        
+        if (source) {
+            // Remove and re-add source with new URL
+            const layerId = `tms-layer-${groupId}`;
+            if (this._map.getLayer(layerId)) {
+                this._map.removeLayer(layerId);
+            }
+            this._map.removeSource(sourceId);
+            
+            // Add source with new URL
+            const sourceConfig = {
+                type: 'raster',
+                tileSize: 256,
+                maxzoom: config.maxzoom || 22,
+                tiles: [newUrl]
+            };
+
+            if (config.attribution) {
+                sourceConfig.attribution = config.attribution;
+            }
+
+            this._map.addSource(sourceId, sourceConfig);
+
+            // Re-add layer
+            const layerConfig = this._createLayerConfig({
+                id: layerId,
+                source: sourceId,
+                style: {
+                    ...(this._defaultStyles.raster || {}),
+                    ...(config.style || {}),
+                    'raster-opacity': config.style?.['raster-opacity'] || config.opacity || this._defaultStyles.raster?.['raster-opacity'] || 1
+                },
+                visible: true
+            }, 'raster');
+
+            this._map.addLayer(layerConfig, getInsertPosition(this._map, 'tms', null, config, this._orderedGroups));
+            
+            console.log(`[MapboxAPI] Updated TMS layer ${groupId} with new time URL: ${newUrl}`);
+        }
+    }
+
+    /**
+     * Update Image layer with new time-based URL
+     */
+    _updateImageLayerTime(groupId, config, newUrl) {
+        const source = this._map.getSource(groupId);
+        
+        if (source && source.updateImage) {
+            // For image layers, update the image source
+            const bounds = config.bounds || config.bbox;
+            
+            source.updateImage({
+                url: newUrl,
+                coordinates: [
+                    [bounds[0], bounds[3]], // top-left
+                    [bounds[2], bounds[3]], // top-right
+                    [bounds[2], bounds[1]], // bottom-right
+                    [bounds[0], bounds[1]]  // bottom-left
+                ]
+            });
+            
+            console.log(`[MapboxAPI] Updated Image layer ${groupId} with new time URL: ${newUrl}`);
+        }
     }
 
     /**
@@ -57,6 +289,12 @@ export class MapboxAPI {
     async createLayerGroup(groupId, config, options = {}) {
         try {
             const { visible = false, currentGroup = null } = options;
+            
+            // Register time-based layers
+            if (config.urlTimeParam) {
+                this._timeBasedLayers.set(groupId, { config, visible });
+                console.log(`[MapboxAPI] Registered time-based layer: ${groupId} with urlTimeParam: ${config.urlTimeParam}`);
+            }
             
             switch (config.type) {
                 case 'style':
@@ -99,6 +337,13 @@ export class MapboxAPI {
      */
     updateLayerGroupVisibility(groupId, config, visible) {
         try {
+            // Update time-based layer visibility tracking
+            if (config.urlTimeParam && this._timeBasedLayers.has(groupId)) {
+                const layerInfo = this._timeBasedLayers.get(groupId);
+                layerInfo.visible = visible;
+                this._timeBasedLayers.set(groupId, layerInfo);
+            }
+            
             switch (config.type) {
                 case 'style':
                     return this._updateStyleLayerVisibility(groupId, config, visible);
@@ -142,6 +387,12 @@ export class MapboxAPI {
             if (this._refreshTimers.has(groupId)) {
                 clearInterval(this._refreshTimers.get(groupId));
                 this._refreshTimers.delete(groupId);
+            }
+
+            // Remove from time-based layers tracking
+            if (this._timeBasedLayers.has(groupId)) {
+                this._timeBasedLayers.delete(groupId);
+                console.log(`[MapboxAPI] Removed time-based layer tracking: ${groupId}`);
             }
 
             switch (config.type) {
@@ -1669,6 +1920,17 @@ export class MapboxAPI {
      * Cleanup all layer groups and dispose of the API
      */
     cleanup() {
+        // Clean up time change event listener
+        if (this._timeChangeHandler) {
+            try {
+                this._map.getContainer().removeEventListener('timechange', this._timeChangeHandler);
+                window.removeEventListener('timechange', this._timeChangeHandler);
+            } catch (error) {
+                console.warn('Failed to remove time change event listener:', error);
+            }
+            this._timeChangeHandler = null;
+        }
+        
         // Clean up all event listeners
         this._eventListeners.forEach((listeners, eventType) => {
             listeners.forEach(listener => {
@@ -1687,6 +1949,7 @@ export class MapboxAPI {
         // Clear caches
         this._layerCache.clear();
         this._sourceCache.clear();
+        this._timeBasedLayers.clear();
         
         // Clean up all layer groups
         this._layerGroups.forEach((groupData, groupId) => {
