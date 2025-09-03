@@ -6,6 +6,8 @@ const LAYER_TYPE_ORDER = {
     'style': 10,
     'vector': 20,
     'tms': 30,
+    'wms': 35,      // WMS layers - positioned between TMS and CSV
+    'wmts': 36,     // WMTS layers - positioned after WMS but before CSV
     'csv': 40,
     'geojson': 50,
     'img': 60,
@@ -43,8 +45,8 @@ function getInsertPosition(map, type, layerType, currentGroup, orderedGroups) {
     const currentIdOrder = currentGroup && LAYER_ID_ORDER[currentGroup.id];
     const orderValue = currentIdOrder !== undefined ? currentIdOrder : currentTypeOrder;
 
-    // Special case for TMS layers - insert after satellite layer
-    if (type === 'tms') {
+    // Special case for raster layers (TMS, WMS, WMTS) - insert after satellite layer
+    if (type === 'tms' || type === 'wms' || type === 'wmts') {
         // First look for any satellite layer in the style
         const satelliteLayers = layers.filter(layer => 
             layer.id === 'satellite' || 

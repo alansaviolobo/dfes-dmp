@@ -49,7 +49,6 @@
       "maxzoom": 8,
       "attribution": "<a href='https://earthobservatory.nasa.gov/features/BlueMarble/BlueMarble.php'>NASA Blue Marble: Next Generation</a> via <a href='https://nasa-gibs.github.io/gibs-api-docs/GIBS'>GIBS</a>"
     },
-
     {
       "title": "Tactical Pilotage Charts",
       "description": "1:500K Tactical Pilotage Charts compiled between 1960-2000. Check <a href='https://maps.lib.utexas.edu/maps/tpc/'>individual charts</a> for specific details. <br><i>Not for navigational use</i>",
@@ -69,6 +68,126 @@
       "id": "onc",
       "url": "https://indianopenmaps.fly.dev/world/topo/american/onc/{z}/{x}/{y}.webp",
       "attribution": "Operational Navigation Charts 1:1M from the U.S. Defense Mapping Agency Aerospace Center sourced through <a href='https://maps.lib.utexas.edu/maps/onc/'>PCL</a> and <a href='https://archive.org/details/topographic-maps'>Mapstor Archive</a>"
+    },
+    {
+      "title": "Fires and Thermal Anomalies (375m)",
+      "description": "VIIRS/SNPP Thermal Anomalies and Fire - active fire locations and thermal anomalies at 375m resolution",
+      "headerImage": null,
+      "legendImage": null,
+      "type": "wms",
+      "id": "viirs-thermal-anomalies-375m",
+      "url": "https://gibs.earthdata.nasa.gov/wms/epsg3857/best/wms.cgi?SERVICE=WMS&REQUEST=GetMap&VERSION=1.1.1&LAYERS=VIIRS_SNPP_Thermal_Anomalies_375m_All&STYLES=default&FORMAT=image%2Fpng",
+      "urlTimeParam": "TIME={time}",
+      "attribution": "<a href='https://firms.modaps.eosdis.nasa.gov/'>NASA FIRMS</a> via <a href='https://nasa-gibs.github.io/gibs-api-docs/GIBS'>GIBS</a>"
+    },
+    {
+      "title": "Global Digital Elevation (Color Shaded Relief)",
+      "description": "SRTM Digital Elevation Model with color shaded relief visualization",
+      "headerImage": null,
+      "legendImage": null,
+      "type": "wms",
+      "id": "aster-gdem-relief",
+      "url": "https://gibs.earthdata.nasa.gov/wms/epsg3857/best/wms.cgi?SERVICE=WMS&REQUEST=GetMap&VERSION=1.1.1&LAYERS=ASTER_GDEM_Color_Shaded_Relief&STYLES=default&FORMAT=image%2Fpng",
+      "attribution": "<a href='https://www2.jpl.nasa.gov/srtm/'>NASA SRTM</a> via <a href='https://nasa-gibs.github.io/gibs-api-docs/GIBS'>GIBS</a>"
+    },
+    {
+      "title": "Global Digital Elevation",
+      "description": "SRTM Digital Elevation Model with color shaded relief visualization",
+      "headerImage": null,
+      "legendImage": null,
+      "type": "wms",
+      "id": "aster-gdem",
+      "url": "https://gibs.earthdata.nasa.gov/wms/epsg3857/best/wms.cgi?SERVICE=WMS&REQUEST=GetMap&VERSION=1.1.1&LAYERS=ASTER_GDEM_Color_Index&STYLES=default&FORMAT=image%2Fpng",
+      "attribution": "<a href='https://www2.jpl.nasa.gov/srtm/'>NASA SRTM</a> via <a href='https://nasa-gibs.github.io/gibs-api-docs/GIBS'>GIBS</a>"
+    },
+    {
+      "title": "Aerosol Optical Depth (550nm)",
+      "description": "MODIS/Aqua Aerosol Optical Depth at 550nm - atmospheric aerosol concentration",
+      "headerImage": null,
+      "legendImage": null,
+      "type": "wms",
+      "id": "modis-aqua-aerosol-optical-depth",
+      "url": "https://gibs.earthdata.nasa.gov/wms/epsg3857/best/wms.cgi?SERVICE=WMS&REQUEST=GetMap&VERSION=1.1.1&LAYERS=MODIS_Aqua_Aerosol_Optical_Depth_550nm&STYLES=default&FORMAT=image%2Fpng",
+      "urlTimeParam": "TIME={time}",
+      "maxzoom": 6,
+      "attribution": "<a href='https://modis.gsfc.nasa.gov/about/'>NASA MODIS</a> via <a href='https://nasa-gibs.github.io/gibs-api-docs/GIBS'>GIBS</a>"
+    },
+    {
+      "title": "Anthropogenic Biomes",
+      "description": "Global classification of land areas based on human influence and land use patterns",
+      "headerImage": null,
+      "legendImage": null,
+      "type": "wms",
+      "id": "anthropogenic-biomes",
+      "url": "https://gibs.earthdata.nasa.gov/wms/epsg3857/best/wms.cgi?SERVICE=WMS&REQUEST=GetMap&VERSION=1.1.1&LAYERS=Anthropogenic_Biomes&STYLES=default&FORMAT=image%2Fpng",
+      "maxzoom": 6,
+      "attribution": "<a href='https://sedac.ciesin.columbia.edu/'>NASA SEDAC</a> via <a href='https://nasa-gibs.github.io/gibs-api-docs/GIBS'>GIBS</a>"
+    },
+    {
+      "title": "Global Croplands (2000)",
+      "description": "Global Agricultural Lands: Croplands, circa 2000 - worldwide distribution of croplands",
+      "headerImage": null,
+      "legendImage": null,
+      "type": "wms",
+      "id": "global-croplands-2000",
+      "url": "https://gibs.earthdata.nasa.gov/wms/epsg3857/best/wms.cgi?SERVICE=WMS&REQUEST=GetMap&VERSION=1.1.1&LAYERS=Croplands&STYLES=default&FORMAT=image%2Fpng",
+      "maxzoom": 6,
+      "attribution": "<a href='https://sedac.ciesin.columbia.edu/'>NASA SEDAC</a> via <a href='https://nasa-gibs.github.io/gibs-api-docs/GIBS'>GIBS</a>"
+    },
+    {
+      "title": "Global Pastures",
+      "description": "Global Agricultural Lands: Pastures - worldwide distribution of pasture lands",
+      "headerImage": null,
+      "legendImage": null,
+      "type": "wms",
+      "id": "global-pastures",
+      "url": "https://gibs.earthdata.nasa.gov/wms/epsg3857/best/wms.cgi?SERVICE=WMS&REQUEST=GetMap&VERSION=1.1.1&LAYERS=Pastures&STYLES=default&FORMAT=image%2Fpng",
+      "maxzoom": 6,
+      "attribution": "<a href='https://sedac.ciesin.columbia.edu/'>NASA SEDAC</a> via <a href='https://nasa-gibs.github.io/gibs-api-docs/GIBS'>GIBS</a>"
+    },
+    {
+      "title": "Population Density 2020",
+      "description": "Global population density estimates for 2020 - persons per square kilometer",
+      "headerImage": null,
+      "legendImage": null,
+      "type": "wms",
+      "id": "population-density-2020",
+      "url": "https://gibs.earthdata.nasa.gov/wms/epsg3857/best/wms.cgi?SERVICE=WMS&REQUEST=GetMap&VERSION=1.1.1&LAYERS=Population_Density_2020&STYLES=default&FORMAT=image%2Fpng",
+      "maxzoom": 6,
+      "attribution": "<a href='https://sedac.ciesin.columbia.edu/'>NASA SEDAC</a> via <a href='https://nasa-gibs.github.io/gibs-api-docs/GIBS'>GIBS</a>"
+    },
+    {
+      "title": "Human Footprint",
+      "description": "Global Human Footprint - cumulative impact of human activities on the environment",
+      "headerImage": null,
+      "legendImage": null,
+      "type": "wms",
+      "id": "human-footprint",
+      "url": "https://gibs.earthdata.nasa.gov/wms/epsg3857/best/wms.cgi?SERVICE=WMS&REQUEST=GetMap&VERSION=1.1.1&LAYERS=Human_Footprint&STYLES=default&FORMAT=image%2Fpng",
+      "maxzoom": 6,
+      "attribution": "<a href='https://sedac.ciesin.columbia.edu/'>NASA SEDAC</a> via <a href='https://nasa-gibs.github.io/gibs-api-docs/GIBS'>GIBS</a>"
+    },
+    {
+      "title": "Land Surface Temperature (Summer Max)",
+      "description": "Average Summer Daytime Maximum Land Surface Temperature - seasonal temperature patterns",
+      "headerImage": null,
+      "legendImage": null,
+      "type": "wms",
+      "id": "summer-daytime-max-lst",
+      "url": "https://gibs.earthdata.nasa.gov/wms/epsg3857/best/wms.cgi?SERVICE=WMS&REQUEST=GetMap&VERSION=1.1.1&LAYERS=Summer_Day_Max_LST&STYLES=default&FORMAT=image%2Fpng",
+      "maxzoom": 6,
+      "attribution": "<a href='https://modis.gsfc.nasa.gov/about/'>NASA MODIS</a> via <a href='https://nasa-gibs.github.io/gibs-api-docs/GIBS'>GIBS</a>"
+    },
+    {
+      "title": "Protected Areas",
+      "description": "World Database on Protected Areas - globally recognized protected areas and conservation zones",
+      "headerImage": null,
+      "legendImage": null,
+      "type": "wms",
+      "id": "protected-areas",
+      "url": "https://gibs.earthdata.nasa.gov/wms/epsg3857/best/wms.cgi?SERVICE=WMS&REQUEST=GetMap&VERSION=1.1.1&LAYERS=Protected_Areas&STYLES=default&FORMAT=image%2Fpng",
+      "maxzoom": 8,
+      "attribution": "<a href='https://www.protectedplanet.net/'>UNEP-WCMC</a> via <a href='https://nasa-gibs.github.io/gibs-api-docs/GIBS'>GIBS</a>"
     },
     {
       "id": "osm",

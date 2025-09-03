@@ -746,12 +746,13 @@ export class MapFeatureStateManager extends EventTarget {
             .map(l => l.id);
         matchingIds.push(...prefixMatches);
         
-        // Strategy 2.5: MapboxAPI generated layer names (vector-layer-{id}, tms-layer-{id}, wmts-layer-{id}, etc.)
+        // Strategy 2.5: MapboxAPI generated layer names (vector-layer-{id}, tms-layer-{id}, wmts-layer-{id}, wms-layer-{id}, etc.)
         const generatedMatches = style.layers
             .filter(l => 
                 l.id.startsWith(`vector-layer-${layerId}`) ||
                 l.id.startsWith(`tms-layer-${layerId}`) ||
                 l.id.startsWith(`wmts-layer-${layerId}`) ||
+                l.id.startsWith(`wms-layer-${layerId}`) ||
                 l.id.startsWith(`geojson-${layerId}`) ||
                 l.id.startsWith(`csv-${layerId}`) ||
                 l.id.startsWith(`markers-${layerId}`)
