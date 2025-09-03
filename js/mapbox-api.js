@@ -90,6 +90,9 @@ export class MapboxAPI {
             case 'tms':
                 this._updateTMSLayerTime(groupId, config, newUrl);
                 break;
+            case 'wms':
+                this._updateWMSLayerTime(groupId, config, newUrl);
+                break;
             case 'img':
                 this._updateImageLayerTime(groupId, config, newUrl);
                 break;
@@ -106,8 +109,20 @@ export class MapboxAPI {
      * @returns {string} Updated URL
      */
     _generateTimeBasedUrl(baseUrl, timeParam, timeString) {
-        // Replace the time placeholder in the timeParam with the actual time
-        const timeValue = timeParam.replace('{time}', timeString);
+        // Convert ISO string to YYYY-MM-DD format for GIBS layers
+        let formattedTimeString = timeString;
+        if (baseUrl.includes('gibs.earthdata.nasa.gov') || baseUrl.includes('earthdata.nasa.gov')) {
+            // GIBS layers expect YYYY-MM-DD format
+            const date = new Date(timeString);
+            const year = date.getFullYear();
+            const month = String(date.getMonth() + 1).padStart(2, '0');
+            const day = String(date.getDate()).padStart(2, '0');
+            formattedTimeString = `${year}-${month}-${day}`;
+            console.log(`[MapboxAPI] Converting time for GIBS layer: ${timeString} -> ${formattedTimeString}`);
+        }
+        
+        // Replace the time placeholder in the timeParam with the formatted time
+        const timeValue = timeParam.replace('{time}', formattedTimeString);
         
         // If the base URL already has the time parameter, replace it
         if (baseUrl.includes(timeParam.split('=')[0] + '=')) {
@@ -305,6 +320,8 @@ export class MapboxAPI {
                     return this._createTMSLayer(groupId, config, visible);
                 case 'wmts':
                     return this._createWMTSLayer(groupId, config, visible);
+                case 'wms':
+                    return this._createWMSLayer(groupId, config, visible);
                 case 'geojson':
                     return this._createGeoJSONLayer(groupId, config, visible);
                 case 'csv':
@@ -353,6 +370,8 @@ export class MapboxAPI {
                     return this._updateTMSLayerVisibility(groupId, config, visible);
                 case 'wmts':
                     return this._updateWMTSLayerVisibility(groupId, config, visible);
+                case 'wms':
+                    return this._updateWMSLayerVisibility(groupId, config, visible);
                 case 'geojson':
                     return this._updateGeoJSONLayerVisibility(groupId, config, visible);
                 case 'csv':
@@ -404,6 +423,8 @@ export class MapboxAPI {
                     return this._removeTMSLayer(groupId, config);
                 case 'wmts':
                     return this._removeWMTSLayer(groupId, config);
+                case 'wms':
+                    return this._removeWMSLayer(groupId, config);
                 case 'geojson':
                     return this._removeGeoJSONLayer(groupId, config);
                 case 'csv':
@@ -440,6 +461,8 @@ export class MapboxAPI {
                     return this._updateTMSLayerOpacity(groupId, config, opacity);
                 case 'wmts':
                     return this._updateWMTSLayerOpacity(groupId, config, opacity);
+                case 'wms':
+                    return this._updateWMSLayerOpacity(groupId, config, opacity);
                 case 'geojson':
                     return this._updateGeoJSONLayerOpacity(groupId, config, opacity);
                 case 'img':
@@ -907,6 +930,185 @@ export class MapboxAPI {
 
     _updateWMTSLayerOpacity(groupId, config, opacity) {
         const layerId = `wmts-layer-${groupId}`;
+        if (this._map.getLayer(layerId)) {
+            this._map.setPaintProperty(layerId, 'raster-opacity', opacity);
+        }
+        return true;
+    }
+
+    // WMS layer methods
+    _createWMSLayer(groupId, config, visible) {
+        const sourceId = `wms-${groupId}`;
+        const layerId = `wms-layer-${groupId}`;
+
+        if (!this._map.getSource(sourceId)) {
+            // Convert WMS URL to tile format for Mapbox GL JS
+            const tileUrl = this._convertWMSToTiles(config.url);
+            
+            const sourceConfig = {
+                type: 'raster',
+                tileSize: config.tileSize || 256,
+                maxzoom: config.maxzoom || 22
+            };
+
+            sourceConfig.tiles = [tileUrl];
+
+            // Add attribution if available
+            if (config.attribution) {
+                sourceConfig.attribution = config.attribution;
+            }
+
+            this._map.addSource(sourceId, sourceConfig);
+
+            const layerConfig = this._createLayerConfig({
+                id: layerId,
+                source: sourceId,
+                style: {
+                    ...(this._defaultStyles.raster || {}),
+                    ...(config.style || {}),
+                    'raster-opacity': config.style?.['raster-opacity'] || config.opacity || this._defaultStyles.raster?.['raster-opacity'] || 1
+                },
+                visible
+            }, 'raster');
+
+            this._map.addLayer(layerConfig, getInsertPosition(this._map, 'wms', null, config, this._orderedGroups));
+
+            // Add error handling for failed tile requests
+            this._map.on('error', (e) => {
+                if (e.sourceId === sourceId) {
+                    console.warn(`[MapboxAPI] WMS layer '${groupId}' tile load error:`, e.error);
+                    console.warn(`[MapboxAPI] Original URL: ${config.url}`);
+                    console.warn(`[MapboxAPI] Converted URL: ${tileUrl}`);
+                }
+            });
+        } else {
+            this._updateWMSLayerVisibility(groupId, config, visible);
+        }
+
+        return true;
+    }
+
+    /**
+     * Convert WMS URL to tile URL format for Mapbox GL JS
+     * @param {string} wmsUrl - Original WMS URL
+     * @returns {string} - Tile URL
+     */
+    _convertWMSToTiles(wmsUrl) {
+        // For WMS, we need to ensure the URL has the correct parameters for tiled access
+        let tileUrl = wmsUrl;
+        
+        // Ensure BBOX parameter uses the correct placeholder
+        if (!tileUrl.includes('BBOX=')) {
+            // Add BBOX parameter if not present
+            const separator = tileUrl.includes('?') ? '&' : '?';
+            tileUrl += `${separator}BBOX={bbox-epsg-3857}`;
+        } else {
+            // Replace existing BBOX with the tile placeholder
+            tileUrl = tileUrl.replace(/BBOX=[^&]+/, 'BBOX={bbox-epsg-3857}');
+        }
+        
+        // Ensure proper WIDTH and HEIGHT
+        if (!tileUrl.includes('WIDTH=')) {
+            tileUrl += '&WIDTH=256';
+        }
+        if (!tileUrl.includes('HEIGHT=')) {
+            tileUrl += '&HEIGHT=256';
+        }
+        
+        // Ensure CRS/SRS is set to EPSG:3857 for Web Mercator
+        // WMS 1.1.1 and earlier use SRS parameter, WMS 1.3.0+ use CRS parameter
+        if (tileUrl.includes('CRS=')) {
+            tileUrl = tileUrl.replace(/CRS=[^&]+/, 'CRS=EPSG:3857');
+        } else if (tileUrl.includes('SRS=')) {
+            tileUrl = tileUrl.replace(/SRS=[^&]+/, 'SRS=EPSG:3857');
+        } else {
+            // Default to SRS for WMS 1.1.1 or CRS for 1.3.0+ based on VERSION parameter
+            const usesCRS = tileUrl.includes('VERSION=1.3') || 
+                           tileUrl.includes('VERSION=1.4') || 
+                           tileUrl.includes('VERSION=2.') || 
+                           tileUrl.includes('VERSION=3.');
+            const crsParam = usesCRS ? 'CRS=EPSG:3857' : 'SRS=EPSG:3857';
+            tileUrl += `&${crsParam}`;
+        }
+        
+        console.debug(`[MapboxAPI] Converted WMS URL: ${wmsUrl} -> ${tileUrl}`);
+        
+        return tileUrl;
+    }
+
+    /**
+     * Update WMS layer with new time-based URL
+     */
+    _updateWMSLayerTime(groupId, config, newUrl) {
+        const sourceId = `wms-${groupId}`;
+        const source = this._map.getSource(sourceId);
+        
+        if (source) {
+            // Convert the new time-based URL to tile format
+            const tileUrl = this._convertWMSToTiles(newUrl);
+            
+            // Remove and re-add source with new URL
+            const layerId = `wms-layer-${groupId}`;
+            if (this._map.getLayer(layerId)) {
+                this._map.removeLayer(layerId);
+            }
+            this._map.removeSource(sourceId);
+            
+            // Add source with new URL
+            const sourceConfig = {
+                type: 'raster',
+                tileSize: config.tileSize || 256,
+                maxzoom: config.maxzoom || 22,
+                tiles: [tileUrl]
+            };
+
+            if (config.attribution) {
+                sourceConfig.attribution = config.attribution;
+            }
+
+            this._map.addSource(sourceId, sourceConfig);
+
+            // Re-add layer
+            const layerConfig = this._createLayerConfig({
+                id: layerId,
+                source: sourceId,
+                style: {
+                    ...(this._defaultStyles.raster || {}),
+                    ...(config.style || {}),
+                    'raster-opacity': config.style?.['raster-opacity'] || config.opacity || this._defaultStyles.raster?.['raster-opacity'] || 1
+                },
+                visible: true
+            }, 'raster');
+
+            this._map.addLayer(layerConfig, getInsertPosition(this._map, 'wms', null, config, this._orderedGroups));
+            
+            console.log(`[MapboxAPI] Updated WMS layer ${groupId} with new time URL: ${tileUrl}`);
+        }
+    }
+
+    _updateWMSLayerVisibility(groupId, config, visible) {
+        const layerId = `wms-layer-${groupId}`;
+        if (this._map.getLayer(layerId)) {
+            this._map.setLayoutProperty(layerId, 'visibility', visible ? 'visible' : 'none');
+        }
+        return true;
+    }
+
+    _removeWMSLayer(groupId, config) {
+        const sourceId = `wms-${groupId}`;
+        const layerId = `wms-layer-${groupId}`;
+
+        if (this._map.getLayer(layerId)) {
+            this._map.removeLayer(layerId);
+        }
+        if (this._map.getSource(sourceId)) {
+            this._map.removeSource(sourceId);
+        }
+        return true;
+    }
+
+    _updateWMSLayerOpacity(groupId, config, opacity) {
+        const layerId = `wms-layer-${groupId}`;
         if (this._map.getLayer(layerId)) {
             this._map.setPaintProperty(layerId, 'raster-opacity', opacity);
         }
@@ -1568,6 +1770,8 @@ export class MapboxAPI {
                 return [`tms-layer-${groupId}`].filter(id => this._map.getLayer(id));
             case 'wmts':
                 return [`wmts-layer-${groupId}`].filter(id => this._map.getLayer(id));
+            case 'wms':
+                return [`wms-layer-${groupId}`].filter(id => this._map.getLayer(id));
             case 'geojson':
                 const sourceId = `geojson-${groupId}`;
                 return [`${sourceId}-fill`, `${sourceId}-line`, `${sourceId}-label`, `${sourceId}-circle`]
