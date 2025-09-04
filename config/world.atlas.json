@@ -70,7 +70,7 @@
       "attribution": "Operational Navigation Charts 1:1M from the U.S. Defense Mapping Agency Aerospace Center sourced through <a href='https://maps.lib.utexas.edu/maps/onc/'>PCL</a> and <a href='https://archive.org/details/topographic-maps'>Mapstor Archive</a>"
     },
     {
-      "title": "Fires and Thermal Anomalies (375m)",
+      "title": "Fires and Thermal Anomalies",
       "description": "VIIRS/SNPP Thermal Anomalies and Fire - active fire locations and thermal anomalies at 375m resolution",
       "headerImage": null,
       "legendImage": null,
@@ -99,18 +99,6 @@
       "id": "aster-gdem",
       "url": "https://gibs.earthdata.nasa.gov/wms/epsg3857/best/wms.cgi?SERVICE=WMS&REQUEST=GetMap&VERSION=1.1.1&LAYERS=ASTER_GDEM_Color_Index&STYLES=default&FORMAT=image%2Fpng",
       "attribution": "<a href='https://www2.jpl.nasa.gov/srtm/'>NASA SRTM</a> via <a href='https://nasa-gibs.github.io/gibs-api-docs/GIBS'>GIBS</a>"
-    },
-    {
-      "title": "Aerosol Optical Depth (550nm)",
-      "description": "MODIS/Aqua Aerosol Optical Depth at 550nm - atmospheric aerosol concentration",
-      "headerImage": null,
-      "legendImage": null,
-      "type": "wms",
-      "id": "modis-aqua-aerosol-optical-depth",
-      "url": "https://gibs.earthdata.nasa.gov/wms/epsg3857/best/wms.cgi?SERVICE=WMS&REQUEST=GetMap&VERSION=1.1.1&LAYERS=MODIS_Aqua_Aerosol_Optical_Depth_550nm&STYLES=default&FORMAT=image%2Fpng",
-      "urlTimeParam": "TIME={time}",
-      "maxzoom": 6,
-      "attribution": "<a href='https://modis.gsfc.nasa.gov/about/'>NASA MODIS</a> via <a href='https://nasa-gibs.github.io/gibs-api-docs/GIBS'>GIBS</a>"
     },
     {
       "title": "Anthropogenic Biomes",
@@ -157,15 +145,22 @@
       "attribution": "<a href='https://sedac.ciesin.columbia.edu/'>NASA SEDAC</a> via <a href='https://nasa-gibs.github.io/gibs-api-docs/GIBS'>GIBS</a>"
     },
     {
-      "title": "Human Footprint",
-      "description": "Global Human Footprint - cumulative impact of human activities on the environment",
-      "headerImage": null,
-      "legendImage": null,
+      "id": "impervious-surface",
+      "title": "Impervious Surface Percentage",
+      "description": "Global impervious surface data showing man-made surfaces. <br><a href='https://worldview.earthdata.nasa.gov/config/metadata/layers/sedac/Landsat_Global_Man-made_Impervious_Surface.html' target='_blank' rel='noopener'>View detailed metadata →</a>",
+      "headerImage": "https://worldview.earthdata.nasa.gov/images/layers/previews/geographic/Landsat_Global_Man-made_Impervious_Surface.jpg",
       "type": "wms",
-      "id": "human-footprint",
-      "url": "https://gibs.earthdata.nasa.gov/wms/epsg3857/best/wms.cgi?SERVICE=WMS&REQUEST=GetMap&VERSION=1.1.1&LAYERS=Human_Footprint&STYLES=default&FORMAT=image%2Fpng",
-      "maxzoom": 6,
-      "attribution": "<a href='https://sedac.ciesin.columbia.edu/'>NASA SEDAC</a> via <a href='https://nasa-gibs.github.io/gibs-api-docs/GIBS'>GIBS</a>"
+      "url": "https://gibs.earthdata.nasa.gov/wms/epsg3857/best/wms.cgi?LAYERS=Landsat_Global_Man-made_Impervious_Surface&FORMAT=image/png&SERVICE=WMS&REQUEST=GetMap&VERSION=1.1.1",
+      "attribution": "<a href='https://worldview.earthdata.nasa.gov/?l=Landsat_Global_Man-made_Impervious_Surface'>Global Man-made Impervious Surface (GMIS) Dataset From Landsat, v1 (2010)</a> via <a href='https://nasa-gibs.github.io/gibs-api-docs/available-visualizations/'>GIBS</a>"
+    },
+    {
+      "id": "human-footprint-v2",
+      "title": "Human Footprint v2 (1995-2004)",
+      "description": "The Human Footprint, 1995-2004 layer is from the Global Human Footprint Dataset of the Last of the Wild Project, Version 2, 2005 (LWP-2) is the Human Influence Index (HII) normalized by biome and realm. <br><a href='https://worldview.earthdata.nasa.gov/config/metadata/layers/sedac/Human_Footprint_1995-2004.html' target='_blank' rel='noopener'>View detailed metadata →</a>",
+      "headerImage": "https://worldview.earthdata.nasa.gov/images/layers/previews/geographic/Human_Footprint_1995-2004.jpg",
+      "type": "wms",
+      "url": "https://gibs.earthdata.nasa.gov/wms/epsg3857/best/wms.cgi?LAYERS=Human_Footprint_1995-2004&FORMAT=image/png&SERVICE=WMS&REQUEST=GetMap&VERSION=1.1.1",
+      "attribution": "<a href='https://worldview.earthdata.nasa.gov/?l=Human_Footprint_1995-2004'>Global Human Footprint (Geographic), v2 (1995-2004)</a> via <a href='https://nasa-gibs.github.io/gibs-api-docs/available-visualizations/'>GIBS</a>"
     },
     {
       "title": "Land Surface Temperature (Summer Max)",
@@ -181,12 +176,11 @@
     {
       "title": "Protected Areas",
       "description": "World Database on Protected Areas - globally recognized protected areas and conservation zones",
-      "headerImage": null,
+      "headerImage": "https://worldview.earthdata.nasa.gov/images/layers/previews/geographic/World_Database_on_Protected_Areas.jpg",
       "legendImage": null,
       "type": "wms",
       "id": "protected-areas",
-      "url": "https://gibs.earthdata.nasa.gov/wms/epsg3857/best/wms.cgi?SERVICE=WMS&REQUEST=GetMap&VERSION=1.1.1&LAYERS=Protected_Areas&STYLES=default&FORMAT=image%2Fpng",
-      "maxzoom": 8,
+      "url": "https://gibs.earthdata.nasa.gov/wms/epsg3857/best/wms.cgi?SERVICE=WMS&REQUEST=GetMap&VERSION=1.1.1&LAYERS=World_Database_on_Protected_Areas&STYLES=default&FORMAT=image%2Fpng",
       "attribution": "<a href='https://www.protectedplanet.net/'>UNEP-WCMC</a> via <a href='https://nasa-gibs.github.io/gibs-api-docs/GIBS'>GIBS</a>"
     },
     {
