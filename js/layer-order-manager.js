@@ -17,6 +17,7 @@ const LAYER_TYPE_ORDER = {
 
 // Define specific layer ID ordering overrides
 const LAYER_ID_ORDER = {
+    'osm': 25,  // OSM should appear below other TMS layers
     'mask': 200 // Mask should appear on top of everything
 };
 
@@ -95,9 +96,9 @@ function getInsertPosition(map, type, layerType, currentGroup, orderedGroups) {
             : LAYER_TYPE_ORDER[layer.metadata.layerType] || 0;
         
         // If this layer should be rendered before our new layer
-        // For same-type layers: layers defined later in config (higher index) should render before layers defined earlier (appear below)
+        // For same-type layers: layers defined later in config (higher index) should render after layers defined earlier (appear above)
         if (thisLayerOrderValue < orderValue || 
-            (thisLayerOrderValue === orderValue && layerGroupIndex > currentGroupIndex)) {
+            (thisLayerOrderValue === orderValue && layerGroupIndex < currentGroupIndex)) {
             // Find the next layer that belongs to a different group
             for (let j = i + 1; j < layers.length; j++) {
                 if (layers[j].metadata?.groupId !== groupId) {
