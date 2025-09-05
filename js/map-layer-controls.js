@@ -41,6 +41,10 @@ export class MapLayerControl {
         // Initialize default styles (will be populated by _loadDefaultStyles)
         this._defaultStyles = {};
 
+        // Cross-atlas search functionality
+        this._allAtlasLayers = [];
+        this._layerLibrary = null;
+
         // Initialize UI components
         this._initializeEditMode();
         this._initializeShareLink();
@@ -69,6 +73,9 @@ export class MapLayerControl {
 
         // Initialize layer settings modal
         this._layerSettingsModal = new LayerSettingsModal(this);
+
+        // Load all atlas configurations for cross-atlas search
+        await this._loadAllAtlasConfigurations();
 
         // Add global click handler early
         this._addGlobalClickHandler();
@@ -257,10 +264,14 @@ export class MapLayerControl {
      * Initialize the main control UI
      */
     _initializeControl($container) {
+        // Add current atlas layers
         this._state.groups.forEach((group, groupIndex) => {
             const $groupHeader = this._createGroupHeader(group, groupIndex);
             $container.append($groupHeader);
         });
+
+        // Add layers from other atlases (hidden by default)
+        this._addCrossAtlasLayers($container);
 
         // Initialize all layers explicitly after UI is set up
         this._initializeAllLayers();
@@ -409,7 +420,11 @@ export class MapLayerControl {
             this._syncStyleLayerSubToggles(event.target, group, true);
         }
 
-        this._toggleLayerGroup(groupIndex, true);
+        // Determine if this is a cross-atlas layer
+        const isCrossAtlas = $(event.target).hasClass('cross-atlas-layer');
+        const effectiveGroupIndex = isCrossAtlas ? -1 : groupIndex;
+        
+        this._toggleLayerGroup(effectiveGroupIndex, true);
         
         $opacityButton.toggleClass('hidden', false);
         $settingsButton.toggleClass('hidden', false);
@@ -431,7 +446,11 @@ export class MapLayerControl {
             this._syncStyleLayerSubToggles(event.target, group, false);
         }
 
-        this._toggleLayerGroup(groupIndex, false);
+        // Determine if this is a cross-atlas layer
+        const isCrossAtlas = $(event.target).hasClass('cross-atlas-layer');
+        const effectiveGroupIndex = isCrossAtlas ? -1 : groupIndex;
+        
+        this._toggleLayerGroup(effectiveGroupIndex, false);
         
         $opacityButton.toggleClass('hidden', true);
         $settingsButton.toggleClass('hidden', true);
@@ -466,7 +485,24 @@ export class MapLayerControl {
      * Toggle layer group visibility using MapboxAPI
      */
     async _toggleLayerGroup(groupIndex, visible) {
-        const group = this._state.groups[groupIndex];
+        let group;
+        
+        // Handle cross-atlas layers (groupIndex = -1)
+        if (groupIndex === -1) {
+            // For cross-atlas layers, we need to find the group by the element that triggered this
+            const activeElement = document.activeElement;
+            const groupElement = activeElement ? activeElement.closest('.group-header') : null;
+            if (groupElement) {
+                const groupId = groupElement.getAttribute('data-layer-id');
+                group = this._allAtlasLayers.find(layer => layer.id === groupId);
+            }
+            if (!group) {
+                console.warn('Could not find cross-atlas layer group');
+                return;
+            }
+        } else {
+            group = this._state.groups[groupIndex];
+        }
         
         if (!this._mapboxAPI) {
             console.warn('MapboxAPI not initialized');
@@ -1239,32 +1275,230 @@ export class MapLayerControl {
             
             const searchTerm = searchInput ? searchInput.value.toLowerCase().trim() : '';
             const hideInactive = hideInactiveSwitch ? hideInactiveSwitch.checked : false;
+            const isSearching = searchTerm.length > 0;
             
             const layerGroups = this._container.querySelectorAll('.group-header');
+            
+            // First pass: collect all matching layer IDs from current atlas (both reference and resolved IDs)
+            const currentAtlasMatchingIds = new Set();
+            layerGroups.forEach(groupElement => {
+                const isCrossAtlasLayer = groupElement.classList.contains('cross-atlas-layer');
+                if (!isCrossAtlasLayer) {
+                    const groupId = groupElement.getAttribute('data-layer-id');
+                    const groupData = this._findLayerData(groupId, false);
+                    if (groupData && this._layerMatchesSearch(groupData, searchTerm)) {
+                        currentAtlasMatchingIds.add(groupId);
+                        // Also add the resolved library ID
+                        const resolved = this._resolveLayerFromLibrary(groupData);
+                        if (resolved.id !== groupId) {
+                            currentAtlasMatchingIds.add(resolved.id);
+                        }
+                    }
+                }
+            });
         
+            // Second pass: apply visibility logic
             layerGroups.forEach(groupElement => {
                 const groupId = groupElement.getAttribute('data-layer-id');
                 if (!groupId) return;
                 
-                const groupData = this._state.groups.find(group => group.id === groupId);
+                const isCrossAtlasLayer = groupElement.classList.contains('cross-atlas-layer');
+                const groupData = this._findLayerData(groupId, isCrossAtlasLayer);
                 if (!groupData) return;
                 
-                const searchMatches = !searchTerm || 
-                    (groupData.id && groupData.id.toLowerCase().includes(searchTerm)) ||
-                    (groupData.name && groupData.name.toLowerCase().includes(searchTerm)) ||
-                    (groupData.title && groupData.title.toLowerCase().includes(searchTerm)) ||
-                    (groupData.description && groupData.description.toLowerCase().includes(searchTerm)) ||
-                    (groupData.tags && Array.isArray(groupData.tags) && 
-                     groupData.tags.some(tag => tag && tag.toLowerCase().includes(searchTerm)));
+                const searchMatches = this._layerMatchesSearch(groupData, searchTerm);
                 
                 const toggleInput = groupElement.querySelector('.toggle-switch input[type="checkbox"]');
                 const isActive = toggleInput && toggleInput.checked;
                 const activeMatches = !hideInactive || isActive;
                 
-                groupElement.style.display = (searchMatches && activeMatches) ? '' : 'none';
+                // For cross-atlas layers
+                if (isCrossAtlasLayer) {
+                    // Check if this cross-atlas layer conflicts with current atlas layers
+                    const resolvedLayer = this._resolveLayerFromLibrary(groupData);
+                    const hasConflict = currentAtlasMatchingIds.has(groupId) || 
+                                       currentAtlasMatchingIds.has(resolvedLayer.id);
+                    
+                    // Only show if searching, matches search, passes active filter,
+                    // AND there's no current atlas layer with the same ID that matches
+                    const shouldShow = isSearching && 
+                                     searchMatches && 
+                                     activeMatches && 
+                                     !hasConflict;
+                    groupElement.style.display = shouldShow ? '' : 'none';
+                } else {
+                    // Current atlas layers - show normally when they match
+                    groupElement.style.display = (searchMatches && activeMatches) ? '' : 'none';
+                }
             });
         } catch (error) {
             console.error('[Filter] Error applying filters:', error);
+        }
+    }
+    
+    /**
+     * Check if a layer matches the search term
+     */
+    _layerMatchesSearch(groupData, searchTerm) {
+        if (!searchTerm) return true;
+        
+        return (groupData.id && groupData.id.toLowerCase().includes(searchTerm)) ||
+               (groupData.name && groupData.name.toLowerCase().includes(searchTerm)) ||
+               (groupData.title && groupData.title.toLowerCase().includes(searchTerm)) ||
+               (groupData.description && groupData.description.toLowerCase().includes(searchTerm)) ||
+               (groupData.tags && Array.isArray(groupData.tags) && 
+                groupData.tags.some(tag => tag && tag.toLowerCase().includes(searchTerm))) ||
+               (groupData.atlasName && groupData.atlasName.toLowerCase().includes(searchTerm));
+    }
+
+    /**
+     * Load all atlas configurations for cross-atlas search
+     */
+    async _loadAllAtlasConfigurations() {
+        try {
+            // Load layer library first
+            const libraryResponse = await fetch('/config/_map-layer-presets.json');
+            if (libraryResponse.ok) {
+                this._layerLibrary = await libraryResponse.json();
+            }
+
+            // Get list of available atlas configurations
+            const atlasConfigs = [
+                'index', 'goa', 'mumbai', 'bengaluru-flood', 'bombay', 'madras', 
+                'gurugram', 'maharashtra', 'india', 'world', 'historic', 'community'
+            ];
+
+            this._allAtlasLayers = [];
+
+            // Load each atlas configuration
+            for (const configName of atlasConfigs) {
+                try {
+                    const response = await fetch(`/config/${configName}.atlas.json`);
+                    if (response.ok) {
+                        const config = await response.json();
+                        if (config.layers && Array.isArray(config.layers)) {
+                            // Add atlas name to each layer for search purposes
+                            config.layers.forEach(layer => {
+                                const enrichedLayer = { 
+                                    ...layer, 
+                                    atlasName: config.name || configName,
+                                    sourceAtlas: configName 
+                                };
+                                // Resolve layer data from library if needed
+                                this._allAtlasLayers.push(this._resolveLayerFromLibrary(enrichedLayer));
+                            });
+                        }
+                    }
+                } catch (error) {
+                    console.warn(`Failed to load atlas ${configName}:`, error);
+                }
+            }
+        } catch (error) {
+            console.error('Failed to load atlas configurations:', error);
+        }
+    }
+
+    /**
+     * Resolve layer data from library if it's just a reference
+     */
+    _resolveLayerFromLibrary(layer) {
+        if (!this._layerLibrary || !this._layerLibrary.layers) {
+            return layer;
+        }
+
+        // If layer only has an id, resolve it from the library
+        if (layer.id && Object.keys(layer).length <= 3) { // id, atlasName, sourceAtlas
+            const libraryLayer = this._layerLibrary.layers.find(l => l.id === layer.id);
+            if (libraryLayer) {
+                return { 
+                    ...libraryLayer, 
+                    atlasName: layer.atlasName,
+                    sourceAtlas: layer.sourceAtlas,
+                    // Preserve any overrides from the atlas config
+                    ...layer
+                };
+            }
+        }
+        
+        return layer;
+    }
+
+    /**
+     * Add cross-atlas layers to the UI (hidden by default)
+     */
+    _addCrossAtlasLayers($container) {
+        if (!this._allAtlasLayers) return;
+
+        // Get current atlas layer IDs (both atlas reference IDs and resolved library IDs)
+        const currentLayerIds = new Set();
+        this._state.groups.forEach(group => {
+            currentLayerIds.add(group.id); // Atlas reference ID
+            // Also add the resolved library ID if it's different
+            const resolved = this._resolveLayerFromLibrary(group);
+            if (resolved.id !== group.id) {
+                currentLayerIds.add(resolved.id);
+            }
+        });
+
+        // Filter out layers already in current atlas and deduplicate by resolved ID
+        const seenLayerIds = new Set([...currentLayerIds]);
+        const crossAtlasLayers = this._allAtlasLayers.filter(layer => {
+            // Check both the original ID and the resolved library ID
+            const resolvedLayer = this._resolveLayerFromLibrary(layer);
+            const layerId = resolvedLayer.id;
+            
+            if (seenLayerIds.has(layer.id) || seenLayerIds.has(layerId)) {
+                return false; // Skip duplicates
+            }
+            seenLayerIds.add(layer.id);
+            seenLayerIds.add(layerId);
+            return true;
+        });
+
+        // Group layers by source atlas for better organization
+        const layersByAtlas = {};
+        crossAtlasLayers.forEach(layer => {
+            const atlas = layer.sourceAtlas || 'other';
+            if (!layersByAtlas[atlas]) layersByAtlas[atlas] = [];
+            layersByAtlas[atlas].push(layer);
+        });
+
+        // Add layers to UI
+        Object.entries(layersByAtlas).forEach(([atlasName, layers]) => {
+            layers.forEach((layer, index) => {
+                const $groupHeader = this._createCrossAtlasGroupHeader(layer, atlasName);
+                $container.append($groupHeader);
+            });
+        });
+    }
+
+    /**
+     * Create group header for cross-atlas layers
+     */
+    _createCrossAtlasGroupHeader(layer, atlasName) {
+        const $groupHeader = this._createGroupHeader(layer, -1); // Use -1 to indicate cross-atlas
+        $groupHeader.addClass('cross-atlas-layer');
+        $groupHeader.css('display', 'none'); // Hidden by default
+        
+        // Add atlas badge to show which atlas this layer is from
+        const $summary = $groupHeader.find('[slot="summary"]');
+        const $atlasBadge = $('<span>', {
+            class: 'atlas-badge text-xs bg-blue-600 text-white px-2 py-1 rounded ml-2',
+            text: atlasName
+        });
+        $summary.find('.flex.items-center').first().append($atlasBadge);
+        
+        return $groupHeader;
+    }
+
+    /**
+     * Find layer data in current state or cross-atlas layers
+     */
+    _findLayerData(layerId, isCrossAtlas) {
+        if (isCrossAtlas) {
+            return this._allAtlasLayers.find(layer => layer.id === layerId);
+        } else {
+            return this._state.groups.find(group => group.id === layerId);
         }
     }
 
