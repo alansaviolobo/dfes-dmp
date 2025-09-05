@@ -264,8 +264,6 @@
             0,
             0
           ],
-          "circle-translate-anchor": "map",
-          "circle-pitch-alignment": "viewport",
           "circle-pitch-scale": "map"
         }
       },
@@ -282,8 +280,6 @@
             0,
             0
           ],
-          "circle-translate-anchor": "map",
-          "circle-pitch-alignment": "viewport",
           "circle-pitch-scale": "map"
         }
       },
@@ -300,8 +296,6 @@
             0,
             0
           ],
-          "circle-translate-anchor": "map",
-          "circle-pitch-alignment": "viewport",
           "circle-pitch-scale": "map"
         }
       },

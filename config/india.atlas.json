@@ -1,0 +1,161 @@
+{
+  "name": "Development map layer configuration defined by amche-goa community",
+  "areaOfInterest": "India",
+  "version": "0.1.0",
+  "url": "https://github.com/publicmap/amche-goa/blob/main/config/india.atlas.json",
+  "map": {
+    "center": [
+      80.26,
+      13.07
+    ],
+    "zoom": 12.3
+  },
+  "layers": [
+    {
+      "id": "mapbox-streets",
+      "title": "Street Map"
+    },{
+      "id": "pincodes",
+      "title": "Pincode Boundaries",
+      "headerImage": "assets/map-layers/map-layer-pincode.png",
+      "description": "Government open data of pincode boundaries published May 2025.",
+      "type": "vector",
+      "url": "https://indianopenmaps.fly.dev/pincodes/datagovin/{z}/{x}/{y}.pbf",
+      "sourceLayer": "Datagov_Pincode_Boundaries",
+      "maxzoom": 10,
+      "attribution": "<a href='https://www.data.gov.in/resource/delivery-post-office-pincode-boundary'>Ministry of Communications Department of Posts</a> - Collected by <a href='https://github.com/ramSeraph/indian_admin_boundaries/releases/tag/postal'>Datameet Community</a>",
+      "style": {
+        "text-field": [
+          "step",
+          [
+            "zoom"
+          ],
+          [
+            "to-string",
+            [
+              "get",
+              "Pincode"
+            ]
+          ],
+          10,
+          [
+            "concat",
+            [
+              "to-string",
+              [
+                "get",
+                "Office_Name"
+              ]
+            ],
+            "\n",
+            [
+              "to-string",
+              [
+                "get",
+                "Pincode"
+              ]
+            ]
+          ]
+        ],
+        "text-color": "white",
+        "text-halo-color": "black",
+        "text-halo-width": 5,
+        "text-size": 13,
+        "fill-color": [
+          "interpolate",
+          [
+            "linear"
+          ],
+          [
+            "zoom"
+          ],
+          8,
+          "rgba(0, 0, 0, 0)",
+          12,
+          "rgba(0, 0, 0, 0.1)"
+        ],
+        "line-color": "black",
+        "line-width": [
+          "interpolate",
+          [
+            "linear"
+          ],
+          [
+            "zoom"
+          ],
+          8,
+          [
+            "case",
+            [
+              "boolean",
+              [
+                "feature-state",
+                "selected"
+              ],
+              false
+            ],
+            1.5,
+            [
+              "boolean",
+              [
+                "feature-state",
+                "hover"
+              ],
+              false
+            ],
+            1,
+            0.5
+          ],
+          12,
+          [
+            "case",
+            [
+              "boolean",
+              [
+                "feature-state",
+                "selected"
+              ],
+              false
+            ],
+            3,
+            [
+              "boolean",
+              [
+                "feature-state",
+                "hover"
+              ],
+              false
+            ],
+            2,
+            1
+          ]
+        ]
+      },
+      "inspect": {
+        "title": "Pincode",
+        "label": "Pincode",
+        "id": "Pincode",
+        "fields": [
+          "Office_Name",
+          "Division",
+          "Region",
+          "Circle"
+        ],
+        "fieldTitles": [
+          "Post Office Name",
+          "Division",
+          "Region",
+          "Circle"
+        ]
+      }
+    },
+    {
+      "id": "osm",
+      "initiallyChecked": true
+    },
+    {
+      "initiallyChecked": true,
+      "id": "mapbox-satellite"
+          }
+    ]
+}

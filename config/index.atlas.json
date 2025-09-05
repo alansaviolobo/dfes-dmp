@@ -26,332 +26,89 @@
       "id": "osm-railways"
     },
     {
-      "id": "osm-roads"
+      "id": "india-pincodes"
     },
     {
-      "id": "pincode",
-      "title": "Pincode Boundaries",
-      "headerImage": "assets/map-layers/map-layer-pincode.png",
-      "description": "Government open data of pincode boundaries published May 2025.",
-      "type": "vector",
-      "url": "https://indianopenmaps.fly.dev/pincodes/datagovin/{z}/{x}/{y}.pbf",
-      "sourceLayer": "Datagov_Pincode_Boundaries",
-      "maxzoom": 10,
-      "attribution": "<a href='https://www.data.gov.in/resource/delivery-post-office-pincode-boundary'>Ministry of Communications Department of Posts</a> - Collected by <a href='https://github.com/ramSeraph/indian_admin_boundaries/releases/tag/postal'>Datameet Community</a>",
+      "id": "osm-roads"
+    },
+    
+    {
+      "title": "Plots with No Development Slopes",
+      "description": "Survey numbers with No Development Slopes (NDS). The output location of plots having atleast 25% of the plot area with NDS or slopes greater than 1:4 (25% slope).<br>Processed using slope computed with NASADEM 30m data and cadastral boundaries from OneMapGoa GIS. See <a href='https://github.com/publicmap/amche-goa/tree/main/data/slope'>processing code</a> for details.",
+      "headerImage": "assets/map-layers/map-layer-nds-plots.png",
+      "legendImage": "assets/map-layers/map-layer-slope-legend.png",
+      "type": "geojson",
+      "id": "steep-plots",
+      "url": "https://gist.githubusercontent.com/planemad/f378d37b120b0ffc93db27d9541baa70/raw/56ecc74a6fdd3ea8170ee58a4cd2a87ba4f83f3d/goa-steep-plots.geojson",
+      "attribution": "<a href='https://gist.github.com/planemad/f378d37b120b0ffc93db27d9541baa70'>CC-BY Plots with No Development Slopes by amche.in community</a>",
       "style": {
-        "text-padding": 10,
+        "text-font": [
+          "Open Sans Bold"
+        ],
         "text-field": [
           "step",
           [
             "zoom"
           ],
-          [
-            "to-string",
-            [
-              "slice",
-              [
-                "get",
-                "Pincode"
-              ],
-              0,
-              2
-            ]
-          ],
-          5,
-          [
-            "to-string",
-            [
-              "slice",
-              [
-                "get",
-                "Pincode"
-              ],
-              0,
-              4
-            ]
-          ],
-          8,
+          "",
+          14,
           [
             "to-string",
             [
               "get",
-              "Pincode"
-            ]
-          ],
-          10,
-          [
-            "concat",
-            [
-              "to-string",
-              [
-                "get",
-                "Office_Name"
-              ]
-            ],
-            "\n",
-            [
-              "to-string",
-              [
-                "get",
-                "Pincode"
-              ]
+              "plot"
             ]
           ]
         ],
-        "text-color": "black",
+        "text-color": "white",
         "text-halo-color": [
-          "concat",
-          "hsl(",
-          [
-            "to-string",
-            [
-              "*",
-              [
-                "/",
-                [
-                  "to-number",
-                  [
-                    "get",
-                    "Pincode"
-                  ]
-                ],
-                10000
-              ],
-              3.6
-            ]
-          ],
-          ", ",
-          [
-            "to-string",
-            [
-              "+",
-              40,
-              [
-                "*",
-                [
-                  "/",
-                  [
-                    "%",
-                    [
-                      "/",
-                      [
-                        "to-number",
-                        [
-                          "get",
-                          "Pincode"
-                        ]
-                      ],
-                      100
-                    ],
-                    100
-                  ],
-                  0.4
-                ]
-              ]
-            ]
-          ],
-          "%, ",
-          [
-            "to-string",
-            [
-              "+",
-              35,
-              [
-                "*",
-                [
-                  "%",
-                  [
-                    "to-number",
-                    [
-                      "get",
-                      "Pincode"
-                    ]
-                  ],
-                  100
-                ],
-                0.3
-              ]
-            ]
-          ],
-          "%)"
-        ],
-        "text-halo-width": 5,
-        "text-size": 13,
-        "fill-color": [
-          "concat",
-          "hsl(",
-          [
-            "to-string",
-            [
-              "*",
-              [
-                "/",
-                [
-                  "to-number",
-                  [
-                    "get",
-                    "Pincode"
-                  ]
-                ],
-                10000
-              ],
-              3.6
-            ]
-          ],
-          ", ",
-          [
-            "to-string",
-            [
-              "+",
-              40,
-              [
-                "*",
-                [
-                  "/",
-                  [
-                    "%",
-                    [
-                      "/",
-                      [
-                        "to-number",
-                        [
-                          "get",
-                          "Pincode"
-                        ]
-                      ],
-                      100
-                    ],
-                    100
-                  ],
-                  0.4
-                ]
-              ]
-            ]
-          ],
-          "%, ",
-          [
-            "to-string",
-            [
-              "+",
-              35,
-              [
-                "*",
-                [
-                  "%",
-                  [
-                    "to-number",
-                    [
-                      "get",
-                      "Pincode"
-                    ]
-                  ],
-                  100
-                ],
-                0.3
-              ]
-            ]
-          ],
-          "%)"
-        ],
-        "fill-opacity": [
           "case",
           [
-            "boolean",
+            ">",
             [
-              "feature-state",
-              "selected"
+              "get",
+              "slope_35_inf_pct"
             ],
-            false
+            30
           ],
-          0.8,
+          "purple",
           [
-            "boolean",
+            ">",
             [
-              "feature-state",
-              "hover"
+              "get",
+              "slope_25_35_pct"
             ],
-            false
+            30
           ],
-          0.6,
-          0.4
+          "red",
+          "orange"
         ],
-        "line-color": [
-          "concat",
-          "hsl(",
+        "text-halo-width": 2,
+        "text-halo-blur": 0,
+        "text-size": 13,
+        "circle-color": [
+          "case",
           [
-            "to-string",
+            ">",
             [
-              "*",
-              [
-                "/",
-                [
-                  "to-number",
-                  [
-                    "get",
-                    "Pincode"
-                  ]
-                ],
-                10000
-              ],
-              3.6
-            ]
+              "get",
+              "slope_35_inf_pct"
+            ],
+            30
           ],
-          ", ",
+          "purple",
           [
-            "to-string",
+            ">",
             [
-              "+",
-              40,
-              [
-                "*",
-                [
-                  "/",
-                  [
-                    "%",
-                    [
-                      "/",
-                      [
-                        "to-number",
-                        [
-                          "get",
-                          "Pincode"
-                        ]
-                      ],
-                      100
-                    ],
-                    100
-                  ],
-                  0.4
-                ]
-              ]
-            ]
+              "get",
+              "slope_25_35_pct"
+            ],
+            30
           ],
-          "%, ",
-          [
-            "to-string",
-            [
-              "+",
-              20,
-              [
-                "*",
-                [
-                  "%",
-                  [
-                    "to-number",
-                    [
-                      "get",
-                      "Pincode"
-                    ]
-                  ],
-                  100
-                ],
-                0.2
-              ]
-            ]
-          ],
-          "%)"
+          "red",
+          "orange"
         ],
-        "line-width": [
+        "circle-radius": [
           "interpolate",
           [
             "linear"
@@ -359,70 +116,110 @@
           [
             "zoom"
           ],
-          8,
+          9,
           [
-            "case",
+            "interpolate",
             [
-              "boolean",
-              [
-                "feature-state",
-                "selected"
-              ],
-              false
+              "linear"
             ],
-            1.5,
             [
-              "boolean",
-              [
-                "feature-state",
-                "hover"
-              ],
-              false
+              "get",
+              "steep_slope_area"
             ],
+            0,
+            0,
+            1000,
+            0.1,
+            10000,
             1,
-            0.5
+            1000000,
+            10
           ],
-          12,
+          14,
           [
-            "case",
+            "interpolate",
             [
-              "boolean",
-              [
-                "feature-state",
-                "selected"
-              ],
-              false
+              "linear"
             ],
+            [
+              "get",
+              "steep_slope_area"
+            ],
+            0,
+            0,
+            10000,
             3,
-            [
-              "boolean",
-              [
-                "feature-state",
-                "hover"
-              ],
-              false
-            ],
-            2,
-            1
+            100000,
+            6,
+            1000000,
+            30
           ]
+        ],
+        "circle-opacity": 0.2,
+        "circle-stroke-width": [
+          "interpolate",
+          [
+            "linear"
+          ],
+          [
+            "get",
+            "steep_slope_pct"
+          ],
+          25,
+          1,
+          70,
+          2,
+          100,
+          4
+        ],
+        "circle-stroke-color": [
+          "case",
+          [
+            ">",
+            [
+              "get",
+              "slope_35_inf_pct"
+            ],
+            30
+          ],
+          "purple",
+          [
+            ">",
+            [
+              "get",
+              "slope_25_35_pct"
+            ],
+            30
+          ],
+          "red",
+          "orange"
         ]
       },
       "inspect": {
-        "title": "Pincode Area",
-        "label": "Pincode",
-        "id": "Pincode",
+        "id": "plot",
+        "title": "% plot area with NDS",
+        "label": "steep_slope_pct",
         "fields": [
-          "Division",
-          "Region"
+          "slope_10_20_pct",
+          "slope_20_25_pct",
+          "slope_25_35_pct",
+          "slope_35_inf_pct",
+          "steep_slope_area",
+          "total_area_m2",
+          "plot",
+          "village"
         ],
         "fieldTitles": [
-          "Division",
-          "Region"
+          "RDS-1 % (10-20% slope)",
+          "RDS-2 % (20-25% slope)",
+          "NDS-1 % (25-35% slope)",
+          "NDS-2 % (35%+ slope)",
+          "NDS Area (m2)",
+          "Total Area (m2)",
+          "Plot",
+          "Village"
         ]
       }
-    },
-    {
-      "id": "steep-plots"
     },
     {
       "initiallyChecked": true,

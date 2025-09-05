@@ -725,6 +725,9 @@ export class MapFeatureStateManager extends EventTarget {
                 id.includes('tms-layer') ||
                 id === layerId
             );
+            console.debug(`[StateManager] All layers for ${layerId}:`, allLayerIds);
+            console.debug(`[StateManager] Relevant layers for ${layerId}:`, relevantLayers);
+            console.debug(`[StateManager] Looking for layer config:`, layerConfig);
         }
         
         // Strategy 1: Direct ID match (HIGHEST PRIORITY)

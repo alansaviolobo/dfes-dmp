@@ -1,0 +1,63 @@
+{
+  "name": "Development map layer configuration defined by amche-goa community",
+  "areaOfInterest": "Goa, India",
+  "version": "0.1.0",
+  "url": "https://github.com/publicmap/amche-goa/blob/main/config/goa.atlas.json",
+  "map": {
+    "center": [
+      73.8,
+      15.47
+    ],
+    "zoom": 11.4
+  },
+  "layers": [
+    {
+      "id": "mapbox-streets",
+      "title": "Street Map रस्त्याचो नकासो"
+    },
+    {
+      "title": "Khazan Bunds",
+      "description": "Khazan Bunds of Goa",
+      "type": "vector",
+      "id": "bunds",
+      "url": "https://api-main-432878571563.europe-west4.run.app/tiler/vector/{z}/{x}/{y}?map_id=f7c37496-7c7d-484d-8339-bcb0f2e39c4b",
+      "sourceLayer": "vector",
+      "minzoom": 0,
+      "maxzoom": 15,
+      "attribution": "© Original Creator - via <a href='https://www.maphub.co/map/f7c37496-7c7d-484d-8339-bcb0f2e39c4b'>Maphub</a>",
+      "initiallyChecked": false,
+      "style": {
+        "text-field": [ "to-string", ["get", "Name"] ],
+        "symbol-placement": "line",
+        "line-color": "blue",
+        "line-width": 2
+      },
+      "inspect": {
+        "id": "gid",
+        "title": "Name",
+        "label": "Name",
+        "fields": [
+          "id",
+          "description",
+          "class",
+          "type"
+        ],
+        "fieldTitles": [
+          "ID",
+          "Description",
+          "Class",
+          "Type"
+        ]
+      },
+      "headerImage": "https://api-main-432878571563.europe-west4.run.app/maps/f7c37496-7c7d-484d-8339-bcb0f2e39c4b/thumbnail"
+    },
+    {
+      "id": "osm",
+      "initiallyChecked": true
+    },
+    {
+      "initiallyChecked": true,
+      "id": "mapbox-satellite"
+          }
+    ]
+}
