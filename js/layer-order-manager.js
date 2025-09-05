@@ -52,18 +52,14 @@ function getInsertPosition(map, type, layerType, currentGroup, orderedGroups) {
     let urlLayerOrder = [];
     if (urlLayersParam) {
         urlLayerOrder = urlLayersParam.split(',').map(id => id.trim());
-        console.log(`[LayerOrder] URL layer order detected:`, urlLayerOrder);
     }
     
-    console.log(`[LayerOrder] Getting insert position for layer: ${currentGroup?.id || 'unknown'} (type: ${type})`);
     
     // Find current layer's index in the configuration
     const currentGroupIndex = orderedGroups.findIndex(group => 
         group.id === currentGroup?.id
     );
 
-    console.log(`[LayerOrder] Current layer config index: ${currentGroupIndex}`);
-    console.log(`[LayerOrder] Ordered groups:`, orderedGroups.map(g => g.id));
 
     // Get the order value for the current layer type
     // For vector layers, use the main type ('vector') not the sublayer type ('fill', 'line', etc.)
@@ -74,28 +70,7 @@ function getInsertPosition(map, type, layerType, currentGroup, orderedGroups) {
     const currentIdOrder = currentGroup && LAYER_ID_ORDER[currentGroup.id];
     const orderValue = currentIdOrder !== undefined ? currentIdOrder : currentTypeOrder;
     
-    console.log(`[LayerOrder] Layer order value: ${orderValue} (lookupType: ${lookupType} = ${currentTypeOrder}, id override: ${currentIdOrder})`);
     
-    // Show current layer stack from bottom to top
-    console.log(`[LayerOrder] Total layers in style: ${layers.length}`);
-    
-    const allLayersWithMetadata = layers.filter(l => l.metadata);
-    console.log(`[LayerOrder] Layers with metadata:`, allLayersWithMetadata.length);
-    
-    const currentLayerStack = layers
-        .filter(l => l.metadata?.groupId)
-        .map(l => `${l.metadata.groupId} (${l.metadata.layerType})`);
-    console.log(`[LayerOrder] Current layer stack (bottom to top):`, currentLayerStack);
-    
-    // Show all layers with their IDs for debugging
-    const allCustomLayers = layers.filter(l => l.metadata?.groupId);
-    if (allCustomLayers.length > 0) {
-        console.log(`[LayerOrder] Custom layers found:`, allCustomLayers.map(l => ({
-            id: l.id,
-            groupId: l.metadata.groupId,
-            layerType: l.metadata.layerType
-        })));
-    }
 
 
     // For all other cases, go through layers in reverse to find insertion point
@@ -152,10 +127,8 @@ function getInsertPosition(map, type, layerType, currentGroup, orderedGroups) {
                 // Find ANY earlier layer in the URL sequence to insert before
                 const firstExistingLayer = customLayersAlreadyLoaded[0]; // Get the first (bottommost) layer
                 if (firstExistingLayer && currentUrlIndex > 0) {
-                    console.log(`[LayerOrder] Using URL sequence, inserting ${currentLayerId} before first existing layer ${firstExistingLayer.metadata.groupId} to maintain bottom-to-top URL order`);
                     return firstExistingLayer.id;
                 }
-                console.log(`[LayerOrder] Using URL sequence, first layer or no existing layers, appending ${currentLayerId} to end`);
             }
             break; // Exit the loop to append to end
         } else {
@@ -163,15 +136,12 @@ function getInsertPosition(map, type, layerType, currentGroup, orderedGroups) {
             if (layerGroupIndex < currentGroupIndex || 
                 (layerGroupIndex === currentGroupIndex && thisLayerOrderValue < orderValue)) {
                 
-                console.log(`[LayerOrder] Found insertion point: before layer group ${groupId} (config index ${layerGroupIndex})`);
-                
                 // Find the FIRST layer of this group (go backwards to find the start of the group)
                 let firstLayerOfGroup = i;
                 while (firstLayerOfGroup > 0 && layers[firstLayerOfGroup - 1].metadata?.groupId === groupId) {
                     firstLayerOfGroup--;
                 }
                 
-                console.log(`[LayerOrder] Returning beforeId: ${layers[firstLayerOfGroup].id} (first layer of group ${groupId})`);
                 return layers[firstLayerOfGroup].id;
             }
         }
@@ -195,7 +165,6 @@ function getInsertPosition(map, type, layerType, currentGroup, orderedGroups) {
     }
 
     // If no position found, append to the end
-    console.log(`[LayerOrder] No insertion point found, appending to end (will appear on top)`);
     return null;
 }
 
@@ -220,7 +189,6 @@ function logLayerStack(map, label = '') {
  */
 function fixLayerOrdering(map) {
     if (!map) {
-        console.error('Map instance not provided to fixLayerOrdering');
         return;
     }
 }
