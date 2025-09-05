@@ -16,10 +16,10 @@
 const LAYER_TYPE_ORDER = {
     'terrain': 1,
     'style': 10,
+    'tms': 15,      // TMS raster layers should appear below vector layers
+    'wms': 15,      // WMS raster layers should appear below vector layers  
+    'wmts': 15,     // WMTS raster layers should appear below vector layers
     'vector': 20,
-    'tms': 30,
-    'wms': 30,      // WMS layers - positioned between TMS and CSV
-    'wmts': 30,     // WMTS layers - positioned after WMS but before CSV
     'csv': 40,
     'geojson': 50,
     'img': 60,
@@ -45,6 +45,15 @@ const LAYER_ID_ORDER = {
 function getInsertPosition(map, type, layerType, currentGroup, orderedGroups) {
 
     const layers = map.getStyle().layers;
+    
+    // Try to extract URL parameter order from the current URL
+    const urlParams = new URLSearchParams(window.location.search);
+    const urlLayersParam = urlParams.get('layers');
+    let urlLayerOrder = [];
+    if (urlLayersParam) {
+        urlLayerOrder = urlLayersParam.split(',').map(id => id.trim());
+        console.log(`[LayerOrder] URL layer order detected:`, urlLayerOrder);
+    }
     
     console.log(`[LayerOrder] Getting insert position for layer: ${currentGroup?.id || 'unknown'} (type: ${type})`);
     
@@ -125,21 +134,46 @@ function getInsertPosition(map, type, layerType, currentGroup, orderedGroups) {
             : LAYER_TYPE_ORDER[existingLayerLookupType] || 0;
         
         // If this layer should be rendered before our new layer
-        // For same-type layers: layers defined first in config (lower index) should appear on top visually
-        // This means we insert new layers BEFORE existing layers with lower config index (earlier defined layers)
-        if (thisLayerOrderValue < orderValue || 
-            (thisLayerOrderValue === orderValue && layerGroupIndex < currentGroupIndex)) {
+        // Check if we're dealing with URL-specified layers by seeing if there are custom layers already loaded
+        const customLayersAlreadyLoaded = layers.filter(l => l.metadata?.groupId);
+        const isUrlBasedOrdering = customLayersAlreadyLoaded.length > 0;
+        
+        if (isUrlBasedOrdering && urlLayerOrder.length > 0) {
+            // For URL-based ordering, find the correct position based on URL parameter sequence
+            const currentLayerId = currentGroup?.id;
+            const currentUrlIndex = urlLayerOrder.indexOf(currentLayerId);
             
-            console.log(`[LayerOrder] Found insertion point: before layer group ${groupId} (config index ${layerGroupIndex})`);
-            
-            // Find the FIRST layer of this group (go backwards to find the start of the group)
-            let firstLayerOfGroup = i;
-            while (firstLayerOfGroup > 0 && layers[firstLayerOfGroup - 1].metadata?.groupId === groupId) {
-                firstLayerOfGroup--;
+            if (currentUrlIndex !== -1) {
+                // For URL parameter order like "A,B,C,D":
+                // A should be on top, B below A, C below B, D at bottom
+                // When adding any layer, find the first already-loaded layer and insert before it
+                // This puts each new layer at the bottom of the stack
+                
+                // Find ANY earlier layer in the URL sequence to insert before
+                const firstExistingLayer = customLayersAlreadyLoaded[0]; // Get the first (bottommost) layer
+                if (firstExistingLayer && currentUrlIndex > 0) {
+                    console.log(`[LayerOrder] Using URL sequence, inserting ${currentLayerId} before first existing layer ${firstExistingLayer.metadata.groupId} to maintain bottom-to-top URL order`);
+                    return firstExistingLayer.id;
+                }
+                console.log(`[LayerOrder] Using URL sequence, first layer or no existing layers, appending ${currentLayerId} to end`);
             }
-            
-            console.log(`[LayerOrder] Returning beforeId: ${layers[firstLayerOfGroup].id} (first layer of group ${groupId})`);
-            return layers[firstLayerOfGroup].id;
+            break; // Exit the loop to append to end
+        } else {
+            // Use configuration-based ordering
+            if (layerGroupIndex < currentGroupIndex || 
+                (layerGroupIndex === currentGroupIndex && thisLayerOrderValue < orderValue)) {
+                
+                console.log(`[LayerOrder] Found insertion point: before layer group ${groupId} (config index ${layerGroupIndex})`);
+                
+                // Find the FIRST layer of this group (go backwards to find the start of the group)
+                let firstLayerOfGroup = i;
+                while (firstLayerOfGroup > 0 && layers[firstLayerOfGroup - 1].metadata?.groupId === groupId) {
+                    firstLayerOfGroup--;
+                }
+                
+                console.log(`[LayerOrder] Returning beforeId: ${layers[firstLayerOfGroup].id} (first layer of group ${groupId})`);
+                return layers[firstLayerOfGroup].id;
+            }
         }
     }
 
