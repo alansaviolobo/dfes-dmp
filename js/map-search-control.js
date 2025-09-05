@@ -672,13 +672,13 @@ class MapSearchControl {
                     
                     // Set the new selection
                     this.featureStateManager.selectedFeatureId = feature.properties._featureId;
-                    this.featureStateManager.selectedSourceId = 'vector-plot';
+                    this.featureStateManager.selectedSourceId = 'vector-goa-plots';
                     this.featureStateManager.selectedSourceLayer = 'Onemapgoa_GA_Cadastrals';
                     
                     try {
                         this.map.setFeatureState(
                             {
-                                source: 'vector-plot',
+                                source: 'vector-goa-plots',
                                 sourceLayer: 'Onemapgoa_GA_Cadastrals',
                                 id: feature.properties._featureId
                             },
@@ -752,7 +752,7 @@ class MapSearchControl {
             });
             
             // Query features from the cadastral source layer within current viewport
-            const features = this.map.querySourceFeatures('vector-plot', {
+            const features = this.map.querySourceFeatures('vector-goa-plots', {
                 sourceLayer: 'Onemapgoa_GA_Cadastrals',
                 filter: ['has', 'plot'] // Only get features that have a plot property
             });

@@ -563,8 +563,8 @@ export class MapboxAPI {
         const userHasTextStyles = config.style && config.style['text-field'];
         const userHasCircleStyles = config.style && (config.style['circle-radius'] || config.style['circle-color']);
         
-        // If user has only line styles defined, treat this as a linestring layer and don't apply fill styles
-        const userOnlyHasLineStyles = userHasLineStyles && !userHasFillStyles && !userHasTextStyles && !userHasCircleStyles;
+        // If user has only line styles defined (with or without text), treat this as a linestring layer and don't apply fill styles
+        const userOnlyHasLineStyles = userHasLineStyles && !userHasFillStyles && !userHasCircleStyles;
         
         // Check if fill layer should be created
         // If user only has line styles, don't create fill layer even if defaults exist
@@ -1179,9 +1179,13 @@ export class MapboxAPI {
         const userHasTextStyles = config.style && config.style['text-field'];
         const userHasCircleStyles = config.style && (config.style['circle-radius'] || config.style['circle-color']);
         
+        // If user has only line styles defined (with or without text), treat this as a linestring layer and don't apply fill styles
+        const userOnlyHasLineStyles = userHasLineStyles && !userHasFillStyles && !userHasCircleStyles;
+        
         // Check if fill layer should be created (user styles or defaults)
+        // If user only has line styles, don't create fill layer even if defaults exist
         const hasFillStyles = userHasFillStyles || 
-                             (defaultStyles.fill && (defaultStyles.fill['fill-color'] || defaultStyles.fill['fill-opacity']));
+                             (!userOnlyHasLineStyles && defaultStyles.fill && (defaultStyles.fill['fill-color'] || defaultStyles.fill['fill-opacity']));
         
         // Check if line layer should be created (user styles or defaults)
         const hasLineStyles = userHasLineStyles ||
