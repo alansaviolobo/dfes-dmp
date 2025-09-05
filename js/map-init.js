@@ -18,7 +18,6 @@ function getUrlParameter(name) {
 function parseLayersFromUrl(layersParam) {
     if (!layersParam) return [];
     
-    console.debug('[map-init] Parsing layers parameter:', layersParam);
     
     const layers = [];
     let currentItem = '';
@@ -100,7 +99,6 @@ function parseLayersFromUrl(layersParam) {
         }
     }
     
-    console.debug('[map-init] Parsed layers result:', layers);
     return layers;
 }
 
@@ -119,7 +117,6 @@ async function getAvailableConfigs() {
 
 // Helper function to try loading a layer from a different config file
 async function tryLoadCrossConfigLayer(layerId, layerConfig) {
-    console.debug(`[map-init] Attempting to load cross-config layer: ${layerId}`);
     
     // Parse the layer ID to extract potential config prefix
     const dashIndex = layerId.indexOf('-');
@@ -128,7 +125,6 @@ async function tryLoadCrossConfigLayer(layerId, layerConfig) {
     const configPrefix = layerId.substring(0, dashIndex);
     const originalLayerId = layerId.substring(dashIndex + 1);
     
-    console.debug(`[map-init] Parsed cross-config layer - config: ${configPrefix}, originalId: ${originalLayerId}`);
     
     // Try to load the config file
     try {
@@ -136,7 +132,6 @@ async function tryLoadCrossConfigLayer(layerId, layerConfig) {
         const configResponse = await fetch(configPath);
         
         if (!configResponse.ok) {
-            console.debug(`[map-init] Config file not found: ${configPath}`);
             return null;
         }
         
@@ -147,7 +142,6 @@ async function tryLoadCrossConfigLayer(layerId, layerConfig) {
             const foundLayer = crossConfig.layers.find(layer => layer.id === originalLayerId);
             
             if (foundLayer) {
-                console.log(`[map-init] Successfully loaded cross-config layer: ${layerId} from ${configPath}`);
                 
                 // Create a merged layer with the prefixed ID and source config info
                 return {
@@ -172,7 +166,6 @@ async function tryLoadCrossConfigLayer(layerId, layerConfig) {
             const libraryLayer = layerLibrary.layers.find(lib => lib.id === originalLayerId);
             
             if (libraryLayer) {
-                console.log(`[map-init] Found cross-config layer in library: ${originalLayerId}`);
                 
                 return {
                     ...libraryLayer,
@@ -186,14 +179,11 @@ async function tryLoadCrossConfigLayer(layerId, layerConfig) {
                 };
             }
         } catch (libraryError) {
-            console.debug(`[map-init] Could not access layer library for cross-config lookup:`, libraryError);
         }
         
-        console.debug(`[map-init] Layer ${originalLayerId} not found in config ${configPrefix}`);
         return null;
         
     } catch (error) {
-        console.debug(`[map-init] Error loading cross-config ${configPrefix}:`, error);
         return null;
     }
 }
@@ -214,7 +204,6 @@ async function loadConfiguration() {
         // Check if a specific config is requested via URL parameter
         var configParam = getUrlParameter('atlas');
         var layersParam = getUrlParameter('layers');
-        console.debug('[map-init] Raw layers parameter from URL:', layersParam);
     }
     
     let configPath = 'config/index.atlas.json';
@@ -285,7 +274,6 @@ async function loadConfiguration() {
                     ...(layer._originalJson && { _originalJson: layer._originalJson })
                 }));
                 
-                console.debug('[map-init] Processed URL layers:', processedUrlLayers);
                 
                 // When URL layers are specified, set ALL existing layers to initiallyChecked: false
                 // This ensures only URL-specified layers are visible
@@ -339,7 +327,6 @@ async function loadConfiguration() {
                 }
                 
                 // Update to ensure we have a pretty URL
-                console.debug('[map-init] Creating pretty URL:', newUrl);
                 window.history.replaceState({}, '', newUrl);
             }
             
@@ -397,7 +384,6 @@ async function loadConfiguration() {
             
             config.layers = finalLayers;
             
-            console.debug('Final merged layers with URL order preserved:', config.layers);
         }
     }
 
@@ -506,7 +492,6 @@ async function loadConfiguration() {
                     newUrl += url.hash;
                 }
                 
-                console.debug('Updated URL to remove invalid layers:', newUrl);
                 window.history.replaceState({}, '', newUrl);
             }
         }
@@ -546,7 +531,6 @@ async function loadConfiguration() {
             newUrl += url.hash;
         }
         
-        console.debug('[map-init] Final URL prettification:', newUrl);
         window.history.replaceState({}, '', newUrl);
     }
     
@@ -627,23 +611,6 @@ async function initializeMap() {
         window.timeControl = timeControl;
         
         // Add debugging method to global scope
-        window.debugTimeControl = () => {
-            console.log('=== TIME CONTROL DEBUG ===');
-            console.log('TimeControl instance:', timeControl);
-            console.log('Is visible:', timeControl.isVisible());
-            console.log('State manager:', timeControl._stateManager);
-            console.log('MapboxAPI available:', !!window.mapboxAPI);
-            console.log('LayerControl available:', !!window.layerControl);
-            
-            if (window.mapboxAPI && window.mapboxAPI._timeBasedLayers) {
-                console.log('Time-based layers:', window.mapboxAPI._timeBasedLayers);
-            }
-            
-            // Manually trigger check
-            console.log('Manually triggering visibility check...');
-            timeControl.updateVisibility();
-            console.log('=== END DEBUG ===');
-        };
         
         const canvas = map.getCanvas();
         
@@ -800,11 +767,6 @@ async function initializeMap() {
                 );
                 
                 if (isTargetInput) {
-                    console.debug('Keyboard shortcut blocked: event target is input field', {
-                        targetTag: target.tagName,
-                        targetType: target.type,
-                        targetId: target.id
-                    });
                     return; // Don't prevent default, let the input handle the key
                 }
                 // Check if we're in an input field or search box
@@ -852,11 +814,6 @@ async function initializeMap() {
                 
                 // If we're in any input field, don't trigger the shortcut
                 if (isInputField) {
-                    console.debug('Keyboard shortcut blocked: user is typing in input field', {
-                        activeElement: activeElement.tagName,
-                        activeElementId: activeElement.id,
-                        activeElementClass: activeElement.className
-                    });
                     return; // Don't prevent default, let the input handle the key
                 }
                 
@@ -865,7 +822,6 @@ async function initializeMap() {
                 if (mapboxSearchBox && mapboxSearchBox.shadowRoot) {
                     const shadowInput = mapboxSearchBox.shadowRoot.querySelector('input:focus');
                     if (shadowInput) {
-                        console.debug('Keyboard shortcut blocked: user is typing in Mapbox search box shadow DOM');
                         return; // Don't prevent default, let the input handle the key
                     }
                 }

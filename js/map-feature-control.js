@@ -593,7 +593,6 @@ export class MapFeatureControl {
         // Listen to drawer state changes from the centralized manager
         this._drawerStateListener = (event) => {
             const { isOpen, eventType } = event.detail;
-            console.debug('[MapFeatureControl] Received drawer state change:', eventType, 'isOpen:', isOpen);
             this._updateDrawerSwitch(); // Update switch state based on drawer state
         };
 
@@ -605,7 +604,6 @@ export class MapFeatureControl {
      * Toggle the layer drawer using centralized manager
      */
     _toggleLayerDrawer() {
-        console.debug('[MapFeatureControl] Toggling drawer, current state:', drawerStateManager.isOpen());
         drawerStateManager.toggle();
     }
 
@@ -2185,13 +2183,6 @@ export class MapFeatureControl {
                 $toggleInput = $layerElement.find('input');
             }
             
-            console.debug(`[FeatureControl] Debug - Layer ${layerId}:`, {
-                layerElement: !!layerElement,
-                toggleInput: $toggleInput.length > 0,
-                isChecked: $toggleInput.length > 0 ? $toggleInput.prop('checked') : 'N/A',
-                toggleInputElement: $toggleInput.length > 0 ? $toggleInput[0] : null,
-                foundElements: $toggleInput.length
-            });
             
             if ($toggleInput.length > 0) {
                 // Use jQuery to uncheck and trigger change event
@@ -2205,14 +2196,12 @@ export class MapFeatureControl {
                 // IMPORTANT: Restore all layers that may have been hidden by layer isolation
                 this._restoreAllLayers();
                 
-                console.debug(`[FeatureControl] Layer ${layerId} toggled off successfully`);
             } else {
                 console.error(`[FeatureControl] No checkbox input found for layer ${layerId}`);
                 
                 // Last resort: try to find any clickable element that might toggle the layer
                 const $anyToggle = $layerElement.find('[type="checkbox"], .toggle-switch, .toggle-slider');
                 if ($anyToggle.length > 0) {
-                    console.debug(`[FeatureControl] Attempting to click any toggle element for ${layerId}`);
                     $anyToggle.first().click();
                 }
             }
@@ -2673,14 +2662,12 @@ export class MapFeatureControl {
                 $layerElement.prop('open', false);
                 $layerElement.removeClass('active');
                 
-                console.debug(`[FeatureControl] Layer ${layerId} toggled off successfully`);
             } else {
                 console.error(`[FeatureControl] No checkbox input found for layer ${layerId}`);
                 
                 // Last resort: try to find any clickable element that might toggle the layer
                 const $anyToggle = $layerElement.find('[type="checkbox"], .toggle-switch, .toggle-slider');
                 if ($anyToggle.length > 0) {
-                    console.debug(`[FeatureControl] Attempting to click any toggle element for ${layerId}`);
                     $anyToggle.first().click();
                 }
             }
@@ -3325,7 +3312,6 @@ export class MapFeatureControl {
             } catch (error) {
                 // Handle DEM data range errors gracefully
                 if (error.message && error.message.includes('out of range source coordinates for DEM data')) {
-                    console.debug('[MapFeatureControl] DEM data out of range at click location, clearing selections');
                     // Clear selections if DEM query fails at click location
                     this._stateManager.clearAllSelections();
                     return;
@@ -4129,7 +4115,6 @@ export class MapFeatureControl {
         } catch (error) {
             // Handle DEM data range errors gracefully
             if (error.message && error.message.includes('out of range source coordinates for DEM data')) {
-                console.debug('[MapFeatureControl] DEM data out of range at this location, skipping query');
                 // Clear any existing hover states when DEM query fails
                 this._stateManager.handleMapMouseLeave();
                 this._updateCursorForFeatures([]);
@@ -4314,11 +4299,9 @@ export class MapFeatureControl {
 
         // Get matching style layers for the hovered config layer
         const hoveredLayerIds = this._getMatchingLayerIds(config);
-        console.debug(`Hovered layer ${layerId} matches style layers:`, hoveredLayerIds);
         
         // Get all basemap layer IDs from config
         const basemapLayerIds = this._getBasemapLayerIds();
-        console.debug(`Basemap layer IDs to preserve:`, basemapLayerIds);
         
         // Get all currently visible layers from the map
         const style = this._map.getStyle();
@@ -4352,8 +4335,6 @@ export class MapFeatureControl {
             layersToHide.push(styleLayerId);
         });
 
-        console.debug(`Layers to keep visible:`, layersToKeep);
-        console.debug(`Layers to hide:`, layersToHide);
 
         // Hide the layers
         layersToHide.forEach(styleLayerId => {
@@ -4374,7 +4355,6 @@ export class MapFeatureControl {
             hoveredLayerId: layerId
         };
 
-        console.debug(`Isolated layer ${layerId}, hidden ${layersToHide.length} layers`);
     }
 
     /**
@@ -4392,7 +4372,6 @@ export class MapFeatureControl {
             }
         });
 
-        console.debug(`Restored ${this._layerHoverState.hiddenLayers.length} layers`);
 
         // Restore opacity of all layer details UI elements
         this._restoreLayerDetailsOpacity();
@@ -4429,7 +4408,6 @@ export class MapFeatureControl {
                 if (layer.tags && layer.tags.includes('basemap')) {
                     basemapConfigs.push(layer);
                     const matchingIds = this._getMatchingLayerIds(layer);
-                    console.debug(`Basemap config layer ${layer.id} matches style layers:`, matchingIds);
                     basemapLayerIds.push(...matchingIds);
                 }
             });
@@ -4441,15 +4419,12 @@ export class MapFeatureControl {
                 if (group.tags && group.tags.includes('basemap')) {
                     basemapConfigs.push(group);
                     const matchingIds = this._getMatchingLayerIds(group);
-                    console.debug(`Basemap config group ${group.id} matches style layers:`, matchingIds);
                     basemapLayerIds.push(...matchingIds);
                 }
             });
         }
 
-        console.debug(`Found ${basemapConfigs.length} basemap config entries:`, basemapConfigs.map(c => c.id));
         const uniqueBasemapIds = [...new Set(basemapLayerIds)];
-        console.debug(`Total unique basemap style layer IDs:`, uniqueBasemapIds);
         
         return uniqueBasemapIds;
     }
@@ -4478,7 +4453,6 @@ export class MapFeatureControl {
             }
         });
 
-        console.debug(`Applied opacity effect - ${hoveredLayerId} remains opaque, others set to 0.5`);
     }
 
     /**
@@ -4496,7 +4470,6 @@ export class MapFeatureControl {
             element.style.opacity = '1';
         });
 
-        console.debug(`Restored opacity for all layer details elements`);
     }
 
     /**
@@ -4529,7 +4502,6 @@ export class MapFeatureControl {
             this._layersContainer.style.maxHeight = `calc(50vh - 90px)`;
         }
         
-        console.debug(`[MapFeatureControl] Updated responsive height: ${responsiveMaxHeight}px (screen: ${screenHeight}px)`);
     }
 }
 

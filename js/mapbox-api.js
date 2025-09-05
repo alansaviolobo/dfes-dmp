@@ -1,4 +1,4 @@
-import { getInsertPosition } from './layer-order-manager.js';
+import { getInsertPosition, logLayerStack } from './layer-order-manager.js';
 import { parseCSV, rowsToGeoJSON, gstableToArray } from './map-utils.js';
 
 /**
@@ -31,7 +31,6 @@ export class MapboxAPI {
         // Listen for time change events from TimeControl
         const timeChangeHandler = (event) => {
             const { selectedDate, isoString, urlFormat } = event.detail;
-            console.log('[MapboxAPI] Time change event received:', urlFormat);
             this._updateTimeBasedLayers(urlFormat);
         };
 
@@ -48,13 +47,11 @@ export class MapboxAPI {
      * @param {string} timeString - ISO time string for URL parameters
      */
     _updateTimeBasedLayers(timeString) {
-        console.log('[MapboxAPI] Updating time-based layers with time:', timeString);
         
         this._timeBasedLayers.forEach((layerInfo, groupId) => {
             const { config, visible } = layerInfo;
             
             if (!visible) {
-                console.log(`[MapboxAPI] Skipping invisible layer: ${groupId}`);
                 return;
             }
             
@@ -77,7 +74,6 @@ export class MapboxAPI {
             return;
         }
 
-        console.log(`[MapboxAPI] Updating time for layer ${groupId} with urlTimeParam: ${config.urlTimeParam}`);
 
         // Generate new URL with time parameter
         const newUrl = this._generateTimeBasedUrl(config.url, config.urlTimeParam, timeString);
@@ -118,7 +114,6 @@ export class MapboxAPI {
             const month = String(date.getMonth() + 1).padStart(2, '0');
             const day = String(date.getDate()).padStart(2, '0');
             formattedTimeString = `${year}-${month}-${day}`;
-            console.log(`[MapboxAPI] Converting time for GIBS layer: ${timeString} -> ${formattedTimeString}`);
         }
         
         // Replace the time placeholder in the timeParam with the formatted time
@@ -181,6 +176,7 @@ export class MapboxAPI {
             // Re-add layer
             const layerConfig = this._createLayerConfig({
                 id: layerId,
+                groupId: groupId,
                 source: sourceId,
                 style: {
                     ...(this._defaultStyles.raster || {}),
@@ -191,8 +187,8 @@ export class MapboxAPI {
             }, 'raster');
 
             this._map.addLayer(layerConfig, getInsertPosition(this._map, 'wmts', null, config, this._orderedGroups));
+            logLayerStack(this._map, `After adding WMTS layer: ${config.id}`);
             
-            console.log(`[MapboxAPI] Updated WMTS layer ${groupId} with new time URL: ${tileUrl}`);
         }
     }
 
@@ -228,6 +224,7 @@ export class MapboxAPI {
             // Re-add layer
             const layerConfig = this._createLayerConfig({
                 id: layerId,
+                groupId: groupId,
                 source: sourceId,
                 style: {
                     ...(this._defaultStyles.raster || {}),
@@ -238,8 +235,8 @@ export class MapboxAPI {
             }, 'raster');
 
             this._map.addLayer(layerConfig, getInsertPosition(this._map, 'tms', null, config, this._orderedGroups));
+            logLayerStack(this._map, `After adding TMS layer: ${config.id}`);
             
-            console.log(`[MapboxAPI] Updated TMS layer ${groupId} with new time URL: ${newUrl}`);
         }
     }
 
@@ -263,7 +260,6 @@ export class MapboxAPI {
                 ]
             });
             
-            console.log(`[MapboxAPI] Updated Image layer ${groupId} with new time URL: ${newUrl}`);
         }
     }
 
@@ -308,7 +304,6 @@ export class MapboxAPI {
             // Register time-based layers
             if (config.urlTimeParam) {
                 this._timeBasedLayers.set(groupId, { config, visible });
-                console.log(`[MapboxAPI] Registered time-based layer: ${groupId} with urlTimeParam: ${config.urlTimeParam}`);
             }
             
             switch (config.type) {
@@ -594,6 +589,7 @@ export class MapboxAPI {
             
             const layerConfig = this._createLayerConfig({
                 id: `vector-layer-${groupId}`,
+                groupId: groupId,
                 type: 'fill',
                 source: sourceId,
                 'source-layer': config.sourceLayer || 'default',
@@ -612,6 +608,7 @@ export class MapboxAPI {
             
             const layerConfig = this._createLayerConfig({
                 id: `vector-layer-${groupId}-outline`,
+                groupId: groupId,
                 type: 'line',
                 source: sourceId,
                 'source-layer': config.sourceLayer || 'default',
@@ -630,6 +627,7 @@ export class MapboxAPI {
             
             const layerConfig = this._createLayerConfig({
                 id: `vector-layer-${groupId}-circle`,
+                groupId: groupId,
                 type: 'circle',
                 source: sourceId,
                 'source-layer': config.sourceLayer || 'default',
@@ -648,6 +646,7 @@ export class MapboxAPI {
             
             const layerConfig = this._createLayerConfig({
                 id: `vector-layer-${groupId}-text`,
+                groupId: groupId,
                 type: 'symbol',
                 source: sourceId,
                 'source-layer': config.sourceLayer || 'default',
@@ -744,6 +743,7 @@ export class MapboxAPI {
 
             const layerConfig = this._createLayerConfig({
                 id: layerId,
+                groupId: groupId,
                 source: sourceId,
                 style: {
                     ...(this._defaultStyles.raster || {}),
@@ -819,6 +819,7 @@ export class MapboxAPI {
 
             const layerConfig = this._createLayerConfig({
                 id: layerId,
+                groupId: groupId,
                 source: sourceId,
                 style: {
                     ...(this._defaultStyles.raster || {}),
@@ -1200,6 +1201,7 @@ export class MapboxAPI {
             
             const fillLayerConfig = this._createLayerConfig({
                 id: `${sourceId}-fill`,
+                groupId: groupId,
                 type: 'fill',
                 source: sourceId,
                 style: fillStyle,
@@ -1216,6 +1218,7 @@ export class MapboxAPI {
             
             const lineLayerConfig = this._createLayerConfig({
                 id: `${sourceId}-line`,
+                groupId: groupId,
                 type: 'line',
                 source: sourceId,
                 style: lineStyle,
@@ -1234,6 +1237,7 @@ export class MapboxAPI {
             
             const circleLayerConfig = this._createLayerConfig({
                 id: `${sourceId}-circle`,
+                groupId: groupId,
                 type: 'circle',
                 source: sourceId,
                 style: circleStyle,
@@ -1250,6 +1254,7 @@ export class MapboxAPI {
             
             const textLayerConfig = this._createLayerConfig({
                 id: `${sourceId}-label`,
+                groupId: groupId,
                 type: 'symbol',
                 source: sourceId,
                 style: symbolStyle,
@@ -1960,9 +1965,12 @@ export class MapboxAPI {
         if (config.filter) {
             layerConfig.filter = config.filter;
         }
-        if (config.metadata) {
-            layerConfig.metadata = config.metadata;
-        }
+        // Always add metadata for layer ordering, merging with any existing metadata
+        layerConfig.metadata = {
+            ...(config.metadata || {}),
+            groupId: config.groupId || config.id,
+            layerType: layerType
+        };
         if (config.minzoom !== undefined) {
             layerConfig.minzoom = config.minzoom;
         }

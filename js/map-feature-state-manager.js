@@ -35,7 +35,6 @@ export class MapFeatureStateManager extends EventTarget {
         // Set up map change listeners to handle dynamic layer additions
         this._setupMapChangeListeners();
         
-        console.debug('[MapFeatureStateManager] Initialized with debug:', this._isDebug);
     }
 
     /**
@@ -79,7 +78,6 @@ export class MapFeatureStateManager extends EventTarget {
         
         // Check if this is a raster layer that doesn't need feature interaction
         if (this._isRasterLayer(layerConfig)) {
-            console.debug(`[StateManager] Registered raster layer ${layerId} (no feature interaction needed)`);
             // For raster layers, we still register them for inspection but don't set up feature events
             this._emitStateChange('layer-registered', {
                 layerId,
@@ -625,7 +623,6 @@ export class MapFeatureStateManager extends EventTarget {
         if (!success && retryCount < this._maxRetries) {
             // Immediate retry for first few attempts
             if (retryCount < 3) {
-                console.debug(`[StateManager] Retrying setup for ${layerConfig.id} (attempt ${retryCount + 1})`);
                 setTimeout(() => {
                     this._setupLayerEventsWithRetry(layerConfig, retryCount + 1);
                 }, 100 * (retryCount + 1)); // Exponential backoff: 100ms, 200ms, 300ms
@@ -636,7 +633,6 @@ export class MapFeatureStateManager extends EventTarget {
         } else if (!success) {
             console.warn(`[StateManager] Failed to setup events for ${layerConfig.id} after ${this._maxRetries} attempts`);
         } else {
-            console.debug(`[StateManager] Successfully set up events for ${layerConfig.id}`);
             this._retryAttempts.delete(layerConfig.id);
         }
     }
@@ -650,7 +646,6 @@ export class MapFeatureStateManager extends EventTarget {
         if (currentAttempts < 5) { // Limit long-term retries to 5
             this._retryAttempts.set(layerConfig.id, currentAttempts + 1);
             
-            console.debug(`[StateManager] Long-term retry ${currentAttempts + 1}/5 for ${layerConfig.id} in ${this._retryDelay}ms`);
             
             setTimeout(() => {
                 // Check if layer is still registered before retrying
@@ -659,7 +654,6 @@ export class MapFeatureStateManager extends EventTarget {
                     if (!success) {
                         this._setupLongTermRetry(layerConfig);
                     } else {
-                        console.debug(`[StateManager] Long-term retry succeeded for ${layerConfig.id}`);
                         this._retryAttempts.delete(layerConfig.id);
                     }
                 }
@@ -684,7 +678,6 @@ export class MapFeatureStateManager extends EventTarget {
                 return false;
             }
             
-            console.debug(`[StateManager] Setting up events for ${layerConfig.id} on layers:`, matchingLayerIds);
             
             // Set up events for all matching layer IDs
             matchingLayerIds.forEach(actualLayerId => {
@@ -725,7 +718,6 @@ export class MapFeatureStateManager extends EventTarget {
         
         // Debug logging to understand what layers exist
         if (this._isDebug) {
-            console.debug(`[StateManager] Looking for matches for layer: ${layerId}`);
             const allLayerIds = style.layers.map(l => l.id);
             const relevantLayers = allLayerIds.filter(id => 
                 id.includes(layerId) || 
@@ -733,7 +725,6 @@ export class MapFeatureStateManager extends EventTarget {
                 id.includes('tms-layer') ||
                 id === layerId
             );
-            console.debug(`[StateManager] Relevant layers found:`, relevantLayers);
         }
         
         // Strategy 1: Direct ID match (HIGHEST PRIORITY)

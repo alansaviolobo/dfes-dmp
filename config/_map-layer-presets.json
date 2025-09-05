@@ -1045,7 +1045,6 @@
         "line-width": 1,
         "fill-opacity": 0.3
       },
-      "filter": ["==", "Village", "Saligao"],
       "inspect": {
         "id": "id",
         "title": "Owners",
@@ -4641,17 +4640,7 @@
         "fill-opacity": 0.7
       }
     },
-    {
-      "title": "Real-time Weather Satellite",
-      "description": "Cloud top temperatures colorized to reveal areas of intensity using the infrared band of weather satellite. Imagery updated every 10 minutes.",
-      "headerImage": "assets/map-layers/map-layer-weather-satellite.png",
-      "legendImage": "assets/map-layers/map-layer-weather-satellite-legend.png.webp",
-      "type": "tms",
-      "maxzoom": 9,
-      "id": "weather-satellite",
-      "url": "https://earthlive.maptiles.arcgis.com/arcgis/rest/services/GOES/GOES31D/MapServer/tile/{z}/{y}/{x}",
-      "attribution": "<a href='https://www.star.nesdis.noaa.gov/goes/index.php'>NOAA GOES</a> + <a href='https://himawari8.nict.go.jp'>JMA Himwari</a> via <a href='https://www.arcgis.com/home/item.html?id=37a875ff3611496883b7ccca97f0f5f4'>JMA Himawari</a>"
-    },
+
     {
       "title": "SOI Toposheets",
       "description": "Survey of India",

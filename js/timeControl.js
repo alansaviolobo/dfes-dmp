@@ -355,8 +355,6 @@ export class TimeControl {
         
         // Also emit on window for global listeners
         window.dispatchEvent(event);
-        
-        console.log('[TimeControl] Time changed to:', this._selectedDate.toISOString());
     }
 
     // Public methods for external control
@@ -398,19 +396,14 @@ export class TimeControl {
      * Set up layer monitoring to show/hide control based on time-based layers
      */
     _setupLayerMonitoring() {
-        console.log('[TimeControl] Setting up layer monitoring...');
-        
         // Get state manager reference from global scope or feature control
         this._getStateManagerReference();
 
         // Listen for layer state changes
         if (this._stateManager) {
-            console.log('[TimeControl] Setting up state manager event listener');
             this._layerStateListener = (event) => {
-                console.log('[TimeControl] State change event received:', event.detail);
                 const { eventType } = event.detail;
                 if (eventType === 'layer-registered' || eventType === 'layer-unregistered') {
-                    console.log('[TimeControl] Layer registration event detected, checking time-based layers');
                     setTimeout(() => this._checkTimeBasedLayers(), 100);
                 }
             };
@@ -420,12 +413,9 @@ export class TimeControl {
             setTimeout(() => {
                 this._getStateManagerReference();
                 if (this._stateManager && !this._layerStateListener) {
-                    console.log('[TimeControl] Setting up delayed state manager event listener');
                     this._layerStateListener = (event) => {
-                        console.log('[TimeControl] State change event received (delayed):', event.detail);
                         const { eventType } = event.detail;
                         if (eventType === 'layer-registered' || eventType === 'layer-unregistered') {
-                            console.log('[TimeControl] Layer registration event detected (delayed), checking time-based layers');
                             setTimeout(() => this._checkTimeBasedLayers(), 100);
                         }
                     };
@@ -435,9 +425,7 @@ export class TimeControl {
         }
 
         // Also listen for global layer control events as fallback
-        console.log('[TimeControl] Setting up global event listeners');
         this._globalLayerListener = (event) => {
-            console.log(`[TimeControl] Global event received: ${event.type}`, event.detail || 'no detail');
             setTimeout(() => this._checkTimeBasedLayers(), 100); // Small delay to let changes settle
         };
         window.addEventListener('layer-toggled', this._globalLayerListener);
@@ -446,7 +434,6 @@ export class TimeControl {
         
         // Also listen for Shoelace events that might be fired from layer toggles
         this._shoelaceListener = (event) => {
-            console.log(`[TimeControl] Shoelace event received: ${event.type}`, event.target);
             if (event.target && event.target.matches && event.target.matches('input[type="checkbox"]')) {
                 setTimeout(() => this._checkTimeBasedLayers(), 100);
             }
@@ -483,42 +470,28 @@ export class TimeControl {
      * Get reference to state manager from global scope
      */
     _getStateManagerReference() {
-        console.log('[TimeControl] Getting state manager reference...');
-        
         // Try to get state manager from global feature control
         if (window.mapFeatureControl && window.mapFeatureControl._stateManager) {
-            console.log('[TimeControl] Found state manager via mapFeatureControl');
             this._stateManager = window.mapFeatureControl._stateManager;
             return;
         }
 
         // Try to get from layer control if available
         if (window.layerControl && window.layerControl._stateManager) {
-            console.log('[TimeControl] Found state manager via layerControl');
             this._stateManager = window.layerControl._stateManager;
             return;
         }
-
-        // Check what's actually available
-        console.log('[TimeControl] Available globals:', {
-            mapFeatureControl: !!window.mapFeatureControl,
-            layerControl: !!window.layerControl,
-            mapboxAPI: !!window.mapboxAPI
-        });
 
         // Retry after a delay as controls might not be initialized yet
         if (!this._retryCount) this._retryCount = 0;
         this._retryCount++;
         
         if (this._retryCount < 10) {
-            console.log(`[TimeControl] Retrying state manager reference (attempt ${this._retryCount})`);
             setTimeout(() => {
                 if (!this._stateManager) {
                     this._getStateManagerReference();
                 }
             }, 1000);
-        } else {
-            console.log('[TimeControl] Max retries reached for state manager reference');
         }
     }
 
@@ -537,50 +510,32 @@ export class TimeControl {
      * Check if there are any active layers with urlTimeParam defined
      */
     _hasActiveTimeBasedLayers() {
-        console.log('[TimeControl] Checking for active time-based layers...');
-        
         // Method 1: Check via state manager (most reliable)
         if (this._stateManager) {
-            console.log('[TimeControl] Checking via state manager...');
             const activeLayers = this._stateManager.getActiveLayers();
-            console.log('[TimeControl] Active layers from state manager:', activeLayers);
             
             for (const [layerId, layerData] of activeLayers) {
-                console.log(`[TimeControl] Checking layer ${layerId}:`, layerData);
                 if (layerData.config && layerData.config.urlTimeParam) {
-                    console.log(`[TimeControl] Found time-based layer: ${layerId} with urlTimeParam: ${layerData.config.urlTimeParam}`);
                     return true;
                 }
             }
-        } else {
-            console.log('[TimeControl] No state manager available');
         }
 
         // Method 2: Check via MapboxAPI time-based layers
         if (window.mapboxAPI) {
-            console.log('[TimeControl] Checking via MapboxAPI...');
-            
             if (window.mapboxAPI._timeBasedLayers) {
                 const timeBasedLayers = window.mapboxAPI._timeBasedLayers;
-                console.log('[TimeControl] Time-based layers from MapboxAPI:', timeBasedLayers);
                 
                 for (const [layerId, layerInfo] of timeBasedLayers) {
-                    console.log(`[TimeControl] Checking time-based layer ${layerId}:`, layerInfo);
                     if (layerInfo.visible) {
-                        console.log(`[TimeControl] Found visible time-based layer via MapboxAPI: ${layerId}`);
                         return true;
                     }
                 }
-            } else {
-                console.log('[TimeControl] MapboxAPI available but no _timeBasedLayers property');
             }
-        } else {
-            console.log('[TimeControl] No MapboxAPI available');
         }
 
         // Method 3: Check via global layer control as fallback
         if (window.layerControl) {
-            console.log('[TimeControl] Checking via global layer control...');
             const layerControl = window.layerControl;
             
             // Try to get active layers from different methods
@@ -598,8 +553,6 @@ export class TimeControl {
                     .map(group => group.id);
             }
             
-            console.log('[TimeControl] Active layers from layer control:', activeLayers);
-            
             for (const layerId of activeLayers) {
                 // Find layer config in the state
                 let layerConfig = null;
@@ -607,18 +560,12 @@ export class TimeControl {
                     layerConfig = layerControl._state.groups.find(group => group.id === layerId);
                 }
                 
-                console.log(`[TimeControl] Checking layer control layer ${layerId}:`, layerConfig);
-                
                 if (layerConfig && layerConfig.urlTimeParam) {
-                    console.log(`[TimeControl] Found time-based layer via layer control: ${layerId} with urlTimeParam: ${layerConfig.urlTimeParam}`);
                     return true;
                 }
             }
-        } else {
-            console.log('[TimeControl] No layer control available');
         }
 
-        console.log('[TimeControl] No active time-based layers found');
         return false;
     }
 
@@ -638,8 +585,6 @@ export class TimeControl {
             }).animate({
                 opacity: '1'
             }, 200);
-            
-            console.log('[TimeControl] Showing time control - time-based layers detected');
         } else {
             // Hide the control with fade-out effect
             $(this._container).animate({
@@ -650,8 +595,6 @@ export class TimeControl {
             
             // Also hide panel if it's open
             this._hidePanel();
-            
-            console.log('[TimeControl] Hiding time control - no time-based layers active');
         }
     }
 

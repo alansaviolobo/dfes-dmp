@@ -50,7 +50,6 @@ class MapSearchControl {
      */
     setFeatureStateManager(featureStateManager) {
         this.featureStateManager = featureStateManager;
-        console.debug('Feature state manager set for search control');
     }
     
     /**
@@ -81,7 +80,6 @@ class MapSearchControl {
         .setPopup(new mapboxgl.Popup({ offset: 25 }).setHTML(`<div><strong>${title}</strong></div>`))
         .addTo(this.map);
         
-        console.debug('Added search marker at:', coordinates, 'with title:', title);
     }
 
     /**
@@ -96,7 +94,6 @@ class MapSearchControl {
             
             if (searchBoxInput) {
                 searchBoxInput.value = value;
-                console.debug('Updated search box input to:', value);
                 
                 // Trigger an input event to update the component's internal state
                 const inputEvent = new Event('input', { bubbles: true });
@@ -113,17 +110,6 @@ class MapSearchControl {
      * Reset the search state to allow for new searches
      */
     resetSearchState() {
-        console.debug('=== RESETTING SEARCH STATE ===');
-        console.debug('Previous state:', {
-            query: this.currentQuery,
-            localSuggestionsCount: this.localSuggestions.length,
-            suggestionMarkersCount: this.suggestionMarkers.length,
-            isCoordinateInput: this.isCoordinateInput,
-            hoveredMarkerIndex: this.hoveredMarkerIndex,
-            hasActiveSearch: this.hasActiveSearch,
-            hasReferenceView: !!this.referenceView
-        });
-        
         this.lastInjectedQuery = '';
         this.localSuggestions = [];
         this.currentQuery = '';
@@ -137,7 +123,6 @@ class MapSearchControl {
         if (this.injectionTimeout) {
             clearTimeout(this.injectionTimeout);
             this.injectionTimeout = null;
-            console.debug('Cleared injection timeout');
         }
         
         // Reset search state flags but don't change map location
@@ -153,14 +138,10 @@ class MapSearchControl {
             if ($resultsList.length > 0) {
                 const removedCount = $resultsList.find('.local-suggestion').length;
                 $resultsList.find('.local-suggestion').remove();
-                console.debug(`Cleared ${removedCount} injected suggestions from DOM`);
             }
         } catch (error) {
             console.error('Error clearing injected suggestions:', error);
         }
-        
-        console.debug('Search state reset complete - ready for new search');
-        console.debug('=== SEARCH STATE RESET COMPLETE ===');
     }
     
     /**
@@ -215,7 +196,6 @@ class MapSearchControl {
         // Add map moveend listener to refresh search results when viewport changes
         this.map.on('moveend', this.handleMapMoveEnd.bind(this));
         
-        console.debug('MapSearchControl initialized');
     }
     
 
@@ -227,7 +207,6 @@ class MapSearchControl {
     handleKeyDown(event) {
         // If we've detected a coordinate input and the user presses Enter
         if (this.isCoordinateInput && event.key === 'Enter' && this.coordinateSuggestion) {
-            console.debug('Enter key pressed for coordinate input');
             
             // Prevent the default behavior
             event.preventDefault();
@@ -250,7 +229,6 @@ class MapSearchControl {
      * @param {Event} event - The clear event
      */
     handleClear(event) {
-        console.debug('Search box clear event received');
         this.handleEmptyInput();
     }
 
@@ -260,14 +238,12 @@ class MapSearchControl {
     handleMapMoveEnd() {
         // Only refresh if we have an active search query that's not a coordinate
         if (this.hasActiveSearch && this.currentQuery && !this.isCoordinateInput && this.currentQuery.length > 0) {
-            console.debug('Map moved, refreshing search results for current viewport');
             
             // Re-query local suggestions with the new viewport
             const newLocalSuggestions = this.queryLocalCadastralSuggestions(this.currentQuery);
             
             // Only update if suggestions have changed
             if (this.haveSuggestionsChanged(this.localSuggestions, newLocalSuggestions)) {
-                console.debug(`Search results updated: ${this.localSuggestions.length} -> ${newLocalSuggestions.length} suggestions`);
                 
                 this.localSuggestions = newLocalSuggestions;
                 
@@ -1033,7 +1009,6 @@ class MapSearchControl {
         if (this.injectionTimeout) {
             clearTimeout(this.injectionTimeout);
             this.injectionTimeout = null;
-            console.debug('Cleared injection timeout');
         }
         
         if (this.inputMonitorInterval) {

@@ -34,7 +34,6 @@ class URLManager {
     parseLayersFromUrl(layersParam) {
         if (!layersParam) return [];
         
-        console.debug('[URL API] Parsing layers parameter:', layersParam);
         
         const layers = [];
         let currentItem = '';
@@ -108,7 +107,6 @@ class URLManager {
             }
         }
         
-        console.debug('[URL API] Parsed layers result:', layers);
         return layers;
     }
 
@@ -247,9 +245,7 @@ class URLManager {
                 if (normalizedNew !== normalizedCurrent) {
                     layersParam = newLayersParam;
                     hasChanges = true;
-                    console.debug('[URL API] Layers content changed, updating URL');
                 } else {
-                    console.debug('[URL API] Layers unchanged (just formatting difference), keeping current URL');
                 }
             }
         }
@@ -469,7 +465,6 @@ class URLManager {
                 newUrl += window.location.hash;
             }
             
-            console.debug('[URL API] Creating pretty URL:', newUrl);
             window.history.replaceState(null, '', newUrl);
             
             // Trigger custom event for other components (like ShareLink)
@@ -532,15 +527,12 @@ class URLManager {
             
             // Parse layers from URL
             if (layersParam) {
-                console.debug('[URL API] Raw layers parameter from URL:', layersParam);
                 // Check if layers were already processed during initialization
                 // If the layer control already has layers loaded, skip re-processing
                 if (this.mapLayerControl && this.mapLayerControl._state && this.mapLayerControl._state.groups.length > 0) {
-                    console.debug('[URL API] Layers already loaded during initialization, skipping URL layer processing');
                     applied = true;
                 } else {
                     const urlLayers = this.parseLayersFromUrl(layersParam);
-                    console.debug('[URL API] Parsed URL layers:', urlLayers);
                     // Apply the layer state
                     applied = await this.applyLayerState(urlLayers);
                 }

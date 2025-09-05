@@ -434,7 +434,6 @@ export class Terrain3DControl {
         
         // Skip terrain updates during initialization to prevent interference with layer creation
         if (this._initializing) {
-            console.debug('[3D Control] Skipping terrain update during initialization');
             return;
         }
 
@@ -784,14 +783,11 @@ export class Terrain3DControl {
         const terrainSourceParam = urlParams.get('terrainSource');
         const fogParam = urlParams.get('fog');
         
-        console.log('[3D Control] Initializing from URL, terrain param:', terrainParam, 'animate param:', animateParam, 'wireframe param:', wireframeParam, 'terrainSource param:', terrainSourceParam, 'fog param:', fogParam);
         
         // Handle terrain source parameter first
         if (terrainSourceParam && this._terrainSources[terrainSourceParam]) {
-            console.log('[3D Control] Setting terrain source:', terrainSourceParam);
             this.setTerrainSource(terrainSourceParam);
         } else {
-            console.log('[3D Control] Using default terrain source: mapbox');
             this.setTerrainSource('mapbox');
         }
         
@@ -800,52 +796,42 @@ export class Terrain3DControl {
             if (!isNaN(exaggeration)) {
                 if (exaggeration === 0) {
                     // Explicitly disabled
-                    console.log('[3D Control] Setting disabled (terrain=0)');
                     this.setEnabled(false);
                 } else if (exaggeration >= this.options.minExaggeration && 
                           exaggeration <= this.options.maxExaggeration) {
                     // Valid exaggeration value
-                    console.log('[3D Control] Setting enabled with exaggeration:', exaggeration);
                     this.setExaggeration(exaggeration);
                     this.setEnabled(true);
                 }
             }
         } else {
             // No terrain parameter - use default enabled state
-            console.log('[3D Control] No terrain param, using default enabled state');
             this.setEnabled(true);
             this.setExaggeration(this.options.initialExaggeration);
         }
 
         // Handle animate parameter
         if (animateParam === 'true') {
-            console.log('[3D Control] Setting animation enabled');
             this.setAnimate(true);
         } else {
-            console.log('[3D Control] Setting animation disabled (default)');
             this.setAnimate(false);
         }
 
         // Handle wireframe parameter
         if (wireframeParam === 'true') {
-            console.log('[3D Control] Setting wireframe enabled');
             this.setWireframe(true);
         } else {
-            console.log('[3D Control] Setting wireframe disabled (default)');
             this.setWireframe(false);
         }
 
         // Handle fog parameter
         if (fogParam === 'false') {
-            console.log('[3D Control] Setting fog disabled');
             this.setFog(false);
         } else {
-            console.log('[3D Control] Setting fog enabled (default)');
             this.setFog(true);
         }
         
         // Clear initialization flag to allow normal URL updates
         this._initializing = false;
-        console.log('[3D Control] Initialization complete, URL updates now enabled');
     }
 }
