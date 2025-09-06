@@ -12,6 +12,7 @@ const ASSETS_TO_CACHE = [
   '/js/map-utils.js',
   '/js/layer-order-manager.js',
   '/js/map-feature-state-manager.js',
+  '/js/pwa/state-persistence.js',
   '/assets/img/icon-192x192.png',
   '/assets/img/icon-512x512.png'
 ];

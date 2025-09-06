@@ -7,6 +7,7 @@ import { URLManager } from './url-api.js';
 import { permalinkHandler } from './permalink-handler.js';
 import { Terrain3DControl } from './3d-control.js';
 import { TimeControl } from './timeControl.js';
+import { StatePersistence } from './pwa/state-persistence.js';
 
 // Function to get URL parameters
 function getUrlParameter(name) {
@@ -684,6 +685,10 @@ async function initializeMap() {
         window.featureControl = featureControl;
         window.stateManager = stateManager;
                 
+        // Initialize state persistence and try to restore saved state
+        const statePersistence = new StatePersistence();
+        const stateRestored = statePersistence.restoreStateOnLoad();
+        
         // Initialize URL manager after layer control is ready
         const urlManager = new URLManager(layerControl, map, geolocationManager);
         urlManager.setupLayerControlEventListeners();
@@ -692,7 +697,18 @@ async function initializeMap() {
         geolocationManager.urlManager = urlManager;
         
         // Apply URL parameters (including geolocate parameter)
-        urlManager.applyURLParameters();
+        // Skip URL parameter application if state was restored from localStorage
+        if (!stateRestored) {
+            urlManager.applyURLParameters();
+        } else {
+            // If state was restored, still need to apply URL parameters for restored URL
+            setTimeout(() => {
+                urlManager.applyURLParameters();
+            }, 100);
+        }
+        
+        // Initialize state persistence event listeners after URL manager is ready
+        statePersistence.initialize();
         
         // Make URL manager globally accessible for ShareLink
         window.urlManager = urlManager;

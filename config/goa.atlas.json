@@ -367,63 +367,46 @@
       "maxzoom": 14,
       "attribution": "<a href='https://www.czma.goa.gov.in/ViewDoc.aspx'>Final CZMP, Goa Coastal Zone Management Authority</a> - via <a href='https://github.com/ramSeraph/indian_admin_boundaries/releases/tag/coastal'>Datameet Community</a>",
       "filter": [
-        "!",
-        [
-          "in",
+        "==",
           [
             "get",
             "layer"
           ],
           [
             "literal",
-            ["CRZ_IV_A", "CRZ_IV_B","Nautical_Miles_12_From_HTL"]
+            "CRZ_I_A"
           ]
-        ]
       ],
       "style": {
-        "line-color": "#006400",
-        "line-width": [
-          "match",
-          [
-            "get",
-            "layer"
-          ],
-          "CRZ_I_A",
-          3,
-          0.1
-        ],
+        "text-field": [ "to-string", ["get", "crz_class"] ],
+        "line-color": "black",
         "fill-color": [
           "match",
           [
             "get",
-            "layer"
+            "crz_class"
           ],
-          "CRZ_I_A",
-          "#859664",
-          "CRZ_I_B",
+          "	Archaeological and heritage sites - CRZ IA",
+          "red",
+          "Mangroves - CRZ IA",
+          "green",
+          "Mudflats - CRZ IA",
+          "brown",
+          "Sand Dunes - CRZ IA",
           "gold",
-          "CRZ_II",
-          "pink",
-          "NDZ",
-          "blue",
-          "CRZ_Poly",
-          "blue",
-          "CRZ_200m_to_500m_from_HTL",
-          "yellow",
-          "Nautical_Miles_12_From_CRZ_IV_A",
-          "lightblue",
-          "Fishing_Wards",
+          "Salt Marsh - CRZ IA",
           "cyan",
+          "Corals and coral reefs - CRZ IA",
+          "magenta",
+          "Nesting Grounds of Birds - CRZ IA",
+          "blue",
           "black"
         ]
       },
       "inspect": {
-        "id": "layer",
-        "title": "Zone",
-        "label": "layer",
-        "fields": [
-          "crz_class"
-        ]
+        "id": "crz_class",
+        "title": "crz_class",
+        "label": "Name"
       }
     },
     {
