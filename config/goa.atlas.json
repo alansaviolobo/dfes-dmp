@@ -299,7 +299,7 @@
       "sourceLayer": "vector",
       "minzoom": 0,
       "maxzoom": 15,
-      "attribution": "<a href='https://czmp.ncscm.res.in'>Coastal Zone Management Plan 2022, Ministry of Environment, Forest and Climate Change</a> - via <a href='https://www.maphub.co/map/f7c37496-7c7d-484d-8339-bcb0f2e39c4b'>Maphub</a>",
+      "attribution": "<a href='https://www.czma.goa.gov.in/ViewDoc.aspx'>Final CZMP, Goa Coastal Zone Management Authority</a> - via <a href='https://www.maphub.co/map/f7c37496-7c7d-484d-8339-bcb0f2e39c4b'>Maphub</a>",
       "initiallyChecked": false,
       "style": {
         "text-field": [
@@ -344,7 +344,7 @@
       "url": "https://api-main-432878571563.europe-west4.run.app/tiler/vector/{z}/{x}/{y}?map_id=c2f4f183-2526-4cbd-bc8b-985928a84222",
       "sourceLayer": "vector",
       "maxzoom": 14,
-      "attribution": "<a href='https://czmp.ncscm.res.in'>Coastal Zone Management Plan 2022, Ministry of Environment, Forest and Climate Change</a> - via <a href='https://www.maphub.co/map/ece88d0e-2c10-4b78-a163-904a4cf16dd4'>Maphub</a>",
+      "attribution": "<a href='https://www.czma.goa.gov.in/ViewDoc.aspx'>Final CZMP, Goa Coastal Zone Management Authority</a> - via <a href='https://www.maphub.co/map/ece88d0e-2c10-4b78-a163-904a4cf16dd4'>Maphub</a>",
       "style": {
         "fill-opacity": 1,
         "text-halo-color": "#b3ff0f",
