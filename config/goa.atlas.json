@@ -359,7 +359,7 @@
     {
       "id": "crz-1a",
       "title": "CRZ-1A Protected Areas",
-      "description": "Protected coastal features of mangroves, sand dunes, mudflats and salt pans falling under CRZ-1A zone from Goa CZMP. <br><b>Note:</b> Not yet verified against certified <a href='https://drive.google.com/drive/folders/1cwGn6MvguWpMLEYAaEbDAIE9BZdfW8re?usp=share_link'>maps by the Department of Water Resources</a> and <a href='https://drive.google.com/drive/folders/1_X_7oUZZ7o7MGu32_Koce1PU9AbfUGXt?usp=sharing'>lists by the Department of Agriculture</a> , Government of Goa - Collected via RTI by <a href='https://goafoundation.org/'>Goa Foundation</a> <br><small>The ground truthing of the Marginal bunds, sluice gates and the defended Khazan lands was carried out by the Water Resources Department, along with the Members of Bio Diversity, Surveyors of DSLR. Soil Conservation Engineers of the Agriculture department, Forest officials.</p><p>It is further certified that the ground truthing is carried with details enumerated on the Toposheets published by the Survey of India in the year 1964, Cadastral village maps published by the land survey department in the year 1972-76. The Khazan land, bunds sluice gates mapped by the village Panchayat were also used utilised for identification and ground truthing. Thus, the Bunds/Sluice gates and Khazan Lands shown in this map are verified and it is certified that the Bunds and Sluice gates shown in this map exist now and were constructed in the past, prior to the date of notification issued vide S. O. 114(E) dated 19th February 1999.</small>",
+      "description": "Protected coastal features of mangroves, sand dunes, mudflats, salt pans, corals, nesting sites and archaeological sites falling under CRZ-1A zone from Goa CZMP. View <a href='https://drive.google.com/file/d/1uo4bHGPvci1uR3cMhzvke7LzF_onKqLK/view?usp=sharing'>Coastal Sand Dunes of Goa Report by NCSCM</a> - Collected via RTI by <a href='https://goafoundation.org/'>Goa Foundation</a> for more information.",
       "headerImage": "assets/map-layers/map-layer-crz.png",
       "type": "vector",
       "url": "https://indianopenmaps.fly.dev/not-so-open/coastal/regulation-zones/parivesh/{z}/{x}/{y}.pbf",
@@ -372,33 +372,72 @@
             "get",
             "layer"
           ],
-          [
-            "literal",
-            "CRZ_I_A"
-          ]
+          "CRZ_I_A"
       ],
       "style": {
         "text-field": [ "to-string", ["get", "crz_class"] ],
         "line-color": "black",
-        "fill-color": [
+        "symbol-sort-key": [
           "match",
           [
             "get",
             "crz_class"
           ],
-          "	Archaeological and heritage sites - CRZ IA",
+          "Archaeological and heritage sites - CRZ IA",
+          1,
+          ["Nesting Grounds of Birds - CRZ IA","Turtle Nesting Grounds - CRZ IA"],
+          2,
+          ["Corals and coral reefs - CRZ IA","Salt Marsh - CRZ IA"],
+          3,
+          "Sand Dunes - CRZ IA",
+          4,
+          "Mudflats - CRZ IA",
+          5,
+          "Mangroves - CRZ IA",
+          6,
+          10
+        ],
+        "text-halo-color": [
+          "match",
+          [
+            "get",
+            "crz_class"
+          ],
+          "Archaeological and heritage sites - CRZ IA",
           "red",
           "Mangroves - CRZ IA",
           "green",
           "Mudflats - CRZ IA",
           "brown",
           "Sand Dunes - CRZ IA",
-          "gold",
+          "orange",
           "Salt Marsh - CRZ IA",
-          "cyan",
+          "deepskyblue",
           "Corals and coral reefs - CRZ IA",
           "magenta",
-          "Nesting Grounds of Birds - CRZ IA",
+          ["Nesting Grounds of Birds - CRZ IA","Turtle Nesting Grounds - CRZ IA"],
+          "blue",
+          "black"
+        ],
+        "fill-color": [
+          "match",
+          [
+            "get",
+            "crz_class"
+          ],
+          "Archaeological and heritage sites - CRZ IA",
+          "red",
+          "Mangroves - CRZ IA",
+          "green",
+          "Mudflats - CRZ IA",
+          "brown",
+          "Sand Dunes - CRZ IA",
+          "orange",
+          "Salt Marsh - CRZ IA",
+          "deepskyblue",
+          "Corals and coral reefs - CRZ IA",
+          "magenta",
+          ["Nesting Grounds of Birds - CRZ IA","Turtle Nesting Grounds - CRZ IA"],
           "blue",
           "black"
         ]

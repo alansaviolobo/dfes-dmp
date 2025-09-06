@@ -716,20 +716,6 @@ export class MapFeatureStateManager extends EventTarget {
         const layerId = layerConfig.id;
         const matchingIds = [];
         
-        // Debug logging to understand what layers exist
-        if (this._isDebug) {
-            const allLayerIds = style.layers.map(l => l.id);
-            const relevantLayers = allLayerIds.filter(id => 
-                id.includes(layerId) || 
-                id.includes('vector-layer') || 
-                id.includes('tms-layer') ||
-                id === layerId
-            );
-            console.debug(`[StateManager] All layers for ${layerId}:`, allLayerIds);
-            console.debug(`[StateManager] Relevant layers for ${layerId}:`, relevantLayers);
-            console.debug(`[StateManager] Looking for layer config:`, layerConfig);
-        }
-        
         // Strategy 1: Direct ID match (HIGHEST PRIORITY)
         const directMatches = style.layers.filter(l => l.id === layerId).map(l => l.id);
         matchingIds.push(...directMatches);
