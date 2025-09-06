@@ -249,7 +249,7 @@
           "text-transform": "none",
           "text-offset": [
             0,
-            0
+            -0.4
           ]
         },
         "circle": {
