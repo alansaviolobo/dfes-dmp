@@ -357,6 +357,76 @@
       }
     },
     {
+      "id": "crz-1a",
+      "title": "CRZ-1A Protected Areas",
+      "description": "Protected coastal features of mangroves, sand dunes, mudflats and salt pans falling under CRZ-1A zone from Goa CZMP. <br><b>Note:</b> Not yet verified against certified <a href='https://drive.google.com/drive/folders/1cwGn6MvguWpMLEYAaEbDAIE9BZdfW8re?usp=share_link'>maps by the Department of Water Resources</a> and <a href='https://drive.google.com/drive/folders/1_X_7oUZZ7o7MGu32_Koce1PU9AbfUGXt?usp=sharing'>lists by the Department of Agriculture</a> , Government of Goa - Collected via RTI by <a href='https://goafoundation.org/'>Goa Foundation</a> <br><small>The ground truthing of the Marginal bunds, sluice gates and the defended Khazan lands was carried out by the Water Resources Department, along with the Members of Bio Diversity, Surveyors of DSLR. Soil Conservation Engineers of the Agriculture department, Forest officials.</p><p>It is further certified that the ground truthing is carried with details enumerated on the Toposheets published by the Survey of India in the year 1964, Cadastral village maps published by the land survey department in the year 1972-76. The Khazan land, bunds sluice gates mapped by the village Panchayat were also used utilised for identification and ground truthing. Thus, the Bunds/Sluice gates and Khazan Lands shown in this map are verified and it is certified that the Bunds and Sluice gates shown in this map exist now and were constructed in the past, prior to the date of notification issued vide S. O. 114(E) dated 19th February 1999.</small>",
+      "headerImage": "assets/map-layers/map-layer-crz.png",
+      "type": "vector",
+      "url": "https://indianopenmaps.fly.dev/not-so-open/coastal/regulation-zones/parivesh/{z}/{x}/{y}.pbf",
+      "sourceLayer": "Bharatmaps_Parivesh_CRZ_Regulatory_Zones",
+      "maxzoom": 14,
+      "attribution": "<a href='https://www.czma.goa.gov.in/ViewDoc.aspx'>Final CZMP, Goa Coastal Zone Management Authority</a> - via <a href='https://github.com/ramSeraph/indian_admin_boundaries/releases/tag/coastal'>Datameet Community</a>",
+      "filter": [
+        "!",
+        [
+          "in",
+          [
+            "get",
+            "layer"
+          ],
+          [
+            "literal",
+            ["CRZ_IV_A", "CRZ_IV_B","Nautical_Miles_12_From_HTL"]
+          ]
+        ]
+      ],
+      "style": {
+        "line-color": "#006400",
+        "line-width": [
+          "match",
+          [
+            "get",
+            "layer"
+          ],
+          "CRZ_I_A",
+          3,
+          0.1
+        ],
+        "fill-color": [
+          "match",
+          [
+            "get",
+            "layer"
+          ],
+          "CRZ_I_A",
+          "#859664",
+          "CRZ_I_B",
+          "gold",
+          "CRZ_II",
+          "pink",
+          "NDZ",
+          "blue",
+          "CRZ_Poly",
+          "blue",
+          "CRZ_200m_to_500m_from_HTL",
+          "yellow",
+          "Nautical_Miles_12_From_CRZ_IV_A",
+          "lightblue",
+          "Fishing_Wards",
+          "cyan",
+          "black"
+        ]
+      },
+      "inspect": {
+        "id": "layer",
+        "title": "Zone",
+        "label": "layer",
+        "fields": [
+          "crz_class"
+        ]
+      }
+    },
+    {
       "id": "osm",
       "initiallyChecked": true
     },

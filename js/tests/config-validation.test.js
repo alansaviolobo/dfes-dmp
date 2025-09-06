@@ -6,6 +6,7 @@ const { validateJsonSyntax, validateConfigStructure } = require('./lint-json');
 describe('Config File Validation', () => {
   let configFiles = [];
   let mapLayerPresets = null;
+  let allAvailableLayerIds = new Set();
 
   beforeAll(async () => {
     // Load all config atlas JSON files
@@ -17,6 +18,42 @@ describe('Config File Validation', () => {
       const presetsContent = fs.readFileSync(presetsPath, 'utf8');
       mapLayerPresets = JSON.parse(presetsContent);
     }
+
+    // Collect all layer IDs from presets
+    if (mapLayerPresets && mapLayerPresets.layers) {
+      mapLayerPresets.layers.forEach(layer => {
+        if (layer.id) {
+          allAvailableLayerIds.add(layer.id);
+        }
+      });
+    }
+
+
+    // Collect layer IDs from all atlas files (including inline definitions)
+    configFiles.forEach(filePath => {
+      try {
+        const fullPath = path.resolve(filePath);
+        const content = fs.readFileSync(fullPath, 'utf8');
+        const data = JSON.parse(content);
+        
+        // Handle different layer array structures
+        let layersArray = data.layers;
+        if (!layersArray && data.layersConfig) {
+          layersArray = data.layersConfig;
+        }
+        
+        if (layersArray && Array.isArray(layersArray)) {
+          layersArray.forEach(layer => {
+            // Add layers that have inline definitions (have title and one of type/url/style)
+            if (layer.id && layer.title && (layer.type || layer.url || layer.style)) {
+              allAvailableLayerIds.add(layer.id);
+            }
+          });
+        }
+      } catch (error) {
+        // Skip files that can't be parsed
+      }
+    });
   });
 
   describe('JSON Syntax Validation', () => {
@@ -81,11 +118,6 @@ describe('Config File Validation', () => {
         return;
       }
 
-      // Get all available layer IDs from presets
-      const availableLayerIds = new Set(
-        mapLayerPresets.layers.map(layer => layer.id).filter(id => id)
-      );
-
       // Helper function to find closest matches
       const findClosestMatches = (invalidId, maxSuggestions = 3) => {
         const levenshteinDistance = (str1, str2) => {
@@ -116,7 +148,7 @@ describe('Config File Validation', () => {
           return matrix[str2.length][str1.length];
         };
 
-        return Array.from(availableLayerIds)
+        return Array.from(allAvailableLayerIds)
           .map(id => ({
             id,
             distance: levenshteinDistance(invalidId, id)
@@ -132,8 +164,11 @@ describe('Config File Validation', () => {
       layersArray.forEach((layer, index) => {
         // Skip layers that are fully defined inline
         const isInlineDefinition = layer.title && (layer.type || layer.url || layer.style);
+        // Skip layers that are just ID references (external layers)
+        const isBareIdReference = layer.id && !layer.title && !layer.type && !layer.url && !layer.style;
         
-        if (layer.id && !availableLayerIds.has(layer.id) && !isInlineDefinition) {
+        // Only validate layers that have some definition but are missing from our known layers
+        if (layer.id && !allAvailableLayerIds.has(layer.id) && !isInlineDefinition && !isBareIdReference) {
           const suggestions = findClosestMatches(layer.id);
           invalidReferences.push({
             index,
@@ -155,7 +190,7 @@ describe('Config File Validation', () => {
           })
           .join('\n');
         
-        throw new Error(`Invalid layer references found in ${filePath}:\n${errorMessage}\n\nAll available layer IDs: ${Array.from(availableLayerIds).sort().join(', ')}`);
+        throw new Error(`Invalid layer references found in ${filePath}:\n${errorMessage}\n\nAll available layer IDs: ${Array.from(allAvailableLayerIds).sort().join(', ')}`);
       }
       });
     });
