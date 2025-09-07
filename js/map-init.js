@@ -595,7 +595,7 @@ async function initializeMap() {
 
     // Add attribution control
     map.addControl(new mapboxgl.AttributionControl({
-        compact: true
+        compact: false
     }), 'bottom-right');
 
             // Setup proper cursor handling for map dragging

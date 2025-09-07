@@ -437,43 +437,28 @@ export class MapFeatureControl {
             flex-wrap: wrap;
         `;
 
-        // Create drawer toggle switch
-        this._drawerSwitch = document.createElement('sl-switch');
-        this._drawerSwitch.size = 'small';
-        this._drawerSwitch.style.cssText = `
-            --sl-color-primary-600: #3b82f6;
-            --sl-color-primary-500: #3b82f6;
-        `;
-        
-        // Add click handler to toggle drawer
-        this._drawerSwitch.addEventListener('sl-change', (e) => {
-            this._toggleLayerDrawer();
-        });
-
-        // Create label for the drawer switch with icon
-        const drawerSwitchLabel = document.createElement('label');
-        drawerSwitchLabel.style.cssText = `
-            font-size: 12px;
-            color: #6b7280;
+        // Create add layer button
+        this._addLayerBtn = document.createElement('sl-button');
+        this._addLayerBtn.size = 'small';
+        this._addLayerBtn.variant = 'default';
+        this._addLayerBtn.style.cssText = `
+            --sl-color-primary-600: #059669;
+            --sl-color-primary-500: #10b981;
+            font-size: 11px;
             font-weight: 500;
-            cursor: pointer;
-            user-select: none;
-            display: flex;
-            align-items: center;
-            gap: 4px;
         `;
         
-        const layersIcon = document.createElement('sl-icon');
-        layersIcon.name = 'layout-sidebar-inset';
-        layersIcon.style.fontSize = '12px';
+        const addIcon = document.createElement('sl-icon');
+        addIcon.name = 'plus';
+        addIcon.setAttribute('slot', 'prefix');
+        addIcon.style.fontSize = '12px';
         
-        drawerSwitchLabel.appendChild(layersIcon);
-        drawerSwitchLabel.appendChild(document.createTextNode('Layer List'));
+        this._addLayerBtn.appendChild(addIcon);
+        this._addLayerBtn.appendChild(document.createTextNode('Add Map Layer'));
         
-        // Make label clickable
-        drawerSwitchLabel.addEventListener('click', () => {
-            this._drawerSwitch.checked = !this._drawerSwitch.checked;
-            this._toggleLayerDrawer();
+        // Add click handler to open layer drawer
+        this._addLayerBtn.addEventListener('click', (e) => {
+            this._openLayerDrawer();
         });
 
         // Create inspect mode toggle switch - hide on touch devices
@@ -548,8 +533,7 @@ export class MapFeatureControl {
         });
 
         // Add all controls to the actions section
-        actionsSection.appendChild(this._drawerSwitch);
-        actionsSection.appendChild(drawerSwitchLabel);
+        actionsSection.appendChild(this._addLayerBtn);
         
         // Only add tooltip controls and separators on non-touch devices
         if (!isTouchDevice) {
@@ -576,14 +560,7 @@ export class MapFeatureControl {
      * Update drawer switch state based on centralized manager
      */
     _updateDrawerSwitch() {
-        if (!this._drawerSwitch) return;
-        
-        const isOpen = drawerStateManager && drawerStateManager.isOpen() || false;
-        
-        // Only update if the switch state differs from the drawer state
-        if (this._drawerSwitch.checked !== isOpen) {
-            this._drawerSwitch.checked = isOpen;
-        }
+        // No longer needed since we use an action button instead of a toggle
     }
 
     /**
@@ -593,7 +570,7 @@ export class MapFeatureControl {
         // Listen to drawer state changes from the centralized manager
         this._drawerStateListener = (event) => {
             const { isOpen, eventType } = event.detail;
-            this._updateDrawerSwitch(); // Update switch state based on drawer state
+            // No longer need to update switch state since we use an action button
         };
 
         // Listen to the global drawer state change event
@@ -601,10 +578,10 @@ export class MapFeatureControl {
     }
 
     /**
-     * Toggle the layer drawer using centralized manager
+     * Open the layer drawer using centralized manager
      */
-    _toggleLayerDrawer() {
-        drawerStateManager.toggle();
+    _openLayerDrawer() {
+        drawerStateManager.open();
     }
 
     /**
