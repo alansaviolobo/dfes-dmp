@@ -105,7 +105,7 @@ export class TimeControl {
             css: {
                 position: 'absolute',
                 top: '40px',
-                right: '0',
+                right: '10px',
                 width: '300px',
                 backgroundColor: 'white',
                 border: '1px solid #ccc',

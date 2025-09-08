@@ -1,13 +1,13 @@
 /**
  * MapFeatureControl - Enhanced version using event-driven architecture
  * 
- * This control displays a list of active layers in the bottom right corner of the map.
+ * This control displays a toggle button and panel for layer inspection.
  * When users interact with features, it shows the feature information under the relevant layer
  * instead of using overlapping popups.
  * 
  * Now uses centralized MapFeatureStateManager for all state management.
  * Updated to use config JSON as source of truth for active layers.
- * UI completely rewritten to use Shoelace details components with nested structure.
+ * UI uses a panel-based approach similar to 3D control with Shoelace details components.
  */
 
 import { drawerStateManager } from './drawer-state-manager.js';
@@ -21,7 +21,6 @@ export class MapFeatureControl {
             maxHeight: '50vh', // Use viewport height instead of fixed pixels
             maxWidth: '350px',
             minWidth: '250px',
-            collapsed: false,
             showHoverPopups: true, // New option to control hover popups
             inspectMode: false, // Default inspect mode off
             ...options
@@ -31,9 +30,8 @@ export class MapFeatureControl {
         this._stateManager = null;
         this._container = null;
         this._layersContainer = null;
-        this._mainDetails = null; // Main "Map Layers" details component
+        this._panel = null; // Main panel component
         this._drawerSwitch = null; // Drawer toggle switch
-        this._isCollapsed = this.options.collapsed;
         this._config = null; // Store config reference
         
         // UI optimization - only re-render changed layers
@@ -322,85 +320,102 @@ export class MapFeatureControl {
     }
 
     /**
-     * Create the main container with Shoelace details structure
+     * Create the main container with toggle button similar to 3D control
      */
     _createContainer() {
         this._container = document.createElement('div');
-        this._container.className = 'mapboxgl-ctrl mapboxgl-ctrl-group map-feature-control';
+        this._container.className = 'mapboxgl-ctrl mapboxgl-ctrl-group';
         
-        // Calculate responsive max height based on screen height
-        const screenHeight = window.innerHeight;
-        const maxHeightValue = this.options.maxHeight;
-        
-        // Handle both pixel and viewport height values
-        let responsiveMaxHeight;
-        if (maxHeightValue.includes('vh')) {
-            // Extract viewport height percentage
-            const vhPercentage = parseFloat(maxHeightValue) / 100;
-            responsiveMaxHeight = screenHeight * vhPercentage;
-        } else {
-            // Handle pixel values
-            const pixelValue = parseInt(maxHeightValue);
-            responsiveMaxHeight = Math.min(screenHeight * 0.5, pixelValue);
-        }
-        
-        // Add custom styles for the container
-        this._container.style.cssText = `
-            background: #666;
-            box-shadow: 0 0 0 2px rgba(0,0,0,.1);
-            max-height: ${responsiveMaxHeight}px;
-            max-width: ${this.options.maxWidth};
-            min-width: ${this.options.minWidth};
-            overflow: hidden;
+        // Create button
+        const button = document.createElement('button');
+        button.className = 'mapboxgl-ctrl-icon';
+        button.type = 'button';
+        button.setAttribute('aria-label', 'Layer Inspector');
+        button.style.cssText = `
             display: flex;
-            flex-direction: column;
-            border-radius: 4px;
+            align-items: center;
+            justify-content: center;
+            width: 30px;
+            height: 30px;
+            font-size: 12px;
+            font-weight: bold;
+            color: #666;
         `;
 
-        // Create main details component for "Map Layers"
-        this._createMainDetails();
+        // Create icon text
+        const iconText = document.createElement('span');
+        iconText.textContent = 'ℹ';
+        iconText.style.cssText = `
+            display: block;
+            line-height: 1;
+            font-size: 16px;
+        `;
+
+        button.appendChild(iconText);
         
-        this._container.appendChild(this._mainDetails);
+        // Add event handlers
+        button.addEventListener('click', () => {
+            this._togglePanel();
+        });
+        
+        button.addEventListener('mouseenter', () => {
+            button.style.backgroundColor = '#f0f0f0';
+        });
+        
+        button.addEventListener('mouseleave', () => {
+            button.style.backgroundColor = '#ffffff';
+        });
+
+        this._container.appendChild(button);
+
+        // Create panel
+        this._createPanel();
     }
 
     /**
-     * Create the main "Map Layers" details component with drawer switch
+     * Create panel similar to 3D control
      */
-    _createMainDetails() {
-        this._mainDetails = document.createElement('sl-details');
-        this._mainDetails.className = 'map-layers-main';
-        this._mainDetails.open = !this._isCollapsed;
-        
-        // Set custom styles for the main details
-        this._mainDetails.style.cssText = `
-            background: transparent;
-            border: none;
-            border-radius: 0;
-            overflow: visible;
+    _createPanel() {
+        this._panel = document.createElement('div');
+        this._panel.className = 'map-feature-panel';
+        this._panel.style.cssText = `
+            position: absolute;
+            top: 40px;
+            left: 10px;
+            width: 350px;
+            max-width: 90vw;
+            max-height: 70vh;
+            background-color: white;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            padding: 15px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            z-index: 1000;
+            display: block;
+            font-size: 14px;
+            overflow: hidden;
         `;
 
-        // Create simple summary with just the title
-        const summary = document.createElement('div');
-        summary.setAttribute('slot', 'summary');
-        summary.className = 'map-layers-summary';
-        summary.style.cssText = `
-            padding: 0px;
-            background: transparent;
-            color: #1f2937;
-            font-size: 14px;
-            font-weight: 600;
-            cursor: pointer;
-            `;
+        // Create panel content
+        const content = document.createElement('div');
+        content.style.cssText = `
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+        `;
 
-        // Create title text
-        const title = document.createElement('span');
-        title.textContent = 'Map Layers';
-        summary.appendChild(title);
-        this._mainDetails.appendChild(summary);
+        // Title
+        const title = document.createElement('h3');
+        title.textContent = 'Layer Inspector';
+        title.style.cssText = `
+            margin: 0 0 15px 0;
+            font-size: 16px;
+            font-weight: bold;
+            color: #333;
+        `;
 
         // Create actions section for main details
         const actionsSection = this._createMainDetailsActions();
-        this._mainDetails.appendChild(actionsSection);
 
         // Create layers container
         this._layersContainer = document.createElement('div');
@@ -408,21 +423,73 @@ export class MapFeatureControl {
         this._layersContainer.style.cssText = `
             flex: 1;
             overflow-y: auto;
-            max-height: calc(50vh - 90px);
             background: transparent;
             padding: 0;
+            margin-top: 10px;
         `;
-        
-        this._mainDetails.appendChild(this._layersContainer);
 
-        // Add toggle handler for main details
-        this._mainDetails.addEventListener('sl-toggle', (e) => {
-            this._isCollapsed = !this._mainDetails.open;
+        // Close button
+        const closeButton = document.createElement('button');
+        closeButton.textContent = '×';
+        closeButton.style.cssText = `
+            position: absolute;
+            top: 5px;
+            right: 10px;
+            background: none;
+            border: none;
+            font-size: 18px;
+            cursor: pointer;
+            color: #999;
+            padding: 0;
+            width: 20px;
+            height: 20px;
+            line-height: 1;
+        `;
+
+        closeButton.addEventListener('click', () => {
+            this._hidePanel();
         });
+
+        // Assemble panel
+        content.appendChild(title);
+        content.appendChild(actionsSection);
+        content.appendChild(this._layersContainer);
+        this._panel.appendChild(closeButton);
+        this._panel.appendChild(content);
+
+        // Close panel when clicking outside (but not on map features)
+        document.addEventListener('click', (e) => {
+            // Don't close panel if clicking on the panel itself, control button, or map canvas
+            if (!e.target.closest('.map-feature-panel, .mapboxgl-ctrl-icon, .mapboxgl-canvas-container')) {
+                this._hidePanel();
+            }
+        });
+
+        // Add panel to map container
+        this._map.getContainer().appendChild(this._panel);
     }
 
     /**
-     * Create actions section for main details with drawer toggle, inspect mode, and clear selection
+     * Toggle panel visibility
+     */
+    _togglePanel() {
+        if (this._panel.style.display === 'none' || this._panel.style.display === '') {
+            this._showPanel();
+        } else {
+            this._hidePanel();
+        }
+    }
+
+    _showPanel() {
+        this._panel.style.display = 'block';
+    }
+
+    _hidePanel() {
+        this._panel.style.display = 'none';
+    }
+
+    /**
+     * Create actions section with drawer toggle, inspect mode, and clear selection
      */
     _createMainDetailsActions() {
         const actionsSection = document.createElement('div');
@@ -612,13 +679,20 @@ export class MapFeatureControl {
     }
 
     /**
+     * Check if mobile screen
+     */
+    _isMobileScreen() {
+        return window.innerWidth <= 768 || ('ontouchstart' in window);
+    }
+
+    /**
      * Update clear selection button visibility based on whether any layers have selections
      */
     _updateClearSelectionButtonVisibility() {
         if (!this._clearSelectionBtn) return;
         
         // Check if any layer elements have the 'has-selection' class
-        const hasSelections = this._mainDetails.querySelector('.has-selection') !== null;
+        const hasSelections = this._layersContainer.querySelector('.has-selection') !== null;
         
         if (hasSelections) {
             this._clearSelectionBtn.style.display = 'inline-flex';
@@ -760,10 +834,9 @@ export class MapFeatureControl {
             }
         }
         
-        // Also ensure the main control is expanded
-        if (this._mainDetails) {
-            this._mainDetails.open = true;
-            this._isCollapsed = false;
+        // Ensure the panel is visible when a feature is selected
+        if (this._panel && this._panel.style.display === 'none') {
+            this._showPanel();
         }
         
         // Close the layer list drawer to prevent it from obscuring feature details
@@ -2201,7 +2274,7 @@ export class MapFeatureControl {
         modal.style.cssText = `
             position: fixed;
             top: 0;
-            left: 0;
+            left: 10px;
             right: 0;
             bottom: 0;
             background-color: rgba(0, 0, 0, 0.75);
@@ -2378,7 +2451,7 @@ export class MapFeatureControl {
             overlay.style.cssText = `
                 position: absolute;
                 top: 0;
-                left: 0;
+                left: 10px;
                 right: 0;
                 bottom: 0;
                 background: rgba(0,0,0,0.4);

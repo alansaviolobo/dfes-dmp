@@ -119,7 +119,7 @@ export class Terrain3DControl {
             css: {
                 position: 'absolute',
                 top: '40px',
-                right: '0',
+                right: '10px',
                 width: '250px',
                 backgroundColor: 'white',
                 border: '1px solid #ccc',
