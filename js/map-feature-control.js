@@ -395,6 +395,7 @@ export class MapFeatureControl {
             font-size: 14px;
             overflow: hidden;
         `;
+        
 
         // Create panel content
         const content = document.createElement('div');
@@ -460,12 +461,15 @@ export class MapFeatureControl {
         this._panel.appendChild(content);
 
         // Close panel when clicking outside (but not on map features)
-        document.addEventListener('click', (e) => {
-            // Don't close panel if clicking on the panel itself, control button, or map canvas
-            if (!e.target.closest('.map-feature-panel, .mapboxgl-ctrl-icon, .mapboxgl-canvas-container')) {
-                this._hidePanel();
-            }
-        });
+        // Use a timeout to avoid immediate hiding due to event bubbling
+        setTimeout(() => {
+            document.addEventListener('click', (e) => {
+                // Don't close panel if clicking on the panel itself, control button, or map canvas
+                if (!e.target.closest('.map-feature-panel, .mapboxgl-ctrl-icon, .mapboxgl-canvas-container')) {
+                    this._hidePanel();
+                }
+            });
+        }, 100);
 
         // Add panel to map container
         this._map.getContainer().appendChild(this._panel);
@@ -475,7 +479,7 @@ export class MapFeatureControl {
      * Toggle panel visibility
      */
     _togglePanel() {
-        if (this._panel.style.display === 'none' || this._panel.style.display === '') {
+        if (this._panel.style.display === 'none') {
             this._showPanel();
         } else {
             this._hidePanel();
@@ -483,7 +487,7 @@ export class MapFeatureControl {
     }
 
     _showPanel() {
-        this._panel.style.display = 'block';
+        this._panel.style.display = 'flex';
     }
 
     _hidePanel() {
