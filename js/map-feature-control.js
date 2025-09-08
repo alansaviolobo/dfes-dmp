@@ -388,7 +388,6 @@ export class MapFeatureControl {
             background-color: white;
             border: 1px solid #ccc;
             border-radius: 4px;
-            padding: 15px;
             box-shadow: 0 2px 4px rgba(0,0,0,0.1);
             z-index: 1000;
             display: flex;
@@ -410,7 +409,7 @@ export class MapFeatureControl {
         const title = document.createElement('h3');
         title.textContent = 'Layer Inspector';
         title.style.cssText = `
-            margin: 0 0 15px 0;
+            margin: 10px 0 5px 5px;
             font-size: 16px;
             font-weight: bold;
             color: #333;
@@ -1454,13 +1453,16 @@ export class MapFeatureControl {
             document.head.appendChild(styleElement);
         }
 
-        // Add CSS rule for this specific layer
+        // Add CSS rule for this specific layer - target the summary div directly
         const cssRule = `
-.map-feature-control .layer-details[data-layer-id="${layerId}"]::part(header) {
+.layer-details[data-layer-id="${layerId}"] .layer-summary {
     background-image: linear-gradient(to right, rgba(255,255,255,0.9), rgba(255,255,255,0.5)), url('${imageUrl}') !important;
     background-size: cover;
     background-position: center;
     background-repeat: no-repeat;
+    padding: 8px 12px !important;
+    width: 100% !important;
+    box-sizing: border-box !important;
 }`;
 
         // Append the rule to the style element

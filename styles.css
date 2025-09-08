@@ -1115,6 +1115,7 @@ header .icon-button {
 }
 sl-details::part(header) {
     opacity: 0.9;
+    padding: 0px;
 }
 sl-details::part(header):hover {
     opacity: 1;
@@ -2442,7 +2443,7 @@ sl-menu {
 }
 
 .map-feature-control .layer-details::part(header) {
-    padding: 0px 6px;
+    padding: 0;
     background: rgba(0, 0, 0, 0.02);
     border: none;
     border-top: 1px solid #fafafa;
