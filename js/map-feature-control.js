@@ -391,7 +391,8 @@ export class MapFeatureControl {
             padding: 15px;
             box-shadow: 0 2px 4px rgba(0,0,0,0.1);
             z-index: 1000;
-            display: block;
+            display: flex;
+            flex-direction: column;
             font-size: 14px;
             overflow: hidden;
         `;
@@ -401,7 +402,8 @@ export class MapFeatureControl {
         content.style.cssText = `
             display: flex;
             flex-direction: column;
-            height: 100%;
+            flex: 1;
+            min-height: 0;
         `;
 
         // Title
@@ -426,6 +428,7 @@ export class MapFeatureControl {
             background: transparent;
             padding: 0;
             margin-top: 10px;
+            min-height: 0;
         `;
 
         // Close button
