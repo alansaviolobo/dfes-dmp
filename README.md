@@ -11,7 +11,7 @@ amche-atlas is currently deployed at the following urls:
 
 `amche` translates to 'ours' in the Indian language of [Konkani](https://en.wikipedia.org/wiki/Konkani_language), the native language in Goa.
 
-**admche.in**
+**amche.in**
 
 This is a citizen maintained map portal for the state of Goa, India that realizes the vision of [The National Geospatial Policy, 2022](https://dst.gov.in/sites/default/files/National%20Geospatial%20Policy.pdf).
 
