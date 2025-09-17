@@ -35,6 +35,20 @@ export class MapFeatureStateManager extends EventTarget {
         // Set up map change listeners to handle dynamic layer additions
         this._setupMapChangeListeners();
         
+        // Update the flag to track Cmd/Ctrl key state
+        this._isCmdCtrlPressed = false;
+
+        // Update event listeners for keydown and keyup to track Cmd/Ctrl key state
+        document.addEventListener('keydown', (event) => {
+            if (event.key === 'Meta' || event.key === 'Control') {
+                this._isCmdCtrlPressed = true;
+            }
+        });
+        document.addEventListener('keyup', (event) => {
+            if (event.key === 'Meta' || event.key === 'Control') {
+                this._isCmdCtrlPressed = false;
+            }
+        });
     }
 
     /**
@@ -295,7 +309,7 @@ export class MapFeatureStateManager extends EventTarget {
             this.clearAllSelections();
             return;
         }
-        
+
         // Get currently selected features before clearing for the event
         const previouslySelected = Array.from(this._selectedFeatures).map(compositeKey => {
             const featureState = this._featureStates.get(compositeKey);
@@ -308,37 +322,45 @@ export class MapFeatureStateManager extends EventTarget {
             }
             return null;
         }).filter(Boolean);
-        
-        // Clear existing selections FIRST (to emit proper clear events)
+
+        // If Cmd/Ctrl is not pressed, clear existing selections FIRST (to emit proper clear events)
         const clearedFeatures = [];
-        this._selectedFeatures.forEach(compositeKey => {
-            const featureState = this._featureStates.get(compositeKey);
-            if (featureState) {
-                featureState.isSelected = false;
-                
-                // Remove mapbox feature state
-                const featureId = this._getFeatureId(featureState.feature);
-                this._removeMapboxFeatureState(featureId, featureState.layerId, 'selected');
-                
-                clearedFeatures.push({
-                    featureId,
-                    layerId: featureState.layerId,
-                    feature: featureState.feature
-                });
-            }
-        });
-        
-        this._selectedFeatures.clear();
-        
+        if (!this._isCmdCtrlPressed) {
+            this._selectedFeatures.forEach(compositeKey => {
+                const featureState = this._featureStates.get(compositeKey);
+                if (featureState) {
+                    featureState.isSelected = false;
+
+                    // Remove mapbox feature state
+                    const featureId = this._getFeatureId(featureState.feature);
+                    this._removeMapboxFeatureState(featureId, featureState.layerId, 'selected');
+
+                    clearedFeatures.push({
+                        featureId,
+                        layerId: featureState.layerId,
+                        feature: featureState.feature
+                    });
+                }
+            });
+
+            this._selectedFeatures.clear();
+        }
+
         // Process clicked features and select them
         const newSelections = [];
-        
+
         clickedFeatures.forEach(({ feature, layerId, lngLat }) => {
             if (!feature || !layerId) return;
-            
+
             const featureId = this._getFeatureId(feature);
             const compositeKey = this._getCompositeKey(layerId, featureId);
-            
+
+            // Toggle selection if Cmd/Ctrl is pressed
+            if (this._isCmdCtrlPressed && this._selectedFeatures.has(compositeKey)) {
+                this._deselectFeature(featureId, layerId);
+                return;
+            }
+
             // Update feature state
             this._updateFeatureState(compositeKey, {
                 feature,
@@ -347,23 +369,23 @@ export class MapFeatureStateManager extends EventTarget {
                 lngLat,
                 timestamp: Date.now()
             });
-            
+
             // Add to selected features set
             this._selectedFeatures.add(compositeKey);
-            
+
             // Set mapbox feature state for visual feedback
             this._setMapboxFeatureState(featureId, layerId, { selected: true });
-            
+
             newSelections.push({
                 featureId,
                 layerId,
                 feature,
                 lngLat
             });
-            
+
             // Removed verbose selection logging
         });
-        
+
         // Emit appropriate events based on number of features clicked
         if (newSelections.length === 1) {
             // Single feature click
@@ -379,7 +401,7 @@ export class MapFeatureStateManager extends EventTarget {
                 clearedFeatures
             });
         }
-        
+
         // Removed verbose selection summary logging
     }
 
@@ -1091,7 +1113,11 @@ export class MapFeatureStateManager extends EventTarget {
         this._registeredLayers.clear();
         this._retryAttempts.clear();
         this._eventListenerRefs.clear();
-        
+
+        // Remove keydown and keyup event listeners
+        document.removeEventListener('keydown', this._keydownListener);
+        document.removeEventListener('keyup', this._keyupListener);
+
         console.debug('[StateManager] Disposed');
     }
 
