@@ -155,8 +155,14 @@ def parse_owners_raw_field(owners_raw_text):
     if tenants_match:
         tenants_text = tenants_match.group(1).strip()
         
-        # Split by commas or common separators
-        tenant_parts = re.split(r'[,;]\s*|\s+and\s+', tenants_text)
+        # Handle numbered lists (1)., 2)., etc.) first, then fallback to comma/semicolon separation
+        if re.search(r'\d+\)\.\s*', tenants_text):
+            # Split by numbered items
+            tenant_parts = re.split(r'\d+\)\.\s*', tenants_text)
+        else:
+            # Split by commas or common separators
+            tenant_parts = re.split(r'[,;]\s*|\s+and\s+', tenants_text)
+        
         tenant_names = []
         
         for part in tenant_parts:
@@ -182,10 +188,10 @@ def parse_owners_raw_field(owners_raw_text):
     
     # Remove standard field patterns
     standard_patterns = [
-        r'Taluka Name\s*:[^\\n]*',
-        r'Village Name\s*:[^\\n]*', 
-        r'Subdiv No\s*:[^\\n]*',
-        r'Total Area\s*:[^\\n]*',
+        r'Taluka Name\s*:[^:]*?(?=\s+Village Name|Subdiv No|Occupants Names|Tenants\s+names|Total Area|\Z)',
+        r'Village Name\s*:[^:]*?(?=\s+Subdiv No|Occupants Names|Tenants\s+names|Total Area|\Z)', 
+        r'Subdiv No\s*:[^:]*?(?=\s+Occupants Names|Tenants\s+names|Total Area|\Z)',
+        r'Total Area\s*:[^:]*?(?=\s*[-=]{3,}|\Z)',
         r'Occupants Names\s*:.*?(?=Tenants\s+names\s*:|Total Area\s*:|-------|---------|\Z)',
         r'Tenants\s+names\s*:.*?(?=Total Area\s*:|-------|---------|\Z)',
         r'[-=]{3,}',
@@ -355,6 +361,9 @@ def load_and_validate_data(file_path):
         df['is_government'] = False
         print("No government plots identified (no 'Owners Raw' column found)")
     
+    # Drop duplicate rows
+    df.drop_duplicates(inplace=True)
+    print(f"Removed duplicates, {len(df)} records remaining")
     
     return df
 
