@@ -1,0 +1,320 @@
+{
+  "name": "Mhadei Watershed Atlas",
+  "areaOfInterest": "Goa, India",
+  "version": "0.1.0",
+  "url": "https://github.com/publicmap/amche-goa/blob/main/config/index.atlas.json",
+  "map": {
+    "center": [
+      73.8,
+      15.47
+    ],
+    "zoom": 11.4
+  },
+  "layers": [
+    {
+      "id": "mapbox-streets",
+      "title": "Street Map रस्त्याचो नकासो"
+    },
+    {
+      "id": "rivers"
+    },
+    {
+      "id": "water-bodies"
+    },
+    {
+      "id": "wetland"
+    },
+    {
+      "id": "mhadei-watershed",
+      "title": "Mhadei Watershed Boundaries",
+      "headerImage": "assets/map-layers/map-layer-watersheds.png",
+      "description": "Watershed Boundaries",
+      "type": "vector",
+      "url": "https://indianopenmaps.fly.dev/watersheds/wris/{z}/{x}/{y}.pbf",
+      "sourceLayer": "wris_watershed",
+      "maxzoom": 10,
+      "attribution": "<a href='https://indiawris.gov.in/wris/#/riverBasins'>India Water Resources Information System, Ministry of Jal Shakti</a> - Collected by <a href='https://datameet.org'>Datameet Community</a>",
+      "style": {
+        "fill-color": "rgba(0, 0, 0, 0)",
+        "line-color": "blue",
+        "line-width": [
+          "interpolate",
+          [
+            "linear"
+          ],
+          [
+            "zoom"
+          ],
+          12,
+          5,
+          18,
+          9
+        ]
+      },
+      "inspect": {
+        "id": "objectid",
+        "title": "Watershed Code",
+        "label": "wsconc"
+      }
+    },
+    {
+      "id": "micro-watersheds",
+      "title": "Micro Watershed Atlas of India",
+      "headerImage": "assets/map-layers/map-layer-micro-watersheds.png",
+      "description": "Micro Watershed Atlas with <a href='https://slusi.da.gov.in/mwa.pdf'>micro watershed code</a>",
+      "type": "vector",
+      "url": "https://indianopenmaps.fly.dev/micro-watersheds/priorities/slusi/{z}/{x}/{y}.pbf",
+      "sourceLayer": "SLUSI_Priority_MicroWatersheds",
+      "maxzoom": 10,
+      "attribution": "<a href='https://soilhealth.dac.gov.in/slusi-visualisation/'>Soil and Land Use Survey of India, Ministry of Agriculture and Farmers Welfare</a> - Collected by <a href='https://datameet.org'>Datameet Community</a>",
+      "style": {
+        "fill-color": [
+          "match",
+          [
+            "get",
+            "Priority"
+          ],
+          "Very High",
+          "rgba(255, 0, 0, 0.8)",
+          "High",
+          "rgba(255, 140, 0, 0.7)",
+          "Medium",
+          "rgba(255, 255, 0, 0.6)",
+          "Low",
+          "rgba(144, 238, 144, 0.5)",
+          "Very Low",
+          "rgba(0, 100, 0, 0.4)",
+          "rgba(128, 128, 128, 0.5)"
+        ]
+      },
+      "inspect": {
+        "id": "HYDRO_UNIT",
+        "title": "Micro Watershed Code",
+        "label": "HYDRO_UNIT",
+        "fields": [
+          "Priority"
+        ],
+        "fieldTitles": [
+          "Watershed Priority"
+        ]
+      }
+    },
+    {
+      "id": "forests"
+    },
+    {
+      "id": "esz"
+    },
+    {
+      "id": "wildlife-reserve"
+    },
+    {
+      "title": "Mhadei Project",
+      "description": "Construction Project Sites",
+      "headerImage": "assets/map-layers/map-layer-construction.png",
+      "type": "geojson",
+      "id": "mhadei-project",
+      "url": "https://gist.githubusercontent.com/planemad/841266d3a44935383860dcb4d3c8e322/raw/03002a2ea4f029c39ca22b8865552b94c10435d9/mhadei-project.geojson",
+      "attribution": "Collected by <a href='https://gist.github.com/planemad/841266d3a44935383860dcb4d3c8e322'>Amche Goa Community</a>",
+      "style": {
+        "line-color": "blue",
+        "fill-color": "blue",
+        "fill-opacity": [
+          "match",
+          [
+            "get",
+            "type"
+          ],
+          "reservoir",
+          0.6,
+          "catchment",
+          0.2,
+          0
+        ],
+        "line-width": 5,
+        "line-opacity": 0.5,
+        "text-color": "white",
+        "text-halo-color": "blue",
+        "text-halo-width": 2,
+        "text-size": 12
+      },
+      "inspect": {
+        "title": "Name",
+        "label": "name",
+        "fields": [
+          "type",
+          "description"
+        ],
+        "fieldTitles": [
+          "Type",
+          "Description"
+        ]
+      }
+    },
+    {
+      "id": "open-buildings",
+      "initiallyChecked": true
+    },
+    {
+      "title": "District",
+      "description": "Mask for the district of Goa.",
+      "headerImage": "assets/map-layers/map-layer-goa-districts.png",
+      "type": "vector",
+      "id": "goa-mask",
+      "url": "https://indianopenmaps.fly.dev/not-so-open/districts/lgd/{z}/{x}/{y}.pbf ",
+      "sourceLayer": "LGD_Districts",
+      "maxzoom": 10,
+      "attribution": "<a href='https://bharatmaps.gov.in/BharatMaps/Home/Map'>LGD/Bharatmaps</a> - Collected by <a href='https://github.com/ramSeraph/indian_admin_boundaries/releases/tag/districts'>Datameet Community:LGD_Districts</a>",
+      "initiallyChecked": true,
+      "style": {
+        "fill-color":[
+          "interpolate",
+          [
+            "linear"
+          ],
+          [
+            "zoom"
+          ],
+          0,
+          [
+            "case",
+            [
+              "==",
+              [
+                "get",
+                "stname"
+              ],
+              "GOA"
+            ],
+            "rgba(0, 0, 0, 0)",
+            "rgba(255, 255, 255, 1)"
+          ],
+          8,
+          [
+            "case",
+            [
+              "==",
+              [
+                "get",
+                "stname"
+              ],
+              "GOA"
+            ],
+            "rgba(0, 0, 0, 0)",
+            "rgba(255, 255, 255, 1)"
+          ],
+          12,
+          [
+            "case",
+            [
+              "==",
+              [
+                "get",
+                "stname"
+              ],
+              "GOA"
+            ],
+            "rgba(0, 0, 0, 0)",
+            "rgba(255, 255, 255, 0.1)"
+          ]
+        ],
+        "fill-opacity": [
+          "case",
+          [
+            "boolean",
+            [
+              "feature-state",
+              "selected"
+            ],
+            false
+          ],
+          0,
+          [
+            "boolean",
+            [
+              "feature-state",
+              "hover"
+            ],
+            false
+          ],
+          0.3,
+          0.5
+        ],
+        "line-color": "black",
+        "line-width": 0.2
+      }
+    },
+    
+    {
+      "title": "Wildlife Map of Goa",
+      "description": "Illustrated for <a href='https://www.mrugayaxpeditions.com/'>Mrugaya Xpeditions</a> by <a href='https://www.greenhumour.com/2023/06/the-wildlife-map-of-goa.html'>Rohan Chakravarty</a>.",
+      "source": "https://www.greenhumour.com/2023/06/the-wildlife-map-of-goa.html",
+      "dateDepicted": "2023",
+      "type": "tms",
+      "id": "goa-wildlife-map",
+      "url": "https://mapwarper.net/maps/tile/96197/{z}/{x}/{y}.png",
+      "style": {
+        "raster-opacity": [
+          "interpolate",
+          [
+            "linear"
+          ],
+          [
+            "zoom"
+          ],
+          6,
+          0.95,
+          10,
+          0.8,
+          13,
+          0.1
+        ]
+      },
+      "attribution": "© <a href='https://www.mrugayaxpeditions.com/'>Mrugaya Xpeditions</a>, <a href='https://www.greenhumour.com/2023/06/the-wildlife-map-of-goa.html'>Rohan Chakravarty</a> via <a href=\"https://mapwarper.net/maps/96197#Rectify_tab\" target=\"_blank\">Mapwarper</a>",
+      "headerImage": "assets/map-layers/map-layer-goa-wildlife-map.png",
+      "metadata": {
+        "title": "Wildlife Map of Goa",
+        "description": "Illustrated for Mrugaya Xpeditions by Rohan Chakravarty  ",
+        "source": "https://www.greenhumour.com/2023/06/the-wildlife-map-of-goa.html",
+        "attribution": "",
+        "dateDepicted": "2023",
+        "thumbnail": "https://mapwarper.net/uploads/96197/thumb/goa_biodiversity_map_final_web_1_copy.png",
+        "baseUrl": "https://mapwarper.net",
+        "mapId": "96197",
+        "originalUrl": "https://mapwarper.net/maps/96197#Rectify_tab",
+        "bbox": "73.582331,14.8063453,74.3893568,15.8940955"
+      },
+      "initiallyChecked": false
+    },
+    {
+      "initiallyChecked": true,
+      "id": "mapbox-satellite",
+      "type": "raster-style-layer",
+      "title": "Satellite Imagery",
+      "description": "Satellite imagery from Mapbox. See <a href='https://docs.mapbox.com/help/dive-deeper/imagery/'>Mapbox Satellite Imagery</a> for details.",
+      "headerImage": "assets/map-layers/map-layer-satellite.png",
+      "styleLayer": "satellite",
+      "style":{
+        "raster-contrast": 0.2,
+        "raster-saturation": 0.4,
+        "raster-brightness-min": [
+          "interpolate",
+          ["linear"],
+          ["zoom"],
+          8,
+          0.5,
+          16,
+          0.3
+        ],
+        "raster-brightness-max": [
+          "interpolate",
+          ["linear"],
+          ["zoom"],
+          8, 0.7,
+          16, 0.8
+        ],
+        "raster-opacity": 1
+      }
+          }
+    ]
+}
