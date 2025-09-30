@@ -8,6 +8,7 @@ import { permalinkHandler } from './permalink-handler.js';
 import { Terrain3DControl } from './3d-control.js';
 import { TimeControl } from './timeControl.js';
 import { StatePersistence } from './pwa/state-persistence.js';
+import { MapAttributionControl } from './map-attribution-control.js';
 
 // Function to get URL parameters
 function getUrlParameter(name) {
@@ -593,10 +594,15 @@ async function initializeMap() {
     // Make map accessible globally for debugging
     window.map = map;
 
-    // Add attribution control
-    map.addControl(new mapboxgl.AttributionControl({
-        compact: false
-    }), 'bottom-right');
+    // Add custom attribution control that handles formatting and removes duplicates
+    const attributionControl = new MapAttributionControl({
+        compact: false,
+        customAttribution: '<a href="https://onemapgoagis.goa.gov.in/map/" target="_blank" title="OneMapGoa GIS" aria-label="OneMapGoa GIS">OneMapGoa GIS</a> - Collected by <a href="https://datameet.org" target="_blank" title="Datameet Community" aria-label="Datameet Community">Datameet Community</a>'
+    });
+    map.addControl(attributionControl, 'bottom-right');
+    
+    // Make attribution control globally accessible
+    window.attributionControl = attributionControl;
 
             // Setup proper cursor handling for map dragging
     map.on('load', () => {
