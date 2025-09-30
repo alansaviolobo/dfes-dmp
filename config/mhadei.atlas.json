@@ -114,7 +114,7 @@
       "source": "https://forest.goa.gov.in/sites/default/files/2025-09/Management-Plan-of-Madei-Widllife-Sanctuary.pdf",
       "dateDepicted": "",
       "type": "tms",
-      "id": "mapwarper-97500",
+      "id": "mhadei-wls-zonation-map",
       "url": "https://mapwarper.net/maps/tile/97500/{z}/{x}/{y}.png",
       "style": {
         "raster-opacity": [
@@ -139,12 +139,12 @@
       "initiallyChecked": false
     },
     {
-      "title": "Proposed Tiger Reserve Goa",
+      "title": "Proposed Tiger Reserve for Goa (North)",
       "description": "Proposed Tiger Reserve Plan for Madei Wildlife Sanctuary, Bhagwan Mahaveer Wildlife Sanctuary & National Park, Mollem\r\nWildlife Sanctuary.\r\n\r\nShowing the location of all habitats, all weather roads, large habitations excluded from the proposed tiger reserve and household particulars inside & outside the proposed proposed Tiger\r\nReserve",
       "source": "",
       "dateDepicted": "",
       "type": "tms",
-      "id": "mapwarper-95676",
+      "id": "proposed-tiger-reserve",
       "url": "https://mapwarper.net/maps/tile/95676/{z}/{x}/{y}.png",
       "style": {
         "raster-opacity": [
@@ -167,7 +167,7 @@
       "headerImage": "https://mapwarper.net/uploads/95676/thumb/Proposed_TR_Map__1_.png",
       "bbox": "73.9288025,15.2009539,74.4074284,15.7801554",
       "initiallyChecked": false
-    }
+    },
     {
       "title": "Mhadei Project",
       "description": "Construction Project Sites",
