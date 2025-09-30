@@ -166,9 +166,9 @@ function createLayerCreatorDialog() {
         .layer-creator-modal sl-input::part(base),
         .layer-creator-modal sl-select::part(base),
         .layer-creator-modal sl-textarea::part(base) {
-            background-color: #1f2937;
+            background-color: #ffffff;
             border-color: #4b5563;
-            color: #f9fafb;
+            color: #1f2937;
         }
         
         .layer-creator-modal sl-input::part(base):focus,

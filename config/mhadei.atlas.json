@@ -109,6 +109,66 @@
       "id": "wildlife-reserve"
     },
     {
+      "title": "Zonation Map of Madei Wildlife Sanctuary",
+      "description": "From the Management Plan, Madei WLS",
+      "source": "https://forest.goa.gov.in/sites/default/files/2025-09/Management-Plan-of-Madei-Widllife-Sanctuary.pdf",
+      "dateDepicted": "",
+      "type": "tms",
+      "id": "mapwarper-97500",
+      "url": "https://mapwarper.net/maps/tile/97500/{z}/{x}/{y}.png",
+      "style": {
+        "raster-opacity": [
+          "interpolate",
+          [
+            "linear"
+          ],
+          [
+            "zoom"
+          ],
+          6,
+          0.95,
+          18,
+          0.8,
+          19,
+          0.3
+        ]
+      },
+      "attribution": "<a href=\"https://mapwarper.net/maps/97500#Rectify_tab\" target=\"_blank\">MapWarper</a>",
+      "headerImage": "https://mapwarper.net/uploads/97500/thumb/Screenshot_2025-09-30_at_3.06.41%E2%80%AFPM.png",
+      "bbox": "74.0563668,15.3793377,74.3106547,15.7209933",
+      "initiallyChecked": false
+    },
+    {
+      "title": "Proposed Tiger Reserve Goa",
+      "description": "Proposed Tiger Reserve Plan for Madei Wildlife Sanctuary, Bhagwan Mahaveer Wildlife Sanctuary & National Park, Mollem\r\nWildlife Sanctuary.\r\n\r\nShowing the location of all habitats, all weather roads, large habitations excluded from the proposed tiger reserve and household particulars inside & outside the proposed proposed Tiger\r\nReserve",
+      "source": "",
+      "dateDepicted": "",
+      "type": "tms",
+      "id": "mapwarper-95676",
+      "url": "https://mapwarper.net/maps/tile/95676/{z}/{x}/{y}.png",
+      "style": {
+        "raster-opacity": [
+          "interpolate",
+          [
+            "linear"
+          ],
+          [
+            "zoom"
+          ],
+          6,
+          0.95,
+          18,
+          0.8,
+          19,
+          0.3
+        ]
+      },
+      "attribution": "<a href=\"https://mapwarper.net/maps/95676\" target=\"_blank\">MapWarper</a>",
+      "headerImage": "https://mapwarper.net/uploads/95676/thumb/Proposed_TR_Map__1_.png",
+      "bbox": "73.9288025,15.2009539,74.4074284,15.7801554",
+      "initiallyChecked": false
+    }
+    {
       "title": "Mhadei Project",
       "description": "Construction Project Sites",
       "headerImage": "assets/map-layers/map-layer-construction.png",
