@@ -335,23 +335,22 @@ export class MapFeatureControl {
             display: flex;
             align-items: center;
             justify-content: center;
-            width: 30px;
-            height: 30px;
+            width: 40px;
+            height: 40px;
             font-size: 12px;
             font-weight: bold;
             color: #666;
         `;
 
-        // Create icon text
-        const iconText = document.createElement('span');
-        iconText.textContent = 'ℹ';
-        iconText.style.cssText = `
-            display: block;
-            line-height: 1;
-            font-size: 16px;
+        // Create Shoelace icon
+        const icon = document.createElement('sl-icon');
+        icon.name = 'stack';
+        icon.style.cssText = `
+            font-size: 18px;
+            color: inherit;
         `;
 
-        button.appendChild(iconText);
+        button.appendChild(icon);
         
         // Add event handlers
         button.addEventListener('click', () => {
