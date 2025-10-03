@@ -29,7 +29,7 @@ const LAYER_TYPE_ORDER = {
 
 // Define specific layer ID ordering overrides
 const LAYER_ID_ORDER = {
-    'osm': 25,  // OSM should appear below other TMS layers
+    'osm': 14,  // OSM should appear below other TMS layers
     'mask': 200 // Mask should appear on top of everything
 };
 
