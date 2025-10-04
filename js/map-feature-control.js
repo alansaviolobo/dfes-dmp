@@ -426,7 +426,6 @@ export class MapFeatureControl {
             overflow-y: auto;
             background: transparent;
             padding: 0;
-            margin-top: 10px;
             min-height: 0;
         `;
 
@@ -1217,13 +1216,24 @@ export class MapFeatureControl {
         }
 
         // Create remove layer button
-        const removeBtn = document.createElement('sl-button');
-        removeBtn.size = 'small';
-        removeBtn.variant = 'text';
-        removeBtn.innerHTML = '<sl-icon name="x"></sl-icon>';
+        const removeBtn = document.createElement('span');
+        removeBtn.textContent = 'Remove';
         removeBtn.style.cssText = `
-            min-width: auto;
+            color: red;
+            cursor: pointer;
+            font-size: 12px;
+            margin-right:5px;
+            text-decoration: none;
         `;
+        
+        // Add hover effect for underline
+        removeBtn.addEventListener('mouseenter', () => {
+            removeBtn.style.textDecoration = 'underline';
+        });
+        
+        removeBtn.addEventListener('mouseleave', () => {
+            removeBtn.style.textDecoration = 'none';
+        });
 
         // Add click handler for layer removal
         removeBtn.addEventListener('click', (e) => {
