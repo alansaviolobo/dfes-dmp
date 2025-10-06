@@ -16,6 +16,120 @@
       "title": "Street Map रस्त्याचो नकासो"
     },
     {
+      "title": "Kerala NCSCM Coastal Cadastrals",
+      "description": "Cadastral Boundaries from the <a href='https://czmp.ncscm.res.in/'>National Centre for Sustainable Coastal Management</a>. The map is provided for information purpose only.",
+      "headerImage": "assets/map-layers/map-layer-survey.png",
+      "type": "vector",
+      "id": "plots",
+      "url": "https://indianopenmaps.fly.dev/not-so-open/cadastrals/kerala/coastal/ncscm/{z}/{x}/{y}.pbf",
+      "sourceLayer": "NCSCM_KL_Cadastrals",
+      "maxzoom": 13,
+      "attribution": "<a href='https://czmp.ncscm.res.in/'>National Centre for Sustainable Coastal Management</a> - Collected by <a href='https://github.com/ramSeraph/indian_cadastrals/releases/tag/kerala'>Datameet Community</a>",
+      "style": {
+        "text-padding": 10,
+        "text-font": [
+          "Open Sans SemiBold"
+        ],
+        "text-field": [
+          "step",
+          [
+            "zoom"
+          ],
+          "",
+          15,
+          [
+            "to-string",
+            [
+              "get",
+              "plot"
+            ]
+          ]
+        ],
+        "text-color": "black",
+        "text-size": 12,
+        "fill-color": [
+          "interpolate",
+          [
+            "linear"
+          ],
+          [
+            "zoom"
+          ],
+          15,
+          "rgba(0, 0, 0, 0.05)",
+          18,
+          "rgba(0, 0, 0, 0.1)"
+        ],
+        "line-color": "#333",
+        "line-width": [
+          "interpolate",
+          [
+            "linear"
+          ],
+          [
+            "zoom"
+          ],
+          13,
+          [
+            "case",
+            [
+              "boolean",
+              [
+                "feature-state",
+                "selected"
+              ],
+              false
+            ],
+            2,
+            [
+              "boolean",
+              [
+                "feature-state",
+                "hover"
+              ],
+              false
+            ],
+            1,
+            0
+          ],
+          18,
+          [
+            "case",
+            [
+              "boolean",
+              [
+                "feature-state",
+                "selected"
+              ],
+              false
+            ],
+            6,
+            [
+              "boolean",
+              [
+                "feature-state",
+                "hover"
+              ],
+              false
+            ],
+            5,
+            1
+          ]
+        ]
+      },
+      "initiallyChecked": false,
+      "inspect": {
+        "id": "Shape_Area",
+        "title": "Plot",
+        "label": "Plot",
+        "fields": [
+          "Village_Name",
+          "District_Name"
+        ],
+        "customHtml": "<a href='https://bhunaksha.goa.gov.in/bhunaksha/' target='_blank'>Bhunaksha Goa</a> | <a href='https://goaonline.gov.in/Appln/Uil/DeptServices?__DocId=REV&__ServiceId=REV31' target='_blank'>View RoR</a> | <a href='https://davepaiva.github.io/goa-cadastral-duckdb-demo/' target='_blank'>Search</a>"
+      }
+    },
+    {
       "id": "rivers"
     },
     {
