@@ -1404,7 +1404,7 @@
           "orange",
           "Others (non-wetland area)",
           "grey",
-          "red"
+          "#0084f7"
         ]
       },
       "filter": [
