@@ -10,6 +10,10 @@
 # Ministry of Panchayati Raj
 # Government of India
 #
+# Usage Examples:
+# python3 1_filter_lgd_by_state.py                    # Default: Kerala (state code 32)
+# python3 1_filter_lgd_by_state.py --state-code 30 --state-name goa
+# python3 1_filter_lgd_by_state.py --state-code 28 --state-name andhra-pradesh
 #
 # Installation:
 # python3 -m pip install requests pandas
@@ -21,9 +25,25 @@ import requests
 from datetime import datetime
 import zipfile
 import pandas as pd
+import sys
+import argparse
 
-state_code=30
-state_name='goa'
+# Default configuration
+DEFAULT_STATE_CODE = 32  # Kerala
+DEFAULT_STATE_NAME = 'kerala'
+
+def get_state_config():
+    """
+    Get state configuration from command line arguments or use defaults
+    """
+    parser = argparse.ArgumentParser(description='Filter LGD data by state')
+    parser.add_argument('--state-code', type=int, default=DEFAULT_STATE_CODE,
+                        help=f'State code to filter (default: {DEFAULT_STATE_CODE})')
+    parser.add_argument('--state-name', type=str, default=DEFAULT_STATE_NAME,
+                        help=f'State name for output files (default: {DEFAULT_STATE_NAME})')
+    
+    args = parser.parse_args()
+    return args.state_code, args.state_name.lower()
 
 def get_valid_url(base_date):
     """
@@ -48,11 +68,12 @@ def get_valid_url(base_date):
     
     return None, None
 
-def download_and_process_data(state_code=30):
+def download_and_process_data(state_code, state_name):
     """
     Download ZIP file based on today's date or previous available date
     
-    :param state_code: State code to filter (default is 30)
+    :param state_code: State code to filter
+    :param state_name: State name for output files
     :return: List of filtered DataFrames
     """
     # Create necessary directories
@@ -69,27 +90,37 @@ def download_and_process_data(state_code=30):
     
     if not url:
         print("No valid data file found in the last 7 days")
-        return []
+        # Check if we have existing downloaded data to use
+        existing_files = [f for f in os.listdir(download_dir) if f.endswith('.zip')]
+        if existing_files:
+            # Use the most recent existing file
+            existing_files.sort(reverse=True)
+            date_string = existing_files[0].replace('.zip', '')
+            zip_path = os.path.join(download_dir, f'{date_string}.zip')
+            print(f"Using existing data file: {date_string}.zip")
+        else:
+            print("No existing data files found")
+            return []
+    else:
+        # Check if file already exists
+        zip_path = os.path.join(download_dir, f'{date_string}.zip')
+        if os.path.exists(zip_path):
+            print(f"File {date_string}.zip already exists, skipping download")
+        else:
+            # Download only if file doesn't exist
+            try:
+                print(f"Downloading file from {url}")
+                response = requests.get(url)
+                response.raise_for_status()
+                
+                # Save the ZIP file
+                with open(zip_path, 'wb') as f:
+                    f.write(response.content)
+            except requests.RequestException as e:
+                print(f"Download error: {e}")
+                return []
     
     print(f"Found valid data file for date: {date_string}")
-    
-    # Check if file already exists
-    zip_path = os.path.join(download_dir, f'{date_string}.zip')
-    if os.path.exists(zip_path):
-        print(f"File {date_string}.zip already exists, skipping download")
-    else:
-        # Download only if file doesn't exist
-        try:
-            print(f"Downloading file from {url}")
-            response = requests.get(url)
-            response.raise_for_status()
-            
-            # Save the ZIP file
-            with open(zip_path, 'wb') as f:
-                f.write(response.content)
-        except requests.RequestException as e:
-            print(f"Download error: {e}")
-            return []
     
     # Continue with existing unzip and processing logic
     try:
@@ -147,7 +178,7 @@ def download_and_process_data(state_code=30):
                             print(f"Error processing {filename}: {str(e)}")
         
         # Process the extracted directory and all its subdirectories
-        process_directory(os.path.join(extracted_dir, '02Dec2024'))
+        process_directory(os.path.join(extracted_dir, date_string))
         
         return filtered_dataframes
     
@@ -163,8 +194,13 @@ def download_and_process_data(state_code=30):
 
 # Example usage
 if __name__ == '__main__':
-    # Download and filter data for state code 30
-    filtered_data = download_and_process_data()
+    # Get state configuration from command line or use defaults
+    state_code, state_name = get_state_config()
+    
+    print(f"Processing data for {state_name.title()} (State Code: {state_code})")
+    
+    # Download and filter data for the specified state
+    filtered_data = download_and_process_data(state_code, state_name)
     
     # Print basic info about filtered data
     for i, df in enumerate(filtered_data, 1):
