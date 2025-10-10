@@ -181,9 +181,6 @@ export class MapAttributionControl {
         // OpenStreetMap attribution
         attributions.add('© <a href="https://www.openstreetmap.org/copyright/" target="_blank" title="OpenStreetMap" aria-label="OpenStreetMap">OpenStreetMap</a>');
         
-        // Improve this map link (only one)
-        attributions.add('<a class="mapbox-improve-map" href="https://apps.mapbox.com/feedback/" target="_blank" title="Improve this map" aria-label="Improve this map" rel="noopener nofollow">Improve this map</a>');
-        
         // Add other common attributions if needed
         // This could be made configurable in the future
     }
@@ -240,14 +237,6 @@ export class MapAttributionControl {
                     const text = link.textContent.trim();
                     const linkKey = `${href}:${text}`;
                     
-                    // Skip "Improve this map" duplicates - only keep the first one
-                    if (text.toLowerCase().includes('improve this map')) {
-                        if (seenTexts.has('improve this map')) {
-                            return; // Skip duplicate
-                        }
-                        seenTexts.add('improve this map');
-                    }
-                    
                     if (!seenLinks.has(linkKey)) {
                         seenLinks.add(linkKey);
                         processed.push(link.outerHTML);
@@ -273,76 +262,12 @@ export class MapAttributionControl {
         if (!this._innerContainer) return;
         
         try {
-            // Remove any duplicate "Improve this map" links
-            this._removeDuplicateImproveLinks();
-            
-            // Update improve map links with current map state
-            this._updateImproveMapLinks();
-            
             // Apply consistent styling
             this._applyAttributionStyling();
             
         } catch (error) {
             console.warn('[MapAttributionControl] Error formatting attribution content:', error);
         }
-    }
-
-    /**
-     * Remove duplicate "Improve this map" links
-     */
-    _removeDuplicateImproveLinks() {
-        const improveLinks = this._innerContainer.querySelectorAll('a');
-        const improveLinkTexts = Array.from(improveLinks).filter(link => 
-            link.textContent.toLowerCase().includes('improve this map')
-        );
-        
-        // Keep only the first "Improve this map" link
-        if (improveLinkTexts.length > 1) {
-            for (let i = 1; i < improveLinkTexts.length; i++) {
-                const link = improveLinkTexts[i];
-                const parent = link.parentNode;
-                
-                // Remove the link and any surrounding separators
-                if (parent) {
-                    // Check if there's a separator before or after
-                    const nextSibling = link.nextSibling;
-                    const prevSibling = link.previousSibling;
-                    
-                    if (nextSibling && nextSibling.textContent && nextSibling.textContent.trim().startsWith('|')) {
-                        nextSibling.remove();
-                    } else if (prevSibling && prevSibling.textContent && prevSibling.textContent.trim().endsWith('|')) {
-                        prevSibling.textContent = prevSibling.textContent.replace(/\s*\|\s*$/, '');
-                    }
-                    
-                    link.remove();
-                }
-            }
-        }
-    }
-
-    /**
-     * Update improve map links with current map state
-     */
-    _updateImproveMapLinks() {
-        const improveLinks = this._innerContainer.querySelectorAll('a.mapbox-improve-map');
-        
-        improveLinks.forEach(link => {
-            if (this._map) {
-                const center = this._map.getCenter();
-                const zoom = this._map.getZoom();
-                
-                // Update the href with current map position
-                const baseUrl = 'https://apps.mapbox.com/feedback/';
-                const params = new URLSearchParams({
-                    owner: 'planemad',
-                    id: 'cm3gyibd3004x01qz08rohcsg',
-                    access_token: 'pk.eyJ1Ijoib3NtaW5kaWEiLCJhIjoiY202czRpbWdpMDNyZjJwczJqZXdkMGR1eSJ9.eQQf--msfqtZIamJN-KKVQ'
-                });
-                
-                const fragment = `${center.lng.toFixed(6)}/${center.lat.toFixed(6)}/${zoom.toFixed(2)}`;
-                link.href = `${baseUrl}?${params.toString()}#/${fragment}`;
-            }
-        });
     }
 
     /**
