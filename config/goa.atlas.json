@@ -479,7 +479,7 @@
         ]
       },
       "attribution": "<a href=\"https://commons.wikimedia.org/wiki/File:Forest_Cover_Map_Of_Goa_2007.jpg\" target=\"_blank\">File:Forest_Cover_Map_Of_Goa_2007.jpg</a> via <a href=\"https://warper.wmflabs.org/maps/9257#Rectify_tab\" target=\"_blank\">MapWarper</a>",
-      "headerImage": null,
+      "headerImage": "assets/map-layers/map-layer-goa-forest.png",
       "bbox": "73.6475218,14.8655995,74.379549,15.8221062",
       "initiallyChecked": false
     },
