@@ -1247,89 +1247,164 @@ export class MapFeatureControl {
     }
 
     /**
-     * Create opacity dropdown with various opacity stops
+     * Create opacity slider with continuous range control
      */
     _createOpacityDropdown(layerId, config) {
-        const dropdown = document.createElement('sl-dropdown');
-        dropdown.setAttribute('data-layer-id', layerId);
-        dropdown.style.cssText = 'flex: 1;';
+        const container = document.createElement('div');
+        container.setAttribute('data-layer-id', layerId);
+        container.style.cssText = `
+            flex: 1;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 0 4px;
+        `;
 
-        // Create trigger button
-        const trigger = document.createElement('sl-button');
-        trigger.setAttribute('slot', 'trigger');
-        trigger.size = 'small';
-        trigger.caret = true;
-        trigger.style.cssText = `
-            --sl-color-primary-600: #6b7280;
-            --sl-color-primary-500: #6b7280;
-            width: 100%;
-            font-size: 11px;
+        // Create label with icon
+        const label = document.createElement('div');
+        label.style.cssText = `
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            color: #6b7280;
+            font-size: 10px;
+            white-space: nowrap;
+            cursor: pointer;
+            user-select: none;
         `;
         
-        // Set initial text - default to "Opacity" to avoid NaN display
+        // Create icon container for layered effect
+        const iconContainer = document.createElement('div');
+        iconContainer.style.cssText = `
+            position: relative;
+            width: 12px;
+            height: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        `;
+        
+        // Base lightbulb icon
+        const iconBase = document.createElement('sl-icon');
+        iconBase.name = 'lightbulb';
+        iconBase.style.cssText = `
+            font-size: 12px;
+            position: absolute;
+            top: 0;
+            left: 0;
+        `;
+        
+        // Dark overlay lightbulb icon (opacity will be inversely controlled)
+        const iconOverlay = document.createElement('sl-icon');
+        iconOverlay.name = 'lightbulb-fill';
+        iconOverlay.style.cssText = `
+            font-size: 12px;
+            color: #444;
+            position: absolute;
+            top: 0;
+            left: 0;
+            transition: opacity 0.15s ease;
+        `;
+        
+        iconContainer.appendChild(iconBase);
+        iconContainer.appendChild(iconOverlay);
+        
+        const labelText = document.createElement('span');
+        labelText.textContent = 'Opacity';
+        
+        label.appendChild(iconContainer);
+        label.appendChild(labelText);
+
+        // Create range slider
+        const slider = document.createElement('sl-range');
+        slider.min = 0;
+        slider.max = 100;
+        slider.step = 1;
+        slider.tooltip = 'right';
+        
+        // Set initial value - convert from 0-1 scale to 0-100 scale
         const currentOpacity = this._getCurrentLayerOpacity(layerId, config);
-        const opacityText = (!isNaN(currentOpacity) && isFinite(currentOpacity)) 
-            ? `${Math.round(currentOpacity * 100)}% Opacity`
-            : 'Opacity';
-        trigger.innerHTML = `
-            <sl-icon name="lightbulb" slot="prefix"></sl-icon>
-            ${opacityText}
+        const opacityPercent = (!isNaN(currentOpacity) && isFinite(currentOpacity)) 
+            ? Math.round(currentOpacity * 100)
+            : 90; // Default to 90%
+        slider.value = opacityPercent;
+        
+        // Set initial overlay opacity (inverse of slider value)
+        iconOverlay.style.opacity = (1 - (opacityPercent / 100)).toString();
+        
+        // Custom tooltip formatter to show percentage
+        slider.tooltipFormatter = (value) => `${value}%`;
+        
+        slider.style.cssText = `
+            flex: 1;
+            --track-height: 4px;
+            --thumb-size: 14px;
+            --track-color-active: #6b7280;
+            --track-color-inactive: #d1d5db;
         `;
 
-        // Create menu with opacity options
-        const menu = document.createElement('sl-menu');
-        
-        const opacityOptions = [
-            { value: 1.0, label: '100%' },
-            { value: 0.9, label: '90%' },
-            { value: 0.4, label: '40%' },
-            { value: 0.1, label: '10%' }
-        ];
-
-        opacityOptions.forEach(option => {
-            const menuItem = document.createElement('sl-menu-item');
-            menuItem.setAttribute('value', option.value);
-            menuItem.textContent = option.label;
-            menuItem.style.fontSize = '11px';
+        // Add click handler to label for opacity toggle
+        label.addEventListener('click', () => {
+            const currentValue = parseInt(slider.value);
+            let newValue;
             
-            // Mark current opacity as checked
-            if (Math.abs(currentOpacity - option.value) < 0.05) {
-                menuItem.setAttribute('type', 'checkbox');
-                menuItem.checked = true;
+            // Toggle logic: if not 0 or 100, go to 0 first
+            if (currentValue !== 0 && currentValue !== 100) {
+                newValue = 0;
+            } else if (currentValue === 0) {
+                newValue = 100;
+            } else {
+                newValue = 0;
             }
             
-            menu.appendChild(menuItem);
+            // Update slider value
+            slider.value = newValue;
+            
+            // Update overlay opacity (inverse of slider value)
+            iconOverlay.style.opacity = (1 - (newValue / 100)).toString();
+            
+            // Apply the new opacity
+            const opacityValue = newValue / 100;
+            this._applyLayerOpacity(layerId, config, opacityValue);
         });
 
-        // Add event listener for opacity selection
-        dropdown.addEventListener('sl-select', (e) => {
-            const selectedValue = parseFloat(e.detail.item.value);
-            
-            // Update trigger text with safe NaN check
-            const opacityText = (!isNaN(selectedValue) && isFinite(selectedValue)) 
-                ? `${Math.round(selectedValue * 100)}% Opacity`
-                : 'Opacity';
-            trigger.innerHTML = `
-                <sl-icon name="lightbulb" slot="prefix"></sl-icon>
-                ${opacityText}
-            `;
-            
-            // Apply opacity to layer
-            this._applyLayerOpacity(layerId, config, selectedValue);
-            
-            // Update menu item checked states
-            menu.querySelectorAll('sl-menu-item').forEach(item => {
-                item.removeAttribute('type');
-                item.checked = false;
-            });
-            e.detail.item.setAttribute('type', 'checkbox');
-            e.detail.item.checked = true;
+        // Add hover effect to label
+        label.addEventListener('mouseenter', () => {
+            label.style.color = '#374151';
+        });
+        
+        label.addEventListener('mouseleave', () => {
+            label.style.color = '#6b7280';
         });
 
-        dropdown.appendChild(trigger);
-        dropdown.appendChild(menu);
+        // Add event listener for real-time opacity changes as user drags
+        slider.addEventListener('sl-input', (e) => {
+            const opacityPercent = parseInt(e.target.value);
+            const opacityValue = opacityPercent / 100;
+            
+            // Update overlay opacity (inverse of slider value)
+            iconOverlay.style.opacity = (1 - (opacityPercent / 100)).toString();
+            
+            // Apply opacity to layer in real-time
+            this._applyLayerOpacity(layerId, config, opacityValue);
+        });
 
-        return dropdown;
+        // Add event listener for when user finishes adjusting (optional, for any final actions)
+        slider.addEventListener('sl-change', (e) => {
+            const opacityPercent = parseInt(e.target.value);
+            const opacityValue = opacityPercent / 100;
+            
+            // Update overlay opacity (inverse of slider value)
+            iconOverlay.style.opacity = (1 - (opacityPercent / 100)).toString();
+            
+            // Ensure final opacity is applied
+            this._applyLayerOpacity(layerId, config, opacityValue);
+        });
+
+        container.appendChild(label);
+        container.appendChild(slider);
+
+        return container;
     }
 
     /**
@@ -2787,27 +2862,31 @@ export class MapFeatureControl {
      */
     _applyLayerOpacity(layerId, config, opacityFactor) {
         if (config.type === 'vector') {
-            const layerConfig = config._layerConfig;
-            if (layerConfig) {
-                if (layerConfig.hasFillStyles) {
-                    this._map.setPaintProperty(`vector-layer-${layerId}`, 'fill-opacity', (config._baseFillOpacity || 1) * opacityFactor);
-                }
-                if (layerConfig.hasLineStyles) {
-                    this._map.setPaintProperty(`vector-layer-${layerId}-outline`, 'line-opacity', (config._baseLineOpacity || 1) * opacityFactor);
-                }
-                if (layerConfig.hasTextStyles) {
-                    const baseTextOpacity = config.style?.['text-opacity'] || 1;
-                    if (Array.isArray(baseTextOpacity)) {
-                        const modifiedOpacity = [...baseTextOpacity];
-                        modifiedOpacity[modifiedOpacity.length - 1] = 0.7 * opacityFactor;
-                        this._map.setPaintProperty(`vector-layer-${layerId}-text`, 'text-opacity', modifiedOpacity);
-                    } else {
-                        this._map.setPaintProperty(`vector-layer-${layerId}-text`, 'text-opacity', baseTextOpacity * opacityFactor);
-                    }
-                }
+            // Try to update all possible vector layer variants
+            if (this._map.getLayer(`vector-layer-${layerId}`)) {
+                this._map.setPaintProperty(`vector-layer-${layerId}`, 'fill-opacity', opacityFactor);
+            }
+            if (this._map.getLayer(`vector-layer-${layerId}-outline`)) {
+                this._map.setPaintProperty(`vector-layer-${layerId}-outline`, 'line-opacity', opacityFactor);
+            }
+            if (this._map.getLayer(`vector-layer-${layerId}-circle`)) {
+                this._map.setPaintProperty(`vector-layer-${layerId}-circle`, 'circle-opacity', opacityFactor);
+            }
+            if (this._map.getLayer(`vector-layer-${layerId}-text`)) {
+                this._map.setPaintProperty(`vector-layer-${layerId}-text`, 'text-opacity', opacityFactor);
             }
         } else if (config.type === 'tms') {
             const layerIdOnMap = `tms-layer-${layerId}`;
+            if (this._map.getLayer(layerIdOnMap)) {
+                this._map.setPaintProperty(layerIdOnMap, 'raster-opacity', opacityFactor);
+            }
+        } else if (config.type === 'wmts') {
+            const layerIdOnMap = `wmts-layer-${layerId}`;
+            if (this._map.getLayer(layerIdOnMap)) {
+                this._map.setPaintProperty(layerIdOnMap, 'raster-opacity', opacityFactor);
+            }
+        } else if (config.type === 'wms') {
+            const layerIdOnMap = `wms-layer-${layerId}`;
             if (this._map.getLayer(layerIdOnMap)) {
                 this._map.setPaintProperty(layerIdOnMap, 'raster-opacity', opacityFactor);
             }
