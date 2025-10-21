@@ -632,11 +632,15 @@ function openLayerCreatorDialog() {
             const hash = url.hash;
             // Add or prepend to layers param
             let layers = url.searchParams.get('layers') || '';
-            // Insert minified JSON at the beginning
+            // Insert minified JSON at the beginning (using single quotes instead of double quotes)
+            // First, properly escape single quotes in string values, then replace structural quotes
+            let jsonString = JSON.stringify(configObj);
+            // Replace double quotes with single quotes, but first escape any single quotes in values
+            jsonString = jsonString.replace(/'/g, "\\'").replace(/"/g, "'");
             if (layers) {
-                layers = JSON.stringify(configObj) + ',' + layers;
+                layers = jsonString + ',' + layers;
             } else {
-                layers = JSON.stringify(configObj);
+                layers = jsonString;
             }
             url.searchParams.set('layers', layers);
             // Re-apply hash

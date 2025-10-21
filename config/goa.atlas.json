@@ -455,7 +455,7 @@
     },
     {
       "title": "Forest Map Of Goa 2007",
-      "description": "Forest Survey Map Of Goa 2007 by Forest Department of Goa. Map shows administrative jurisdiction limits and divisions of the forest of Goa. Map also includes details of revenue village divisions (outlined red) and major roads (yellow). See <a href=\"https://commons.wikimedia.org/wiki/File:Forest_Cover_Map_Of_Goa_2007.jpg\" target=\"_blank\">File:Forest_Cover_Map_Of_Goa_2007.jpg</a>",
+      "description": "Forest Survey Map Of Goa 2007 by Forest Department of Goa. Map shows administrative jurisdiction limits and divisions of the forest of Goa. Map also includes details of revenue village divisions (outlined red) and major roads (yellow). See <a href='https://commons.wikimedia.org/wiki/File:Forest_Cover_Map_Of_Goa_2007.jpg' target='_blank'>File:Forest_Cover_Map_Of_Goa_2007.jpg</a>",
       "source": "<a href='https://commons.wikimedia.org/wiki/File:Forest_Cover_Map_Of_Goa_2007.jpg' target='_blank'>File:Forest_Cover_Map_Of_Goa_2007.jpg</a>",
       "dateDepicted": "2007",
       "type": "tms",
@@ -478,7 +478,7 @@
           0.3
         ]
       },
-      "attribution": "<a href=\"https://commons.wikimedia.org/wiki/File:Forest_Cover_Map_Of_Goa_2007.jpg\" target=\"_blank\">File:Forest_Cover_Map_Of_Goa_2007.jpg</a> via <a href=\"https://warper.wmflabs.org/maps/9257#Rectify_tab\" target=\"_blank\">MapWarper</a>",
+      "attribution": "<a href='https://commons.wikimedia.org/wiki/File:Forest_Cover_Map_Of_Goa_2007.jpg' target='_blank'>File:Forest_Cover_Map_Of_Goa_2007.jpg</a> via <a href='https://warper.wmflabs.org/maps/9257#Rectify_tab' target='_blank'>MapWarper</a>",
       "headerImage": "assets/map-layers/map-layer-goa-forest.png",
       "bbox": "73.6475218,14.8655995,74.379549,15.8221062",
       "initiallyChecked": false

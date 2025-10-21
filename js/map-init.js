@@ -43,7 +43,8 @@ function parseLayersFromUrl(layersParam) {
             continue;
         }
         
-        if (char === '"' && !escapeNext) {
+        // Handle both single and double quotes
+        if ((char === '"' || char === "'") && !escapeNext) {
             inQuotes = !inQuotes;
         }
         
@@ -61,9 +62,12 @@ function parseLayersFromUrl(layersParam) {
             if (trimmedItem) {
                 if (trimmedItem.startsWith('{') && trimmedItem.endsWith('}')) {
                     try {
-                        const parsedLayer = JSON.parse(trimmedItem);
-                        // Minify the JSON by removing extra whitespace
-                        const minifiedItem = JSON.stringify(parsedLayer);
+                        // Convert single-quoted JSON to double-quoted JSON
+                        // First unescape escaped single quotes, then replace single quotes with double quotes
+                        const jsonString = trimmedItem.replace(/\\'/g, '\u0001').replace(/'/g, '"').replace(/\u0001/g, "'");
+                        const parsedLayer = JSON.parse(jsonString);
+                        // Minify the JSON by removing extra whitespace and use single quotes
+                        const minifiedItem = JSON.stringify(parsedLayer).replace(/'/g, "\\'").replace(/"/g, "'");
                         layers.push({ ...parsedLayer, _originalJson: minifiedItem });
                     } catch (error) {
                         console.warn('Failed to parse layer JSON:', trimmedItem, error);
@@ -86,9 +90,12 @@ function parseLayersFromUrl(layersParam) {
     if (trimmedItem) {
         if (trimmedItem.startsWith('{') && trimmedItem.endsWith('}')) {
             try {
-                const parsedLayer = JSON.parse(trimmedItem);
-                // Minify the JSON by removing extra whitespace
-                const minifiedItem = JSON.stringify(parsedLayer);
+                // Convert single-quoted JSON to double-quoted JSON
+                // First unescape escaped single quotes, then replace single quotes with double quotes
+                const jsonString = trimmedItem.replace(/\\'/g, '\u0001').replace(/'/g, '"').replace(/\u0001/g, "'");
+                const parsedLayer = JSON.parse(jsonString);
+                // Minify the JSON by removing extra whitespace and use single quotes
+                const minifiedItem = JSON.stringify(parsedLayer).replace(/'/g, "\\'").replace(/"/g, "'");
                 layers.push({ ...parsedLayer, _originalJson: minifiedItem });
             } catch (error) {
                 console.warn('Failed to parse layer JSON:', trimmedItem, error);
