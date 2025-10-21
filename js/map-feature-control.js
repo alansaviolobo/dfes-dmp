@@ -1323,7 +1323,13 @@ export class MapFeatureControl {
         slider.tooltip = 'right';
         
         // Set initial value - convert from 0-1 scale to 0-100 scale
-        const currentOpacity = this._getCurrentLayerOpacity(layerId, config);
+        // First check if config.opacity exists (from URL or layer config), otherwise query the map
+        let currentOpacity;
+        if (config.opacity !== undefined) {
+            currentOpacity = config.opacity;
+        } else {
+            currentOpacity = this._getCurrentLayerOpacity(layerId, config);
+        }
         const opacityPercent = (!isNaN(currentOpacity) && isFinite(currentOpacity)) 
             ? Math.round(currentOpacity * 100)
             : 90; // Default to 90%
@@ -1366,6 +1372,14 @@ export class MapFeatureControl {
             // Apply the new opacity
             const opacityValue = newValue / 100;
             this._applyLayerOpacity(layerId, config, opacityValue);
+            
+            // Update config.opacity to persist the value
+            config.opacity = opacityValue;
+            
+            // Trigger URL update if urlManager is available
+            if (window.urlManager) {
+                window.urlManager.updateURL();
+            }
         });
 
         // Add hover effect to label
@@ -1399,6 +1413,14 @@ export class MapFeatureControl {
             
             // Ensure final opacity is applied
             this._applyLayerOpacity(layerId, config, opacityValue);
+            
+            // Update config.opacity to persist the value
+            config.opacity = opacityValue;
+            
+            // Trigger URL update if urlManager is available
+            if (window.urlManager) {
+                window.urlManager.updateURL();
+            }
         });
 
         container.appendChild(label);

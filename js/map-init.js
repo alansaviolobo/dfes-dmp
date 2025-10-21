@@ -25,12 +25,14 @@ function parseLayersFromUrl(layersParam) {
     let currentItem = '';
     let braceCount = 0;
     let inQuotes = false;
+    let quoteChar = null; // Track which quote character we're inside
     let escapeNext = false;
     
     // Parse the comma-separated string, being careful about JSON objects
     for (let i = 0; i < layersParam.length; i++) {
         const char = layersParam[i];
         
+        // Handle escape sequences
         if (escapeNext) {
             currentItem += char;
             escapeNext = false;
@@ -43,11 +45,23 @@ function parseLayersFromUrl(layersParam) {
             continue;
         }
         
-        // Handle both single and double quotes
-        if ((char === '"' || char === "'") && !escapeNext) {
-            inQuotes = !inQuotes;
+        // Handle quote toggling - only toggle if we encounter the matching quote type
+        if (char === '"' || char === "'") {
+            if (!inQuotes) {
+                // Starting a quoted string
+                inQuotes = true;
+                quoteChar = char;
+            } else if (char === quoteChar) {
+                // Ending a quoted string (matching quote type)
+                inQuotes = false;
+                quoteChar = null;
+            }
+            // If we're in quotes but encounter a different quote type, just add it
+            currentItem += char;
+            continue;
         }
         
+        // Track brace depth only when outside quotes
         if (!inQuotes) {
             if (char === '{') {
                 braceCount++;
@@ -56,6 +70,7 @@ function parseLayersFromUrl(layersParam) {
             }
         }
         
+        // Check for comma separator (only outside braces and quotes)
         if (char === ',' && braceCount === 0 && !inQuotes) {
             // Found a separator, process current item
             const trimmedItem = currentItem.trim();
@@ -161,7 +176,8 @@ async function tryLoadCrossConfigLayer(layerId, layerConfig) {
                     _originalId: originalLayerId,
                     // Preserve important URL-specific properties
                     ...(layerConfig._originalJson && { _originalJson: layerConfig._originalJson }),
-                    ...(layerConfig.initiallyChecked !== undefined && { initiallyChecked: layerConfig.initiallyChecked })
+                    ...(layerConfig.initiallyChecked !== undefined && { initiallyChecked: layerConfig.initiallyChecked }),
+                    ...(layerConfig.opacity !== undefined && { opacity: layerConfig.opacity })
                 };
             }
         }
@@ -184,7 +200,8 @@ async function tryLoadCrossConfigLayer(layerId, layerConfig) {
                     _originalId: originalLayerId,
                     // Preserve important URL-specific properties
                     ...(layerConfig._originalJson && { _originalJson: layerConfig._originalJson }),
-                    ...(layerConfig.initiallyChecked !== undefined && { initiallyChecked: layerConfig.initiallyChecked })
+                    ...(layerConfig.initiallyChecked !== undefined && { initiallyChecked: layerConfig.initiallyChecked }),
+                    ...(layerConfig.opacity !== undefined && { opacity: layerConfig.opacity })
                 };
             }
         } catch (libraryError) {
@@ -358,7 +375,8 @@ async function loadConfiguration() {
                         ...urlLayer,
                         // Ensure critical URL properties are preserved
                         ...(urlLayer._originalJson && { _originalJson: urlLayer._originalJson }),
-                        ...(urlLayer.initiallyChecked !== undefined && { initiallyChecked: urlLayer.initiallyChecked })
+                        ...(urlLayer.initiallyChecked !== undefined && { initiallyChecked: urlLayer.initiallyChecked }),
+                        ...(urlLayer.opacity !== undefined && { opacity: urlLayer.opacity })
                     };
                     lastInsertedIndex = existingIndex;
                 } else {
@@ -437,13 +455,14 @@ async function loadConfiguration() {
                     
                     if (libraryLayer) {
                         // Merge the library layer with any custom overrides from config
-                        // Preserve important URL-specific properties like _originalJson and initiallyChecked
+                        // Preserve important URL-specific properties like _originalJson, initiallyChecked, and opacity
                         validLayers.push({ 
                             ...libraryLayer, 
                             ...layerConfig,
                             // Ensure these critical properties are preserved
                             ...(layerConfig._originalJson && { _originalJson: layerConfig._originalJson }),
-                            ...(layerConfig.initiallyChecked !== undefined && { initiallyChecked: layerConfig.initiallyChecked })
+                            ...(layerConfig.initiallyChecked !== undefined && { initiallyChecked: layerConfig.initiallyChecked }),
+                            ...(layerConfig.opacity !== undefined && { opacity: layerConfig.opacity })
                         });
                     } else {
                         // Layer not found in library - check if it came from URL

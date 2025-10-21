@@ -514,6 +514,13 @@ export class MapLayerControl {
                 // Create or show the layer group
                 await this._mapboxAPI.createLayerGroup(group.id, group, { visible: true });
                 
+                // Apply initial opacity from config if it exists
+                // Note: Pass 1.0 as the opacity value so the multiplier logic in mapbox-api.js
+                // correctly applies config.opacity (e.g., 1.0 * 0.44 = 0.44)
+                if (group.opacity !== undefined && group.opacity !== 1) {
+                    this._mapboxAPI.updateLayerOpacity(group.id, group, 1.0);
+                }
+                
                 // For style layers, ensure sublayers are properly synchronized
                 if (group.type === 'style' && group.layers) {
                     // Find the group header element to sync sublayer toggles

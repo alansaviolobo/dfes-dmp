@@ -701,17 +701,22 @@ export class MapboxAPI {
     }
 
     _updateVectorLayerOpacity(groupId, config, opacity) {
+        // Apply config.opacity as a multiplier if it exists
+        const finalOpacity = (config.opacity !== undefined && config.opacity !== 1) 
+            ? opacity * config.opacity 
+            : opacity;
+            
         if (this._map.getLayer(`vector-layer-${groupId}`)) {
-            this._map.setPaintProperty(`vector-layer-${groupId}`, 'fill-opacity', opacity);
+            this._map.setPaintProperty(`vector-layer-${groupId}`, 'fill-opacity', finalOpacity);
         }
         if (this._map.getLayer(`vector-layer-${groupId}-outline`)) {
-            this._map.setPaintProperty(`vector-layer-${groupId}-outline`, 'line-opacity', opacity);
+            this._map.setPaintProperty(`vector-layer-${groupId}-outline`, 'line-opacity', finalOpacity);
         }
         if (this._map.getLayer(`vector-layer-${groupId}-circle`)) {
-            this._map.setPaintProperty(`vector-layer-${groupId}-circle`, 'circle-opacity', opacity);
+            this._map.setPaintProperty(`vector-layer-${groupId}-circle`, 'circle-opacity', finalOpacity);
         }
         if (this._map.getLayer(`vector-layer-${groupId}-text`)) {
-            this._map.setPaintProperty(`vector-layer-${groupId}-text`, 'text-opacity', opacity);
+            this._map.setPaintProperty(`vector-layer-${groupId}-text`, 'text-opacity', finalOpacity);
         }
         return true;
     }
@@ -783,9 +788,14 @@ export class MapboxAPI {
     }
 
     _updateTMSLayerOpacity(groupId, config, opacity) {
+        // Apply config.opacity as a multiplier if it exists
+        const finalOpacity = (config.opacity !== undefined && config.opacity !== 1) 
+            ? opacity * config.opacity 
+            : opacity;
+            
         const layerId = `tms-layer-${groupId}`;
         if (this._map.getLayer(layerId)) {
-            this._map.setPaintProperty(layerId, 'raster-opacity', opacity);
+            this._map.setPaintProperty(layerId, 'raster-opacity', finalOpacity);
         }
         return true;
     }
@@ -930,9 +940,14 @@ export class MapboxAPI {
     }
 
     _updateWMTSLayerOpacity(groupId, config, opacity) {
+        // Apply config.opacity as a multiplier if it exists
+        const finalOpacity = (config.opacity !== undefined && config.opacity !== 1) 
+            ? opacity * config.opacity 
+            : opacity;
+            
         const layerId = `wmts-layer-${groupId}`;
         if (this._map.getLayer(layerId)) {
-            this._map.setPaintProperty(layerId, 'raster-opacity', opacity);
+            this._map.setPaintProperty(layerId, 'raster-opacity', finalOpacity);
         }
         return true;
     }
@@ -1109,9 +1124,14 @@ export class MapboxAPI {
     }
 
     _updateWMSLayerOpacity(groupId, config, opacity) {
+        // Apply config.opacity as a multiplier if it exists
+        const finalOpacity = (config.opacity !== undefined && config.opacity !== 1) 
+            ? opacity * config.opacity 
+            : opacity;
+            
         const layerId = `wms-layer-${groupId}`;
         if (this._map.getLayer(layerId)) {
-            this._map.setPaintProperty(layerId, 'raster-opacity', opacity);
+            this._map.setPaintProperty(layerId, 'raster-opacity', finalOpacity);
         }
         return true;
     }
@@ -1300,19 +1320,24 @@ export class MapboxAPI {
     }
 
     _updateGeoJSONLayerOpacity(groupId, config, opacity) {
+        // Apply config.opacity as a multiplier if it exists
+        const finalOpacity = (config.opacity !== undefined && config.opacity !== 1) 
+            ? opacity * config.opacity 
+            : opacity;
+            
         const sourceId = `geojson-${groupId}`;
         
         if (this._map.getLayer(`${sourceId}-fill`)) {
-            this._map.setPaintProperty(`${sourceId}-fill`, 'fill-opacity', opacity * 0.5);
+            this._map.setPaintProperty(`${sourceId}-fill`, 'fill-opacity', finalOpacity * 0.5);
         }
         if (this._map.getLayer(`${sourceId}-line`)) {
-            this._map.setPaintProperty(`${sourceId}-line`, 'line-opacity', opacity);
+            this._map.setPaintProperty(`${sourceId}-line`, 'line-opacity', finalOpacity);
         }
         if (this._map.getLayer(`${sourceId}-label`)) {
-            this._map.setPaintProperty(`${sourceId}-label`, 'text-opacity', opacity);
+            this._map.setPaintProperty(`${sourceId}-label`, 'text-opacity', finalOpacity);
         }
         if (this._map.getLayer(`${sourceId}-circle`)) {
-            this._map.setPaintProperty(`${sourceId}-circle`, 'circle-opacity', opacity);
+            this._map.setPaintProperty(`${sourceId}-circle`, 'circle-opacity', finalOpacity);
         }
 
         return true;
@@ -1658,8 +1683,13 @@ export class MapboxAPI {
     }
 
     _updateImageLayerOpacity(groupId, config, opacity) {
+        // Apply config.opacity as a multiplier if it exists
+        const finalOpacity = (config.opacity !== undefined && config.opacity !== 1) 
+            ? opacity * config.opacity 
+            : opacity;
+            
         if (this._map.getLayer(groupId)) {
-            this._map.setPaintProperty(groupId, 'raster-opacity', opacity);
+            this._map.setPaintProperty(groupId, 'raster-opacity', finalOpacity);
         }
         return true;
     }
@@ -1715,11 +1745,16 @@ export class MapboxAPI {
     }
 
     _updateRasterStyleLayerOpacity(groupId, config, opacity) {
+        // Apply config.opacity as a multiplier if it exists
+        const finalOpacity = (config.opacity !== undefined && config.opacity !== 1) 
+            ? opacity * config.opacity 
+            : opacity;
+            
         const styleLayerId = config.styleLayer || groupId;
         if (this._map.getLayer(styleLayerId)) {
             const existingLayer = this._map.getLayer(styleLayerId);
             if (existingLayer.type === 'raster') {
-                this._map.setPaintProperty(styleLayerId, 'raster-opacity', opacity);
+                this._map.setPaintProperty(styleLayerId, 'raster-opacity', finalOpacity);
             }
         }
         return true;

@@ -18,13 +18,26 @@ class URLManager {
      * Convert a layer config to a URL-friendly representation
      */
     layerToURL(layer) {
-        // If it's a simple layer with just an ID, return the ID
-        if (layer.id && Object.keys(layer).length === 1) {
+        // If the layer has an _originalJson property and no opacity override, use it to preserve the original formatting
+        if (layer._originalJson && layer.opacity === undefined) {
+            return layer._originalJson;
+        }
+        
+        // If it's a simple layer with just an ID (no opacity or other properties), return the ID
+        if (layer.id && Object.keys(layer).filter(k => k !== '_originalJson').length === 1) {
             return layer.id;
         }
         
+        // If it's a layer with opacity, create a clean object without _originalJson
+        const cleanLayer = {};
+        Object.keys(layer).forEach(key => {
+            if (key !== '_originalJson') {
+                cleanLayer[key] = layer[key];
+            }
+        });
+        
         // If it's a complex layer, return minified JSON
-        const minified = JSON.stringify(layer);
+        const minified = JSON.stringify(cleanLayer);
         return minified;
     }
 
@@ -125,35 +138,51 @@ class URLManager {
             if (this.isGroupActive(groupIndex)) {
                 // Use the original layer configuration if it exists
                 if (group._originalJson) {
-                    // If this is a custom layer from URL, preserve its original JSON
-                    try {
-                        const originalLayer = JSON.parse(group._originalJson);
-                        activeLayers.push(originalLayer);
-                    } catch (error) {
-                        // Fallback to ID if JSON parsing fails
-                        if (group.id) {
-                            activeLayers.push({ id: group.id });
-                        }
+                    // If this is a custom layer from URL, preserve the original JSON string
+                    // Don't parse and re-stringify, as that loses the original formatting
+                    const layerObj = { 
+                        _originalJson: group._originalJson,
+                        id: group.id // Include ID for reference
+                    };
+                    // Include opacity if it exists and is different from default (1)
+                    if (group.opacity !== undefined && group.opacity !== 1) {
+                        layerObj.opacity = group.opacity;
                     }
+                    activeLayers.push(layerObj);
                 } else if (group.id) {
                     // Simple layer with just an ID
-                    activeLayers.push({ id: group.id });
+                    const layerObj = { id: group.id };
+                    // Include opacity if it exists and is different from default (1)
+                    if (group.opacity !== undefined && group.opacity !== 1) {
+                        layerObj.opacity = group.opacity;
+                    }
+                    activeLayers.push(layerObj);
                 } else if (group.layers && group.layers.length > 0) {
                     // For style groups with sublayers, check which sublayers are active
                     const activeSubLayers = this.getActiveSubLayers(groupIndex);
                     if (activeSubLayers.length > 0) {
                         // Create a representation for this group's active sublayers
-                        activeLayers.push({
+                        const layerObj = {
                             id: group.title || `group-${groupIndex}`,
                             sublayers: activeSubLayers
-                        });
+                        };
+                        // Include opacity if it exists and is different from default (1)
+                        if (group.opacity !== undefined && group.opacity !== 1) {
+                            layerObj.opacity = group.opacity;
+                        }
+                        activeLayers.push(layerObj);
                     }
                 } else {
                     // Generic group
-                    activeLayers.push({
+                    const layerObj = {
                         id: group.title || `group-${groupIndex}`,
                         type: group.type || 'source'
-                    });
+                    };
+                    // Include opacity if it exists and is different from default (1)
+                    if (group.opacity !== undefined && group.opacity !== 1) {
+                        layerObj.opacity = group.opacity;
+                    }
+                    activeLayers.push(layerObj);
                 }
             }
         });

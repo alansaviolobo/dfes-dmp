@@ -398,6 +398,10 @@ async function handleUrlInput(url) {
                 if (baseUrl) {
                     actualUrl = `${baseUrl}/maps/tile/${mapId}/{z}/{x}/{y}.png`;
                     
+                    // Sanitize the original URL by removing hash fragment
+                    // This prevents hash from breaking URL parameters when JSON is serialized
+                    const sanitizedUrl = url.split('#')[0];
+                    
                     // Fetch map metadata from MapWarper API
                     try {
                         const apiUrl = `${baseUrl}/api/v1/maps/${mapId}`;
@@ -417,7 +421,7 @@ async function handleUrlInput(url) {
                                 thumbnail: links.thumb ? `${baseUrl}${links.thumb}` : null,
                                 baseUrl: baseUrl,
                                 mapId: mapId,
-                                originalUrl: url,
+                                originalUrl: sanitizedUrl,
                                 bbox: mapData.bbox || null
                             };
                         }
