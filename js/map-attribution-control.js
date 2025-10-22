@@ -132,36 +132,158 @@ export class MapAttributionControl {
     _updateAttribution() {
         if (!this._map || !this._innerContainer) return;
         
+        console.debug('[MapAttributionControl] _updateAttribution called, layer attributions:', 
+            this._layerAttributions ? this._layerAttributions.size : 0);
+        
         try {
-            // Get all sources and their attributions
+            // Try to get the style - handle the error if it's not ready
+            // Note: isStyleLoaded() can be false even when getStyle() works, so we try directly
             const style = this._map.getStyle();
-            if (!style || !style.sources) return;
+            if (!style || !style.sources) {
+                console.debug('[MapAttributionControl] Style or sources not available yet');
+                return;
+            }
             
             const attributions = new Set();
             
-            // Add base map attributions
-            this._addBaseMapAttributions(attributions);
+            // Get list of sources used by visible layers
+            const visibleSources = new Set();
+            const visibleLayerIds = []; // For debugging
+            style.layers.forEach(layer => {
+                if (layer.source) {
+                    const visibility = this._map.getLayoutProperty(layer.id, 'visibility');
+                    // Layer is visible if visibility is undefined or 'visible' (not 'none')
+                    if (visibility === undefined || visibility === 'visible') {
+                        visibleSources.add(layer.source);
+                        visibleLayerIds.push(layer.id);
+                    }
+                }
+            });
             
-            // Add source attributions
-            Object.values(style.sources).forEach(source => {
-                if (source.attribution) {
-                    attributions.add(source.attribution);
+            console.debug('[MapAttributionControl] Visible sources:', Array.from(visibleSources));
+            console.debug('[MapAttributionControl] Visible layer IDs (first 10):', visibleLayerIds.slice(0, 10));
+            
+            // Add source attributions only for sources used by visible layers
+            Object.entries(style.sources).forEach(([sourceId, source]) => {
+                if (source.attribution && visibleSources.has(sourceId)) {
+                    console.debug('[MapAttributionControl] Source with attribution:', {
+                        sourceId,
+                        attribution: source.attribution,
+                        sourceType: source.type
+                    });
+                    
+                    // Skip sources that we're managing via _layerAttributions to avoid duplication
+                    const isManagedByLayerAttribution = this._layerAttributions && 
+                        Array.from(this._layerAttributions.values()).some(attr => attr === source.attribution);
+                    
+                    if (!isManagedByLayerAttribution) {
+                        console.debug('[MapAttributionControl] Adding source attribution from:', sourceId);
+                        attributions.add(source.attribution);
+                    } else {
+                        console.debug('[MapAttributionControl] Skipping source attribution (managed by layer):', sourceId);
+                    }
                 }
             });
             
             // Add custom attribution if provided
             if (this.options.customAttribution) {
+                console.debug('[MapAttributionControl] Adding custom attribution:', this.options.customAttribution);
                 attributions.add(this.options.customAttribution);
             }
 
-            // Add layer-specific attributions
+            // Add layer-specific attributions (for custom layers we manage)
+            // Only include attributions for config layers that have visible style layers
             if (this._layerAttributions && this._layerAttributions.size > 0) {
+                // Build a map of which config layers are currently visible
+                const visibleConfigLayers = new Set();
+                style.layers.forEach(styleLayer => {
+                    // Check if this style layer is visible
+                    const visibility = this._map.getLayoutProperty(styleLayer.id, 'visibility');
+                    // Layer is visible if visibility is undefined or 'visible' (not 'none')
+                    if (visibility === undefined || visibility === 'visible') {
+                        // Try to determine which config layer this style layer belongs to
+                        // Check metadata first (most reliable)
+                        if (styleLayer.metadata && styleLayer.metadata.groupId) {
+                            visibleConfigLayers.add(styleLayer.metadata.groupId);
+                        } else {
+                            // Try to extract config layer ID from style layer ID patterns
+                            // Common patterns: vector-layer-{id}, geojson-{id}-, csv-{id}-, tms-layer-{id}, etc.
+                            const patterns = [
+                                /^vector-layer-([^-]+)/,
+                                /^geojson-([^-]+)-/,
+                                /^csv-([^-]+)-/,
+                                /^tms-layer-(.+)/,
+                                /^wms-layer-(.+)/,
+                                /^wmts-layer-(.+)/,
+                                /^img-layer-(.+)/,
+                            ];
+                            
+                            for (const pattern of patterns) {
+                                const match = styleLayer.id.match(pattern);
+                                if (match) {
+                                    visibleConfigLayers.add(match[1]);
+                                    break;
+                                }
+                            }
+                            
+                            // Also check if style layer ID directly matches or starts with a config layer ID
+                            // This handles cases where style layer ID is the same as config layer ID
+                            this._layerAttributions.forEach((_, configLayerId) => {
+                                if (styleLayer.id === configLayerId || 
+                                    styleLayer.id.startsWith(configLayerId + '-') ||
+                                    styleLayer.id.startsWith(configLayerId + ' ')) {
+                                    visibleConfigLayers.add(configLayerId);
+                                }
+                            });
+                        }
+                    }
+                });
+                
+                console.debug('[MapAttributionControl] Visible config layers:', 
+                    Array.from(visibleConfigLayers));
+                console.debug('[MapAttributionControl] All layer attributions:', 
+                    Array.from(this._layerAttributions.keys()));
+                
+                // Only add attributions for visible config layers
+                // Also verify that the config layer actually has visible style layers (not just pattern matches)
                 this._layerAttributions.forEach((attribution, layerId) => {
-                    if (attribution && attribution.trim()) {
-                        attributions.add(attribution);
+                    if (attribution && attribution.trim() && visibleConfigLayers.has(layerId)) {
+                        // Double-check: verify at least one style layer with this config ID is actually visible
+                        const hasVisibleStyleLayer = style.layers.some(styleLayer => {
+                            const visibility = this._map.getLayoutProperty(styleLayer.id, 'visibility');
+                            const isVisible = visibility === undefined || visibility === 'visible';
+                            
+                            // Check if this style layer belongs to this config layer
+                            // Use strict matching to avoid false positives
+                            const belongsToLayer = 
+                                (styleLayer.metadata && styleLayer.metadata.groupId === layerId) ||
+                                styleLayer.id === layerId ||
+                                styleLayer.id.startsWith(`${layerId}-`) ||
+                                styleLayer.id.startsWith(`${layerId} `) ||
+                                styleLayer.id.startsWith(`vector-layer-${layerId}`) ||
+                                styleLayer.id.startsWith(`geojson-${layerId}-`) ||
+                                styleLayer.id.startsWith(`csv-${layerId}-`) ||
+                                styleLayer.id.startsWith(`tms-layer-${layerId}`) ||
+                                styleLayer.id.startsWith(`wms-layer-${layerId}`) ||
+                                styleLayer.id.startsWith(`wmts-layer-${layerId}`) ||
+                                styleLayer.id.startsWith(`img-layer-${layerId}`);
+                            
+                            return isVisible && belongsToLayer;
+                        });
+                        
+                        if (hasVisibleStyleLayer) {
+                            console.debug('[MapAttributionControl] Adding attribution for visible layer:', layerId);
+                            attributions.add(attribution);
+                        } else {
+                            console.debug('[MapAttributionControl] Skipping attribution - no visible style layers found for:', layerId);
+                        }
+                    } else if (attribution && attribution.trim()) {
+                        console.debug('[MapAttributionControl] Skipping attribution for hidden layer:', layerId);
                     }
                 });
             }
+            
+            console.debug('[MapAttributionControl] Total attributions collected:', attributions.size);
             
             // Format and display attributions
             this._displayAttributions(Array.from(attributions));
@@ -171,19 +293,6 @@ export class MapAttributionControl {
         }
     }
 
-    /**
-     * Add base map attributions (Mapbox, OpenStreetMap, etc.)
-     */
-    _addBaseMapAttributions(attributions) {
-        // Standard Mapbox attribution
-        attributions.add('© <a href="https://www.mapbox.com/about/maps/" target="_blank" title="Mapbox" aria-label="Mapbox">Mapbox</a>');
-        
-        // OpenStreetMap attribution
-        attributions.add('© <a href="https://www.openstreetmap.org/copyright/" target="_blank" title="OpenStreetMap" aria-label="OpenStreetMap">OpenStreetMap</a>');
-        
-        // Add other common attributions if needed
-        // This could be made configurable in the future
-    }
 
     /**
      * Display formatted attributions
@@ -338,13 +447,17 @@ export class MapAttributionControl {
      * Add layer-specific attribution
      */
     addLayerAttribution(layerId, attribution) {
-        if (!attribution || !attribution.trim()) return;
+        if (!attribution || !attribution.trim()) {
+            console.debug(`[MapAttributionControl] No attribution to add for layer ${layerId}`);
+            return;
+        }
         
         // Store layer-specific attributions
         if (!this._layerAttributions) {
             this._layerAttributions = new Map();
         }
         
+        console.debug(`[MapAttributionControl] Adding attribution for layer ${layerId}:`, attribution);
         this._layerAttributions.set(layerId, attribution);
         this._updateAttribution();
     }
@@ -354,8 +467,12 @@ export class MapAttributionControl {
      */
     removeLayerAttribution(layerId) {
         if (this._layerAttributions) {
+            const hadAttribution = this._layerAttributions.has(layerId);
             this._layerAttributions.delete(layerId);
+            console.debug(`[MapAttributionControl] Removed attribution for layer ${layerId}, had attribution: ${hadAttribution}`);
             this._updateAttribution();
+        } else {
+            console.debug(`[MapAttributionControl] No layer attributions to remove for ${layerId}`);
         }
     }
 }

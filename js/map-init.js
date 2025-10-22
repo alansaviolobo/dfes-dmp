@@ -10,6 +10,247 @@ import { TimeControl } from './timeControl.js';
 import { StatePersistence } from './pwa/state-persistence.js';
 import { MapAttributionControl } from './map-attribution-control.js';
 
+// Global layer registry - compiles all atlas configurations into a single lookup
+// This ensures cross-atlas layers are handled consistently
+class LayerRegistry {
+    constructor() {
+        this._registry = new Map(); // layerId -> layer config
+        this._libraryLayers = new Map(); // library layer presets
+        this._atlasLayers = new Map(); // atlasId -> array of layer configs
+        this._currentAtlas = 'index'; // default atlas
+        this._initialized = false;
+    }
+
+    async initialize() {
+        if (this._initialized) return;
+                
+        // Load layer library first
+        try {
+            const libraryResponse = await fetch('/config/_map-layer-presets.json');
+            if (libraryResponse.ok) {
+                const library = await libraryResponse.json();
+                if (library.layers && Array.isArray(library.layers)) {
+                    library.layers.forEach(layer => {
+                        this._libraryLayers.set(layer.id, layer);
+                    });
+                }
+            }
+        } catch (error) {
+            console.warn('[LayerRegistry] Failed to load layer library:', error);
+        }
+
+        // Load all atlas configurations
+        const atlasConfigs = [
+            'index', 'goa', 'mumbai', 'bengaluru-flood', 'bombay', 'madras',
+            'gurugram', 'maharashtra', 'telangana', 'kerala', 'india', 
+            'world', 'historic', 'community', 'mhadei'
+        ];
+        
+        // Create a Set for fast lookup of known atlas IDs
+        const knownAtlases = new Set(atlasConfigs);
+
+        for (const atlasId of atlasConfigs) {
+            try {
+                const response = await fetch(`/config/${atlasId}.atlas.json`);
+                if (response.ok) {
+                    const config = await response.json();
+                    if (config.layers && Array.isArray(config.layers)) {
+                        this._atlasLayers.set(atlasId, config.layers);
+                        
+                        // Register each layer with appropriate ID
+                        config.layers.forEach(layer => {
+                            const resolvedLayer = this._resolveLayer(layer, atlasId);
+                            if (resolvedLayer) {
+                                // Check if the layer ID already has an atlas prefix
+                                const layerId = resolvedLayer.id;
+                                let prefixedId;
+                                
+                                // If the ID already contains a dash and might be prefixed, check if it's a valid atlas prefix
+                                if (layerId.includes('-')) {
+                                    const potentialPrefix = layerId.split('-')[0];
+                                    // If it's a known atlas prefix, use the ID as-is (it's already prefixed)
+                                    if (knownAtlases.has(potentialPrefix)) {
+                                        prefixedId = layerId;
+                                    } else {
+                                        // Not a valid prefix, add the atlas prefix
+                                        prefixedId = `${atlasId}-${layerId}`;
+                                    }
+                                } else {
+                                    // No dash, definitely not prefixed
+                                    prefixedId = `${atlasId}-${layerId}`;
+                                }
+                                
+                                this._registry.set(prefixedId, {
+                                    ...resolvedLayer,
+                                    _sourceAtlas: atlasId,
+                                    _prefixedId: prefixedId,
+                                    // Store the original unprefixed ID for reference
+                                    _originalId: layerId
+                                });
+                                
+                            }
+                        });
+                    }
+                }
+            } catch (error) {
+                console.warn(`[LayerRegistry] Failed to load atlas ${atlasId}:`, error);
+            }
+        }
+
+        const sortedRegistry = Object.fromEntries(
+            Array.from(this._registry.entries()).sort(([keyA], [keyB]) => keyA.localeCompare(keyB))
+        );
+        console.log(`[LayerRegistry] Initialized with ${this._registry.size} layers from ${this._atlasLayers.size} atlases`, sortedRegistry);
+        
+        // Debug: Log some sample entries
+        const sampleEntries = Array.from(this._registry.keys()).slice(0, 10);
+        console.debug('[LayerRegistry] Sample entries:', sampleEntries);
+        this._initialized = true;
+    }
+
+    /**
+     * Set the current active atlas
+     */
+    setCurrentAtlas(atlasId) {
+        this._currentAtlas = atlasId;
+        console.log(`[LayerRegistry] Current atlas set to: ${atlasId}`);
+    }
+
+    /**
+     * Resolve a layer reference from library if needed
+     */
+    _resolveLayer(layer, atlasId) {
+        // If layer only has an id, resolve it from library
+        if (layer.id && !layer.type) {
+            const libraryLayer = this._libraryLayers.get(layer.id);
+            if (libraryLayer) {
+                return { ...libraryLayer, ...layer };
+            }
+        }
+        return layer;
+    }
+
+    /**
+     * Get a layer by ID, handling both prefixed and unprefixed IDs
+     * @param {string} layerId - The layer ID (can be prefixed with atlas-)
+     * @param {string} currentAtlas - The current atlas context (optional)
+     * @returns {object|null} The layer configuration
+     */
+    getLayer(layerId, currentAtlas = null) {
+        if (!layerId) return null;
+
+        const contextAtlas = currentAtlas || this._currentAtlas;
+
+        // First, try unprefixed ID in current atlas
+        const currentAtlasId = `${contextAtlas}-${layerId}`;
+        if (this._registry.has(currentAtlasId)) {
+            return this._registry.get(currentAtlasId);
+        }
+
+        // Then try the ID as-is (might be prefixed)
+        if (this._registry.has(layerId)) {
+            return this._registry.get(layerId);
+        }
+
+        // Try to find in library
+        if (this._libraryLayers.has(layerId)) {
+            return this._libraryLayers.get(layerId);
+        }
+
+        console.warn(`[LayerRegistry] Layer not found: ${layerId} (context: ${contextAtlas})`);
+        return null;
+    }
+
+    /**
+     * Get all layers for a specific atlas
+     */
+    getAtlasLayers(atlasId) {
+        return this._atlasLayers.get(atlasId) || [];
+    }
+
+    /**
+     * Search layers across all atlases
+     */
+    searchLayers(searchTerm, excludeAtlas = null) {
+        const results = [];
+        const term = searchTerm.toLowerCase();
+
+        for (const [prefixedId, layer] of this._registry.entries()) {
+            // Skip layers from excluded atlas
+            if (excludeAtlas && layer._sourceAtlas === excludeAtlas) {
+                continue;
+            }
+
+            // Search in layer properties
+            const matches = 
+                (layer.id && layer.id.toLowerCase().includes(term)) ||
+                (layer.title && layer.title.toLowerCase().includes(term)) ||
+                (layer.name && layer.name.toLowerCase().includes(term)) ||
+                (layer.description && layer.description.toLowerCase().includes(term)) ||
+                (layer.tags && Array.isArray(layer.tags) && 
+                 layer.tags.some(tag => tag.toLowerCase().includes(term)));
+
+            if (matches) {
+                results.push(layer);
+            }
+        }
+
+        return results;
+    }
+
+    /**
+     * Normalize a layer ID for URL serialization
+     * Removes atlas prefix if it matches current atlas
+     */
+    normalizeLayerId(layerId, currentAtlas = null) {
+        const contextAtlas = currentAtlas || this._currentAtlas;
+        const prefix = `${contextAtlas}-`;
+        
+        if (layerId.startsWith(prefix)) {
+            return layerId.substring(prefix.length);
+        }
+        
+        return layerId;
+    }
+
+    /**
+     * Get the full prefixed ID for a layer
+     */
+    getPrefixedLayerId(layerId, atlasId = null) {
+        const contextAtlas = atlasId || this._currentAtlas;
+        
+        // If already prefixed, return as-is
+        if (layerId.includes('-')) {
+            const potentialPrefix = layerId.split('-')[0];
+            if (this._atlasLayers.has(potentialPrefix)) {
+                return layerId;
+            }
+        }
+        
+        return `${contextAtlas}-${layerId}`;
+    }
+
+    /**
+     * Check if two layer IDs refer to the same layer (accounting for prefixes)
+     */
+    isSameLayer(layerId1, layerId2) {
+        const layer1 = this.getLayer(layerId1);
+        const layer2 = this.getLayer(layerId2);
+        
+        if (!layer1 || !layer2) return false;
+        
+        // Compare the base IDs
+        const baseId1 = layer1.id || layerId1;
+        const baseId2 = layer2.id || layerId2;
+        
+        return baseId1 === baseId2;
+    }
+}
+
+// Create global layer registry instance
+const layerRegistry = new LayerRegistry();
+window.layerRegistry = layerRegistry;
+
 // Function to get URL parameters
 function getUrlParameter(name) {
     const urlParams = new URLSearchParams(window.location.search);
@@ -216,6 +457,9 @@ async function tryLoadCrossConfigLayer(layerId, layerConfig) {
 
 // Function to load configuration
 async function loadConfiguration() {
+    // Initialize the layer registry first
+    await layerRegistry.initialize();
+    
     // Check for permalink first - this takes precedence over direct URL parameters
     const permalinkParams = await permalinkHandler.checkForPermalink();
     
@@ -234,6 +478,7 @@ async function loadConfiguration() {
     
     let configPath = 'config/index.atlas.json';
     let config;
+    let atlasId = 'index'; // Track which atlas we're using
     
     // If a config parameter is provided, determine how to handle it
     if (configParam) {
@@ -274,8 +519,10 @@ async function loadConfiguration() {
         // Check if the config parameter is a URL
         else if (configParam.startsWith('http://') || configParam.startsWith('https://')) {
             configPath = configParam; // Use the URL directly
+            atlasId = 'custom'; // Mark as custom atlas
         } else {
             configPath = `config/${configParam}.atlas.json`; // Treat as local file
+            atlasId = configParam; // Use the config name as atlas ID
         }
     }
     
@@ -284,6 +531,9 @@ async function loadConfiguration() {
         const configResponse = await fetch(configPath);
         config = await configResponse.json();
     }
+    
+    // Set current atlas in registry
+    layerRegistry.setCurrentAtlas(atlasId);
     
             // Parse layers from URL parameter if provided
         if (layersParam) {
@@ -427,104 +677,90 @@ async function loadConfiguration() {
         console.warn('Default configuration values not found or invalid:', error);
     }
 
-    // Try to load the map layer library
-    try {
-        const libraryResponse = await fetch('config/_map-layer-presets.json');
-        const layerLibrary = await libraryResponse.json();
+    // Process each layer in the config using the layer registry
+    if (config.layers && Array.isArray(config.layers)) {
+        const validLayers = [];
+        const invalidLayers = [];
         
-        // Process each layer in the config and merge with library definitions
-        if (config.layers && Array.isArray(config.layers)) {
-            const validLayers = [];
-            const invalidLayers = [];
-            
-            // Process layers one by one
-            for (const layerConfig of config.layers) {
-                // If the layer only has an id (or minimal properties), look it up in the library
-                if (layerConfig.id && !layerConfig.type) {
-                    // First, try to find the matching layer in the current library
-                    let libraryLayer = layerLibrary.layers.find(lib => lib.id === layerConfig.id);
-                    
-                    // If not found and layer ID contains a dash, check if it's a cross-config reference
-                    if (!libraryLayer && layerConfig.id.includes('-')) {
-                        const crossConfigLayer = await tryLoadCrossConfigLayer(layerConfig.id, layerConfig);
-                        if (crossConfigLayer) {
-                            validLayers.push(crossConfigLayer);
-                            continue;
-                        }
-                    }
-                    
-                    if (libraryLayer) {
-                        // Merge the library layer with any custom overrides from config
-                        // Preserve important URL-specific properties like _originalJson, initiallyChecked, and opacity
-                        validLayers.push({ 
-                            ...libraryLayer, 
-                            ...layerConfig,
-                            // Ensure these critical properties are preserved
-                            ...(layerConfig._originalJson && { _originalJson: layerConfig._originalJson }),
-                            ...(layerConfig.initiallyChecked !== undefined && { initiallyChecked: layerConfig.initiallyChecked }),
-                            ...(layerConfig.opacity !== undefined && { opacity: layerConfig.opacity })
-                        });
-                    } else {
-                        // Layer not found in library - check if it came from URL
-                        if (layerConfig.initiallyChecked === true) {
-                            console.warn(`Unknown layer ID from URL: "${layerConfig.id}" - ignoring. Available configs: ${await getAvailableConfigs()}`);
-                            invalidLayers.push(layerConfig.id);
-                        } else {
-                            // For non-URL layers, keep them as-is (they might be fully defined custom layers)
-                            validLayers.push(layerConfig);
-                        }
-                    }
+        // Process layers one by one
+        for (const layerConfig of config.layers) {
+            // If the layer only has an id (or minimal properties), look it up using the registry
+            if (layerConfig.id && !layerConfig.type) {
+                // Try to resolve the layer from the registry
+                // This handles both current atlas layers and cross-atlas references
+                let resolvedLayer = layerRegistry.getLayer(layerConfig.id, atlasId);
+                
+                if (resolvedLayer) {
+                    // Merge the resolved layer with any custom overrides from config
+                    // Preserve important URL-specific properties
+                    validLayers.push({ 
+                        ...resolvedLayer, 
+                        ...layerConfig,
+                        // Ensure these critical properties are preserved
+                        ...(layerConfig._originalJson && { _originalJson: layerConfig._originalJson }),
+                        ...(layerConfig.initiallyChecked !== undefined && { initiallyChecked: layerConfig.initiallyChecked }),
+                        ...(layerConfig.opacity !== undefined && { opacity: layerConfig.opacity }),
+                        // Store normalized ID for URL serialization
+                        _normalizedId: layerRegistry.normalizeLayerId(layerConfig.id, atlasId)
+                    });
                 } else {
-                    // If it's a fully defined layer, return as is
-                    validLayers.push(layerConfig);
-                }
-            }
-            
-            config.layers = validLayers;
-            
-            // If we found invalid layers from URL, update the URL to remove them
-            if (invalidLayers.length > 0 && layersParam) {
-                console.warn(`Removing invalid layer IDs from URL: ${invalidLayers.join(', ')}`);
-                
-                // Get the remaining valid layers that were originally from URL
-                const validUrlLayers = validLayers.filter(layer => layer.initiallyChecked === true);
-                
-                // Reconstruct the layers parameter with only valid layers
-                const newLayersParam = validUrlLayers.map(layer => {
-                    return layer._originalJson || layer.id;
-                }).join(',');
-                
-                // Update the URL
-                const url = new URL(window.location);
-                const baseUrl = `${url.protocol}//${url.host}${url.pathname}`;
-                const otherParams = new URLSearchParams(url.search);
-                otherParams.delete('layers');
-                
-                let newUrl = baseUrl;
-                if (newLayersParam) {
-                    // Only add layers parameter if there are valid layers
-                    if (otherParams.toString()) {
-                        newUrl += '?' + otherParams.toString() + '&layers=' + newLayersParam;
+                    // Layer not found in registry - check if it came from URL
+                    if (layerConfig.initiallyChecked === true) {
+                        console.warn(`Unknown layer ID from URL: "${layerConfig.id}" - ignoring.`);
+                        invalidLayers.push(layerConfig.id);
                     } else {
-                        newUrl += '?layers=' + newLayersParam;
-                    }
-                } else {
-                    // No valid layers left, just add other parameters if any
-                    if (otherParams.toString()) {
-                        newUrl += '?' + otherParams.toString();
+                        // For non-URL layers, keep them as-is (they might be fully defined custom layers)
+                        validLayers.push(layerConfig);
                     }
                 }
-                
-                // Add hash if it exists
-                if (url.hash) {
-                    newUrl += url.hash;
-                }
-                
-                window.history.replaceState({}, '', newUrl);
+            } else {
+                // If it's a fully defined layer, return as is
+                validLayers.push(layerConfig);
             }
         }
-    } catch (error) {
-        console.warn('Map layer library not found or invalid, using only config file:', error);
+        
+        config.layers = validLayers;
+        
+        // If we found invalid layers from URL, update the URL to remove them
+        if (invalidLayers.length > 0 && layersParam) {
+            console.warn(`Removing invalid layer IDs from URL: ${invalidLayers.join(', ')}`);
+            
+            // Get the remaining valid layers that were originally from URL
+            const validUrlLayers = validLayers.filter(layer => layer.initiallyChecked === true);
+            
+            // Reconstruct the layers parameter with only valid layers
+            const newLayersParam = validUrlLayers.map(layer => {
+                return layer._originalJson || layer._normalizedId || layer.id;
+            }).join(',');
+            
+            // Update the URL
+            const url = new URL(window.location);
+            const baseUrl = `${url.protocol}//${url.host}${url.pathname}`;
+            const otherParams = new URLSearchParams(url.search);
+            otherParams.delete('layers');
+            
+            let newUrl = baseUrl;
+            if (newLayersParam) {
+                // Only add layers parameter if there are valid layers
+                if (otherParams.toString()) {
+                    newUrl += '?' + otherParams.toString() + '&layers=' + newLayersParam;
+                } else {
+                    newUrl += '?layers=' + newLayersParam;
+                }
+            } else {
+                // No valid layers left, just add other parameters if any
+                if (otherParams.toString()) {
+                    newUrl += '?' + otherParams.toString();
+                }
+            }
+            
+            // Add hash if it exists
+            if (url.hash) {
+                newUrl += url.hash;
+            }
+            
+            window.history.replaceState({}, '', newUrl);
+        }
     }
     
     // Load and apply localized UI strings
@@ -622,8 +858,8 @@ async function initializeMap() {
 
     // Add custom attribution control that handles formatting and removes duplicates
     const attributionControl = new MapAttributionControl({
-        compact: false,
-        customAttribution: '<a href="https://onemapgoagis.goa.gov.in/map/" target="_blank" title="OneMapGoa GIS" aria-label="OneMapGoa GIS">OneMapGoa GIS</a> - Collected by <a href="https://datameet.org" target="_blank" title="Datameet Community" aria-label="Datameet Community">Datameet Community</a>'
+        compact: false
+        // Note: customAttribution removed - attributions now come dynamically from layer configs
     });
     map.addControl(attributionControl, 'bottom-right');
     

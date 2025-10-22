@@ -454,6 +454,36 @@
       }
     },
     {
+      "title": "Proposed Goa Tiger Reserve Plan",
+      "description": "Plan for proposed Tiger Reserve of Goa showing core and buffer areas including details of houses within the reserve.Obtained <a href='https://archive.org/details/tiger-reserve-pil/Tiger%20Reserve%20Area%20Map%20-%202/'>via RTI by Goa Foundation for the Tiger Reserve Petition</a>.",
+      "source": "",
+      "dateDepicted": "",
+      "type": "tms",
+      "id": "tiger-reserve-plan",
+      "url": "https://mapwarper.net/maps/tile/98284/{z}/{x}/{y}.png",
+      "style": {
+        "raster-opacity": [
+          "interpolate",
+          [
+            "linear"
+          ],
+          [
+            "zoom"
+          ],
+          6,
+          0.95,
+          18,
+          0.8,
+          19,
+          0.3
+        ]
+      },
+      "attribution": "<a href='https://archive.org/details/tiger-reserve-pil/Tiger%20Reserve%20Area%20Map%20-%202/'>Tiger Reserve Area Map</a> via <a href='https://mapwarper.net/maps/98284' target='_blank'>MapWarper</a>",
+      "headerImage": "https://mapwarper.net/uploads/98284/thumb/TRP_2-Model.png",
+      "bbox": "73.9630142,14.8899052,74.3794893,15.7320923",
+      "initiallyChecked": false
+    },
+    {
       "title": "Forest Map Of Goa 2007",
       "description": "Forest Survey Map Of Goa 2007 by Forest Department of Goa. Map shows administrative jurisdiction limits and divisions of the forest of Goa. Map also includes details of revenue village divisions (outlined red) and major roads (yellow). See <a href='https://commons.wikimedia.org/wiki/File:Forest_Cover_Map_Of_Goa_2007.jpg' target='_blank'>File:Forest_Cover_Map_Of_Goa_2007.jpg</a>",
       "source": "<a href='https://commons.wikimedia.org/wiki/File:Forest_Cover_Map_Of_Goa_2007.jpg' target='_blank'>File:Forest_Cover_Map_Of_Goa_2007.jpg</a>",
@@ -461,6 +491,7 @@
       "type": "tms",
       "id": "forest-2007",
       "url": "https://warper.wmflabs.org/maps/tile/9257/{z}/{x}/{y}.png",
+      "opacity": 0.9,
       "style": {
         "raster-opacity": [
           "interpolate",

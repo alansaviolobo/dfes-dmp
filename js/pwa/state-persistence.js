@@ -67,7 +67,6 @@ class StatePersistence {
             };
 
             localStorage.setItem(this.storageKey, JSON.stringify(state));
-            console.debug('🔄 State saved:', state.url);
         } catch (error) {
             console.warn('Failed to save state:', error);
         }
@@ -106,14 +105,12 @@ class StatePersistence {
         const hasURLParams = window.location.search.length > 0 || window.location.hash.length > 0;
         
         if (hasURLParams) {
-            console.debug('🔄 URL parameters present, skipping state restoration');
             return false;
         }
 
         try {
             const savedStateStr = localStorage.getItem(this.storageKey);
             if (!savedStateStr) {
-                console.debug('🔄 No saved state found');
                 return false;
             }
 
@@ -145,8 +142,6 @@ class StatePersistence {
             if (savedUrl.hash) {
                 restoredUrl += savedUrl.hash;
             }
-
-            console.log('🔄 Restoring state from:', restoredUrl);
             
             // Replace current URL without triggering navigation
             window.history.replaceState(null, '', restoredUrl);

@@ -16,6 +16,7 @@ class URLManager {
 
     /**
      * Convert a layer config to a URL-friendly representation
+     * Uses normalized IDs (without atlas prefix for current atlas layers)
      */
     layerToURL(layer) {
         // If the layer has an _originalJson property and no opacity override, use it to preserve the original formatting
@@ -23,18 +24,28 @@ class URLManager {
             return layer._originalJson;
         }
         
-        // If it's a simple layer with just an ID (no opacity or other properties), return the ID
-        if (layer.id && Object.keys(layer).filter(k => k !== '_originalJson').length === 1) {
-            return layer.id;
+        // Use normalized ID if available (removes current atlas prefix)
+        const layerId = layer._normalizedId || layer.id;
+        
+        // If it's a simple layer with just an ID (no opacity or other properties), return the normalized ID
+        if (layer.id && Object.keys(layer).filter(k => !k.startsWith('_')).length === 1) {
+            return layerId;
         }
         
-        // If it's a layer with opacity, create a clean object without _originalJson
-        const cleanLayer = {};
+        // If it's a layer with opacity or other properties, create a clean object
+        const cleanLayer = { id: layerId };
         Object.keys(layer).forEach(key => {
-            if (key !== '_originalJson') {
+            if (key !== '_originalJson' && key !== '_normalizedId' && 
+                key !== '_sourceAtlas' && key !== '_prefixedId' && 
+                key !== 'id' && key !== 'initiallyChecked') {
                 cleanLayer[key] = layer[key];
             }
         });
+        
+        // If it's just an ID, return it as string
+        if (Object.keys(cleanLayer).length === 1) {
+            return layerId;
+        }
         
         // If it's a complex layer, return minified JSON
         const minified = JSON.stringify(cleanLayer);
@@ -125,6 +136,7 @@ class URLManager {
 
     /**
      * Get currently active layers from the map layer control
+     * Returns layers with normalized IDs for URL serialization
      */
     getCurrentActiveLayers() {
         if (!this.mapLayerControl || !this.mapLayerControl._state) {
@@ -139,10 +151,10 @@ class URLManager {
                 // Use the original layer configuration if it exists
                 if (group._originalJson) {
                     // If this is a custom layer from URL, preserve the original JSON string
-                    // Don't parse and re-stringify, as that loses the original formatting
                     const layerObj = { 
                         _originalJson: group._originalJson,
-                        id: group.id // Include ID for reference
+                        id: group.id,
+                        _normalizedId: group._normalizedId
                     };
                     // Include opacity if it exists and is different from default (1)
                     if (group.opacity !== undefined && group.opacity !== 1) {
@@ -151,7 +163,10 @@ class URLManager {
                     activeLayers.push(layerObj);
                 } else if (group.id) {
                     // Simple layer with just an ID
-                    const layerObj = { id: group.id };
+                    const layerObj = { 
+                        id: group.id,
+                        _normalizedId: group._normalizedId
+                    };
                     // Include opacity if it exists and is different from default (1)
                     if (group.opacity !== undefined && group.opacity !== 1) {
                         layerObj.opacity = group.opacity;
@@ -164,7 +179,8 @@ class URLManager {
                         // Create a representation for this group's active sublayers
                         const layerObj = {
                             id: group.title || `group-${groupIndex}`,
-                            sublayers: activeSubLayers
+                            sublayers: activeSubLayers,
+                            _normalizedId: group._normalizedId
                         };
                         // Include opacity if it exists and is different from default (1)
                         if (group.opacity !== undefined && group.opacity !== 1) {
@@ -176,7 +192,8 @@ class URLManager {
                     // Generic group
                     const layerObj = {
                         id: group.title || `group-${groupIndex}`,
-                        type: group.type || 'source'
+                        type: group.type || 'source',
+                        _normalizedId: group._normalizedId
                     };
                     // Include opacity if it exists and is different from default (1)
                     if (group.opacity !== undefined && group.opacity !== 1) {

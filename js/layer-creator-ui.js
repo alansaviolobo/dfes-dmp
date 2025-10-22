@@ -267,7 +267,7 @@ function makeLayerConfig(url, tilejson, metadata = null) {
             if (url && url.includes('commons.wikimedia.org/wiki/File:')) {
                 const fileName = url.split('/').pop();
                 const displayText = text || fileName;
-                return `<a href="${url}" target="_blank">${displayText}</a>`;
+                return `<a href='${url}' target='_blank'>${displayText}</a>`;
             }
             return text || url;
         };
@@ -307,7 +307,7 @@ function makeLayerConfig(url, tilejson, metadata = null) {
             // Add "via MapWarper" link
             if (originalUrl) {
                 attribution += attribution ? ' via ' : '';
-                attribution += `<a href="${originalUrl}" target="_blank">MapWarper</a>`;
+                attribution += `<a href='${originalUrl}' target='_blank'>MapWarper</a>`;
             }
             
             return attribution || undefined;

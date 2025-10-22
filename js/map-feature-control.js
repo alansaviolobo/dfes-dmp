@@ -1032,6 +1032,21 @@ export class MapFeatureControl {
     /**
      * Get layer order from config to maintain stable ordering
      */
+    /**
+     * Get layer config, using registry as fallback for cross-atlas layers
+     */
+    _getLayerConfig(layerId) {
+        // First try state manager
+        let config = this._stateManager.getLayerConfig(layerId);
+        
+        // If not found and registry is available, try the registry
+        if (!config && window.layerRegistry) {
+            config = window.layerRegistry.getLayer(layerId);
+        }
+        
+        return config;
+    }
+
     _getConfigLayerOrder() {
         if (!this._config || !this._config.layers) {
             // Try to get config from layer control if not available
@@ -1049,7 +1064,7 @@ export class MapFeatureControl {
             return this._config.layers
                 .filter(layer => {
                     // Include all layers that are registered with the state manager (visible layers)
-                    return this._stateManager.getLayerConfig(layer.id) !== undefined;
+                    return this._getLayerConfig(layer.id) !== undefined;
                 })
                 .map(layer => layer.id);
         }
@@ -1059,7 +1074,7 @@ export class MapFeatureControl {
             return this._config.groups
                 .filter(group => {
                     // Include all layers that are registered with the state manager (visible layers)
-                    return this._stateManager.getLayerConfig(group.id) !== undefined;
+                    return this._getLayerConfig(group.id) !== undefined;
                 })
                 .map(group => group.id);
         }
@@ -4524,6 +4539,12 @@ export class MapFeatureControl {
             hoveredLayerId: layerId
         };
 
+        // Update attribution to reflect only visible layers (isolated layer + basemaps)
+        if (window.attributionControl) {
+            console.debug('[FeatureControl] Updating attribution after layer isolation:', layerId);
+            window.attributionControl._updateAttribution();
+        }
+
     }
 
     /**
@@ -4551,6 +4572,12 @@ export class MapFeatureControl {
             hiddenLayers: [],
             hoveredLayerId: null
         };
+
+        // Update attribution to reflect all visible layers
+        if (window.attributionControl) {
+            console.debug('[FeatureControl] Updating attribution after restoring all layers');
+            window.attributionControl._updateAttribution();
+        }
     }
 
     /**
