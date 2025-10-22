@@ -132,10 +132,8 @@ function getInsertPosition(map, type, layerType, currentGroup, orderedGroups) {
             }
             break; // Exit the loop to append to end
         } else {
-            // Use configuration-based ordering
-            if (layerGroupIndex < currentGroupIndex || 
-                (layerGroupIndex === currentGroupIndex && thisLayerOrderValue < orderValue)) {
-                
+            // Use type-based ordering (prioritize type order over configuration order)
+            if (thisLayerOrderValue < orderValue) {
                 // Find the FIRST layer of this group (go backwards to find the start of the group)
                 let firstLayerOfGroup = i;
                 while (firstLayerOfGroup > 0 && layers[firstLayerOfGroup - 1].metadata?.groupId === groupId) {

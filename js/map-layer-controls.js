@@ -570,11 +570,20 @@ export class MapLayerControl {
         const $toggleTitleContainer = this._createToggleTitle(group);
         $contentWrapper.append($toggleTitleContainer, $settingsButton, $opacityButton);
 
+        // If headerImage is missing, try to resolve from registry
+        let headerImage = group.headerImage;
+        if (!headerImage && group.id && window.layerRegistry) {
+            const resolvedLayer = window.layerRegistry.getLayer(group.id);
+            if (resolvedLayer && resolvedLayer.headerImage) {
+                headerImage = resolvedLayer.headerImage;
+            }
+        }
+
         // Add header background if exists
-        if (group.headerImage) {
+        if (headerImage) {
             const $headerBg = $('<div>', {
                 class: 'absolute top-0 left-0 right-0 w-full h-full bg-cover bg-center bg-no-repeat',
-                style: `background-image: url('${group.headerImage}')`
+                style: `background-image: url('${headerImage}')`
             });
 
             const $headerOverlay = $('<div>', {
@@ -602,8 +611,18 @@ export class MapLayerControl {
 
         $toggleLabel.append($toggleInput, $toggleSlider);
 
+        // If no title, try to resolve from registry
+        let title = group.title;
+        if (!title && group.id && window.layerRegistry) {
+            const resolvedLayer = window.layerRegistry.getLayer(group.id);
+            if (resolvedLayer && resolvedLayer.title) {
+                title = resolvedLayer.title;
+                console.warn(`[MapLayerControl] Had to resolve title for ${group.id} from registry: ${title}`);
+            }
+        }
+        
         const $titleSpan = $('<span>', {
-            text: group.title,
+            text: title || group.id || 'Unknown Layer',
             class: 'control-title text-sm font-medium font-bold text-white'
         });
 
@@ -619,21 +638,33 @@ export class MapLayerControl {
      * Add group metadata (description, attribution)
      */
     _addGroupMetadata($groupHeader, group) {
-        if (group.description || group.attribution) {
+        // If metadata is missing, try to resolve from registry
+        let description = group.description;
+        let attribution = group.attribution;
+        
+        if ((!description || !attribution) && group.id && window.layerRegistry) {
+            const resolvedLayer = window.layerRegistry.getLayer(group.id);
+            if (resolvedLayer) {
+                description = description || resolvedLayer.description;
+                attribution = attribution || resolvedLayer.attribution;
+            }
+        }
+        
+        if (description || attribution) {
             const $contentArea = $('<div>', { class: 'description-area' });
 
-            if (group.description) {
+            if (description) {
                 const $description = $('<div>', {
                     class: 'text-sm text-gray-600',
-                    html: group.description
+                    html: description
                 });
                 $contentArea.append($description);
             }
 
-            if (group.attribution) {
+            if (attribution) {
                 const $attribution = $('<div>', {
                     class: 'layer-attribution',
-                    html: `Source: ${group.attribution.replace(/<a /g, '<a target="_blank" rel="noopener noreferrer" ')}`
+                    html: `Source: ${attribution.replace(/<a /g, '<a target="_blank" rel="noopener noreferrer" ')}`
                 });
                 $contentArea.append($attribution);
             }

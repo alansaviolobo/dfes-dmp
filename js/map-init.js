@@ -97,8 +97,60 @@ class LayerRegistry {
             }
         }
 
+        // After all atlases are loaded, resolve cross-atlas references
+        this._resolveCrossAtlasReferences();
+        
         console.log(`[LayerRegistry] Initialized with ${this._registry.size} layers from ${this._atlasLayers.size} atlases`);
+        
+        // Debug: Check if the india-forests layer is properly registered
+        if (this._registry.has('india-forests')) {
+            const layer = this._registry.get('india-forests');
+            console.log('[LayerRegistry] india-forests layer registered:', layer.title);
+        } else {
+            console.warn('[LayerRegistry] india-forests layer NOT found in registry');
+        }
+        
         this._initialized = true;
+    }
+
+    /**
+     * Resolve cross-atlas references after all atlases are loaded
+     */
+    _resolveCrossAtlasReferences() {
+        // Find all layers that are incomplete (missing title, type, etc.)
+        const incompleteLayers = [];
+        for (const [layerId, layer] of this._registry.entries()) {
+            if (!layer.title && !layer.type && layer.id.includes('-')) {
+                incompleteLayers.push({ layerId, layer });
+            }
+        }
+        
+        // Try to resolve each incomplete layer
+        for (const { layerId, layer } of incompleteLayers) {
+            const potentialAtlas = layer.id.split('-')[0];
+            const originalId = layer.id.substring(potentialAtlas.length + 1);
+            
+            // Try to find the original layer in the potential atlas
+            const crossAtlasLayers = this._atlasLayers.get(potentialAtlas);
+            if (crossAtlasLayers) {
+                const originalLayer = crossAtlasLayers.find(l => l.id === originalId);
+                if (originalLayer) {
+                    // Found the original layer, update the registry entry
+                    const resolvedLayer = {
+                        ...originalLayer,
+                        id: layer.id, // Keep the cross-atlas ID
+                        _crossAtlasReference: true,
+                        _originalAtlas: potentialAtlas,
+                        _originalId: originalId,
+                        _sourceAtlas: layer._sourceAtlas, // Preserve the source atlas
+                        _prefixedId: layer._prefixedId // Preserve the prefixed ID
+                    };
+                    
+                    this._registry.set(layerId, resolvedLayer);
+                    console.log(`[LayerRegistry] Resolved cross-atlas reference ${layerId} from ${potentialAtlas} atlas: ${resolvedLayer.title}`);
+                }
+            }
+        }
     }
 
     /**
@@ -684,7 +736,7 @@ async function loadConfiguration() {
                 if (resolvedLayer) {
                     // Merge the resolved layer with any custom overrides from config
                     // Preserve important URL-specific properties
-                    validLayers.push({ 
+                    const mergedLayer = { 
                         ...resolvedLayer, 
                         ...layerConfig,
                         // Ensure these critical properties are preserved
@@ -693,13 +745,21 @@ async function loadConfiguration() {
                         ...(layerConfig.opacity !== undefined && { opacity: layerConfig.opacity }),
                         // Store normalized ID for URL serialization
                         _normalizedId: layerRegistry.normalizeLayerId(layerConfig.id, atlasId)
-                    });
+                    };
+                    
+                    // Verify the merge preserved important properties
+                    if (!mergedLayer.title) {
+                        console.warn(`[LayerRegistry] Cross-atlas layer ${layerConfig.id} from ${resolvedLayer._sourceAtlas} atlas missing title after merge (this is unusual)`);
+                    }
+                    
+                    validLayers.push(mergedLayer);
                 } else {
                     // Layer not found in registry - check if it came from URL
                     if (layerConfig.initiallyChecked === true) {
-                        console.warn(`Unknown layer ID from URL: "${layerConfig.id}" - ignoring.`);
+                        console.warn(`[LayerRegistry] Unknown layer ID from URL: "${layerConfig.id}" - ignoring.`);
                         invalidLayers.push(layerConfig.id);
                     } else {
+                        console.warn(`[LayerRegistry] Layer "${layerConfig.id}" not found in registry, using as-is (might be missing metadata)`);
                         // For non-URL layers, keep them as-is (they might be fully defined custom layers)
                         validLayers.push(layerConfig);
                     }
