@@ -1432,33 +1432,6 @@
       }
     },
     {
-      "title": "Private Forests",
-      "description": "Private forests identified by Thomas and Arujao expert committees",
-      "headerImage": "assets/map-layers/map-layer-forest.png",
-      "type": "geojson",
-      "id": "private-forests",
-      "url": "https://gist.githubusercontent.com/planemad/54b84c11fc0325889f1127e49b5740db/raw/1f99740ddb55a1528d76a5364aa9a95c1fe800da/goa_private_forest_plots-jun-2026.geojson",
-      "attribution": "<a href='https://docs.google.com/spreadsheets/d/1OHrd9c61IQ2rE_pKqPrtMgT5AY5Wepru/edit?gid=378361244#gid=378361244'>Goa Private Forest Plots</a> - Collected by <a href='https://github.com/publicmap/amche-goa/issues/75'>Amche.in Community</a>",
-      "style": {
-        "line-color": "green",
-        "fill-color": "green"
-      },
-      "inspect": {
-        "id": "id",
-        "title": "Reference Number",
-        "label": "id",
-        "fields": [
-          "kide",
-          "village"
-        ],
-        "fieldTitles": [
-          "Survey Number",
-          "Village"
-        ]
-      }
-    },
-    
-    {
       "id": "slope",
       "title": "Slope Zoning",
       "description": "Slope zone classification using <a href='https://asterweb.jpl.nasa.gov/gdem.asp'>NASA NASADEM 30m</a> for entire Goa and <a href='https://bhuvan-app3.nrsc.gov.in/data/'>ISRO CartoDEM 2.5m (Bardez)</a> terrain data for Bardez taluka.<br>The output is a 30x30m grid indicating the minimum gradient within that cell. Details of the algorithm are in the <a href='https://github.com/publicmap/amche-goa/blob/main/data/slope/dem_slope_processor.py'>slope processor script</a>.",

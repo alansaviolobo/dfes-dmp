@@ -131,15 +131,6 @@ export class DrawerStateManager {
             
             this._isOpen = initialState;
             
-            console.debug('[DrawerStateManager] Initial state check:', {
-                isMobile,
-                shoelaceOpen,
-                hasOpenAttribute,
-                isVisible,
-                hasOpenClass,
-                finalState: this._isOpen
-            });
-            
             // Emit initial state after all checks
             this._emitStateChange('initial-state');
         }, 200); // Increased delay to ensure all initialization is complete

@@ -543,7 +543,6 @@ export class MapLayerControl {
                 // Update attribution after layer is removed (with small delay to ensure layer is fully removed)
                 setTimeout(() => {
                     if (window.attributionControl) {
-                        console.debug('[LayerControl] Updating attribution after layer removal:', group.id);
                         window.attributionControl._updateAttribution();
                     } else {
                         console.warn('[LayerControl] Attribution control not available');
@@ -1011,17 +1010,14 @@ export class MapLayerControl {
         
         // Skip style layers as they don't have their own sources/features
         if (layerConfig.type === 'style') {
-            console.debug(`[LayerControl] Skipping state manager registration for style layer ${layerConfig.id} (uses base map sources)`);
             return;
         }
         
         // Register the layer - MapFeatureStateManager will handle raster vs vector distinction
         this._stateManager.registerLayer(layerConfig);
-        console.debug(`[LayerControl] Registered layer ${layerConfig.id} with state manager`);
         
         // Register layer attribution if available
         if (layerConfig.attribution && window.attributionControl) {
-            console.debug(`[LayerControl] Adding attribution for layer ${layerConfig.id}`);
             window.attributionControl.addLayerAttribution(layerConfig.id, layerConfig.attribution);
         }
     }
@@ -1036,7 +1032,6 @@ export class MapLayerControl {
         
         // Remove layer attribution
         if (window.attributionControl) {
-            console.debug(`[LayerControl] Removing attribution for layer ${layerId}`);
             window.attributionControl.removeLayerAttribution(layerId);
         }
     }

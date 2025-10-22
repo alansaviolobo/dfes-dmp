@@ -500,7 +500,6 @@ export class MapboxAPI {
                 });
             });
             
-            console.debug(`[MapboxAPI] Style layer ${groupId}: processed ${totalLayersProcessed} layers, visible: ${visible}`);
             return true;
         }
         return false;
@@ -1248,8 +1247,6 @@ export class MapboxAPI {
                 style: lineStyle,
                 visible
             }, 'line');
-
-            console.log(`[MapboxAPI] Final layer config for geojson layer. The final line-width is`, lineLayerConfig.paint['line-width']);
 
             this._map.addLayer(lineLayerConfig, getInsertPosition(this._map, 'vector', 'line', config, this._orderedGroups));
         }

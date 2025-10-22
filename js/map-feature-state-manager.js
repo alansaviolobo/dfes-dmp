@@ -809,10 +809,6 @@ export class MapFeatureStateManager extends EventTarget {
         // Remove duplicates and return
         const finalMatches = [...new Set(matchingIds)];
         
-        if (this._isDebug) {
-            console.debug(`[StateManager] Final matches for ${layerId}:`, finalMatches);
-        }
-        
         return finalMatches;
     }
 

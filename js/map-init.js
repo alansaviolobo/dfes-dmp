@@ -97,14 +97,7 @@ class LayerRegistry {
             }
         }
 
-        const sortedRegistry = Object.fromEntries(
-            Array.from(this._registry.entries()).sort(([keyA], [keyB]) => keyA.localeCompare(keyB))
-        );
-        console.log(`[LayerRegistry] Initialized with ${this._registry.size} layers from ${this._atlasLayers.size} atlases`, sortedRegistry);
-        
-        // Debug: Log some sample entries
-        const sampleEntries = Array.from(this._registry.keys()).slice(0, 10);
-        console.debug('[LayerRegistry] Sample entries:', sampleEntries);
+        console.log(`[LayerRegistry] Initialized with ${this._registry.size} layers from ${this._atlasLayers.size} atlases`);
         this._initialized = true;
     }
 
@@ -113,7 +106,6 @@ class LayerRegistry {
      */
     setCurrentAtlas(atlasId) {
         this._currentAtlas = atlasId;
-        console.log(`[LayerRegistry] Current atlas set to: ${atlasId}`);
     }
 
     /**
@@ -538,7 +530,6 @@ async function loadConfiguration() {
             // Parse layers from URL parameter if provided
         if (layersParam) {
             const urlLayers = parseLayersFromUrl(layersParam);
-            console.log('Parsed URL layers:', urlLayers);
             
             // Set URL layers to be visible by default and maintain order
             if (urlLayers.length > 0) {

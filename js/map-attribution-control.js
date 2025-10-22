@@ -132,15 +132,11 @@ export class MapAttributionControl {
     _updateAttribution() {
         if (!this._map || !this._innerContainer) return;
         
-        console.debug('[MapAttributionControl] _updateAttribution called, layer attributions:', 
-            this._layerAttributions ? this._layerAttributions.size : 0);
-        
         try {
             // Try to get the style - handle the error if it's not ready
             // Note: isStyleLoaded() can be false even when getStyle() works, so we try directly
             const style = this._map.getStyle();
             if (!style || !style.sources) {
-                console.debug('[MapAttributionControl] Style or sources not available yet');
                 return;
             }
             
@@ -148,46 +144,31 @@ export class MapAttributionControl {
             
             // Get list of sources used by visible layers
             const visibleSources = new Set();
-            const visibleLayerIds = []; // For debugging
             style.layers.forEach(layer => {
                 if (layer.source) {
                     const visibility = this._map.getLayoutProperty(layer.id, 'visibility');
                     // Layer is visible if visibility is undefined or 'visible' (not 'none')
                     if (visibility === undefined || visibility === 'visible') {
                         visibleSources.add(layer.source);
-                        visibleLayerIds.push(layer.id);
                     }
                 }
             });
             
-            console.debug('[MapAttributionControl] Visible sources:', Array.from(visibleSources));
-            console.debug('[MapAttributionControl] Visible layer IDs (first 10):', visibleLayerIds.slice(0, 10));
-            
             // Add source attributions only for sources used by visible layers
             Object.entries(style.sources).forEach(([sourceId, source]) => {
                 if (source.attribution && visibleSources.has(sourceId)) {
-                    console.debug('[MapAttributionControl] Source with attribution:', {
-                        sourceId,
-                        attribution: source.attribution,
-                        sourceType: source.type
-                    });
-                    
                     // Skip sources that we're managing via _layerAttributions to avoid duplication
                     const isManagedByLayerAttribution = this._layerAttributions && 
                         Array.from(this._layerAttributions.values()).some(attr => attr === source.attribution);
                     
                     if (!isManagedByLayerAttribution) {
-                        console.debug('[MapAttributionControl] Adding source attribution from:', sourceId);
                         attributions.add(source.attribution);
-                    } else {
-                        console.debug('[MapAttributionControl] Skipping source attribution (managed by layer):', sourceId);
                     }
                 }
             });
             
             // Add custom attribution if provided
             if (this.options.customAttribution) {
-                console.debug('[MapAttributionControl] Adding custom attribution:', this.options.customAttribution);
                 attributions.add(this.options.customAttribution);
             }
 
@@ -239,11 +220,6 @@ export class MapAttributionControl {
                     }
                 });
                 
-                console.debug('[MapAttributionControl] Visible config layers:', 
-                    Array.from(visibleConfigLayers));
-                console.debug('[MapAttributionControl] All layer attributions:', 
-                    Array.from(this._layerAttributions.keys()));
-                
                 // Only add attributions for visible config layers
                 // Also verify that the config layer actually has visible style layers (not just pattern matches)
                 this._layerAttributions.forEach((attribution, layerId) => {
@@ -272,24 +248,20 @@ export class MapAttributionControl {
                         });
                         
                         if (hasVisibleStyleLayer) {
-                            console.debug('[MapAttributionControl] Adding attribution for visible layer:', layerId);
                             attributions.add(attribution);
-                        } else {
-                            console.debug('[MapAttributionControl] Skipping attribution - no visible style layers found for:', layerId);
                         }
-                    } else if (attribution && attribution.trim()) {
-                        console.debug('[MapAttributionControl] Skipping attribution for hidden layer:', layerId);
                     }
                 });
             }
-            
-            console.debug('[MapAttributionControl] Total attributions collected:', attributions.size);
             
             // Format and display attributions
             this._displayAttributions(Array.from(attributions));
             
         } catch (error) {
-            console.warn('[MapAttributionControl] Error updating attribution:', error);
+            // Silently ignore errors during initial load when style isn't ready
+            if (error.message !== 'Style is not done loading') {
+                console.warn('[MapAttributionControl] Error updating attribution:', error);
+            }
         }
     }
 
@@ -448,7 +420,6 @@ export class MapAttributionControl {
      */
     addLayerAttribution(layerId, attribution) {
         if (!attribution || !attribution.trim()) {
-            console.debug(`[MapAttributionControl] No attribution to add for layer ${layerId}`);
             return;
         }
         
@@ -457,7 +428,6 @@ export class MapAttributionControl {
             this._layerAttributions = new Map();
         }
         
-        console.debug(`[MapAttributionControl] Adding attribution for layer ${layerId}:`, attribution);
         this._layerAttributions.set(layerId, attribution);
         this._updateAttribution();
     }
@@ -467,12 +437,8 @@ export class MapAttributionControl {
      */
     removeLayerAttribution(layerId) {
         if (this._layerAttributions) {
-            const hadAttribution = this._layerAttributions.has(layerId);
             this._layerAttributions.delete(layerId);
-            console.debug(`[MapAttributionControl] Removed attribution for layer ${layerId}, had attribution: ${hadAttribution}`);
             this._updateAttribution();
-        } else {
-            console.debug(`[MapAttributionControl] No layer attributions to remove for ${layerId}`);
         }
     }
 }
