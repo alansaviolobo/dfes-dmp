@@ -3525,11 +3525,8 @@ export class MapFeatureControl {
             if (interactiveFeatures.length > 0) {
                 this._stateManager.handleFeatureClicks(interactiveFeatures);
                 
-                // Delay camera movement to let selection state settle and avoid deselection
-                // This prevents the camera animation from triggering mouse leave events that deselect features
-                setTimeout(() => {
-                    this._easeToCenterWithOffset(e.lngLat);
-                }, 100); // 100ms delay to let selection state stabilize
+                // Map recentering disabled - features are selected without changing map center
+                // Previously: setTimeout(() => { this._easeToCenterWithOffset(e.lngLat); }, 100);
             } else {
                 // Clear selections if clicking on empty area
                 this._stateManager.clearAllSelections();
