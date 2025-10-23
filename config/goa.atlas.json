@@ -480,6 +480,65 @@
       }
     },
     {
+      "title": "Swadesh Darshan - Project Plans",
+      "description": "Map 14: Proposed Interventions for Development of Nautical and Ecological Experience in and around Ekoshim Creek<br>Map 15: Proposed Elements of Ekoshim Road Promenade Development",
+      "source": "https://sd2.tourism.gov.in/DocumentRepoFiles/MasterPlan/MP353addb8-ecdb-4942-8cff-6f71e069304a.pdf",
+      "dateDepicted": "",
+      "type": "tms",
+      "id": "swadesh-darshan-projects",
+      "url": "https://mapwarper.net/mosaics/tile/2348/{z}/{x}/{y}.png",
+      "style": {
+        "raster-opacity": [
+          "interpolate",
+          [
+            "linear"
+          ],
+          [
+            "zoom"
+          ],
+          6,
+          0.95,
+          15,
+          0.9,
+          19,
+          0
+        ]
+      },
+      "attribution": "<a href='https://mapwarper.net/maps/98268' target='_blank'>MapWarper</a>",
+      "headerImage": "https://mapwarper.net/uploads/98268/thumb/Screenshot_2025-10-21_at_6.04.27%E2%80%AFPM.png",
+      "bbox": "73.8341072,15.5020322,73.8719055,15.5296044",
+      "initiallyChecked": false
+    },
+    {
+      "title": "Swadesh Darshan - Project Drawings",
+      "source": "https://sd2.tourism.gov.in/DocumentRepoFiles/MasterPlan/MP353addb8-ecdb-4942-8cff-6f71e069304a.pdf",
+      "dateDepicted": "",
+      "type": "tms",
+      "id": "swadesh-darshan-drwaings",
+      "url": "https://mapwarper.net/maps/tile/98250/{z}/{x}/{y}.png",
+      "style": {
+        "raster-opacity": [
+          "interpolate",
+          [
+            "linear"
+          ],
+          [
+            "zoom"
+          ],
+          14,
+          0,
+          17,
+          0.8,
+          19,
+          0
+        ]
+      },
+      "attribution": "<a href='https://mapwarper.net/maps/98250' target='_blank'>MapWarper</a>",
+      "headerImage": "https://mapwarper.net/uploads/98250/thumb/DPR_Annexures_Feb_2024.png",
+      "bbox": "73.8248838,15.4937915,73.8712939,15.5425383",
+      "initiallyChecked": false
+    },
+    {
       "title": "Proposed Goa Tiger Reserve Plan",
       "description": "Plan for proposed Tiger Reserve of Goa showing core and buffer areas including details of houses within the reserve.Obtained <a href='https://archive.org/details/tiger-reserve-pil/Tiger%20Reserve%20Area%20Map%20-%202/'>via RTI by Goa Foundation for the Tiger Reserve Petition</a>.",
       "source": "",
