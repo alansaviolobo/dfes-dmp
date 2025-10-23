@@ -25,7 +25,12 @@ class URLManager {
         }
         
         // Use normalized ID if available (removes current atlas prefix)
-        const layerId = layer._normalizedId || layer.id;
+        let layerId = layer._normalizedId || layer.id;
+        
+        // If we don't have a normalized ID, try to get it from the registry
+        if (!layer._normalizedId && window.layerRegistry) {
+            layerId = window.layerRegistry.normalizeLayerId(layer.id);
+        }
         
         // If it's a simple layer with just an ID (no opacity or other properties), return the normalized ID
         if (layer.id && Object.keys(layer).filter(k => !k.startsWith('_')).length === 1) {
@@ -144,6 +149,7 @@ class URLManager {
         }
 
         const activeLayers = [];
+        console.log('🔗 URLManager: Getting current active layers...');
         
         // Iterate through all groups in the layer control
         this.mapLayerControl._state.groups.forEach((group, groupIndex) => {
@@ -162,10 +168,16 @@ class URLManager {
                     }
                     activeLayers.push(layerObj);
                 } else if (group.id) {
+                    // Get the proper normalized ID from the layer registry
+                    let normalizedId = group._normalizedId;
+                    if (!normalizedId && window.layerRegistry) {
+                        normalizedId = window.layerRegistry.normalizeLayerId(group.id);
+                    }
+                    
                     // Simple layer with just an ID
                     const layerObj = { 
                         id: group.id,
-                        _normalizedId: group._normalizedId
+                        _normalizedId: normalizedId
                     };
                     // Include opacity if it exists and is different from default (1)
                     if (group.opacity !== undefined && group.opacity !== 1) {
@@ -176,11 +188,17 @@ class URLManager {
                     // For style groups with sublayers, check which sublayers are active
                     const activeSubLayers = this.getActiveSubLayers(groupIndex);
                     if (activeSubLayers.length > 0) {
+                        // Get the proper normalized ID from the layer registry
+                        let normalizedId = group._normalizedId;
+                        if (!normalizedId && window.layerRegistry) {
+                            normalizedId = window.layerRegistry.normalizeLayerId(group.id);
+                        }
+                        
                         // Create a representation for this group's active sublayers
                         const layerObj = {
                             id: group.title || `group-${groupIndex}`,
                             sublayers: activeSubLayers,
-                            _normalizedId: group._normalizedId
+                            _normalizedId: normalizedId
                         };
                         // Include opacity if it exists and is different from default (1)
                         if (group.opacity !== undefined && group.opacity !== 1) {
@@ -189,11 +207,17 @@ class URLManager {
                         activeLayers.push(layerObj);
                     }
                 } else {
+                    // Get the proper normalized ID from the layer registry
+                    let normalizedId = group._normalizedId;
+                    if (!normalizedId && window.layerRegistry) {
+                        normalizedId = window.layerRegistry.normalizeLayerId(group.id);
+                    }
+                    
                     // Generic group
                     const layerObj = {
                         id: group.title || `group-${groupIndex}`,
                         type: group.type || 'source',
-                        _normalizedId: group._normalizedId
+                        _normalizedId: normalizedId
                     };
                     // Include opacity if it exists and is different from default (1)
                     if (group.opacity !== undefined && group.opacity !== 1) {
@@ -204,6 +228,11 @@ class URLManager {
             }
         });
 
+        // Also check for cross-atlas layers that might be active
+        const crossAtlasLayers = this.getActiveCrossAtlasLayers();
+        activeLayers.push(...crossAtlasLayers);
+
+        console.log('🔗 URLManager: Found active layers:', activeLayers);
         return activeLayers;
     }
 
@@ -212,13 +241,16 @@ class URLManager {
      */
     isGroupActive(groupIndex) {
         if (!this.mapLayerControl._sourceControls || !this.mapLayerControl._sourceControls[groupIndex]) {
+            console.log(`🔗 URLManager: Group ${groupIndex} not found in source controls`);
             return false;
         }
 
         const $groupControl = $(this.mapLayerControl._sourceControls[groupIndex]);
         const $toggle = $groupControl.find('.toggle-switch input[type="checkbox"]');
+        const isChecked = $toggle.length > 0 && $toggle.prop('checked');
         
-        return $toggle.length > 0 && $toggle.prop('checked');
+        console.log(`🔗 URLManager: Group ${groupIndex} active: ${isChecked}`);
+        return isChecked;
     }
 
     /**
@@ -246,6 +278,50 @@ class URLManager {
     }
 
     /**
+     * Get active cross-atlas layers
+     */
+    getActiveCrossAtlasLayers() {
+        const activeLayers = [];
+        
+        // Find all cross-atlas layer elements that are currently active
+        const $crossAtlasLayers = $('.cross-atlas-layer');
+        
+        $crossAtlasLayers.each((index, element) => {
+            const $element = $(element);
+            const $toggleInput = $element.find('.toggle-switch input[type="checkbox"]');
+            
+            if ($toggleInput.length > 0 && $toggleInput.prop('checked')) {
+                const layerId = $element.attr('data-layer-id');
+                if (layerId) {
+                    // Find the layer in the state
+                    const layer = this.mapLayerControl._state.groups.find(g => g.id === layerId || g._prefixedId === layerId);
+                    if (layer) {
+                        // Get the proper normalized ID from the layer registry
+                        let normalizedId = layer._normalizedId;
+                        if (!normalizedId && window.layerRegistry) {
+                            normalizedId = window.layerRegistry.normalizeLayerId(layerId);
+                        }
+                        
+                        const layerObj = {
+                            id: layerId,
+                            _normalizedId: normalizedId
+                        };
+                        
+                        // Include opacity if it exists and is different from default (1)
+                        if (layer.opacity !== undefined && layer.opacity !== 1) {
+                            layerObj.opacity = layer.opacity;
+                        }
+                        
+                        activeLayers.push(layerObj);
+                    }
+                }
+            }
+        });
+        
+        return activeLayers;
+    }
+
+    /**
      * Update URL with current layer state
      */
     updateURL(options = {}) {
@@ -264,6 +340,7 @@ class URLManager {
     }
 
     _performURLUpdate(options = {}) {
+        console.log('🔗 URLManager: _performURLUpdate called with options:', options);
         const urlParams = new URLSearchParams(window.location.search);
         let hasChanges = false;
         let layersParam = null;
@@ -280,6 +357,12 @@ class URLManager {
             const activeLayers = this.getCurrentActiveLayers();
             const newLayersParam = this.serializeLayersForURL(activeLayers);
             const currentLayersParam = urlParams.get('layers');
+            
+            console.log('🔗 URLManager: Layers comparison:', {
+                activeLayers,
+                newLayersParam,
+                currentLayersParam
+            });
 
             // Only update if the layers actually changed, not just formatting
             // This prevents reverting pretty URLs back to encoded versions
@@ -288,11 +371,21 @@ class URLManager {
                 const normalizedNew = decodeURIComponent(newLayersParam || '');
                 const normalizedCurrent = decodeURIComponent(currentLayersParam || '');
                 
+                console.log('🔗 URLManager: Normalized comparison:', {
+                    normalizedNew,
+                    normalizedCurrent,
+                    areEqual: normalizedNew === normalizedCurrent
+                });
+                
                 if (normalizedNew !== normalizedCurrent) {
                     layersParam = newLayersParam;
                     hasChanges = true;
+                    console.log('🔗 URLManager: Layers changed, will update URL');
                 } else {
+                    console.log('🔗 URLManager: Layers are the same after normalization, no update needed');
                 }
+            } else {
+                console.log('🔗 URLManager: Layers param unchanged, no update needed');
             }
         }
 
@@ -407,6 +500,7 @@ class URLManager {
         }
 
         // Update URL if there are changes
+        console.log('🔗 URLManager: hasChanges =', hasChanges);
         if (hasChanges) {
             // Create a pretty, readable URL without URL encoding
             const baseUrl = `${window.location.protocol}//${window.location.host}${window.location.pathname}`;
@@ -439,29 +533,19 @@ class URLManager {
             // Add layers parameter if present - this is the key fix for pretty URLs
             if (layersParam) {
                 // Don't URL-encode the layers parameter to keep it readable
+                console.log('🔗 URLManager: Adding layers param:', layersParam);
                 params.push('layers=' + layersParam);
             } else if (options.updateLayers === false) {
                 // If we're not updating layers, preserve the current layers parameter as-is
                 const currentLayersParam = urlParams.get('layers');
                 if (currentLayersParam) {
+                    console.log('🔗 URLManager: Preserving layers param (updateLayers=false):', currentLayersParam);
                     params.push('layers=' + currentLayersParam);
                 }
             } else {
-                // If updateLayers is not explicitly set, preserve existing layers parameter in pretty format
-                // Get the raw layers parameter from the current URL to avoid URL decoding issues
-                const currentURL = window.location.search;
-                const layersMatch = currentURL.match(/[?&]layers=([^&]*)/);
-                if (layersMatch) {
-                    const rawLayersParam = layersMatch[1];
-                    // Only preserve if it doesn't contain URL encoding (i.e., it's already pretty)
-                    if (!rawLayersParam.includes('%')) {
-                        params.push('layers=' + rawLayersParam);
-                    } else {
-                        // If it's URL encoded, decode it to make it pretty
-                        const decodedLayers = decodeURIComponent(rawLayersParam);
-                        params.push('layers=' + decodedLayers);
-                    }
-                }
+                // When layersParam is empty and we're updating layers, don't add layers parameter
+                // This effectively removes the layers parameter from the URL
+                console.log('🔗 URLManager: No layers param to add (layers are empty)');
             }
             
             // Add geolocate parameter if active (either new or preserved from current URL)
@@ -511,6 +595,7 @@ class URLManager {
                 newUrl += window.location.hash;
             }
             
+            console.log('🔗 URLManager: Final URL:', newUrl);
             window.history.replaceState(null, '', newUrl);
             
             // Trigger custom event for other components (like ShareLink)
@@ -525,18 +610,23 @@ class URLManager {
      */
     serializeLayersForURL(layers) {
         if (!layers || layers.length === 0) {
+            console.log('🔗 URLManager: No layers to serialize, returning empty string');
             return '';
         }
 
-        return layers.map(layer => {
+        const serialized = layers.map(layer => {
             return this.layerToURL(layer);
         }).join(',');
+        
+        console.log('🔗 URLManager: Serialized layers:', serialized);
+        return serialized;
     }
 
     /**
      * Update URL when layers change
      */
     onLayersChanged() {
+        console.log('🔗 URLManager: onLayersChanged called');
         this.updateURL({ updateLayers: true });
     }
 
@@ -752,6 +842,37 @@ class URLManager {
 
         // Listen for sl-show/sl-hide events on layer groups
         $(document).on('sl-show sl-hide', 'sl-details', () => {
+            if (!this.isUpdatingFromURL) {
+                this.onLayersChanged();
+            }
+        });
+
+        // Listen for cross-atlas layer events
+        $(document).on('sl-show sl-hide', '.cross-atlas-layer', () => {
+            if (!this.isUpdatingFromURL) {
+                this.onLayersChanged();
+            }
+        });
+
+        // Listen for state manager events to catch layer registration/unregistration
+        if (window.stateManager) {
+            this._stateManagerListener = (event) => {
+                const { eventType } = event.detail;
+                if (eventType === 'layer-registered' || eventType === 'layer-unregistered') {
+                    if (!this.isUpdatingFromURL) {
+                        // Use a small delay to ensure the layer control state is updated
+                        setTimeout(() => {
+                            this.onLayersChanged();
+                        }, 50);
+                    }
+                }
+            };
+            window.stateManager.addEventListener('state-change', this._stateManagerListener);
+        }
+
+        // Listen for custom layer toggle events
+        window.addEventListener('layer-toggled', (event) => {
+            console.log('🔗 URLManager: layer-toggled event received', event.detail);
             if (!this.isUpdatingFromURL) {
                 this.onLayersChanged();
             }

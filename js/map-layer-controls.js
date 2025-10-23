@@ -418,6 +418,12 @@ export class MapLayerControl {
         $opacityButton.toggleClass('hidden', false);
         $settingsButton.toggleClass('hidden', false);
         $(event.target).closest('.group-header').addClass('active');
+        
+        // Dispatch custom event for URL sync
+        console.log('🔗 LayerControl: Dispatching layer-toggled event (show)', { layerId: group.id, visible: true, isCrossAtlas: isCrossAtlas });
+        window.dispatchEvent(new CustomEvent('layer-toggled', { 
+            detail: { layerId: group.id, visible: true, isCrossAtlas: isCrossAtlas }
+        }));
     }
 
     /**
@@ -444,6 +450,12 @@ export class MapLayerControl {
         $opacityButton.toggleClass('hidden', true);
         $settingsButton.toggleClass('hidden', true);
         $(event.target).closest('.group-header').removeClass('active');
+        
+        // Dispatch custom event for URL sync
+        console.log('🔗 LayerControl: Dispatching layer-toggled event (hide)', { layerId: group.id, visible: false, isCrossAtlas: isCrossAtlas });
+        window.dispatchEvent(new CustomEvent('layer-toggled', { 
+            detail: { layerId: group.id, visible: false, isCrossAtlas: isCrossAtlas }
+        }));
     }
 
     /**
@@ -1109,25 +1121,43 @@ export class MapLayerControl {
         if (!shareButton) return;
 
         shareButton.addEventListener('click', () => {
-            const visibleLayers = this._getVisibleLayers();
-            const url = new URL(window.location.href);
-
-            if (visibleLayers.length > 0) {
-                url.searchParams.set('layers', visibleLayers.join(','));
+            // If URL manager is available, use it instead of our own logic
+            if (window.urlManager) {
+                // Let URL manager handle the URL update
+                window.urlManager.syncURL();
+                
+                // Get the current URL from the URL manager
+                const currentUrl = window.urlManager.getCurrentURL();
+                
+                navigator.clipboard.writeText(currentUrl).then(() => {
+                    this._showToast('Link copied to clipboard!');
+                    this._showQRCode(shareButton, currentUrl);
+                }).catch(err => {
+                    console.error('Failed to copy link:', err);
+                    this._showToast('Failed to copy link', 'error');
+                });
             } else {
-                url.searchParams.delete('layers');
+                // Fallback to our own logic if URL manager is not available
+                const visibleLayers = this._getVisibleLayers();
+                const url = new URL(window.location.href);
+
+                if (visibleLayers.length > 0) {
+                    url.searchParams.set('layers', visibleLayers.join(','));
+                } else {
+                    url.searchParams.delete('layers');
+                }
+
+                const prettyUrl = decodeURIComponent(url.toString()).replace(/\+/g, ' ');
+                window.history.replaceState({}, '', prettyUrl);
+
+                navigator.clipboard.writeText(prettyUrl).then(() => {
+                    this._showToast('Link copied to clipboard!');
+                    this._showQRCode(shareButton, prettyUrl);
+                }).catch(err => {
+                    console.error('Failed to copy link:', err);
+                    this._showToast('Failed to copy link', 'error');
+                });
             }
-
-            const prettyUrl = decodeURIComponent(url.toString()).replace(/\+/g, ' ');
-            window.history.replaceState({}, '', prettyUrl);
-
-            navigator.clipboard.writeText(prettyUrl).then(() => {
-                this._showToast('Link copied to clipboard!');
-                this._showQRCode(shareButton, prettyUrl);
-            }).catch(err => {
-                console.error('Failed to copy link:', err);
-                this._showToast('Failed to copy link', 'error');
-            });
         });
     }
 
@@ -1137,19 +1167,29 @@ export class MapLayerControl {
     _getVisibleLayers() {
         const visibleLayers = [];
 
-        this._sourceControls.forEach((groupHeader, index) => {
-            const group = this._state.groups[index];
-            const toggleInput = groupHeader?.querySelector('.toggle-switch input[type="checkbox"]');
-
+        // Check all layer controls (including cross-atlas layers)
+        const allLayerControls = document.querySelectorAll('.group-header');
+        
+        allLayerControls.forEach((groupHeader) => {
+            const toggleInput = groupHeader.querySelector('.toggle-switch input[type="checkbox"]');
+            
             if (toggleInput && toggleInput.checked) {
-                if (group.type === 'layer-group') {
-                    const radioGroup = groupHeader?.querySelector('.radio-group');
-                    const selectedRadio = radioGroup?.querySelector('input[type="radio"]:checked');
-                    if (selectedRadio) {
-                        visibleLayers.push(selectedRadio.value);
+                const layerId = groupHeader.getAttribute('data-layer-id');
+                if (layerId) {
+                    // Find the group in state
+                    const group = this._state.groups.find(g => g.id === layerId || g._prefixedId === layerId);
+                    
+                    if (group) {
+                        if (group.type === 'layer-group') {
+                            const radioGroup = groupHeader.querySelector('.radio-group');
+                            const selectedRadio = radioGroup?.querySelector('input[type="radio"]:checked');
+                            if (selectedRadio) {
+                                visibleLayers.push(selectedRadio.value);
+                            }
+                        } else {
+                            visibleLayers.push(group._originalJson || group.id);
+                        }
                     }
-                } else {
-                    visibleLayers.push(group._originalJson || group.id);
                 }
             }
         });
@@ -1506,6 +1546,11 @@ export class MapLayerControl {
             initiallyChecked: true
         };
         
+        // Set the normalized ID for URL serialization using the registry
+        if (window.layerRegistry) {
+            layerWithPrefix._normalizedId = window.layerRegistry.normalizeLayerId(layerWithPrefix.id);
+        }
+        
         this._state.groups.push(layerWithPrefix);
         
         // Activate the layer
@@ -1527,6 +1572,11 @@ export class MapLayerControl {
         if (window.urlManager) {
             window.urlManager.onLayersChanged();
         }
+        
+        // Dispatch custom event for URL sync
+        window.dispatchEvent(new CustomEvent('layer-toggled', { 
+            detail: { layerId: layerWithPrefix.id, visible: true, isCrossAtlas: true }
+        }));
     }
 
     /**
@@ -1565,6 +1615,11 @@ export class MapLayerControl {
         if (window.urlManager) {
             window.urlManager.onLayersChanged();
         }
+        
+        // Dispatch custom event for URL sync
+        window.dispatchEvent(new CustomEvent('layer-toggled', { 
+            detail: { layerId: layerId, visible: false, isCrossAtlas: true }
+        }));
     }
 
 
