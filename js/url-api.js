@@ -149,7 +149,6 @@ class URLManager {
         }
 
         const activeLayers = [];
-        console.log('🔗 URLManager: Getting current active layers...');
         
         // Iterate through all groups in the layer control
         this.mapLayerControl._state.groups.forEach((group, groupIndex) => {
@@ -249,7 +248,6 @@ class URLManager {
         const $toggle = $groupControl.find('.toggle-switch input[type="checkbox"]');
         const isChecked = $toggle.length > 0 && $toggle.prop('checked');
         
-        console.log(`🔗 URLManager: Group ${groupIndex} active: ${isChecked}`);
         return isChecked;
     }
 
@@ -380,12 +378,7 @@ class URLManager {
                 if (normalizedNew !== normalizedCurrent) {
                     layersParam = newLayersParam;
                     hasChanges = true;
-                    console.log('🔗 URLManager: Layers changed, will update URL');
-                } else {
-                    console.log('🔗 URLManager: Layers are the same after normalization, no update needed');
-                }
-            } else {
-                console.log('🔗 URLManager: Layers param unchanged, no update needed');
+                } 
             }
         }
 
@@ -626,7 +619,6 @@ class URLManager {
      * Update URL when layers change
      */
     onLayersChanged() {
-        console.log('🔗 URLManager: onLayersChanged called');
         this.updateURL({ updateLayers: true });
     }
 
@@ -872,7 +864,6 @@ class URLManager {
 
         // Listen for custom layer toggle events
         window.addEventListener('layer-toggled', (event) => {
-            console.log('🔗 URLManager: layer-toggled event received', event.detail);
             if (!this.isUpdatingFromURL) {
                 this.onLayersChanged();
             }

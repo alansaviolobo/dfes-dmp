@@ -1174,12 +1174,14 @@ export class MapFeatureControl {
         // Clear existing content except summary
         const existingContent = layerElement.querySelector('.layer-content');
         if (existingContent) {
-            existingContent.remove();
+            existingContent.replaceChildren();
         }
 
         // Create main content container
-        const contentContainer = document.createElement('div');
-        contentContainer.className = 'layer-content';
+        const contentContainer = existingContent || document.createElement('div');
+        if (!existingContent) {
+            contentContainer.className = 'layer-content';
+        }
         contentContainer.style.cssText = `
             background: transparent;
         `;
@@ -1205,7 +1207,11 @@ export class MapFeatureControl {
         this._setupDetailsGroupAccordion(detailsGroup);
 
         contentContainer.appendChild(detailsGroup);
-        layerElement.appendChild(contentContainer);
+
+        // Only append if this is a new container
+        if (!existingContent) {
+            layerElement.appendChild(contentContainer);
+        }
     }
 
     /**

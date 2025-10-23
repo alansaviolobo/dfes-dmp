@@ -17,8 +17,6 @@ class StatePersistence {
         this.setupEventListeners();
         this.restoreStateOnLoad();
         this.isInitialized = true;
-        
-        console.debug('🔄 State persistence initialized');
     }
 
     /**
