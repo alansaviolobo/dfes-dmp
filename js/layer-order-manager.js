@@ -111,9 +111,9 @@ function getInsertPosition(map, type, layerType, currentGroup, orderedGroups) {
         // If this layer should be rendered before our new layer
         // Check if we're dealing with URL-specified layers by seeing if there are custom layers already loaded
         const customLayersAlreadyLoaded = layers.filter(l => l.metadata?.groupId);
-        const isUrlBasedOrdering = customLayersAlreadyLoaded.length > 0;
+        const isUrlBasedOrdering = urlLayerOrder.length > 0;
         
-        if (isUrlBasedOrdering && urlLayerOrder.length > 0) {
+        if (isUrlBasedOrdering && customLayersAlreadyLoaded.length > 0) {
             // For URL-based ordering, find the correct position based on URL parameter sequence
             const currentLayerId = currentGroup?.id;
             const currentUrlIndex = urlLayerOrder.indexOf(currentLayerId);
