@@ -1,8 +1,8 @@
 {
-  "name": "Default map layer configuration defined by amche-goa community",
+  "name": "Default map layer configuration defined by DFES",
   "areaOfInterest": "Goa, India",
   "version": "0.1.0",
-  "url": "https://github.com/publicmap/amche-goa/blob/main/config/index.atlas.json",
+  "url": "https://github.com/alansaviolobo/dfes-dmp/blob/main/config/index.atlas.json",
   "map": {
     "center": [
       73.8,
@@ -11,7 +11,7 @@
     "zoom": 11.4
   },
   "ui": {
-    "title": "Maps नकासो",
+    "title": "Atlas नकासो",
     "shareButton": "Share वांटो"
   },
   "layers": [
