@@ -124,7 +124,7 @@ customElements.whenDefined('sl-menu-item').then(() => {
 /**
  * MapLinks plugin initialization
  */
-import {MapLinks} from './js/map-links.js';
+import {MapLinks} from './map-links.js';
 
 window.addEventListener('mapReady', (event) => {
     const mapLinks = new MapLinks({
@@ -136,7 +136,7 @@ window.addEventListener('mapReady', (event) => {
 /**
  * ShareLink plugin initialization
  */
-import { ShareLink } from './js/share-link.js';
+import { ShareLink } from './share-link.js';
 
 // Initialize ShareLink plugin when DOM is ready
 document.addEventListener('DOMContentLoaded', () => {
