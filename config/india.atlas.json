@@ -151,15 +151,20 @@
     },
     {
       "title": "CartoDEM Contours (10m)",
-      "description": "data/contours/cdng47b-z14.mbtiles",
+      "description": "10m interval contour lines derived from ISRO CartoDEM v3r1",
+      "headerImage": "assets/map-layers/map-layer-cartodem-contours.png",
       "type": "vector",
-      "id": "bhuvan_cartodem_v3r1_contours-i2frty",
+      "id": "cartodem-contours",
       "url": "https://indianopenmaps.fly.dev/dem/contours/cartodem-v3r1/bhuvan/{z}/{x}/{y}.pbf",
       "sourceLayer": "contour",
       "minzoom": 6,
       "maxzoom": 14,
-      "attribution": "undefined - Collected by <a href=\"https://datameet.org\" target=\"_blank\" rel=\"noopener noreferrer\">Datameet Community</a>",
+      "attribution": "<a href='https://bhuvan-app3.nrsc.gov.in/data/download/index.php'>ISRO CartoDEM 30m v3r1</a> - Collected by <a href='https://github.com/ramSeraph/indian_land_features/releases/tag/cartodem-30m-v3r1'>Datameet Community</a>",
       "initiallyChecked": false,
+      "style": {
+        "line-color": "brown",
+        "line-width": 2
+      },
       "inspect": {
         "id": "gid",
         "title": "Name",

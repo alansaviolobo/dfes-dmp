@@ -610,6 +610,59 @@ const defaultMapOptions = {
     attributionControl: false
 };
 
+/**
+ * Initialize slot layers for proper layer ordering
+ * Slots provide well-defined insertion points in the style's layer stack
+ * Reference: https://docs.mapbox.com/style-spec/reference/slots/
+ * @param {mapboxgl.Map} map - The Mapbox map instance
+ */
+function _initializeSlotLayers(map) {
+    try {
+        const style = map.getStyle();
+        if (!style || !style.layers) {
+            console.warn('[MapInit] Cannot initialize slots: style or layers not available');
+            return;
+        }
+        
+        // Find the water layer to insert slots after it
+        const waterLayerIndex = style.layers.findIndex(layer => layer.id === 'water');
+        
+        if (waterLayerIndex === -1) {
+            console.warn('[MapInit] Water layer not found, inserting slots at the beginning');
+        }
+        
+        // Determine the layer to insert before (the layer after water)
+        const beforeLayerId = waterLayerIndex >= 0 && waterLayerIndex < style.layers.length - 1
+            ? style.layers[waterLayerIndex + 1].id
+            : null;
+        
+        // Add three slot layers: bottom (for rasters), middle (for vectors), top (for overlays)
+        // Reference: https://docs.mapbox.com/style-spec/reference/layers/#layer-properties
+        const slots = ['bottom', 'middle', 'top'];
+        
+        slots.forEach(slotName => {
+            // Check if slot already exists
+            if (!map.getLayer(slotName)) {
+                try {
+                    map.addLayer({
+                        id: slotName,
+                        type: 'slot'
+                    }, beforeLayerId);
+                    console.log(`[MapInit] Added slot layer: ${slotName}`);
+                } catch (error) {
+                    console.error(`[MapInit] Failed to add slot layer ${slotName}:`, error);
+                }
+            } else {
+                console.log(`[MapInit] Slot layer ${slotName} already exists`);
+            }
+        });
+        
+        console.log('[MapInit] Slot layers initialized successfully');
+    } catch (error) {
+        console.error('[MapInit] Error initializing slot layers:', error);
+    }
+}
+
 // Initialize the map with the configuration
 async function initializeMap() {
     const config = await loadConfiguration();
@@ -639,6 +692,10 @@ async function initializeMap() {
 
             // Setup proper cursor handling for map dragging
     map.on('load', () => {
+        // Initialize slot layers for proper layer ordering
+        // Reference: https://docs.mapbox.com/style-spec/reference/slots/
+        _initializeSlotLayers(map);
+        
         // Add 3D terrain control (will be initialized after URL manager is ready)
         const terrain3DControl = new Terrain3DControl();
         map.addControl(terrain3DControl, 'top-right');

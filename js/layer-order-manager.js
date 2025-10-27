@@ -34,16 +34,49 @@ const LAYER_ID_ORDER = {
 };
 
 /**
- * Calculates the rendering position for a new layer
+ * Determines which slot to use for a layer based on its type
+ * @param {string} type - Layer type (tms, wmts, wms, vector, geojson, etc.)
+ * @param {string|null} layerType - Specific layer type (for vector layers: fill, line, circle, symbol)
+ * @returns {string} - Slot name ('bottom', 'middle', 'top')
+ */
+function getSlotForLayerType(type, layerType) {
+    // Raster layers (TMS, WMTS, WMS, img) go to bottom slot
+    const rasterTypes = ['tms', 'wmts', 'wms', 'img', 'raster-style-layer'];
+    if (rasterTypes.includes(type)) {
+        return 'bottom';
+    }
+    
+    // Vector layers (vector, geojson, csv) go to middle slot
+    const vectorTypes = ['vector', 'geojson', 'csv', 'markers'];
+    if (vectorTypes.includes(type)) {
+        return 'middle';
+    }
+    
+    // Default to middle for unknown types
+    return 'middle';
+}
+
+/**
+ * Calculates the rendering position for a new layer using slot-based insertion
  * @param {Object} map - Mapbox map instance
  * @param {string} type - Layer type
  * @param {string|null} layerType - Specific layer type
  * @param {Object} currentGroup - Current layer group being processed
  * @param {Array} orderedGroups - All layer groups in their defined order
- * @returns {string|null} - The ID of the layer to insert before, or null for append
+ * @returns {string|null} - The slot name to insert into ('bottom', 'middle', 'top'), or null for default
  */
 function getInsertPosition(map, type, layerType, currentGroup, orderedGroups) {
+    // Use slot-based insertion instead of layer ID-based insertion
+    // This ensures proper layer ordering: rasters at bottom, vectors in middle
+    const slot = getSlotForLayerType(type, layerType);
+    
+    console.log(`[LayerOrder] Layer type: ${type}, assigned to slot: ${slot}`);
+    
+    // Return the slot name - Mapbox will handle insertion into the correct slot
+    return slot;
 
+    // Legacy layer ID-based insertion code below (kept for reference but not executed)
+    // ==================================================================================
     const layers = map.getStyle().layers;
     
     // Try to extract URL parameter order from the current URL
@@ -191,5 +224,5 @@ function fixLayerOrdering(map) {
     }
 }
 
-// Export the function so it can be called from elsewhere
-export { getInsertPosition, LAYER_TYPE_ORDER, LAYER_ID_ORDER, fixLayerOrdering, logLayerStack };
+// Export the functions so they can be called from elsewhere
+export { getInsertPosition, getSlotForLayerType, LAYER_TYPE_ORDER, LAYER_ID_ORDER, fixLayerOrdering, logLayerStack };

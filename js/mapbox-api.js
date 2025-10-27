@@ -186,7 +186,7 @@ export class MapboxAPI {
                 visible: true
             }, 'raster');
 
-            this._map.addLayer(layerConfig, getInsertPosition(this._map, 'wmts', null, config, this._orderedGroups));
+            this._addLayerWithSlot(layerConfig, getInsertPosition(this._map, 'wmts', null, config, this._orderedGroups));
             logLayerStack(this._map, `After adding WMTS layer: ${config.id}`);
             
         }
@@ -234,7 +234,7 @@ export class MapboxAPI {
                 visible: true
             }, 'raster');
 
-            this._map.addLayer(layerConfig, getInsertPosition(this._map, 'tms', null, config, this._orderedGroups));
+            this._addLayerWithSlot(layerConfig, getInsertPosition(this._map, 'tms', null, config, this._orderedGroups));
             logLayerStack(this._map, `After adding TMS layer: ${config.id}`);
             
         }
@@ -597,7 +597,7 @@ export class MapboxAPI {
                 visible
             }, 'fill');
 
-            this._map.addLayer(layerConfig, getInsertPosition(this._map, 'vector', 'fill', config, this._orderedGroups));
+            this._addLayerWithSlot(layerConfig, getInsertPosition(this._map, 'vector', 'fill', config, this._orderedGroups));
         }
 
         // Add line layer
@@ -616,7 +616,7 @@ export class MapboxAPI {
                 visible
             }, 'line');
 
-            this._map.addLayer(layerConfig, getInsertPosition(this._map, 'vector', 'line', config, this._orderedGroups));
+            this._addLayerWithSlot(layerConfig, getInsertPosition(this._map, 'vector', 'line', config, this._orderedGroups));
         }
 
         // Add circle layer if circle properties are defined
@@ -635,7 +635,7 @@ export class MapboxAPI {
                 visible
             }, 'circle');
 
-            this._map.addLayer(layerConfig, getInsertPosition(this._map, 'vector', 'circle', config, this._orderedGroups));
+            this._addLayerWithSlot(layerConfig, getInsertPosition(this._map, 'vector', 'circle', config, this._orderedGroups));
         }
 
         // Add text layer
@@ -654,7 +654,7 @@ export class MapboxAPI {
                 visible
             }, 'symbol');
 
-            this._map.addLayer(layerConfig, getInsertPosition(this._map, 'vector', 'symbol', config, this._orderedGroups));
+            this._addLayerWithSlot(layerConfig, getInsertPosition(this._map, 'vector', 'symbol', config, this._orderedGroups));
         }
     }
 
@@ -757,7 +757,7 @@ export class MapboxAPI {
                 visible
             }, 'raster');
 
-            this._map.addLayer(layerConfig, getInsertPosition(this._map, 'tms', null, config, this._orderedGroups));
+            this._addLayerWithSlot(layerConfig, getInsertPosition(this._map, 'tms', null, config, this._orderedGroups));
         } else {
             this._updateTMSLayerVisibility(groupId, config, visible);
         }
@@ -838,7 +838,7 @@ export class MapboxAPI {
                 visible
             }, 'raster');
 
-            this._map.addLayer(layerConfig, getInsertPosition(this._map, 'wmts', null, config, this._orderedGroups));
+            this._addLayerWithSlot(layerConfig, getInsertPosition(this._map, 'wmts', null, config, this._orderedGroups));
 
             // Add error handling for failed tile requests
             this._map.on('error', (e) => {
@@ -986,7 +986,7 @@ export class MapboxAPI {
                 visible
             }, 'raster');
 
-            this._map.addLayer(layerConfig, getInsertPosition(this._map, 'wms', null, config, this._orderedGroups));
+            this._addLayerWithSlot(layerConfig, getInsertPosition(this._map, 'wms', null, config, this._orderedGroups));
 
             // Add error handling for failed tile requests
             this._map.on('error', (e) => {
@@ -1095,7 +1095,7 @@ export class MapboxAPI {
                 visible: true
             }, 'raster');
 
-            this._map.addLayer(layerConfig, getInsertPosition(this._map, 'wms', null, config, this._orderedGroups));
+            this._addLayerWithSlot(layerConfig, getInsertPosition(this._map, 'wms', null, config, this._orderedGroups));
             
             console.log(`[MapboxAPI] Updated WMS layer ${groupId} with new time URL: ${tileUrl}`);
         }
@@ -1231,7 +1231,7 @@ export class MapboxAPI {
                 visible
             }, 'fill');
 
-            this._map.addLayer(fillLayerConfig, getInsertPosition(this._map, 'vector', 'fill', config, this._orderedGroups));
+            this._addLayerWithSlot(fillLayerConfig, getInsertPosition(this._map, 'vector', 'fill', config, this._orderedGroups));
         }
 
         // Add line layer
@@ -1248,7 +1248,7 @@ export class MapboxAPI {
                 visible
             }, 'line');
 
-            this._map.addLayer(lineLayerConfig, getInsertPosition(this._map, 'vector', 'line', config, this._orderedGroups));
+            this._addLayerWithSlot(lineLayerConfig, getInsertPosition(this._map, 'vector', 'line', config, this._orderedGroups));
         }
 
         // Add circle layer if circle properties are defined
@@ -1265,7 +1265,7 @@ export class MapboxAPI {
                 visible
             }, 'circle');
 
-            this._map.addLayer(circleLayerConfig, getInsertPosition(this._map, 'vector', 'circle', config, this._orderedGroups));
+            this._addLayerWithSlot(circleLayerConfig, getInsertPosition(this._map, 'vector', 'circle', config, this._orderedGroups));
         }
 
         // Add text layer if text properties are defined
@@ -1282,7 +1282,7 @@ export class MapboxAPI {
                 visible
             }, 'symbol');
 
-            this._map.addLayer(textLayerConfig, getInsertPosition(this._map, 'vector', 'symbol', config, this._orderedGroups));
+            this._addLayerWithSlot(textLayerConfig, getInsertPosition(this._map, 'vector', 'symbol', config, this._orderedGroups));
         }
     }
 
@@ -1380,7 +1380,7 @@ export class MapboxAPI {
                     visible
                 }, 'circle');
 
-                this._map.addLayer(layerConfig, getInsertPosition(this._map, 'csv', null, config, this._orderedGroups));
+                this._addLayerWithSlot(layerConfig, getInsertPosition(this._map, 'csv', null, config, this._orderedGroups));
 
                 // Set up refresh if specified
                 if (config.refresh && config.url) {
@@ -1523,7 +1523,8 @@ export class MapboxAPI {
                     visible
                 }, 'circle');
 
-                this._map.addLayer(layerConfig);
+                // Markers don't have an insertPosition parameter, but we can still use slot
+                this._addLayerWithSlot(layerConfig, getInsertPosition(this._map, 'markers', null, config, this._orderedGroups));
             } catch (error) {
                 console.error(`Error loading markers layer '${groupId}':`, error);
                 return false;
@@ -1595,7 +1596,7 @@ export class MapboxAPI {
                     visible
                 }, 'raster');
 
-                this._map.addLayer(layerConfig, getInsertPosition(this._map, 'img', null, config, this._orderedGroups));
+                this._addLayerWithSlot(layerConfig, getInsertPosition(this._map, 'img', null, config, this._orderedGroups));
 
                 if (config.refresh) {
                     this._setupImageRefresh(groupId, config);
@@ -1966,6 +1967,33 @@ export class MapboxAPI {
         });
 
         return filteredStyle;
+    }
+
+    /**
+     * Add a layer to the map with proper slot or position handling
+     * Reference: https://docs.mapbox.com/mapbox-gl-js/api/map/#map#addlayer
+     * @param {Object} layerConfig - Layer configuration object
+     * @param {string|null} insertPosition - Slot name ('bottom', 'middle', 'top') or layer ID to insert before
+     */
+    _addLayerWithSlot(layerConfig, insertPosition) {
+        // Check if insertPosition is a slot name
+        const slotNames = ['bottom', 'middle', 'top'];
+        
+        if (insertPosition && slotNames.includes(insertPosition)) {
+            // Use slot-based insertion
+            // Reference: https://docs.mapbox.com/style-spec/reference/layers/#layer-properties
+            layerConfig.slot = insertPosition;
+            this._map.addLayer(layerConfig);
+            console.log(`[MapboxAPI] Added layer ${layerConfig.id} to slot: ${insertPosition}`);
+        } else if (insertPosition) {
+            // Use traditional beforeId insertion
+            this._map.addLayer(layerConfig, insertPosition);
+            console.log(`[MapboxAPI] Added layer ${layerConfig.id} before: ${insertPosition}`);
+        } else {
+            // No position specified, append to end
+            this._map.addLayer(layerConfig);
+            console.log(`[MapboxAPI] Added layer ${layerConfig.id} (no position specified)`);
+        }
     }
 
     /**
