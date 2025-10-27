@@ -216,6 +216,11 @@ function makeLayerConfig(url, tilejson, metadata = null) {
             }
         }
         
+        // Convert any double quotes in attribution to single quotes for consistency
+        if (attribution && typeof attribution === 'string') {
+            attribution = attribution.replace(/"/g, "'");
+        }
+        
         config = {
             title: tilejson?.name || 'Vector Tile Layer',
             description: tilejson?.description || 'Vector tile layer from custom source',

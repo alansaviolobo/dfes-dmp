@@ -150,6 +150,29 @@
       }
     },
     {
+      "title": "CartoDEM Contours (10m)",
+      "description": "data/contours/cdng47b-z14.mbtiles",
+      "type": "vector",
+      "id": "bhuvan_cartodem_v3r1_contours-i2frty",
+      "url": "https://indianopenmaps.fly.dev/dem/contours/cartodem-v3r1/bhuvan/{z}/{x}/{y}.pbf",
+      "sourceLayer": "contour",
+      "minzoom": 6,
+      "maxzoom": 14,
+      "attribution": "undefined - Collected by <a href=\"https://datameet.org\" target=\"_blank\" rel=\"noopener noreferrer\">Datameet Community</a>",
+      "initiallyChecked": false,
+      "inspect": {
+        "id": "gid",
+        "title": "Name",
+        "label": "mon_name",
+        "fields": [
+          "ele_m"
+        ],
+        "fieldTitles": [
+          "Ele M"
+        ]
+      }
+    },
+    {
       "title": "Reserve Forests",
       "description": "Forest areas notified and protectedunder the <a href='http://nbaindia.org/uploaded/Biodiversityindia/Legal/3.%20Indian%20forest%20act.pdf'>Indian Forest Act, 1927</a>",
       "headerImage": "assets/map-layers/map-layer-forest.png",
