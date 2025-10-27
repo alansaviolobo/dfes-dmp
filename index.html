@@ -11,13 +11,10 @@
     <link rel="icon" href="/assets/img/favicon.ico" type="image/x-icon">
     <link rel="apple-touch-icon" href="/assets/img/icon-192x192.png">
 
-    <!-- 
-    
+    <!--
     SEO and Social Media Meta Tags
     Customize this to ensure proper SEO for the application
-
      -->
-
     <meta name="keywords"
         content="community mapping, community atlas,  Goa maps, land use zones, cadastral maps, Goa construction sites, Goa coastal zones, CZMP, Survey of India, Goa terrain, Goa RDP, Goa hill slopes, interactive mapping, Goa community mapping, Goa land records, decentralized planning, masterplans, land records, land use zones, cadastral maps, construction sites, coastal zones, hill slopes, regional development plans, user contributed map annotations, human footprint, climate change, nasa data, worldview data" />
 
@@ -50,57 +47,37 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-    <!-- Application Scripts -->
-    <script src="js/geolocation-control.js"></script>
-    <script src="js/mapbox-gl-view-control.js"></script>
-    <script type="module" src="js/drawer-state-manager.js"></script>
-    <script type="module" src="js/map-feature-state-manager.js"></script>
-    <script src="js/map-search-control.js"></script>
-    <script type="module" src="js/map-layer-controls.js"></script>
-    <script type="module" src="js/config-control.js"></script>
-    <script type="module" src="js/map-feature-control.js"></script>
-    <script type="module" src="js/map-attribution-control.js"></script>
-    <script type="module" src="js/intro-content.js"></script>
-    <script type="module" src="js/atlas-layer-registry.js"></script>
-    <script type="module" src="js/map-init.js"></script>
-    <!-- Service Worker Registration -->
-    <script src="js/pwa/register-sw.js"></script>
-
-    <!-- Tailwind CSS via CDN -->
-    <script src="https://cdn.tailwindcss.com"></script>
-
-    <!-- Mapbox GL JS -->
-    <link href='https://api.mapbox.com/mapbox-gl-js/v3.14.0/mapbox-gl.css' rel='stylesheet' />
-    <script src='https://api.mapbox.com/mapbox-gl-js/v3.14.0/mapbox-gl.js'></script>
-
-    <!-- Mapbox Search JS -->
-    <script src="https://api.mapbox.com/search-js/v1.0.0/web.js"></script>
-
+    <!-- Application Stylesheets -->
     <!-- Open Sans font -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@600&display=swap" rel="stylesheet">
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@600&display=swap" />
+    <link rel='stylesheet' href='https://api.mapbox.com/mapbox-gl-js/v3.14.0/mapbox-gl.css' /><!-- Mapbox GL JS -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@shoelace-style/shoelace@2.19.1/cdn/themes/light.css" /><!-- Shoelace Components -->
+    <link rel="preload" as="fetch" crossorigin="anonymous" href="config/_defaults.json" /><!-- Add this in the head section, before the map-init.js script -->
+    <link rel="stylesheet" href="styles.css" />
 
-    <!-- Shoelace Components -->
-    <script type="module" src="https://cdn.jsdelivr.net/npm/@shoelace-style/shoelace@2.19.1/cdn/shoelace.js"></script>
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@shoelace-style/shoelace@2.19.1/cdn/themes/light.css" />
-
-    <link rel="stylesheet" href="styles.css">
-
-    <!-- Add jQuery -->
-    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
-
-    <!-- Add this in the head section, before the map-init.js script -->
-    <script>
-        // Preload default layer styles
-        const stylesLink = document.createElement('link');
-        stylesLink.rel = 'preload';
-        stylesLink.href = 'config/_defaults.json';
-        stylesLink.as = 'fetch';
-        stylesLink.crossOrigin = 'anonymous';
-        document.head.appendChild(stylesLink);
-    </script>
-
+    <!-- Application Scripts -->
+    <script defer src="https://code.jquery.com/jquery-3.7.1.min.js"></script><!-- Add jQuery -->
+    <script defer src="https://cdn.tailwindcss.com"></script><!-- Tailwind CSS via CDN -->
+    <script defer src="https://api.mapbox.com/mapbox-gl-js/v3.14.0/mapbox-gl.js"></script><!-- Mapbox GL JS -->
+    <script defer src="https://api.mapbox.com/search-js/v1.0.0/web.js"></script><!-- Mapbox Search JS -->
+    <script defer type="module" src="https://cdn.jsdelivr.net/npm/@shoelace-style/shoelace@2.19.1/cdn/shoelace.js"></script><!-- Shoelace Components -->
+    <script defer src="js/geolocation-control.js"></script>
+    <script defer src="js/mapbox-gl-view-control.js"></script>
+    <script defer src="js/map-search-control.js"></script>
+    <script defer src="js/pwa/register-sw.js"></script><!-- Service Worker Registration -->
+    <script defer type="module" src="js/drawer-state-manager.js"></script>
+    <script defer type="module" src="js/map-feature-state-manager.js"></script>
+    <script defer type="module" src="js/map-layer-controls.js"></script>
+    <script defer type="module" src="js/config-control.js"></script>
+    <script defer type="module" src="js/map-feature-control.js"></script>
+    <script defer type="module" src="js/map-attribution-control.js"></script>
+    <script defer type="module" src="js/intro-content.js"></script>
+    <script defer type="module" src="js/atlas-layer-registry.js"></script>
+    <script defer type="module" src="js/map-init.js"></script>
+    <script defer type="module" src="js/layer-creator-ui.js"></script><!-- Add layer-creator-ui.js module loader -->
+    <script defer type="module" src="js/index.js"></script>
 </head>
 
 <body class="flex flex-col full-viewport-height">
@@ -284,160 +261,6 @@
             </div>
         </main>
     </div>
-
-    <script>
-        function navigateToSound(event) {
-            event.preventDefault();
-            const currentHash = window.location.hash;
-            const baseUrl = window.location.origin;
-            window.location.href = `${baseUrl}/sound/${currentHash}`;
-        }
-    </script>
-    <!-- Initialize drawer functionality and navigation -->
-    <script>
-        // Initialize drawer functionality after Shoelace components are ready
-        customElements.whenDefined('sl-drawer').then(() => {
-            const drawer = document.querySelector('.drawer-placement-start');
-
-            // Track if drawer was manually toggled
-            let userToggledDrawer = false;
-
-            // Function to handle drawer state based on screen size, respecting user toggles
-            function handleDrawerState() {
-                // Don't automatically change drawer state if the user manually toggled it
-                if (userToggledDrawer) return;
-
-                if (window.innerWidth > 768) { // Desktop
-                    drawer.show();
-                } else { // Mobile
-                    drawer.hide();
-                }
-            }
-
-            // Initial state - with a delay to ensure components are fully initialized
-            setTimeout(() => {
-                handleDrawerState();
-            }, 100);
-
-            // Listen for window resize, but don't apply on touch devices
-            const isTouch = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
-            if (!isTouch) {
-                window.addEventListener('resize', handleDrawerState);
-            }
-
-            // Listen for drawer events to track manual toggles
-            // Use more specific event handlers to avoid conflicts with programmatic toggles
-            drawer.addEventListener('sl-after-show', (event) => {
-                // Only mark as user-toggled if it's a direct user interaction
-                if (event.target === drawer) {
-                    userToggledDrawer = true;
-                    console.log('[HTML] Drawer manually opened by user');
-                }
-            });
-
-            drawer.addEventListener('sl-after-hide', (event) => {
-                // Only mark as user-toggled if it's a direct user interaction
-                if (event.target === drawer) {
-                    userToggledDrawer = true;
-                    console.log('[HTML] Drawer manually closed by user');
-                }
-            });
-        });
-
-        // Handle navigation dropdown menu clicks
-        customElements.whenDefined('sl-menu-item').then(() => {
-            // Handle help menu item click
-            const helpMenuItem = document.getElementById('help-menu-item');
-            if (helpMenuItem) {
-                helpMenuItem.addEventListener('click', (event) => {
-                    event.preventDefault();
-                    // Create new IntroContentManager instance without auto-close
-                    new IntroContentManager({ enableAutoClose: false });
-                });
-            }
-
-            document.querySelectorAll('sl-menu-item[href]').forEach(item => {
-                item.addEventListener('click', (event) => {
-                    const href = item.getAttribute('href');
-                    if (href && href.startsWith('http')) {
-                        // External links - open in new tab if target="_blank"
-                        if (item.getAttribute('target') === '_blank') {
-                            event.preventDefault();
-                            window.open(href, '_blank');
-                        }
-                    } else if (href) {
-                        // Internal navigation
-                        if (!item.hasAttribute('onclick')) {
-                            event.preventDefault();
-                            window.location.href = href;
-                        }
-                    }
-                });
-            });
-        });
-    </script>
-    <script>
-        // Add this after your existing scripts
-        const skeletonContainer = document.getElementById('skeleton-container');
-        const numberOfSkeletons = 15;
-
-        Array.from({ length: numberOfSkeletons }).forEach(() => {
-            const skeleton = document.createElement('sl-skeleton');
-            skeleton.className = 'skeleton-map-controls';
-            skeleton.setAttribute('effect', 'pulse');
-            skeletonContainer.appendChild(skeleton);
-        });
-    </script>
-
-    <!-- ShareLink plugin initialization -->
-    <script type="module">
-        import { ShareLink } from './js/share-link.js';
-
-        // Initialize ShareLink plugin when DOM is ready
-        document.addEventListener('DOMContentLoaded', () => {
-            const shareLink = new ShareLink({
-                containerId: 'share-button-container',
-                url: () => window.location.href, // Dynamic URL function
-                buttonText: 'Share वांटो',
-                buttonClasses: 'share-button',
-                showToast: true,
-                qrCodeSize: 500
-            });
-
-            shareLink.render();
-        });
-    </script>
-
-    <!-- MapLinks plugin initialization -->
-    <script type="module">
-        import { MapLinks } from './js/map-links.js';
-
-        // Initialize MapLinks plugin when map is ready
-        window.addEventListener('mapReady', (event) => {
-            const mapLinks = new MapLinks({
-                buttonId: 'map-links-btn',
-                map: event.detail.map
-            });
-        });
-    </script>
-
-    <!-- Add layer-creator-ui.js module loader -->
-    <script type="module" src="js/layer-creator-ui.js"></script>
-
-    <!-- Google Analytics -->
-    <script>
-        if (window.location.hostname === 'amche.in') {
-            // Load Google Analytics
-            const gtagScript = document.createElement('script');
-            gtagScript.async = true;
-            gtagScript.src = 'https://www.googletagmanager.com/gtag/js?id=G-FBVGZ4HJV0';
-            document.head.appendChild(gtagScript);
-            window.dataLayer = window.dataLayer || [];
-            function gtag() { dataLayer.push(arguments); }
-            gtag('js', new Date());
-            gtag('config', 'G-FBVGZ4HJV0');
-        }
-    </script>
 </body>
 
 </html>
