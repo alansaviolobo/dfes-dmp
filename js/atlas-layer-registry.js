@@ -29,8 +29,9 @@ export class LayerRegistry {
         }
 
         // Load all atlas configurations
+        // Note: 'osm' should be loaded early so other atlases can reference its layers
         const atlasConfigs = [
-            'index', 'goa', 'mumbai', 'bengaluru-flood', 'bombay', 'madras',
+            'osm', 'index', 'goa', 'mumbai', 'bengaluru-flood', 'bombay', 'madras',
             'gurugram', 'maharashtra', 'telangana', 'kerala', 'india', 
             'world', 'historic', 'community', 'mhadei'
         ];
@@ -69,13 +70,21 @@ export class LayerRegistry {
                                     prefixedId = `${atlasId}-${layerId}`;
                                 }
                                 
-                                this._registry.set(prefixedId, {
-                                    ...resolvedLayer,
-                                    _sourceAtlas: atlasId,
-                                    _prefixedId: prefixedId,
-                                    // Store the original unprefixed ID for reference
-                                    _originalId: layerId
-                                });
+                                // Only add to registry if not already present (avoid overwriting cross-atlas references)
+                                // A layer should be added by its defining atlas, not by atlases that reference it
+                                if (!this._registry.has(prefixedId)) {
+                                    this._registry.set(prefixedId, {
+                                        ...resolvedLayer,
+                                        _sourceAtlas: atlasId,
+                                        _prefixedId: prefixedId,
+                                        // Store the original unprefixed ID for reference
+                                        _originalId: layerId
+                                    });
+                                } else if (!resolvedLayer.type && !resolvedLayer.title) {
+                                    // This is a reference to a layer defined elsewhere, skip it
+                                    // The actual layer definition will be/has been loaded from its source atlas
+                                    // Do nothing - the complete layer definition takes precedence
+                                }
                                 
                             }
                         });
