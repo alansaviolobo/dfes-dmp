@@ -64,7 +64,7 @@ describe('Config File Validation', () => {
     test('should validate all config files have valid JSON syntax', () => {
       configFiles.forEach((filePath) => {
         const fullPath = path.resolve(filePath);
-        expect(validateJsonSyntax(fullPath)).toBe(true);
+        expect(validateJsonSyntax(fullPath), `[${filePath}] Invalid JSON syntax`).toBe(true);
       });
     });
   });
@@ -78,7 +78,7 @@ describe('Config File Validation', () => {
         const content = fs.readFileSync(fullPath, 'utf8');
         const data = JSON.parse(content);
         
-        expect(validateConfigStructure(fullPath, data)).toBe(true);
+        expect(validateConfigStructure(fullPath, data), `[${filePath}] Invalid structure`).toBe(true);
       });
     });
   });
@@ -197,44 +197,52 @@ describe('Config File Validation', () => {
   });
 
   describe('Map Layer Presets Validation', () => {
+    const presetsFile = 'config/_map-layer-presets.json';
+    
     test('should have required fields for each layer', () => {
       mapLayerPresets.layers.forEach((layer, index) => {
-        expect(layer.id).toBeDefined();
-        expect(typeof layer.id).toBe('string');
-        expect(layer.id.length).toBeGreaterThan(0);
+        const layerInfo = `[${presetsFile}] Layer at index ${index} (id: "${layer.id || 'undefined'}")`;
         
-        expect(layer.title).toBeDefined();
-        expect(typeof layer.title).toBe('string');
-        expect(layer.title.length).toBeGreaterThan(0);
+        expect(layer.id, `${layerInfo}: missing 'id' field`).toBeDefined();
+        expect(typeof layer.id, `${layerInfo}: 'id' must be a string`).toBe('string');
+        expect(layer.id.length, `${layerInfo}: 'id' cannot be empty`).toBeGreaterThan(0);
+        
+        expect(layer.title, `${layerInfo}: missing 'title' field`).toBeDefined();
+        expect(typeof layer.title, `${layerInfo}: 'title' must be a string`).toBe('string');
+        expect(layer.title.length, `${layerInfo}: 'title' cannot be empty`).toBeGreaterThan(0);
         
         // Type should be one of the expected values
         if (layer.type) {
           const validTypes = ['vector', 'geojson', 'tms', 'markers', 'csv', 'style', 'terrain', 'layer-group', 'img','raster-style-layer'];
-          expect(validTypes).toContain(layer.type);
+          expect(validTypes, `${layerInfo}: invalid type "${layer.type}"`).toContain(layer.type);
         }
       });
     });
 
     test('should have valid headerImage paths for layers with images', () => {
-      mapLayerPresets.layers.forEach((layer) => {
+      mapLayerPresets.layers.forEach((layer, index) => {
+        const layerInfo = `[${presetsFile}] Layer at index ${index} (id: "${layer.id || 'undefined'}")`;
+        
         if (layer.headerImage) {
-          expect(typeof layer.headerImage).toBe('string');
-          expect(layer.headerImage.length).toBeGreaterThan(0);
+          expect(typeof layer.headerImage, `${layerInfo}: 'headerImage' must be a string`).toBe('string');
+          expect(layer.headerImage.length, `${layerInfo}: 'headerImage' cannot be empty`).toBeGreaterThan(0);
           // Should start with assets/ for local images
           if (!layer.headerImage.startsWith('http')) {
-            expect(layer.headerImage).toMatch(/^assets\//);
+            expect(layer.headerImage, `${layerInfo}: local headerImage must start with 'assets/'`).toMatch(/^assets\//);
           }
         }
       });
     });
 
     test('should have valid attribution for data layers', () => {
-      mapLayerPresets.layers.forEach((layer) => {
+      mapLayerPresets.layers.forEach((layer, index) => {
+        const layerInfo = `[${presetsFile}] Layer at index ${index} (id: "${layer.id || 'undefined'}")`;
+        
         // Skip style layers and terrain as they may not need attribution
         if (layer.type && !['style', 'terrain'].includes(layer.type)) {
           if (layer.attribution) {
-            expect(typeof layer.attribution).toBe('string');
-            expect(layer.attribution.length).toBeGreaterThan(0);
+            expect(typeof layer.attribution, `${layerInfo}: 'attribution' must be a string`).toBe('string');
+            expect(layer.attribution.length, `${layerInfo}: 'attribution' cannot be empty`).toBeGreaterThan(0);
           }
         }
       });
@@ -247,7 +255,7 @@ describe('Config File Validation', () => {
         const fileName = path.basename(filePath);
         
         // File names should be lowercase with hyphens or underscores
-        expect(fileName).toMatch(/^[a-z0-9._-]+\.json$/);
+        expect(fileName, `[${filePath}] Invalid filename pattern`).toMatch(/^[a-z0-9._-]+\.json$/);
       });
     });
 
@@ -258,18 +266,18 @@ describe('Config File Validation', () => {
         const data = JSON.parse(content);
         
         if (data.map && data.map.center) {
-          expect(Array.isArray(data.map.center)).toBe(true);
-          expect(data.map.center).toHaveLength(2);
+          expect(Array.isArray(data.map.center), `[${filePath}] map.center must be an array`).toBe(true);
+          expect(data.map.center, `[${filePath}] map.center must have exactly 2 elements [lng, lat]`).toHaveLength(2);
           
           const [lng, lat] = data.map.center;
-          expect(typeof lng).toBe('number');
-          expect(typeof lat).toBe('number');
+          expect(typeof lng, `[${filePath}] map.center[0] (longitude) must be a number`).toBe('number');
+          expect(typeof lat, `[${filePath}] map.center[1] (latitude) must be a number`).toBe('number');
           
           // Basic coordinate validation (longitude: -180 to 180, latitude: -90 to 90)
-          expect(lng).toBeGreaterThanOrEqual(-180);
-          expect(lng).toBeLessThanOrEqual(180);
-          expect(lat).toBeGreaterThanOrEqual(-90);
-          expect(lat).toBeLessThanOrEqual(90);
+          expect(lng, `[${filePath}] longitude ${lng} must be between -180 and 180`).toBeGreaterThanOrEqual(-180);
+          expect(lng, `[${filePath}] longitude ${lng} must be between -180 and 180`).toBeLessThanOrEqual(180);
+          expect(lat, `[${filePath}] latitude ${lat} must be between -90 and 90`).toBeGreaterThanOrEqual(-90);
+          expect(lat, `[${filePath}] latitude ${lat} must be between -90 and 90`).toBeLessThanOrEqual(90);
         }
       });
     });

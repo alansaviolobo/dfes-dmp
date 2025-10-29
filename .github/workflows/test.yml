@@ -31,7 +31,7 @@ jobs:
       run: npm run lint:json
     
     - name: Run tests
-      run: npm test
+      run: npm test -- --reporter=verbose
     
     - name: Run tests with coverage
       if: matrix.node-version == '20.x'
