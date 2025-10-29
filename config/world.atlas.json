@@ -22,6 +22,8 @@
       "description": "Observations from iNaturalist",
       "attribution": "<a href='https://inaturalist.org/'>iNaturalist</a>",
       "url": "https://api.inaturalist.org/v1/points/{z}/{x}/{y}.png",
+      "headerImage": "assets/map-layers/map-layer-inaturalist.png",
+      "legendImage": "assets/map-layers/map-layer-inaturalist-legend.png",
       "style": {
         "raster-opacity": [
           "interpolate",
