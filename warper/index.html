@@ -417,14 +417,22 @@
         // Undo functionality for marker positions
         let markerPositionHistory = [];
         
+        // Image transformation for converting pixel coords to geographic coords
+        let imageTransform = null;
+        
         // Initialize maps
         function initializeMaps() {
-            // Initialize source map (for WMS overlay)
+            // Initialize source map (will display unwarped image without basemap)
             sourceMap = new mapboxgl.Map({
                 container: 'source-map',
-                style: 'mapbox://styles/mapbox/light-v11',
-                center: [74.0, 15.3],
-                zoom: 10,
+                style: {
+                    version: 8,
+                    sources: {},
+                    layers: [],
+                    glyphs: 'mapbox://fonts/mapbox/{fontstack}/{range}.pbf'
+                },
+                center: [0, 0],
+                zoom: 1,
                 transformRequest: (url, resourceType) => {
                     // Debug all mapwarper requests
                     if (url.includes('/maps/') || url.includes('/api/v1/maps/')) {                        
@@ -749,35 +757,66 @@
                 return;
             }
             
-            let bounds = new mapboxgl.LngLatBounds();
-            let hasValidPoints = false;
+            // Calculate bounds for reference map (real geographic coordinates)
+            let refBounds = new mapboxgl.LngLatBounds();
+            let hasRefPoints = false;
+            
+            // Calculate bounds for source map (may use fake geographic coordinates)
+            let sourceBounds = new mapboxgl.LngLatBounds();
+            let hasSourcePoints = false;
             
             controlPoints.forEach(point => {
-                // Add reference coordinates to bounds
+                // Add reference coordinates to reference bounds
                 if (point.referenceCoords) {
-                    bounds.extend(point.referenceCoords);
-                    hasValidPoints = true;
+                    refBounds.extend(point.referenceCoords);
+                    hasRefPoints = true;
                 }
                 
-                // Add source coordinates to bounds if they exist
+                // Add source coordinates to source bounds
                 if (point.sourceCoords) {
-                    bounds.extend(point.sourceCoords);
-                    hasValidPoints = true;
+                    sourceBounds.extend(point.sourceCoords);
+                    hasSourcePoints = true;
+                } else if (point.sourcePixelCoords && imageTransform) {
+                    // Convert pixel coordinates to fake geographic coordinates
+                    const geoCoords = pixelToGeographic(point.sourcePixelCoords[0], point.sourcePixelCoords[1]);
+                    if (geoCoords) {
+                        sourceBounds.extend(geoCoords);
+                        hasSourcePoints = true;
+                    }
                 }
             });
             
-            if (hasValidPoints) {
-                const padding = 50; // 50px padding
-                const options = {
-                    padding: padding,
-                    maxZoom: 13 // Don't zoom in too much
-                };
+            // Fit reference map with standard padding
+            if (hasRefPoints) {
+                referenceMap.fitBounds(refBounds, {
+                    padding: 50,
+                    maxZoom: 13,
+                    duration: 1000
+                });
+                console.log(`Fitted reference map to bounds of ${controlPoints.length} control points`);
+            }
+            
+            // Fit source map with 20% padding
+            if (hasSourcePoints) {
+                // Calculate 20% padding based on bounds dimensions
+                const ne = sourceBounds.getNorthEast();
+                const sw = sourceBounds.getSouthWest();
+                const width = ne.lng - sw.lng;
+                const height = ne.lat - sw.lat;
                 
-                // Fit both maps to the same bounds
-                sourceMap.fitBounds(bounds, options);
-                referenceMap.fitBounds(bounds, options);
+                const paddingX = width * 0.2;
+                const paddingY = height * 0.2;
                 
-                console.log(`Fitted maps to bounds of ${controlPoints.length} control points`);
+                // Expand bounds by 20%
+                const paddedBounds = new mapboxgl.LngLatBounds(
+                    [sw.lng - paddingX, sw.lat - paddingY],
+                    [ne.lng + paddingX, ne.lat + paddingY]
+                );
+                
+                sourceMap.fitBounds(paddedBounds, {
+                    duration: 1000
+                });
+                console.log(`Fitted source map to bounds of ${controlPoints.length} control points with 20% padding`);
             }
         }
         
@@ -882,16 +921,17 @@
                 }
             }, beforeLayerId);
             
-            // Center maps based on map ID or use defaults
+            // Only center reference map (source map will be centered when image loads)
             const center = getMapCenter(mapId);
-            sourceMap.setCenter(center.coords);
             referenceMap.setCenter(center.coords);
-            sourceMap.setZoom(center.zoom);
             referenceMap.setZoom(center.zoom);
             
             // Wait a moment for maps to settle before loading control points
             setTimeout(() => {
+                // Don't clear imageTransform when clearing control points
+                const savedTransform = imageTransform;
                 clearControlPoints();
+                imageTransform = savedTransform;
                 fetchExistingControlPoints(mapId, baseUrl);
             }, 1000);
             
@@ -1005,162 +1045,23 @@
                     sourceMap.removeLayer('wms-layer');
                     sourceMap.removeSource('wms-source');
                 }
+                if (sourceMap.getLayer('wms-fallback-layer')) {
+                    sourceMap.removeLayer('wms-fallback-layer');
+                    sourceMap.removeSource('wms-fallback-source');
+                }
                 if (sourceMap.getLayer('image-layer')) {
                     sourceMap.removeLayer('image-layer');
                     sourceMap.removeSource('image-source');
                 }
                 
-                // Set a minimal style that loads quickly, but avoid conflicts if already loading
-                if (!sourceMap.isStyleLoaded()) {
-                    console.log('Waiting for current style to finish loading...');
-                    await new Promise(resolve => {
-                        const checkCurrent = () => {
-                            if (sourceMap.isStyleLoaded()) {
-                                resolve();
-                            } else {
-                                setTimeout(checkCurrent, 100);
-                            }
-                        };
-                        checkCurrent();
-                    });
-                }
-                
-                console.log('Setting minimal style for source map...');
-                sourceMap.setStyle({
-                    version: 8,
-                    sources: {},
-                    layers: []
-                });
-                
-                // Wait for new style to load completely before adding sources
-                console.log('Waiting for minimal style to load...');
-                await new Promise(resolve => {
-                    const checkStyle = () => {
-                        if (sourceMap.isStyleLoaded()) {
-                            console.log('Style loaded, ready to add WMS source');
-                            resolve();
-                        } else {
-                            setTimeout(checkStyle, 100);
-                        }
-                    };
-                    checkStyle();
-                });
-                
-                // Attempt to load WMS tiles directly (let them fail naturally if needed)
-                console.log('Attempting to load WMS tiles for unwarped map...');
-                
-                try {
-                    // Since bbox substitution isn't working properly, let's try using TMS-style tiles instead
-                    // MapWarper often supports TMS endpoints alongside WMS
-                    const tileTemplates = [
-                        // Try TMS tiles first (similar to how warped tiles work)
-                        `${baseUrl}/maps/tile/${mapId}/{z}/{x}/{y}?unwarped=true`,
-                        // Fallback to WMS with different bbox format
-                        `${baseUrl}/maps/wms/${mapId}?FORMAT=image%2Fpng&STATUS=unwarped&SERVICE=WMS&VERSION=1.1.1&REQUEST=GetMap&STYLES=&EXCEPTIONS=application%2Fvnd.ogc.se_inimage&SRS=EPSG%3A4326&BBOX={bbox-epsg-4326}&WIDTH=256&HEIGHT=256`
-                    ];
-                    
-                    console.log('Trying TMS-style tiles first:', tileTemplates[0]);
-                    
-                    sourceMap.addSource('wms-source', {
-                        type: 'raster',
-                        tiles: [tileTemplates[0]],
-                        tileSize: 256,
-                        scheme: 'xyz',
-                        attribution: 'MapWarper'
-                    });
-                    
-                    sourceMap.addLayer({
-                        id: 'wms-layer',
-                        type: 'raster',
-                        source: 'wms-source',
-                        paint: {}
-                    });
-                    
-                    console.log('WMS source and layer added. Checking for tile loading...');
-                    
-                    // Set up error handling for tile failures with multiple fallbacks
-                    let tileFailureDetected = false;
-                    let fallbackAttempted = false;
-                    
-                    const tileErrorHandler = (e) => {
-                        if (e.source && e.source.id === 'wms-source' && !tileFailureDetected) {
-                            tileFailureDetected = true;
-                            console.warn('Tile loading failed:', e);
-                            
-                            if (!fallbackAttempted) {
-                                fallbackAttempted = true;
-                                console.log('Attempting fallback to WMS service...');
-                                
-                                // Try the WMS fallback
-                                sourceMap.removeLayer('wms-layer');
-                                sourceMap.removeSource('wms-source');
-                                
-                                // Add WMS source as fallback
-                                sourceMap.addSource('wms-fallback-source', {
-                                    type: 'raster',
-                                    tiles: [tileTemplates[1]], // Use the WMS template
-                                    tileSize: 256,
-                                    scheme: 'xyz'
-                                });
-                                
-                                sourceMap.addLayer({
-                                    id: 'wms-fallback-layer',
-                                    type: 'raster',
-                                    source: 'wms-fallback-source',
-                                    paint: {}
-                                });
-                                
-                                console.log('WMS fallback added');
-                                
-                                // Set up error handling for WMS fallback
-                                const wmsFallbackHandler = (e2) => {
-                                    if (e2.source && e2.source.id === 'wms-fallback-source') {
-                                        console.warn('WMS fallback also failed. Switching to direct image.');
-                                        // Remove WMS fallback
-                                        if (sourceMap.getLayer('wms-fallback-layer')) {
-                                            sourceMap.removeLayer('wms-fallback-layer');
-                                            sourceMap.removeSource('wms-fallback-source');
-                                        }
-                                        // Load image directly as final fallback
-                                        loadMapImageDirectly(mapId, baseUrl);
-                                        sourceMap.off('error', wmsFallbackHandler);
-                                    }
-                                };
-                                sourceMap.on('error', wmsFallbackHandler);
-                                
-                            } else {
-                                console.warn('All tile methods failed. Switching to direct image fallback.');
-                                // Load image directly as final fallback
-                                loadMapImageDirectly(mapId, baseUrl);
-                            }
-                            
-                            // Remove the error listener
-                            sourceMap.off('error', tileErrorHandler);
-                        }
-                    };
-                    
-                    sourceMap.on('error', tileErrorHandler);
-                    
-                    // Also set a timeout to fall back if no tiles load within reasonable time
-                    setTimeout(() => {
-                        if (!tileFailureDetected && sourceMap.getLayer('wms-layer')) {
-                            console.log('WMS timeout reached, checking if tiles loaded successfully...');
-                            // If we reach here and no errors occurred, WMS might be working
-                            // Let's keep it, but if there are still issues, user will see the network errors
-                        }
-                    }, 5000);
-                    
-                } catch (wmsError) {
-                    console.error('Error setting up WMS source:', wmsError);
-                    await loadMapImageDirectly(mapId, baseUrl);
-                }
+                // For unwarped maps, the best approach is to load the image directly
+                // This allows us to properly handle pixel coordinate transforms
+                await loadMapImageDirectly(mapId, baseUrl);
                 
                 console.log(`Successfully loaded unwarped map ${mapId}`);
                 
             } catch (error) {
                 console.error('Error loading unwarped map:', error);
-                // Fallback: try to load map image directly
-                await loadMapImageDirectly(mapId);
             } finally {
                 isLoadingUnwarpedMap = false;
             }
@@ -1172,108 +1073,148 @@
                 
                 // Try to get map metadata to find the original image
                 const response = await fetch(`${baseUrl}/api/v1/maps/${mapId}.json`);
-                if (response.ok) {
-                    const mapData = await response.json();
-                    const imageUrl = mapData.data.attributes.image_url;
-                    
-                    if (imageUrl) {
-                        console.log(`Loading direct image: ${imageUrl}`);
-                        console.log(`Map data:`, mapData.data.attributes);
-                        
-                        // Set a minimal style first
-                        sourceMap.setStyle({
-                            version: 8,
-                            sources: {},
-                            layers: []
-                        });
-                        
-                        // Wait for style to load
-                        await new Promise(resolve => {
-                            const checkStyle = () => {
-                                if (sourceMap.isStyleLoaded()) {
-                                    resolve();
-                                } else {
-                                    setTimeout(checkStyle, 50);
-                                }
-                            };
-                            checkStyle();
-                        });
-                        
-                        // Try to get the map bounds from the API
-                        let imageCoords = [
-                            [74.0, 15.35],   // top-left
-                            [74.06, 15.35],  // top-right  
-                            [74.06, 15.31],  // bottom-right
-                            [74.0, 15.31]    // bottom-left
-                        ];
-                        
-                        // If bbox is available, use it for better positioning
-                        const bbox = mapData.data.attributes.bbox;
-                        if (bbox) {
-                            const bounds = bbox.split(',').map(parseFloat);
-                            if (bounds.length === 4) {
-                                // bbox format: "minLng,minLat,maxLng,maxLat"
-                                imageCoords = [
-                                    [bounds[0], bounds[3]], // top-left: minLng, maxLat
-                                    [bounds[2], bounds[3]], // top-right: maxLng, maxLat
-                                    [bounds[2], bounds[1]], // bottom-right: maxLng, minLat  
-                                    [bounds[0], bounds[1]]  // bottom-left: minLng, minLat
-                                ];
-                                console.log(`Using bbox coordinates: ${bbox}`);
-                            }
-                        }
-                        
-                        // Add the image as an overlay
-                        console.log('Image coordinates being used:', imageCoords);
-                        try {
-                            sourceMap.addSource('image-source', {
-                                type: 'image',
-                                url: imageUrl,
-                                coordinates: imageCoords
-                            });
-                            
-                            sourceMap.addLayer({
-                                id: 'image-layer',
-                                type: 'raster',
-                                source: 'image-source',
-                                paint: {}
-                            });
-                            
-                            console.log('Image layer added to source map');
-                            console.log('Successfully loaded unwarped map using direct image');
-                            
-                            // Listen for source errors (e.g., CORS issues)
-                            sourceMap.on('error', (e) => {
-                                if (e.source && e.source.id === 'image-source') {
-                                    console.warn('Image loading failed, likely due to CORS. Using basemap fallback.');
-                                    // Remove the failed image layer and use basemap
-                                    if (sourceMap.getLayer('image-layer')) {
-                                        sourceMap.removeLayer('image-layer');
-                                        sourceMap.removeSource('image-source');
-                                    }
-                                    sourceMap.setStyle('mapbox://styles/mapbox/light-v11');
-                                }
-                            });
-                            
-                        } catch (imageError) {
-                            console.warn('Could not add image source:', imageError);
-                            sourceMap.setStyle('mapbox://styles/mapbox/light-v11');
-                        }
-                    } else {
-                        console.warn('No image URL found in map data');
-                        // Fallback to basic basemap
-                        sourceMap.setStyle('mapbox://styles/mapbox/light-v11');
-                    }
-                } else {
-                    console.warn('Could not fetch map metadata for fallback');
-                    // Just use a basic basemap
-                    sourceMap.setStyle('mapbox://styles/mapbox/light-v11');
+                if (!response.ok) {
+                    throw new Error(`Failed to fetch map metadata: ${response.status}`);
                 }
+                
+                const mapData = await response.json();
+                
+                // MapWarper API provides image URL in links, not attributes
+                // Try multiple possible image sources in order of preference
+                const imageUrl = mapData.data.attributes.image_url || // Some servers may have this
+                               mapData.data.links.png ||              // Export PNG
+                               mapData.data.links.geotiff ||          // Export GeoTIFF
+                               null;
+                               
+                const width = mapData.data.attributes.width;
+                const height = mapData.data.attributes.height;
+                
+                if (!imageUrl || !width || !height) {
+                    throw new Error('Missing image URL or dimensions in map metadata');
+                }
+                
+                console.log(`Loading direct image: ${imageUrl}`);
+                console.log(`Image dimensions: ${width}x${height}`);
+                
+                // Set a minimal blank style (no basemap)
+                sourceMap.setStyle({
+                    version: 8,
+                    sources: {},
+                    layers: [],
+                    glyphs: 'mapbox://fonts/mapbox/{fontstack}/{range}.pbf'
+                });
+                
+                // Wait for style to load
+                await new Promise(resolve => {
+                    const checkStyle = () => {
+                        if (sourceMap.isStyleLoaded()) {
+                            resolve();
+                        } else {
+                            setTimeout(checkStyle, 50);
+                        }
+                    };
+                    checkStyle();
+                });
+                
+                // For unwarped images, we map the pixel space to a fake geographic space
+                // This allows us to display the image without any georeferencing
+                // Map pixel space (0,0 to width,height) to a simple coordinate system
+                const pixelToFakeGeo = 0.0001; // Each pixel = 0.0001 degrees
+                const centerLng = 0;
+                const centerLat = 0;
+                
+                // Calculate fake geographic bounds based on image dimensions
+                const halfWidth = (width * pixelToFakeGeo) / 2;
+                const halfHeight = (height * pixelToFakeGeo) / 2;
+                
+                const imageCoords = [
+                    [centerLng - halfWidth, centerLat + halfHeight],  // top-left
+                    [centerLng + halfWidth, centerLat + halfHeight],  // top-right
+                    [centerLng + halfWidth, centerLat - halfHeight],  // bottom-right
+                    [centerLng - halfWidth, centerLat - halfHeight]   // bottom-left
+                ];
+                
+                console.log('Fake geographic coordinates for pixel space:', imageCoords);
+                
+                // Store the image transformation for converting pixel coords to fake geographic coords
+                imageTransform = {
+                    width: width,
+                    height: height,
+                    bounds: {
+                        west: centerLng - halfWidth,
+                        south: centerLat - halfHeight,
+                        east: centerLng + halfWidth,
+                        north: centerLat + halfHeight
+                    },
+                    pixelToFakeGeo: pixelToFakeGeo,
+                    isFakeGeo: true
+                };
+                console.log('Image transform stored:', imageTransform);
+                
+                // Add the image as an overlay
+                sourceMap.addSource('image-source', {
+                    type: 'image',
+                    url: imageUrl,
+                    coordinates: imageCoords
+                });
+                
+                sourceMap.addLayer({
+                    id: 'image-layer',
+                    type: 'raster',
+                    source: 'image-source',
+                    paint: {
+                        'raster-fade-duration': 0
+                    }
+                });
+                
+                console.log('Image layer added to source map');
+                
+                // Constrain the map to the image bounds so users can't pan outside
+                const bounds = new mapboxgl.LngLatBounds(
+                    [imageCoords[3][0], imageCoords[3][1]], // southwest (bottom-left)
+                    [imageCoords[1][0], imageCoords[1][1]]  // northeast (top-right)
+                );
+                
+                sourceMap.setMaxBounds(bounds);
+                
+                // Initially center the map on the full image
+                // This will be overridden by fitMapToControlPoints() if markers exist
+                sourceMap.fitBounds([
+                    [imageCoords[0][0], imageCoords[0][1]],
+                    [imageCoords[2][0], imageCoords[2][1]]
+                ], {
+                    padding: 50,
+                    duration: 0
+                });
+                
+                console.log('Successfully loaded unwarped map using direct image with bounds constraint');
+                
             } catch (error) {
-                console.error('Error in fallback image loading:', error);
-                // Final fallback: just use a basic basemap
-                sourceMap.setStyle('mapbox://styles/mapbox/light-v11');
+                console.error('Error loading unwarped map image:', error);
+                alert(`Failed to load unwarped map: ${error.message}\n\nThe map image may not be available or accessible.`);
+                imageTransform = null;
             }
+        }
+
+        function pixelToGeographic(pixelX, pixelY) {
+            // Convert pixel coordinates to geographic coordinates using the stored image transform
+            if (!imageTransform) {
+                console.warn('No image transform available for pixel to geographic conversion');
+                return null;
+            }
+            
+            const { width, height, bounds } = imageTransform;
+            
+            // Calculate the position as a fraction of the image dimensions
+            const xFraction = pixelX / width;
+            const yFraction = pixelY / height;
+            
+            // Convert to geographic coordinates
+            // Note: Y coordinates are inverted (0 at top in pixels, but north is positive in geo)
+            const lng = bounds.west + (xFraction * (bounds.east - bounds.west));
+            const lat = bounds.north - (yFraction * (bounds.north - bounds.south));
+            
+            return [lng, lat];
         }
 
         async function convertMapWarperGCPs(gcpData, mapId) {
@@ -1384,12 +1325,11 @@
                 if (mapType === 'source') {
                     if (point.sourceCoords) {
                         pointCoords = point.sourceCoords;
-                    } else if (point.sourcePixelCoords && point.referenceCoords) {
-                        // For MapWarper points with pixel coordinates, use reference coordinates as approximation
-                        pointCoords = point.referenceCoords;
-                    } else {
-                        return;
+                    } else if (point.sourcePixelCoords && imageTransform) {
+                        // Convert pixel coordinates to geographic for comparison
+                        pointCoords = pixelToGeographic(point.sourcePixelCoords[0], point.sourcePixelCoords[1]);
                     }
+                    if (!pointCoords) return;
                 } else if (mapType === 'reference' && point.referenceCoords) {
                     pointCoords = point.referenceCoords;
                 } else {
@@ -1524,18 +1464,17 @@
             // Pan and zoom to marker on both maps (zoom to z17)
             const targetZoom = 17;
             
+            // Fly to source map if the point has coordinates (either geographic or pixel)
+            let sourceCoords = null;
             if (point.sourceCoords) {
-                const sourceCoords = point.sourceCoords;
+                sourceCoords = point.sourceCoords;
+            } else if (point.sourcePixelCoords && imageTransform) {
+                sourceCoords = pixelToGeographic(point.sourcePixelCoords[0], point.sourcePixelCoords[1]);
+            }
+            
+            if (sourceCoords) {
                 sourceMap.flyTo({
                     center: sourceCoords,
-                    zoom: targetZoom,
-                    duration: 1000
-                });
-            } else if (point.sourcePixelCoords && point.referenceCoords) {
-                // For MapWarper points with pixel coordinates, use reference coordinates as approximation on source map
-                const refCoords = point.referenceCoords;
-                sourceMap.flyTo({
-                    center: refCoords,
                     zoom: targetZoom,
                     duration: 1000
                 });
@@ -1607,10 +1546,9 @@
                 if (point.sourceCoords) {
                     // Use geographic coordinates directly for manually added points
                     sourceMapCoords = point.sourceCoords;
-                } else if (point.sourcePixelCoords && point.referenceCoords) {
-                    // For MapWarper points with pixel coordinates, use reference coordinates
-                    // as an approximation since we don't have the exact image-to-geo transformation
-                    sourceMapCoords = point.referenceCoords;
+                } else if (point.sourcePixelCoords && imageTransform) {
+                    // Convert pixel coordinates to geographic coordinates using image transform
+                    sourceMapCoords = pixelToGeographic(point.sourcePixelCoords[0], point.sourcePixelCoords[1]);
                 }
                 
                 if (sourceMapCoords) {
