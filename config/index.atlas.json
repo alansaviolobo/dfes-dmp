@@ -31,7 +31,10 @@
     {
       "id": "osm-roads"
     },
-    
+    {
+      "initiallyChecked": true,
+      "id": "osm-waterways"
+    },
     {
       "title": "Plots with No Development Slopes",
       "description": "Survey numbers with No Development Slopes (NDS). The output location of plots having atleast 25% of the plot area with NDS or slopes greater than 1:4 (25% slope).<br>Processed using slope computed with NASADEM 30m data and cadastral boundaries from OneMapGoa GIS. See <a href='https://github.com/publicmap/amche-goa/tree/main/data/slope'>processing code</a> for details.",

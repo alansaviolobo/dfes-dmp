@@ -539,6 +539,30 @@
       "initiallyChecked": false
     },
     {
+      "title": "AMS Goa Maps (1970s)",
+      "description": "1:250000 maps from the U.S. Army Map Service created 1955-1970s",
+      "headerImage": "assets/map-layers/map-layer-ams.png",
+      "type": "tms",
+      "id": "ams-map",
+      "url": "https://mapwarper.net/maps/tile/89833/{z}/{x}/{y}.png",
+      "attribution": "<a href='https://maps.lib.utexas.edu/maps/ams/india/'>Perry-Castañeda Library Map Collection, The University of Texas at Austin</a> released in public domain"
+    },
+    {
+      "title": "Kadamba Bus Routes",
+      "id": "bus",
+      "description": "Bus route network operated by Kadamba Transport Corporation Limited (KTCL) in Goa as on January 2025.Bus route lines are scaled by trip count.",
+      "headerImage": "assets/map-layers/map-layer-bus.png",
+      "type": "img",
+      "url": "https://upload.wikimedia.org/wikipedia/commons/4/43/Goa_Bus_Network_Map_2025.png",
+      "bbox": [
+        73.657,
+        14.863,
+        74.362,
+        15.861
+      ],
+      "attribution": "<a href='https://commons.wikimedia.org/wiki/File:Goa_Bus_Network_Map_2025.png'>CC-BY Wikipedia/user:Planemad</a>, CC-by <a href='https://ktclgoa.com/gtfs/'>Kadamba Transport Corporation Limited GTFS updated Jan 2025</a>"
+    },
+    {
       "title": "Proposed Goa Tiger Reserve Plan",
       "description": "Plan for proposed Tiger Reserve of Goa showing core and buffer areas including details of houses within the reserve.Obtained <a href='https://archive.org/details/tiger-reserve-pil/Tiger%20Reserve%20Area%20Map%20-%202/'>via RTI by Goa Foundation for the Tiger Reserve Petition</a>.",
       "source": "",
