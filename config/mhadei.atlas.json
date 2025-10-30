@@ -16,99 +16,6 @@
       "title": "Street Map रस्त्याचो नकासो"
     },
     {
-      "id": "rivers"
-    },
-    {
-      "id": "water-bodies"
-    },
-    {
-      "id": "wetland"
-    },
-    {
-      "id": "mhadei-watershed",
-      "title": "Mhadei Watershed Boundaries",
-      "headerImage": "assets/map-layers/map-layer-watersheds.png",
-      "description": "Watershed Boundaries",
-      "type": "vector",
-      "url": "https://indianopenmaps.fly.dev/watersheds/wris/{z}/{x}/{y}.pbf",
-      "sourceLayer": "wris_watershed",
-      "maxzoom": 10,
-      "attribution": "<a href='https://indiawris.gov.in/wris/#/riverBasins'>India Water Resources Information System, Ministry of Jal Shakti</a> - Collected by <a href='https://datameet.org'>Datameet Community</a>",
-      "style": {
-        "fill-color": "rgba(0, 0, 0, 0)",
-        "line-color": "blue",
-        "line-width": [
-          "interpolate",
-          [
-            "linear"
-          ],
-          [
-            "zoom"
-          ],
-          12,
-          5,
-          18,
-          9
-        ]
-      },
-      "inspect": {
-        "id": "objectid",
-        "title": "Watershed Code",
-        "label": "wsconc"
-      }
-    },
-    {
-      "id": "micro-watersheds",
-      "title": "Micro Watershed Atlas of India",
-      "headerImage": "assets/map-layers/map-layer-micro-watersheds.png",
-      "description": "Micro Watershed Atlas with <a href='https://slusi.da.gov.in/mwa.pdf'>micro watershed code</a>",
-      "type": "vector",
-      "url": "https://indianopenmaps.fly.dev/micro-watersheds/priorities/slusi/{z}/{x}/{y}.pbf",
-      "sourceLayer": "SLUSI_Priority_MicroWatersheds",
-      "maxzoom": 10,
-      "attribution": "<a href='https://soilhealth.dac.gov.in/slusi-visualisation/'>Soil and Land Use Survey of India, Ministry of Agriculture and Farmers Welfare</a> - Collected by <a href='https://datameet.org'>Datameet Community</a>",
-      "style": {
-        "fill-color": [
-          "match",
-          [
-            "get",
-            "Priority"
-          ],
-          "Very High",
-          "rgba(255, 0, 0, 0.8)",
-          "High",
-          "rgba(255, 140, 0, 0.7)",
-          "Medium",
-          "rgba(255, 255, 0, 0.6)",
-          "Low",
-          "rgba(144, 238, 144, 0.5)",
-          "Very Low",
-          "rgba(0, 100, 0, 0.4)",
-          "rgba(128, 128, 128, 0.5)"
-        ]
-      },
-      "inspect": {
-        "id": "HYDRO_UNIT",
-        "title": "Micro Watershed Code",
-        "label": "HYDRO_UNIT",
-        "fields": [
-          "Priority"
-        ],
-        "fieldTitles": [
-          "Watershed Priority"
-        ]
-      }
-    },
-    {
-      "id": "india-forests"
-    },
-    {
-      "id": "india-esz"
-    },
-    {
-      "id": "india-wildlife-reserve"
-    },
-    {
       "title": "Zonation Map of Madei Wildlife Sanctuary",
       "description": "From the Management Plan, Madei WLS",
       "source": "https://forest.goa.gov.in/sites/default/files/2025-09/Management-Plan-of-Madei-Widllife-Sanctuary.pdf",
@@ -133,19 +40,19 @@
           0.3
         ]
       },
-      "attribution": "<a href=\"https://mapwarper.net/maps/97500#Rectify_tab\" target=\"_blank\">MapWarper</a>",
+      "attribution": "<a href='https://mapwarper.net/maps/97500#Rectify_tab' target='_blank'>MapWarper</a>",
       "headerImage": "https://mapwarper.net/uploads/97500/thumb/Screenshot_2025-09-30_at_3.06.41%E2%80%AFPM.png",
       "bbox": "74.0563668,15.3793377,74.3106547,15.7209933",
       "initiallyChecked": false
     },
     {
-      "title": "Proposed Tiger Reserve for Goa (North)",
-      "description": "Proposed Tiger Reserve Plan for Madei Wildlife Sanctuary, Bhagwan Mahaveer Wildlife Sanctuary & National Park, Mollem\r\nWildlife Sanctuary.\r\n\r\nShowing the location of all habitats, all weather roads, large habitations excluded from the proposed tiger reserve and household particulars inside & outside the proposed proposed Tiger\r\nReserve",
+      "title": "Proposed Tiger Reserve for Goa",
+      "description": "Proposed Mhadei Tiger Reserve Plan showing the location of all habitats, all weather roads, large habitations excluded from the proposed tiger reserve and household particulars inside & outside the proposed proposed Tiger Reserve",
       "source": "",
       "dateDepicted": "",
       "type": "tms",
       "id": "proposed-tiger-reserve",
-      "url": "https://mapwarper.net/maps/tile/95676/{z}/{x}/{y}.png",
+      "url": "https://mapwarper.net/maps/tile/98284/{z}/{x}/{y}.png",
       "style": {
         "raster-opacity": [
           "interpolate",
@@ -163,17 +70,17 @@
           0.3
         ]
       },
-      "attribution": "<a href=\"https://mapwarper.net/maps/95676\" target=\"_blank\">MapWarper</a>",
+      "attribution": "<a href='https://mapwarper.net/maps/95676' target='_blank'>MapWarper</a>",
       "headerImage": "https://mapwarper.net/uploads/95676/thumb/Proposed_TR_Map__1_.png",
       "bbox": "73.9288025,15.2009539,74.4074284,15.7801554",
       "initiallyChecked": false
     },
     {
-      "title": "Mhadei Project",
-      "description": "Construction Project Sites",
+      "title": "Mhadei DiversionProject",
+      "description": "Construction Project Sites for Mhadei RiverDiversion Project by Karnataka",
       "headerImage": "assets/map-layers/map-layer-construction.png",
       "type": "geojson",
-      "id": "mhadei-project",
+      "id": "mhadei-diversion-project",
       "url": "https://gist.githubusercontent.com/planemad/841266d3a44935383860dcb4d3c8e322/raw/03002a2ea4f029c39ca22b8865552b94c10435d9/mhadei-project.geojson",
       "attribution": "Collected by <a href='https://gist.github.com/planemad/841266d3a44935383860dcb4d3c8e322'>Amche Goa Community</a>",
       "style": {
@@ -210,10 +117,6 @@
           "Description"
         ]
       }
-    },
-    {
-      "id": "open-buildings",
-      "initiallyChecked": true
     },
     {
       "title": "District",
@@ -332,47 +235,6 @@
       "attribution": "The water budget of the Mahadayi river and its implications for the inter-state dispute via<a href='https://mapwarper.net/maps/98327' target='_blank'>MapWarper</a>",
       "headerImage": "https://mapwarper.net/uploads/98327/thumb/Screenshot_2025-10-22_at_11.29.32%E2%80%AFPM.png",
       "bbox": "73.6232307,15.0563609,74.4812173,15.7425805",
-      "initiallyChecked": false
-    },
-    {
-      "title": "Wildlife Map of Goa",
-      "description": "Illustrated for <a href='https://www.mrugayaxpeditions.com/'>Mrugaya Xpeditions</a> by <a href='https://www.greenhumour.com/2023/06/the-wildlife-map-of-goa.html'>Rohan Chakravarty</a>.",
-      "source": "https://www.greenhumour.com/2023/06/the-wildlife-map-of-goa.html",
-      "dateDepicted": "2023",
-      "type": "tms",
-      "id": "goa-wildlife-map",
-      "url": "https://mapwarper.net/maps/tile/96197/{z}/{x}/{y}.png",
-      "style": {
-        "raster-opacity": [
-          "interpolate",
-          [
-            "linear"
-          ],
-          [
-            "zoom"
-          ],
-          6,
-          0.95,
-          10,
-          0.8,
-          13,
-          0.1
-        ]
-      },
-      "attribution": "© <a href='https://www.mrugayaxpeditions.com/'>Mrugaya Xpeditions</a>, <a href='https://www.greenhumour.com/2023/06/the-wildlife-map-of-goa.html'>Rohan Chakravarty</a> via <a href=\"https://mapwarper.net/maps/96197#Rectify_tab\" target=\"_blank\">Mapwarper</a>",
-      "headerImage": "assets/map-layers/map-layer-goa-wildlife-map.png",
-      "metadata": {
-        "title": "Wildlife Map of Goa",
-        "description": "Illustrated for Mrugaya Xpeditions by Rohan Chakravarty  ",
-        "source": "https://www.greenhumour.com/2023/06/the-wildlife-map-of-goa.html",
-        "attribution": "",
-        "dateDepicted": "2023",
-        "thumbnail": "https://mapwarper.net/uploads/96197/thumb/goa_biodiversity_map_final_web_1_copy.png",
-        "baseUrl": "https://mapwarper.net",
-        "mapId": "96197",
-        "originalUrl": "https://mapwarper.net/maps/96197#Rectify_tab",
-        "bbox": "73.582331,14.8063453,74.3893568,15.8940955"
-      },
       "initiallyChecked": false
     },
     {

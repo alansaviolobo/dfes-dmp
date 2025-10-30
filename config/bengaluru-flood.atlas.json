@@ -39,16 +39,6 @@
     },
     {
       "initiallyChecked": true,
-      "id": "water-bodies",
-      "url": "https://earthengine.googleapis.com/v1/projects/earthengine-legacy/maps/957b5148915002e2ac7a918885c8df77-bc28332bf00314f5db50511f1176e7d5/tiles/{z}/{x}/{y}",
-      "type": "tms",
-      "title": "Water Bodies",
-      "description": "Existing tanks and water bodies",
-      "attribution": "<a href='https://sashikumarn.users.earthengine.app/view/blrfloodsv4'>Bengaluru Elevation and Flood-Prone Explorer, Sashi Kumar N</a>",
-      "headerImage": "assets/map-layers/"
-    },
-    {
-      "initiallyChecked": true,
       "id": "missing-streams",
       "url": "https://earthengine.googleapis.com/v1/projects/earthengine-legacy/maps/296ade153b729cc614b5bc7804634f5d-11ab50f7f20fd7a2f77be5278efbae40/tiles/{z}/{x}/{y}",
       "type": "tms",

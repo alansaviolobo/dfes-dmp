@@ -43,6 +43,35 @@
       }
     },
     {
+      "id": "open-buildings-2016",
+      "url": "https://earthengine.googleapis.com/v1/projects/earthengine-legacy/maps/f5a6d9be6b633730e82ec8d15e0086c1-78d86fb6f5d7c260f64e95bad95f81ac/tiles/{z}/{x}/{y}",
+      "type": "tms",
+      "title": "Open Buildings 2016",
+      "description": "Building presence in 2016 generated using ML from 10m satellite imagery. See <a href='https://research.google/blog/open-buildings-25d-temporal-dataset-tracks-building-changes-across-the-global-south'>methodology</a> for details.",
+      "attribution": "<a href='https://mmeka-ee.projects.earthengine.app/view/open-buildings-temporal-dataset'>Open Buildings 2.5D Temporal Dataset, Google Research</a>",
+      "headerImage": "assets/map-layers/map-layer-open-buildings-2016.png",
+      "style": {
+        "raster-opacity": [
+          "interpolate",
+          ["linear"],
+          ["zoom"],
+          12, 0.99,
+          16, 0.9,
+          18, 0.2
+        ],
+        "raster-hue-rotate": 55,
+        "raster-color": [
+          "interpolate",
+          ["linear"],
+          ["raster-value"],
+          0, "white",
+          0.1, "hsla(0, 100%, 90%, 1)",
+          0.5, "hsla(0, 100%, 80%, 0.95)",
+          1, "hsla(0, 100%, 40%, 0.5)"
+        ]
+      }
+    },
+    {
       "title": "Real-time Weather Satellite",
       "description": "Cloud top temperatures colorized to reveal areas of intensity using the infrared band of weather satellite. Imagery updated every 10 minutes.",
       "headerImage": "assets/map-layers/map-layer-weather-satellite.png",

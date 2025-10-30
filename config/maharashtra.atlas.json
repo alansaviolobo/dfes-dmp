@@ -161,10 +161,6 @@
       }
     },
     {
-      "id": "osm",
-      "initiallyChecked": true
-    },
-    {
       "initiallyChecked": true,
       "id": "mapbox-satellite"
           }

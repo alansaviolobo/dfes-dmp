@@ -130,30 +130,6 @@
       }
     },
     {
-      "id": "rivers"
-    },
-    {
-      "id": "water-bodies"
-    },
-    {
-      "id": "wetland"
-    },
-    {
-      "id": "micro-watersheds"
-    },
-    {
-      "id": "forests"
-    },
-    {
-      "id": "esz"
-    },
-    {
-      "id": "wildlife-reserve"
-    },
-    {
-      "id": "open-buildings"
-    },
-    {
       "title": "Kerala Mask",
       "description": "Mask for the distate state of Kerala.",
       "headerImage": "assets/map-layers/map-layer-goa-districts.png",
@@ -187,10 +163,6 @@
           "rgba(255, 255, 255, 0.5)"
         ]
       }
-    },
-    {
-      "initiallyChecked": true,
-      "id": "osm"
     },
     {
       "initiallyChecked": true,

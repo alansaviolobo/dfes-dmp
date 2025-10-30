@@ -1507,7 +1507,31 @@ export class MapLayerControl {
         });
 
         $contentWrapper.append($toggleLabel, $titleSpan, $atlasBadge);
-        $summary.append($contentWrapper);
+
+        // Add header background if exists (resolve from layer data)
+        let headerImage = layer.headerImage;
+        if (!headerImage && layer.id && window.layerRegistry) {
+            const resolvedLayer = window.layerRegistry.getLayer(layer._prefixedId || layer.id);
+            if (resolvedLayer && resolvedLayer.headerImage) {
+                headerImage = resolvedLayer.headerImage;
+            }
+        }
+
+        if (headerImage) {
+            const $headerBg = $('<div>', {
+                class: 'absolute top-0 left-0 right-0 w-full h-full bg-cover bg-center bg-no-repeat',
+                style: `background-image: url('${headerImage}')`
+            });
+
+            const $headerOverlay = $('<div>', {
+                class: 'absolute top-0 left-0 right-0 w-full h-full bg-black bg-opacity-40'
+            });
+
+            $summary.append($headerBg, $headerOverlay, $contentWrapper);
+        } else {
+            $summary.append($contentWrapper);
+        }
+
         $groupHeader.append($summary);
 
         // Add description if available

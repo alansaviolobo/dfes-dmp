@@ -8,81 +8,8 @@
   },
   "layers": [
     {
-      "id": "mapbox-streets",
-      "title": "Street Map रस्त्याचो नकासो",
-      "description": "Detailed street map sourced from <a href='https://www.openstreetmap.org/#map=11/15.4054/73.9280' target='_blank'>OpenStreetMap contributors</a> and other data sources via <a href='https://docs.mapbox.com/data/tilesets/reference/mapbox-streets-v8/' target='_blank'>Mapbox Streets</a> vector tiles.",
-      "type": "style",
-      "headerImage": "assets/map-layers/map-layer-mapbox-streets.png",
-      "initiallyChecked": true,
-      "layers": [
-        {
-          "title": "Places Labels",
-          "sourceLayer": "place_label"
-        },
-        {
-          "title": "Natural Labels",
-          "sourceLayer": "natural_label"
-        },
-        {
-          "title": "Airport Labels",
-          "sourceLayer": "airport_label"
-        },
-        {
-          "title": "Transit Labels",
-          "sourceLayer": "transit_stop_label"
-        },
-        {
-          "title": "Landmark Labels",
-          "sourceLayer": "poi_label"
-        },
-        {
-          "title": "Buildings",
-          "sourceLayer": "building"
-        },
-        {
-          "title": "Structures",
-          "sourceLayer": "structure"
-        },
-        {
-          "title": "Roads & Railways",
-          "sourceLayer": "road"
-        },
-        {
-          "title": "Runways",
-          "sourceLayer": "aeroway"
-        },
-        {
-          "title": "Hillshading",
-          "sourceLayer": "hillshade"
-        },
-        {
-          "title": "Landcover",
-          "sourceLayer": "landcover"
-        },
-        {
-          "title": "Landuse",
-          "sourceLayer": "landuse"
-        },
-        {
-          "title": "Wetlands & National Parks",
-          "sourceLayer": "landuse_overlay"
-        },
-        {
-          "title": "Waterways",
-          "sourceLayer": "waterway"
-        },
-        {
-          "title": "Waterbodies",
-          "sourceLayer": "water"
-        },
-        {
-          "title": "Boundaries",
-          "sourceLayer": "admin"
-        }
-      ]
+      "id": "mapbox-streets"
     },
-    {"id": "osm-railways"},
-    {"id": "osm-roads"},
     {
       "title": "Cadastral Plot Boundaries",
       "description": "Cadastral boundaries for Haryana. The map is provided for information purpose only. An official copy can be obtained from <a href='https://hsac.org.in/eodb/#' target='_blank' rel='noopener noreferrer'>Digital Land Record, Haryana</a>",
@@ -204,9 +131,6 @@
           "District"
         ]
       }
-    },
-    {
-      "id": "municipal-wards"
     },
     {
       "title": "Gurgaon Master Plan 2031",

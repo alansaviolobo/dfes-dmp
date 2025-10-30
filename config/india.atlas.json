@@ -178,6 +178,663 @@
       }
     },
     {
+      "id": "village",
+      "title": "Village Boundaries",
+      "headerImage": "assets/map-layers/map-layer-village.png",
+      "description": "Revenue village boundaries with <a href='https://lgdirectory.gov.in/' target='_blank'>Local Government Directory</a> attributes.",
+      "type": "vector",
+      "url": "https://indianopenmaps.fly.dev/not-so-open/villages/lgd/{z}/{x}/{y}.pbf ",
+      "sourceLayer": "LGD_Villages",
+      "maxzoom": 10,
+      "attribution": "<a href='https://mapservice.gov.in/gismapservice/rest/services/BharatMapService/Village_Boundary/MapServer/0'>NIC Bharatmaps GIS</a>, <a href='https://lgdirectory.gov.in/' target='_blank'>Local Government Directory, Ministry of Panchayati Raj</a> - Collected by <a href='https://datameet.org'>Datameet Community</a>",
+      "style": {
+        "text-field": [
+          "get",
+          "vilnam_soi"
+        ],
+        "text-color": "white",
+        "text-size": 13,
+        "fill-color": [
+          "interpolate",
+          [
+            "linear"
+          ],
+          [
+            "zoom"
+          ],
+          8,
+          "rgba(0, 0, 0, 0)",
+          12,
+          "rgba(0, 0, 0, 0.1)"
+        ],
+        "line-color": "black",
+        "line-width": [
+          "interpolate",
+          [
+            "linear"
+          ],
+          [
+            "zoom"
+          ],
+          8,
+          [
+            "case",
+            [
+              "boolean",
+              [
+                "feature-state",
+                "selected"
+              ],
+              false
+            ],
+            1.5,
+            [
+              "boolean",
+              [
+                "feature-state",
+                "hover"
+              ],
+              false
+            ],
+            1,
+            0
+          ],
+          12,
+          [
+            "case",
+            [
+              "boolean",
+              [
+                "feature-state",
+                "selected"
+              ],
+              false
+            ],
+            3,
+            [
+              "boolean",
+              [
+                "feature-state",
+                "hover"
+              ],
+              false
+            ],
+            2,
+            1
+          ]
+        ]
+      },
+      "inspect": {
+        "title": "Village",
+        "label": "vilnam_soi",
+        "id": "OBJECTID",
+        "fields": [
+          "vil_lgd",
+          "gp_name",
+          "block_name",
+          "sdtname",
+          "dtname"
+        ],
+        "fieldTitles": [
+          "Village Code",
+          "Gram Panchayat",
+          "Block",
+          "Sub District",
+          "District"
+        ]
+      }
+    },
+    {
+      "id": "block",
+      "title": "Block Boundaries",
+      "headerImage": "assets/map-layers/map-layer-block.png",
+      "description": "Block boundaries with <a href='https://lgdirectory.gov.in/' target='_blank'>Local Government Directory</a> attributes.",
+      "type": "vector",
+      "url": "https://indianopenmaps.fly.dev/not-so-open/blocks/lgd/{z}/{x}/{y}.pbf ",
+      "sourceLayer": "LGD_Blocks",
+      "maxzoom": 10,
+      "attribution": "<a href='https://mapservice.gov.in/gismapservice/rest/services/BharatMapService/Admin_Boundary_GramPanchayat/MapServer/2'>NIC Bharatmaps GIS</a>, <a href='https://lgdirectory.gov.in/' target='_blank'>Local Government Directory, Ministry of Panchayati Raj</a> - Collected by <a href='https://datameet.org'>Datameet Community</a>",
+      "style": {
+        "text-field": [
+          "get",
+          "block_name"
+        ],
+        "text-color": "white",
+        "text-size": 13,
+        "line-color": "black",
+        "line-width": 1.5
+      },
+      "inspect": {
+        "title": "Village",
+        "label": "vilnam_soi",
+        "id": "OBJECTID",
+        "fields": [
+          "vil_lgd",
+          "gp_name",
+          "block_name",
+          "sdtname",
+          "dtname"
+        ],
+        "fieldTitles": [
+          "Village Code",
+          "Gram Panchayat",
+          "Block",
+          "Sub District",
+          "District"
+        ]
+      }
+    },
+    {
+      "id": "municipal-wards",
+      "title": "Municipal Ward Boundaries",
+      "headerImage": "assets/map-layers/map-layer-ulb-wards.png",
+      "description": "Ward boundaries for Panaji Municipal Corporation and Municipal Councils (partial coverage)",
+      "type": "vector",
+      "url": "https://indianopenmaps.fly.dev/not-so-open/urban/wards/sbm/{z}/{x}/{y}.pbf",
+      "sourceLayer": "SBM_Wards",
+      "maxzoom": 12,
+      "attribution": "<a href='https://sbm-g-esriindia1.hub.arcgis.com/'>Swachh Bharat Mission GIS</a> - Collected by <a href='https://datameet.org'>Datameet Community</a>",
+      "style": {
+        "text-field": [
+          "match",
+          [
+            "get",
+            "ulbname"
+          ],
+          ["Municipal Corporation Of Greater Mumbai","Municipal Corporation Of Mumbai","Municipal Corporation Greater Mumbai","Municipal Corporation Of Grater Mumbai","Canacona"],
+          [
+            "get",
+            "wardname"
+          ],
+          [
+            "get",
+            "wardcode"
+          ]
+        ],
+        "text-color": "white",
+        "text-halo-color": "purple",
+        "text-size": 13,
+        "fill-color": [
+          "interpolate",
+          [
+            "linear"
+          ],
+          [
+            "zoom"
+          ],
+          16,
+          "rgba(0, 0, 0, 0.05)",
+          18,
+          "rgba(0, 0, 0, 0.1)"
+        ],
+        "line-color": "hsl(278, 82%, 57%)",
+        "line-width": [
+          "interpolate",
+          [
+            "linear"
+          ],
+          [
+            "zoom"
+          ],
+          12,
+          [
+            "case",
+            [
+              "boolean",
+              [
+                "feature-state",
+                "selected"
+              ],
+              false
+            ],
+            4,
+            [
+              "boolean",
+              [
+                "feature-state",
+                "hover"
+              ],
+              false
+            ],
+            4,
+            1
+          ],
+          18,
+          [
+            "case",
+            [
+              "boolean",
+              [
+                "feature-state",
+                "selected"
+              ],
+              false
+            ],
+            6,
+            [
+              "boolean",
+              [
+                "feature-state",
+                "hover"
+              ],
+              false
+            ],
+            5,
+            0.5
+          ]
+        ]
+      },
+      "inspect": {
+        "title": "Ward Name",
+        "label": "wardname",
+        "id": "objectid",
+        "fields": [
+          "wardcode",
+          "ulbname"
+        ],
+        "fieldTitles": [
+          "Ward Code",
+          "Urban Local Body"
+        ]
+      }
+    },
+    {
+      "title": "Assembly Constituencies",
+      "description": "Members of Legislative Assembly (MLA) constituencies.",
+      "headerImage": "assets/map-layers/map-layer-assembly-boundaries.png",
+      "type": "vector",
+      "id": "assembly-constituencies",
+      "url": "https://indianopenmaps.fly.dev/not-so-open/constituencies/assembly/lgd/{z}/{x}/{y}.pbf ",
+      "sourceLayer": "LGD_Assembly_Constituencies",
+      "maxzoom": 10,
+      "attribution": "<a href='https://mapservice.gov.in/gismapservice/rest/services/BharatMapService/AC_PC/MapServer/2'>LGD/Bharatmaps/ECI</a> - Collected by <a href='https://datameet.org'>Datameet Community</a>",
+      "style": {
+        "text-field": [
+          "get",
+          "ac_name"
+        ],
+        "text-color": "blue",
+        "text-size": 15,
+        "fill-color": [
+          "interpolate",
+          [
+            "linear"
+          ],
+          [
+            "zoom"
+          ],
+          8,
+          "rgba(0, 0, 0, 0)",
+          12,
+          "rgba(0, 0, 0, 0.1)"
+        ],
+        "line-color": "blue",
+        "line-width": 2
+      },
+      "inspect": {
+        "title": "Name",
+        "label": "ac_name",
+        "id": "OBJECTID",
+        "fields": [
+          "AC_ID",
+          "pc_name",
+          "dist_name",
+          "st_name"
+        ],
+        "fieldTitles": [
+          "Constituency Code",
+          "Parliamentary Constituency",
+          "District",
+          "State"
+        ]
+      }
+    },
+    {
+      "title": "Parliamentary Constituencies",
+      "description": "Members of Parliament (MP) constituencies",
+      "headerImage": "assets/map-layers/map-layer-parliament-boundaries.png",
+      "type": "vector",
+      "id": "parliamentary-constituencies",
+      "url": "https://indianopenmaps.fly.dev/not-so-open/constituencies/parliament/lgd/{z}/{x}/{y}.pbf ",
+      "sourceLayer": "LGD_Parliament_Constituencies",
+      "maxzoom": 10,
+      "attribution": "<a href='https://mapservice.gov.in/gismapservice/rest/services/BharatMapService/AC_PC/MapServer/1'>LGD/Bharatmaps/ECI</a> - Collected by <a href='https://datameet.org'>Datameet Community</a>",
+      "style": {
+        "text-field": [
+          "get",
+          "pc_name"
+        ],
+        "text-color": "white",
+        "text-halo-color": "blue",
+        "text-size": 18,
+        "fill-color": [
+          "interpolate",
+          [
+            "linear"
+          ],
+          [
+            "zoom"
+          ],
+          8,
+          "rgba(0, 0, 0, 0)",
+          12,
+          "rgba(0, 0, 0, 0.1)"
+        ],
+        "line-color": "blue",
+        "line-width": [
+          "interpolate",
+          [
+            "linear"
+          ],
+          [
+            "zoom"
+          ],
+          8,
+          4,
+          16,
+          8
+        ]
+      },
+      "inspect": {
+        "title": "Name",
+        "label": "pc_name",
+        "id": "OBJECTID",
+        "fields": [
+          "dist_name",
+          "st_name"
+        ],
+        "fieldTitles": [
+          "District",
+          "State"
+        ]
+      }
+    },
+    {
+      "title": "Parivesh Environmental Clearance",
+      "description": "Applications for environmental clearance from parivesh",
+      "type": "vector",
+      "id": "parivesh",
+      "url": "https://api-main-432878571563.europe-west4.run.app/tiler/vector/{z}/{x}/{y}?map_id=5245a55a-4eee-4856-8095-fde7711ff7b9",
+      "sourceLayer": "vector",
+      "maxzoom": 8,
+      "attribution": "<a href='https://environmentclearance.nic.in/'>Parivesh, Ministry of Environment,Forest and Climate Change,Government of India</a> - Collected by <a href='https://datameet.org'>Datameet Community</a> via <a href='https://github.com/datameet/parivesh-geojson'>MapHub</a>",
+      "style": {
+        "text-field": ["get", "Organization Name"],
+        "text-halo-color": "crimson",
+        "line-color": "crimson",
+        "line-width": 4,
+        "fill-color": [
+          "case",
+          ["==", ["geometry-type"], "Polygon"],
+          "crimson",
+          "transparent"
+        ],
+        "fill-opacity": [
+          "case",
+          ["==", ["geometry-type"], "Polygon"],
+          0.1,
+          0
+        ]
+      },
+      "inspect": {
+        "id": "Proposal Number",
+        "title": "Organization Name",
+        "label": "Organization Name",
+        "fields": ["Project Category", "Project Name", "Project Description"]
+      }
+    },
+    {
+      "title": "Wetlands",
+      "description": "Wetlands and low lying estuarine areas classified from remote sensing imagery. For methodological details, see <a href='https://vedas.sac.gov.in/static/downloads/atlas/Wetlands/NWIA_Goa_Atlas.pdf'>2009 National Wetland Atlas of Goa, Space Applications Centre, ISRO / Ministry of Environment and Forests</a>.",
+      "headerImage": "assets/map-layers/map-layer-wetland.png",
+      "type": "vector",
+      "id": "wetlands",
+      "url": "https://indianopenmaps.fly.dev/not-so-open/wetlands/parivesh/{z}/{x}/{y}.pbf",
+      "sourceLayer": "Bharatmaps_Parivesh_Wetland_Boundaries",
+      "maxzoom": 11,
+      "attribution": "<a href='https://vedas.sac.gov.in/wetlands/index.html'>1:10k Wetland Polygons (2019), Space Applications Centre, ISRO</a> - Collected by <a href='https://datameet.org'>Datameet Community</a>",
+      "style": {
+        "line-color": "blue",
+        "fill-color": [
+          "match",
+          [
+            "get",
+            "descr"
+          ],
+          "Inland - Natural - Waterlogged",
+          "#0084f7",
+          "Inland - Natural - River/Stream",
+          "#0084f7",
+          "Inland - Natural - Lake/Pond",
+          "#0084f7",
+          "Inland - Man-made - Tank/Pond",
+          "#0084f7",
+          "Inland - Man-made - Reservoir/Barrage",
+          "#0084f7",
+          "Inland - Man-made - Waterlogged",
+          "#0084f7",
+          "Coastal - Natural - Creek",
+          "#0084f7",
+          "Coastal - Natural - Lagoon",
+          "#0084f7",
+          "Inland - Natural - Ox-bow Lake / Cut-off me",
+          "#0084f7",
+          "Coastal - Natural - Mangrove",
+          "green",
+          "Coastal - Natural - Inter-tidal Mud-flat",
+          "brown",
+          "Coastal - Natural - Salt Marsh",
+          "brown",
+          "Coastal - Man-made - Salt Pan",
+          "cyan",
+          "Inland - Man-made - Salt Pan",
+          "cyan",
+          "Coastal - Man-made - Aquaculture Pond",
+          "cyan",
+          "Coastal - Natural - Sand/Beach",
+          "orange",
+          "Others (non-wetland area)",
+          "grey",
+          "#0084f7"
+        ]
+      },
+      "filter": [
+        "!=",
+        [
+          "get",
+          "descr"
+        ],
+        "Others (non-wetland area)"
+      ],
+      "inspect": {
+        "id": "objectid",
+        "title": "Wetland Name",
+        "label": "wetname",
+        "fields": [
+          "descr",
+          "aqveg",
+          "turbidity"
+        ],
+        "fieldTitles": [
+          "Description",
+          "Aquatic Vegetation",
+          "Turbidity"
+        ]
+      }
+    },
+    {
+      "title": "Rivers",
+      "description": "Rivers and streams with stream order",
+      "headerImage": "assets/map-layers/map-layer-rivers.png",
+      "type": "vector",
+      "id": "rivers",
+      "url": "https://indianopenmaps.fly.dev/streams/wris/{z}/{x}/{y}.pbf",
+      "sourceLayer": "wris_streams",
+      "maxzoom": 11,
+      "attribution": "<a href='https://indiawris.gov.in/wris/'>India WRIS</a> - Collected by <a href='https://datameet.org'>Datameet Community</a>",
+      "style": {
+        "line-color": "#0084f7",
+        "line-opacity": 0.8,
+        "line-width": [
+          "interpolate",
+          [
+            "linear"
+          ],
+          [
+            "zoom"
+          ],
+          8,
+          [
+            "case",
+            [
+              "has",
+              "ordsh"
+            ],
+            [
+              "*",
+              0.5,
+              [
+                "to-number",
+                [
+                  "get",
+                  "ordsh"
+                ]
+              ]
+            ],
+            0
+          ],
+          14,
+          [
+            "case",
+            [
+              "has",
+              "ordsh"
+            ],
+            [
+              "*",
+              2,
+              [
+                "to-number",
+                [
+                  "get",
+                  "ordsh"
+                ]
+              ]
+            ],
+            1
+          ],
+          18,
+          [
+            "case",
+            [
+              "has",
+              "ordsh"
+            ],
+            [
+              "*",
+              1,
+              [
+                "to-number",
+                [
+                  "get",
+                  "ordsh"
+                ]
+              ]
+            ],
+            1
+          ]
+        ]
+      },
+      "inspect": {
+        "id": "rivname",
+        "title": "Name",
+        "label": "rivname",
+        "fields": [
+          "bacode",
+          "ordsh"
+        ],
+        "fieldTitles": [
+          "Basin Code",
+          "Stream Order"
+        ]
+      }
+    },
+    {
+      "id": "watersheds",
+      "title": "Watershed Boundaries",
+      "headerImage": "assets/map-layers/map-layer-watersheds.png",
+      "description": "Watershed Boundaries",
+      "type": "vector",
+      "url": "https://indianopenmaps.fly.dev/watersheds/wris/{z}/{x}/{y}.pbf",
+      "sourceLayer": "wris_watershed",
+      "maxzoom": 10,
+      "attribution": "<a href='https://indiawris.gov.in/wris/#/riverBasins'>India Water Resources Information System, Ministry of Jal Shakti</a> - Collected by <a href='https://datameet.org'>Datameet Community</a>",
+      "style": {
+        "fill-color": "rgba(0, 0, 0, 0)",
+        "line-color": "blue",
+        "line-width": [
+          "interpolate",
+          [
+            "linear"
+          ],
+          [
+            "zoom"
+          ],
+          12,
+          5,
+          18,
+          9
+        ]
+      },
+      "inspect": {
+        "id": "objectid",
+        "title": "Watershed Code",
+        "label": "wsconc"
+      }
+    },
+    {
+      "id": "micro-watersheds",
+      "title": "Micro Watershed Atlas of India",
+      "headerImage": "assets/map-layers/map-layer-micro-watersheds.png",
+      "description": "Micro Watershed Atlas with <a href='https://slusi.da.gov.in/mwa.pdf'>micro watershed code</a>",
+      "type": "vector",
+      "url": "https://indianopenmaps.fly.dev/micro-watersheds/priorities/slusi/{z}/{x}/{y}.pbf",
+      "sourceLayer": "SLUSI_Priority_MicroWatersheds",
+      "maxzoom": 10,
+      "attribution": "<a href='https://soilhealth.dac.gov.in/slusi-visualisation/'>Soil and Land Use Survey of India, Ministry of Agriculture and Farmers Welfare</a> - Collected by <a href='https://datameet.org'>Datameet Community</a>",
+      "style": {
+        "fill-color": [
+          "match",
+          [
+            "get",
+            "Priority"
+          ],
+          "Very High",
+          "rgba(255, 0, 0, 0.8)",
+          "High",
+          "rgba(255, 140, 0, 0.7)",
+          "Medium",
+          "rgba(255, 255, 0, 0.6)",
+          "Low",
+          "rgba(144, 238, 144, 0.5)",
+          "Very Low",
+          "rgba(0, 100, 0, 0.4)",
+          "rgba(128, 128, 128, 0.5)"
+        ]
+      },
+      "inspect": {
+        "id": "HYDRO_UNIT",
+        "title": "Micro Watershed Code",
+        "label": "HYDRO_UNIT",
+        "fields": [
+          "Priority"
+        ],
+        "fieldTitles": [
+          "Watershed Priority"
+        ]
+      }
+    },
+    {
       "title": "Reserve Forests",
       "description": "Forest areas notified and protectedunder the <a href='http://nbaindia.org/uploaded/Biodiversityindia/Legal/3.%20Indian%20forest%20act.pdf'>Indian Forest Act, 1927</a>",
       "headerImage": "assets/map-layers/map-layer-forest.png",
@@ -491,7 +1148,7 @@
       "url": "https://indianopenmaps.fly.dev/not-so-open/cultural/monuments/zones/asi/bhuvan/{z}/{x}/{y}.pbf",
       "sourceLayer": "Bhuvan_ASI_Boundaries",
       "maxzoom": 13,
-      "attribution": "Source: <a href=\"https://bhuvan.nrsc.gov.in/\" target=\"_blank\" rel=\"noopener noreferrer\">BHuvan/ASI</a> - Collected by <a href=\"https://datameet.org\" target=\"_blank\" rel=\"noopener noreferrer\">Datameet Community</a>",
+      "attribution": "Source: <a href='https://bhuvan.nrsc.gov.in/' target='_blank' rel='noopener noreferrer'>BHuvan/ASI</a> - Collected by <a href='https://datameet.org' target='_blank' rel='noopener noreferrer'>Datameet Community</a>",
       "initiallyChecked": false,
       "style": {
         
@@ -828,6 +1485,646 @@
           "Mine Code"
         ]
       }
+    },
+    {
+      "id": "2024-landslide-susceptibility-map",
+      "url": "https://earthengine.googleapis.com/v1/projects/earthengine-legacy/maps/5bc0f5e3b498438cf56cc26f6b4386d6-2e6cfc868b0328c93e92403338440c44/tiles/{z}/{x}/{y}",
+      "type": "tms",
+      "title": "Indian Landslide Susceptibility Map 2024",
+      "description": "Potential of slope failure for given geo-environmental conditions.  landslide susceptibility mapping using ensemble machine learning and geospatial big data. See <a href='https://github.com/hydrosenselab/ILSM'>source code</a> for technical details.",
+      "attribution": "<a href='https://hydrosense.users.earthengine.app/view/ilsm'>Indian Landslide Susceptibility Map (ILSM) (100m), Hydrosense Lab, IIT-Delhi</a>",
+      "headerImage": "assets/map-layers/map-layer-landslide-risk.png",
+      "legendImage": "assets/map-layers/map-layer-landslide-risk-legend.png"
+    },
+    {
+      "title": "SOI Toposheets",
+      "description": "Survey of India",
+      "headerImage": "assets/map-layers/map-layer-soi.png",
+      "legendImage": "assets/map-layers/map-layer-soi-legend.png",
+      "type": "tms",
+      "id": "soi-map",
+      "url": "https://indianopenmaps.fly.dev/soi/osm/{z}/{x}/{y}.webp",
+      "attribution": "<a href='https://onlinemaps.surveyofindia.gov.in/FreeMapSpecification.aspx'>Open Series Toposheets from Survey of India</a>"
+    },
+    {
+      "title": "Coastal Zone Management Plan",
+      "description": "Coastal Zone Management Plan 2019",
+      "headerImage": "assets/map-layers/map-layer-czmp.png",
+      "legendImage": "assets/map-layers/map-layer-czmp-legend.png",
+      "type": "tms",
+      "id": "2019-czmp-map",
+      "url": "https://indianopenmaps.fly.dev/not-so-open/coastal/goa/regulation/ncscm/{z}/{x}/{y}.webp",
+      "attribution": "<a href='https://czmp.ncscm.res.in/'>National Center For Sustainable Coastal Management</a> - Collected by <a href='https://datameet.org'>Datameet Community</a>"
+    },
+
+    {
+      "title": "Landcover",
+      "description": "Space based Information Support for Decentralized Planning (SISDP) Phase 2 10k Land Usage Land Cover data. Check the <a href='https://bhuvanpanchayat.nrsc.gov.in/SISDP/BP-lrdpwrdpmanual.pdf'>SISDP technical manual</a> for background about the project and <a href='https://bhuvanpanchayat.nrsc.gov.in/SISDP/BP-lrdpwrdpmanual.pdf'>Bhuvan Panchayat Portal User Manual</a> for more details.",
+      "headerImage": "assets/map-layers/map-layer-landcover.png",
+      "type": "vector",
+      "id": "landcover",
+      "url": "https://indianopenmaps.fly.dev/not-so-open/landuse/10k/sisdpv2/bhuvan/{z}/{x}/{y}.pbf",
+      "sourceLayer": "Bhuvan_SISDP_V2_LULC_10k",
+      "maxzoom": 13,
+      "attribution": "<a href='https://bhuvanpanchayat.nrsc.gov.in'>Bhuvan Land Use Land Cover (10K):SIS-DP Phase2:2018-23</a> - Collected by <a href='https://github.com/ramSeraph/indian_land_features/releases/tag/landuse'>Datameet Community</a>",
+      "style": {
+        "text-font": [
+          "Open Sans Regular"
+        ],
+        "text-field": [
+          "step",
+          [
+            "zoom"
+          ],
+          "",
+          13,
+          [
+            "to-string",
+            [
+              "get",
+              "dscr3"
+            ]
+          ]
+        ],
+        "text-color": [
+          "match",
+          [
+            "get",
+            "lc_code"
+          ],
+          "AGCR",
+          "black",
+          [
+            "AGAQ",
+            "WLST"
+          ],
+          "black",
+          [
+            "WBRT",
+            "WLWL",
+            "WBRS",
+            "WBLP",
+            "WLSA"
+          ],
+          "black",
+          "white"
+        ],
+        "text-halo-color": [
+          "match",
+          [
+            "get",
+            "lc_code"
+          ],
+          "AGCR",
+          "lightgreen",
+          [
+            "BUUR",
+            "BURV",
+            "BURM",
+            "BUUP",
+            "BURU",
+            "BURH",
+            "BUUC"
+          ],
+          "orange",
+          [
+            "BUTP"
+          ],
+          "maroon",
+          [
+            "BUMN"
+          ],
+          "purple",
+          [
+            "WLSP",
+            "AGPL",
+            "WLSD",
+            "FRPL"
+          ],
+          "green",
+          [
+            "FRDE"
+          ],
+          "darkgreen",
+          [
+            "AGAQ",
+            "WLST"
+          ],
+          "cyan",
+          [
+            "FRMG"
+          ],
+          "seagreen",
+          [
+            "WBRT",
+            "WLWL",
+            "WBRS",
+            "WBLP"
+          ],
+          "lightblue",
+          [
+            "WLSA"
+          ],
+          "gold",
+          [
+            "WLBR"
+          ],
+          "grey",
+          "black"
+        ],
+        "text-halo-width": 5,
+        "text-size": 13,
+        "line-color": "grey",
+        "fill-color": [
+          "match",
+          [
+            "get",
+            "lc_code"
+          ],
+          "AGCR",
+          "lightgreen",
+          [
+            "BUUR",
+            "BURV",
+            "BURM",
+            "BUUP",
+            "BURU",
+            "BURH",
+            "BUUC"
+          ],
+          "orange",
+          [
+            "BUTP"
+          ],
+          "maroon",
+          [
+            "BUMN"
+          ],
+          "purple",
+          [
+            "WLSP",
+            "AGPL",
+            "WLSD",
+            "FRPL"
+          ],
+          "green",
+          [
+            "FRDE"
+          ],
+          "darkgreen",
+          [
+            "FRMG"
+          ],
+          "seagreen",
+          [
+            "AGAQ",
+            "WLST"
+          ],
+          "cyan",
+          [
+            "WBRT",
+            "WLWL",
+            "WBRS",
+            "WBLP"
+          ],
+          "lightblue",
+          [
+            "WLSA"
+          ],
+          "gold",
+          [
+            "WLBR",
+            "WLGU"
+          ],
+          "grey",
+          "black"
+        ],
+        "fill-opacity": 0.8
+      },
+      "inspect": {
+        "id": "lc_code",
+        "title": "Description",
+        "label": "dscr3",
+        "fields": [
+          "dscr2",
+          "dscr1",
+          "lc_code"
+        ],
+        "fieldTitles": [
+          "Type",
+          "Category",
+          "Land Cover Code"
+        ]
+      }
+    },
+    {
+      "title": "Geomorphological Lineaments",
+      "description": "Geomorphological lineaments based on <a href='https://bhuvan-app1.nrsc.gov.in/2dresources/thematic/gm/gm.pdf'>genesis based classification schema</a>.",
+      "headerImage": "assets/map-layers/map-layer-lineament.png",
+      "type": "vector",
+      "id": "lineament",
+      "url": "https://indianopenmaps.fly.dev/not-so-open/lineament/50k/bhuvan/{z}/{x}/{y}.pbf",
+      "sourceLayer": "Bhuvan_Lineament_50k_0506",
+      "maxzoom": 8,
+      "attribution": "<a href='https://bhuvan-app1.nrsc.gov.in/thematic/thematic/index.php'>Bhuvan</a> - Collected by <a href='https://datameet.org'>Datameet Community</a>",
+      "style": {
+        "line-color": [
+          "match",
+          [
+            "get",
+            "Des"
+          ],
+          [
+            "Geomorphic Lineaments-Drainage Parallel",
+            "Geomorphic Lineaments-Drainage parallel"
+          ],
+          "blue",
+          "Structural Lineaments-Fault",
+          "red",
+          "Geomorphic Lineaments-Parallel to Shoreline",
+          "brown",
+          "black"
+        ],
+        "line-width": [
+          "interpolate",
+          [
+            "linear"
+          ],
+          [
+            "zoom"
+          ],
+          14,
+          [
+            "case",
+            [
+              "boolean",
+              [
+                "feature-state",
+                "selected"
+              ],
+              false
+            ],
+            3,
+            [
+              "boolean",
+              [
+                "feature-state",
+                "hover"
+              ],
+              false
+            ],
+            2.5,
+            2
+          ],
+          18,
+          [
+            "case",
+            [
+              "boolean",
+              [
+                "feature-state",
+                "selected"
+              ],
+              false
+            ],
+            8,
+            [
+              "boolean",
+              [
+                "feature-state",
+                "hover"
+              ],
+              false
+            ],
+            5,
+            4
+          ]
+        ]
+      },
+      "inspect": {
+        "id": "LineaID",
+        "title": "Description",
+        "label": "Des"
+      }
+    },
+    {
+      "title": "Groundwater Prospects",
+      "description": "Groundwater prospect maps prepared at 1:50k scale. Refer to the <a href='https://bhuvan-app1.nrsc.gov.in/gwis/docs/GW_Manual.pdf'>methodology</a> and <a href='https://www.nrsc.gov.in/sites/default/files/pdf/ebooks/RGNationalDrinkingWater_UserManual.pdf'>user manual</a> for more details. Check <a href'https://ingres.iith.ac.in/gecdataonline/gis/INDIA'>INDIA-Groundwater Resource Estimation System (IN-GRES)</a> for taluk level groundwater assessment reports.<br>View  <a href='https://www.cgwb.gov.in/old_website/GW-Assessment/GWR-2022-Reports%20State/Goa.pdf'>Dynamic Groundwater Report of Goa State 2022</a> | <a href='https://www.cgwb.gov.in/cgwbpnm/public/uploads/documents/1705640315968744698file.pdf'>2024</a>.",
+      "headerImage": "assets/map-layers/map-layer-groundwater.png",
+      "legendImage": "assets/map-layers/map-layer-groundwater-legend.pdf",
+      "type": "vector",
+      "id": "groundwater",
+      "url": " https://indianopenmaps.fly.dev/not-so-open/groundwater-prospects/lgeom/bhuvan/{z}/{x}/{y}.pbf",
+      "sourceLayer": "Bhuvan_Groundwater_Prospects_LGEOM",
+      "maxzoom": 11,
+      "attribution": "<a href='https://bhuvan-app1.nrsc.gov.in/gwis/'>Bhuvan - Bhujal, Ministry of Drinking Water and Sanitation</a> - Collected by <a href='https://datameet.org'>Datameet Community</a>",
+      "style": {
+        "line-color": "blue",
+        "line-width": [
+          "interpolate",
+          [
+            "linear"
+          ],
+          [
+            "zoom"
+          ],
+          14,
+          [
+            "case",
+            [
+              "boolean",
+              [
+                "feature-state",
+                "selected"
+              ],
+              false
+            ],
+            4,
+            [
+              "boolean",
+              [
+                "feature-state",
+                "hover"
+              ],
+              false
+            ],
+            3,
+            1
+          ],
+          18,
+          [
+            "case",
+            [
+              "boolean",
+              [
+                "feature-state",
+                "selected"
+              ],
+              false
+            ],
+            8,
+            [
+              "boolean",
+              [
+                "feature-state",
+                "hover"
+              ],
+              false
+            ],
+            5,
+            2
+          ]
+        ],
+        "fill-color": [
+          "match",
+          [
+            "get",
+            "LG_4"
+          ],
+          "Good",
+          "#03045E",
+          "Moderate",
+          "#0077B6",
+          "Limited",
+          "#00B4D8",
+          "grey"
+        ],
+        "fill-opacity": 0.95
+      },
+      "inspect": {
+        "id": "OBJECTID",
+        "title": "Hydrogeomorphic Landform",
+        "label": "LG_2",
+        "fields": [
+          "ALNUM_CODE",
+          "LG_13",
+          "LG_1",
+          "LG_3A",
+          "LG_3B",
+          "LG_4",
+          "LG_5A",
+          "LG_5B",
+          "LG_6A",
+          "LG_6B",
+          "LG_7A",
+          "LG_8A",
+          "LG_9",
+          "LG_10",
+          "LG_12A",
+          "LG_12B"
+        ],
+        "fieldTitles": [
+          "Landform Code",
+          "Groundwater Prospects",
+          "Rock Type",
+          "Water Table Depth (summer avg.)",
+          "Number of Wells",
+          "Recharge Condition",
+          "Aquifier Material 1",
+          "Aquifier Material 2",
+          "Suggested Well Type 1",
+          "Suggested Well Type 2",
+          "Well Depth Range (m)",
+          "Expected Well Yield (m³/day)",
+          "Well Success Rate",
+          "Quality (Potable/Non-Potable)",
+          "Suitable Recharge Structures",
+          "Recharge Level"
+        ]
+      }
+    },
+    {
+      "title": "Geomorphological Ecozones",
+      "description": "Geomorphological landforms based on <a href='https://bhuvan-app1.nrsc.gov.in/2dresources/thematic/gm/gm.pdf'>genesis based classification schema</a>.",
+      "headerImage": "assets/map-layers/map-layer-geomorphology.png",
+      "type": "vector",
+      "id": "geomorphology",
+      "url": "https://indianopenmaps.fly.dev/not-so-open/geomorphology/50k/bhuvan/{z}/{x}/{y}.pbf",
+      "sourceLayer": "Bhuvan_Geomorphology_50k_0506",
+      "maxzoom": 11,
+      "attribution": "<a href='https://bhuvan-app1.nrsc.gov.in/thematic/thematic/index.php'>Bhuvan</a> - Collected by <a href='https://datameet.org'>Datameet Community</a>",
+      "style": {
+        "line-color": "black",
+        "line-width": [
+          "interpolate",
+          [
+            "linear"
+          ],
+          [
+            "zoom"
+          ],
+          14,
+          [
+            "case",
+            [
+              "boolean",
+              [
+                "feature-state",
+                "selected"
+              ],
+              false
+            ],
+            0.5,
+            [
+              "boolean",
+              [
+                "feature-state",
+                "hover"
+              ],
+              false
+            ],
+            0.1,
+            0
+          ],
+          18,
+          [
+            "case",
+            [
+              "boolean",
+              [
+                "feature-state",
+                "selected"
+              ],
+              false
+            ],
+            8,
+            [
+              "boolean",
+              [
+                "feature-state",
+                "hover"
+              ],
+              false
+            ],
+            5,
+            2
+          ]
+        ],
+        "fill-color": [
+          "match",
+          [
+            "get",
+            "Des"
+          ],
+          [
+            "Structural Origin-Moderately Dissected Hills and Valleys",
+            "Structural Origin-Highly Dissected Hills and Valleys",
+            "Structural Origin-Low Dissected Hills and Valleys",
+            "Denudational Origin-Moderately Dissected Hills and Valleys",
+            "Denudational Origin-Highly Dissected Hills and Valleys",
+            "Denudational Origin-Piedmont Slope"
+          ],
+          "#d7ba8c",
+          [
+            "Structural Origin-Highly Dissected Lower Plateau",
+            "Structural Origin-Moderately Dissected Lower Plateau",
+            "Structural Origin-Moderately Dissected Upper Plateau",
+            "Structural Origin-Low Dissected Upper Plateau",
+            "Structural Origin-Highly Dissected Upper Plateau",
+            "Denudational Origin-Moderately Dissected Lower Plateau",
+            "Denudational Origin-Moderately Dissected Upper Plateau",
+            "Structural Origin-Low Dissected Lower Plateau",
+            "Denudational Origin-Low Dissected Lower Plateau",
+            "Denudational Origin-Low Dissected Upper Plateau",
+            "Denudational Origin-Highly Dissected Lower Plateau",
+            "Denudational Origin-Highly Dissected Upper Plateau"
+          ],
+          "#f9f33d",
+          [
+            "Coastal Origin-Older Deltaic Plain",
+            "Coastal Origin-Older Coastal Plain",
+            "Denudational Origin-Pediment-PediPlain Complex",
+            "Denudational Origin-Low Dissected Hills and Valleys",
+            "Fluvial Origin-Piedmont Alluvial Plain",
+            "Fluvial Origin-Younger Alluvial Plain",
+            "Fluvial Origin-Bajada",
+            "Fluvial Origin-Older Alluvial Plain",
+            "Denudational Origin-Mass Wasting Products",
+            "Fluvial Origin-Older Flood Plain",
+            "Lacustrine Origin-Lacustrine Terrain",
+            "Aeolian Origin-Aeolian Plain"
+          ],
+          "#caf1cc",
+          [
+            "Coastal Origin-Younger Coastal Plain",
+            "Fluvial Origin-Active Flood Plain",
+            "Coastal Origin-Younger Deltaic Plain",
+            "Coastal Origin-Offshore Island"
+          ],
+          "#81c8ff",
+          [
+            "Water Bodies-River",
+            "Water Bodies-Pond",
+            "Water Bodies-Others",
+            "Water Bodies-Lake"
+          ],
+          "#0780bd",
+          [
+            "Glacial Origin-Snow Cover",
+            "Glacial Origin-Glacial Terrain"
+          ],
+          "white",
+          [
+            "Anthropogenic Origin-Anthropogenic Terrain"
+          ],
+          "rgba(0, 0, 0, 0)",
+          "red"
+        ],
+        "fill-opacity": 0.9
+      },
+      "inspect": {
+        "id": "test",
+        "title": "Description",
+        "label": "Des"
+      }
+    },
+    {
+      "title": "Goa Admiralty Chart (1914)",
+      "description": "Nautical chart of the West Coast of India from Achra River to Cape Ramas. Surveyed by Lieut. A.D. Taylor 1853-4 for Eat India Company. Not current - not to be used for navigation!",
+      "headerImage": "assets/map-layers/map-layer-1914-admiralty-chart.png",
+      "type": "tms",
+      "id": "1914-goa-admiralty-chart",
+      "url": "https://warper.wmflabs.org/maps/tile/4749/{z}/{x}/{y}.png",
+      "attribution": "<a href='https://commons.wikimedia.org/wiki/File:Admiralty_Chart_No_740_West_Coast_of_India,_Published_1858,_New_Edition_1914.jpg'>Wikimedia Commons: Admiralty Chart No 740 West Coast of India, Published 1858, New Edition 1914</a> via <a href='https://warper.wmflabs.org/maps/4749'>Wikimaps Warper</a> released in public domain"
+    },
+    {
+      "title": "Atlas of India (1827-1906)",
+      "description": "Historical atlas of India published in 1827-1906 by Survey of India",
+      "headerImage": "assets/map-layers/map-layer-1906-india-atlas.png",
+      "type": "tms",
+      "id": "1906-india-atlas",
+      "url": "https://warper.wmflabs.org/mosaics/tile/15/{z}/{x}/{y}.png",
+      "attribution": "<a href='https://commons.wikimedia.org/wiki/Category:Atlas_of_India_(1827-1906)'>Wikimedia Commons: Atlas of India (1827-1906)</a> via <a href='https://warper.wmflabs.org/mosaics/15#Show_tab'>Wikimaps Warper</a> released in public domain",
+      "tags": ["historic", "india", "atlas"]
+    },
+    {
+      "title": "Geological Map of India (1855)",
+      "description": "General sketch of the physical and geological features of British India. Compiled by Greenough, George Bellas (1778-1855)",
+      "headerImage": "assets/map-layers/map-layer-1855-geology.png",
+      "type": "tms",
+      "id": "1855-india-geology",
+      "url": "https://warper.wmflabs.org/maps/tile/2258/{z}/{x}/{y}.png",
+      "attribution": "<a href=https://commons.wikimedia.org/wiki/File:Greenough_Geology_India_1855.jpg'>Wikimedia Commons: Greenough Geology India 1855</a> via <a href='https://warper.wmflabs.org/maps/2258'>Wikimaps Warper</a> released in public domain",
+      "tags": ["historic", "india", "geology"]
+    },
+    {
+      "title": "Lambtons Peninsular Survey  (1802-1814)",
+      "description": "Historical trignometrical survey plans by Colnel William Lambton of the Peninsula of India",
+      "headerImage": "assets/map-layers/map-layer-1814-lambton-survey.png",
+      "type": "tms",
+      "id": "1814-lambton-survey",
+      "url": "https://warper.wmflabs.org/mosaics/tile/13/{z}/{x}/{y}.png",
+      "attribution": "<a href='https://commons.wikimedia.org/wiki/Category:Lambton%27s_peninsular_survey'>Wikimedia Commons: Lambtons peninsular survey</a> via <a href='https://warper.wmflabs.org/mosaics/13#Show_tab'>Wikimaps Warper</a> released in public domain",
+      "tags": ["historic", "deccan", "survey"]
+    },
+    {
+      "title": "Robert Wilkinsons General Atlas  (1792)",
+      "description": "Engraved by Thomas Conder and issued as plate no. 37 in the 1792 edition of Robert Wilkinsons General Atlas",
+      "headerImage": "assets/map-layers/map-layer-1792-general-atlas.png",
+      "type": "tms",
+      "id": "1792-general-atlas",
+      "url": "https://warper.wmflabs.org/maps/tile/7050/{z}/{x}/{y}.png",
+      "attribution": "<a href='https://commons.wikimedia.org/wiki/File:Southern_India_Wilkinson.png'>Wikimedia Commons: Southern India Wilkinson.png </a> via <a href='https://warper.wmflabs.org/maps/7050'>Wikimaps Warper</a> released in public domain"
     },
     {
       "id": "osm",

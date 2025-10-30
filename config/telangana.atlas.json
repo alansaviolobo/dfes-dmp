@@ -154,34 +154,10 @@
           0.3
         ]
       },
-      "attribution": "<a href=\"https://mapwarper.net/maps/97738#Rectify_tab\" target=\"_blank\">MapWarper</a>",
+      "attribution": "<a href='https://mapwarper.net/maps/97738#Rectify_tab' target='_blank'>MapWarper</a>",
       "headerImage": "https://mapwarper.net/uploads/97738/thumb/3910Chiran_Kunta_lake_FTL.png",
       "bbox": "78.4158294,17.4139403,78.4237109,17.4197774",
       "initiallyChecked": false
-    },
-    {
-      "id": "rivers"
-    },
-    {
-      "id": "water-bodies"
-    },
-    {
-      "id": "wetland"
-    },
-    {
-      "id": "micro-watersheds"
-    },
-    {
-      "id": "forests"
-    },
-    {
-      "id": "esz"
-    },
-    {
-      "id": "wildlife-reserve"
-    },
-    {
-      "id": "open-buildings"
     },
     {
       "title": "Telangana Mask",
@@ -217,10 +193,6 @@
           "rgba(255, 255, 255, 0.5)"
         ]
       }
-    },
-    {
-      "initiallyChecked": true,
-      "id": "osm"
     },
     {
       "initiallyChecked": true,

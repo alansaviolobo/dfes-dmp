@@ -131,10 +131,6 @@
       }
     },
     {
-      "initiallyChecked": true,
-      "id": "municipal-wards"
-    },
-    {
       "title": "Slum Clusters 2015",
       "description": "Informal settlements in Mumbai as per 2015.",
       "type": "vector",
