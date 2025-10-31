@@ -16,6 +16,134 @@
       "title": "Street Map रस्त्याचो नकासो"
     },
     {
+      "title": "Live Fire Trucks",
+      "description": "Live locations of fire trucks from the Directorate of Fire Emergency Services. Location updated every 5 minutes from <a href='https://github.com/publicmap/goa-fire-trucks-geojson/'>Goa Fire Trucks API</a>.",
+      "headerImage": "assets/map-layers/map-layer-fire-trucks.png",
+      "type": "geojson",
+      "id": "firetrucks",
+      "url": "https://raw.githubusercontent.com/publicmap/goa-fire-trucks-geojson/refs/heads/main/data/goa-fire-trucks.geojson",
+      "refresh": 30000,
+      "attribution": "<a href='https://dfes.goa.gov.in/dashboard/'>Directorate of Fire & Emergency Services, Govt. of Goa</a>",
+      "style": {
+        "circle-radius": 6,
+        "circle-color": [
+          "match",
+          [
+            "get",
+            "Status"
+          ],
+          "RUNNING",
+          "green",
+          "IDLE",
+          "yellow",
+          "STOP",
+          "red",
+          "INACTIVE",
+          "grey",
+          "black"
+        ],
+        "circle-stroke-width": 2,
+        "circle-stroke-color": "#ffffff",
+        "text-font": [
+          "Open Sans Regular"
+        ],
+        "text-field": [
+          "step",
+          [
+            "zoom"
+          ],
+          "",
+          7,
+          [
+            "to-string",
+            [
+              "get",
+              "POI"
+            ]
+          ]
+        ]
+      },
+      "inspect": {
+        "id": "Vehicle_No",
+        "title": "Current Location",
+        "label": "Location",
+        "fields": [
+          "Status",
+          "Vehicle_No",
+          "Branch",
+          "POI",
+          "Speed",
+          "Datetime"
+        ],
+        "fieldTitles": [
+          "Status",
+          "Vehicle No",
+          "Station",
+          "Location",
+          "Speed",
+          "Last Updated"
+        ]
+      }
+    },
+    {
+      "title": "Schools",
+      "description": "Schools locations by capacity",
+      "headerImage": "assets/map-layers/map-layer-schools.png",
+      "type": "csv",
+      "id": "goa-schools",
+      "url": "https://docs.google.com/spreadsheets/d/e/2PACX-1vQAjIaxmEf4dv9eGjASL9YSlVGJLsmvfggZpGApiUP4YD6uexFG4otpwy0wQAWUFW4De4Pz4QKy79yV/pub?gid=1786282296&single=true&output=csv",
+      "cache": "data/dfes/goa-schools.csv",
+      "attribution": "<a href='https://docs.google.com/spreadsheets/d/11jYu-XsKEDH65W9Q_zy8_pKyYYlyzsdh8FwS7kd-CEM/edit?usp=sharing'>Disaster Management Resources and Contacts/Schools, Directorate of Fire & Emergency Services, Govt. of Goa</a>",
+      "style": {
+        "circle-radius": [
+          "case",
+          [
+            ">",
+            [
+              "get",
+              "Capacity"
+            ],
+            500
+          ],
+          5,
+          [
+            ">",
+            [
+              "get",
+              "Capacity"
+            ],
+            100
+          ],
+          3,
+          2
+        ],
+        "circle-color": "#4c7fff",
+        "circle-stroke-width": 1.5,
+        "circle-stroke-color": "#ffffff"
+      },
+      "inspect": {
+        "id": "Name",
+        "title": "School",
+        "label": "Name",
+        "fields": [
+          "Principal",
+          "Mobile",
+          "Email",
+          "Capacity",
+          "Gr_Panchayat",
+          "Gr_Taluka"
+        ],
+        "fieldTitles": [
+          "Principal",
+          "Mobile",
+          "Email",
+          "Capacity",
+          "Panchayat",
+          "Taluka"
+        ]
+      }
+    },
+    {
       "id": "slope",
       "title": "Slope Zoning",
       "description": "Slope zone classification using <a href='https://asterweb.jpl.nasa.gov/gdem.asp'>NASA NASADEM 30m</a> for entire Goa and <a href='https://bhuvan-app3.nrsc.gov.in/data/'>ISRO CartoDEM 2.5m (Bardez)</a> terrain data for Bardez taluka.<br>The output is a 30x30m grid indicating the minimum gradient within that cell. Details of the algorithm are in the <a href='https://github.com/publicmap/amche-goa/blob/main/data/slope/dem_slope_processor.py'>slope processor script</a>.",
@@ -1356,6 +1484,36 @@
       "attribution": "<a href='https://mapwarper.net/maps/98250' target='_blank'>MapWarper</a>",
       "headerImage": "https://mapwarper.net/uploads/98250/thumb/DPR_Annexures_Feb_2024.png",
       "bbox": "73.8248838,15.4937915,73.8712939,15.5425383",
+      "initiallyChecked": false
+    },
+    {
+      "title": "Goa Minin Leases Map",
+      "description": "Carta das concessos mineira do distrito do Goa showing all the Portuguese era mining leases in Goa.<br> Obtained via Goa Foundation",
+      "source": "",
+      "dateDepicted": "",
+      "type": "tms",
+      "id": "mining-leases-map",
+      "url": "https://mapwarper.net/maps/tile/98680/{z}/{x}/{y}.png",
+      "style": {
+        "raster-opacity": [
+          "interpolate",
+          [
+            "linear"
+          ],
+          [
+            "zoom"
+          ],
+          6,
+          0.95,
+          18,
+          0.8,
+          19,
+          0.3
+        ]
+      },
+      "attribution": "<a href='https://mapwarper.net/maps/98680' target='_blank'>MapWarper</a>",
+      "headerImage": "https://mapwarper.net/uploads/98680/thumb/carta_mining.png",
+      "bbox": "73.6444309,14.9127963,74.3573385,15.8364441",
       "initiallyChecked": false
     },
     {

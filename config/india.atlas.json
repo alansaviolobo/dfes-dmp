@@ -14,7 +14,84 @@
     {
       "id": "mapbox-streets",
       "title": "Street Map"
-    },{
+    },
+    {
+      "id": "karmashape-populated-places",
+      "title": "Populated Places",
+      "description": "Place locations from Karmashape",
+      "type": "vector",
+      "url": "https://indianopenmaps.fly.dev/habitations/karmashapes-points/{z}/{x}/{y}.pbf",
+      "sourceLayer": "karmashapes_points_v0",
+      "attribution": "https://karmashapes.wordpress.com/2023/03/05/karmashapes-v0/",
+      "maxzoom": 9,
+      "style": {
+        "circle-radius": 10,
+        "circle-color": "#4c7fff",
+        "circle-stroke-width": 1.5,
+        "circle-stroke-color": "#ffffff"
+      },
+      "inspect": {
+        "id": "Name",
+        "title": "School",
+        "label": "Name",
+        "fields": [
+          "Principal",
+          "Mobile",
+          "Email",
+          "Capacity",
+          "Gr_Panchayat",
+          "Gr_Taluka"
+        ],
+        "fieldTitles": [
+          "Principal",
+          "Mobile",
+          "Email",
+          "Capacity",
+          "Panchayat",
+          "Taluka"
+        ]
+      }
+    },
+    {
+      "id": "udise-schools",
+      "title": "Schools (Udise)",
+      "description": "School locations from UDISE (Unified District Information System for Education). Check <a href='https://dashboard.udiseplus.gov.in/#/NIC'>NIC school dashboard</a> for latest data and <a href='https://kys.udiseplus.gov.in/#/home'>UDISE Plus: Know Your School</a> for school level report cards.",
+      "type": "vector",
+      "url": "https://indianopenmaps.fly.dev/not-so-open/education/schools/udise/ncog/{z}/{x}/{y}.pbf",
+      "sourceLayer": "NCOG_UDISE_Schools",
+      "attribution": "<a href='https://schoolgis.nic.in'>Ministry of Education, Department of School Education & Literacy</a> - Collected by <a href='https://github.com/ramSeraph/indian_admin_boundaries/releases/tag/postal'>Datameet Community</a>",
+      "maxzoom": 10,
+      "style": {
+        "text-field": [
+          "get",
+          "school_nam"
+        ],
+        "circle-radius": 10,
+        "circle-color": "#4c7fff"
+      },
+      "inspect": {
+        "id": "Name",
+        "title": "School",
+        "label": "Name",
+        "fields": [
+          "Principal",
+          "Mobile",
+          "Email",
+          "Capacity",
+          "Gr_Panchayat",
+          "Gr_Taluka"
+        ],
+        "fieldTitles": [
+          "Principal",
+          "Mobile",
+          "Email",
+          "Capacity",
+          "Panchayat",
+          "Taluka"
+        ]
+      }
+    },
+    {
       "id": "pincodes",
       "title": "Pincode Boundaries",
       "headerImage": "assets/map-layers/map-layer-pincode.png",
@@ -341,7 +418,13 @@
             "get",
             "ulbname"
           ],
-          ["Municipal Corporation Of Greater Mumbai","Municipal Corporation Of Mumbai","Municipal Corporation Greater Mumbai","Municipal Corporation Of Grater Mumbai","Canacona"],
+          [
+            "Municipal Corporation Of Greater Mumbai",
+            "Municipal Corporation Of Mumbai",
+            "Municipal Corporation Greater Mumbai",
+            "Municipal Corporation Of Grater Mumbai",
+            "Canacona"
+          ],
           [
             "get",
             "wardname"
@@ -559,19 +642,34 @@
       "maxzoom": 8,
       "attribution": "<a href='https://environmentclearance.nic.in/'>Parivesh, Ministry of Environment,Forest and Climate Change,Government of India</a> - Collected by <a href='https://datameet.org'>Datameet Community</a> via <a href='https://github.com/datameet/parivesh-geojson'>MapHub</a>",
       "style": {
-        "text-field": ["get", "Organization Name"],
+        "text-field": [
+          "get",
+          "Organization Name"
+        ],
         "text-halo-color": "crimson",
         "line-color": "crimson",
         "line-width": 4,
         "fill-color": [
           "case",
-          ["==", ["geometry-type"], "Polygon"],
+          [
+            "==",
+            [
+              "geometry-type"
+            ],
+            "Polygon"
+          ],
           "crimson",
           "transparent"
         ],
         "fill-opacity": [
           "case",
-          ["==", ["geometry-type"], "Polygon"],
+          [
+            "==",
+            [
+              "geometry-type"
+            ],
+            "Polygon"
+          ],
           0.1,
           0
         ]
@@ -580,7 +678,11 @@
         "id": "Proposal Number",
         "title": "Organization Name",
         "label": "Organization Name",
-        "fields": ["Project Category", "Project Name", "Project Description"]
+        "fields": [
+          "Project Category",
+          "Project Name",
+          "Project Description"
+        ]
       }
     },
     {
@@ -1002,7 +1104,10 @@
       "headerImage": "assets/map-layers/map-layer-wildlife-reserve.png",
       "type": "vector",
       "id": "wildlife-reserve",
-      "tags": ["protected-areas","wildlife"],
+      "tags": [
+        "protected-areas",
+        "wildlife"
+      ],
       "url": "https://indianopenmaps.fly.dev/not-so-open/forests/wildlife/reserves-and-corridors/parivesh/{z}/{x}/{y}.pbf ",
       "sourceLayer": "Bharatmaps_Parivesh_Wildlife_Reserves_and_Corridors",
       "maxzoom": 10,
@@ -1089,7 +1194,11 @@
           ],
           [
             "literal",
-            ["CRZ_IV_A", "CRZ_IV_B","Nautical_Miles_12_From_HTL"]
+            [
+              "CRZ_IV_A",
+              "CRZ_IV_B",
+              "Nautical_Miles_12_From_HTL"
+            ]
           ]
         ]
       ],
@@ -1151,41 +1260,51 @@
       "attribution": "Source: <a href='https://bhuvan.nrsc.gov.in/' target='_blank' rel='noopener noreferrer'>BHuvan/ASI</a> - Collected by <a href='https://datameet.org' target='_blank' rel='noopener noreferrer'>Datameet Community</a>",
       "initiallyChecked": false,
       "style": {
-        
-        "text-field": 
-        [
+        "text-field": [
           "step",
-          ["zoom"],
+          [
+            "zoom"
+          ],
           [
             "to-string",
-            ["get", "mon_name"]
+            [
+              "get",
+              "mon_name"
+            ]
           ],
           15,
           [
             "match",
-            ["get", "boundary_type"],
+            [
+              "get",
+              "boundary_type"
+            ],
             "protected",
             [
               "get",
               "boundary_type"
             ],
             "prohibited",
-            ["concat",
-            "100m ",
-            "Prohibited "],
+            [
+              "concat",
+              "100m ",
+              "Prohibited "
+            ],
             [
               "get",
               "boundary_type"
             ]
           ]
         ],
-          "symbol-placement": [
-            "step",
-            ["zoom"],
-            "point",
-             15,
-            "line"
+        "symbol-placement": [
+          "step",
+          [
+            "zoom"
           ],
+          "point",
+          15,
+          "line"
+        ],
         "line-color": [
           "match",
           [
@@ -1516,7 +1635,6 @@
       "url": "https://indianopenmaps.fly.dev/not-so-open/coastal/goa/regulation/ncscm/{z}/{x}/{y}.webp",
       "attribution": "<a href='https://czmp.ncscm.res.in/'>National Center For Sustainable Coastal Management</a> - Collected by <a href='https://datameet.org'>Datameet Community</a>"
     },
-
     {
       "title": "Landcover",
       "description": "Space based Information Support for Decentralized Planning (SISDP) Phase 2 10k Land Usage Land Cover data. Check the <a href='https://bhuvanpanchayat.nrsc.gov.in/SISDP/BP-lrdpwrdpmanual.pdf'>SISDP technical manual</a> for background about the project and <a href='https://bhuvanpanchayat.nrsc.gov.in/SISDP/BP-lrdpwrdpmanual.pdf'>Bhuvan Panchayat Portal User Manual</a> for more details.",
@@ -2095,7 +2213,11 @@
       "id": "1906-india-atlas",
       "url": "https://warper.wmflabs.org/mosaics/tile/15/{z}/{x}/{y}.png",
       "attribution": "<a href='https://commons.wikimedia.org/wiki/Category:Atlas_of_India_(1827-1906)'>Wikimedia Commons: Atlas of India (1827-1906)</a> via <a href='https://warper.wmflabs.org/mosaics/15#Show_tab'>Wikimaps Warper</a> released in public domain",
-      "tags": ["historic", "india", "atlas"]
+      "tags": [
+        "historic",
+        "india",
+        "atlas"
+      ]
     },
     {
       "title": "Geological Map of India (1855)",
@@ -2105,7 +2227,11 @@
       "id": "1855-india-geology",
       "url": "https://warper.wmflabs.org/maps/tile/2258/{z}/{x}/{y}.png",
       "attribution": "<a href=https://commons.wikimedia.org/wiki/File:Greenough_Geology_India_1855.jpg'>Wikimedia Commons: Greenough Geology India 1855</a> via <a href='https://warper.wmflabs.org/maps/2258'>Wikimaps Warper</a> released in public domain",
-      "tags": ["historic", "india", "geology"]
+      "tags": [
+        "historic",
+        "india",
+        "geology"
+      ]
     },
     {
       "title": "Lambtons Peninsular Survey  (1802-1814)",
@@ -2115,7 +2241,11 @@
       "id": "1814-lambton-survey",
       "url": "https://warper.wmflabs.org/mosaics/tile/13/{z}/{x}/{y}.png",
       "attribution": "<a href='https://commons.wikimedia.org/wiki/Category:Lambton%27s_peninsular_survey'>Wikimedia Commons: Lambtons peninsular survey</a> via <a href='https://warper.wmflabs.org/mosaics/13#Show_tab'>Wikimaps Warper</a> released in public domain",
-      "tags": ["historic", "deccan", "survey"]
+      "tags": [
+        "historic",
+        "deccan",
+        "survey"
+      ]
     },
     {
       "title": "Robert Wilkinsons General Atlas  (1792)",
@@ -2133,6 +2263,6 @@
     {
       "initiallyChecked": true,
       "id": "mapbox-satellite"
-          }
-    ]
+    }
+  ]
 }
