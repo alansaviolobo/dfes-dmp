@@ -43,7 +43,7 @@
       }
     },
     {
-      "id": "open-buildings-2016",
+      "id": "2016-open-buildings",
       "url": "https://earthengine.googleapis.com/v1/projects/earthengine-legacy/maps/f5a6d9be6b633730e82ec8d15e0086c1-78d86fb6f5d7c260f64e95bad95f81ac/tiles/{z}/{x}/{y}",
       "type": "tms",
       "title": "Open Buildings 2016",
@@ -68,6 +68,45 @@
           0.1, "hsla(0, 100%, 90%, 1)",
           0.5, "hsla(0, 100%, 80%, 0.95)",
           1, "hsla(0, 100%, 40%, 0.5)"
+        ]
+      }
+    },
+    {
+      "title": "Open Building Footprints 2023 ",
+      "description": "Open data of AI generated building footprints from satellite imagery upto 2023. For technical details see <a href='https://arxiv.org/abs/2107.12283'>Continental-Scale Building Detection from High Resolution Satellite Imagery</a>.",
+      "headerImage": "assets/map-layers/map-layer-open-buildings.png",
+      "type": "vector",
+      "id": "2023open-buildings",
+      "url": "https://indianopenmaps.fly.dev/google-buildings/{z}/{x}/{y}.pbf",
+      "sourceLayer": "google_buildings",
+      "maxzoom": 14,
+      "attribution": "CC-BY <a href='https://sites.research.google/open-buildings/'>Google Open Buildings</a> - Collected by <a href='https://datameet.org'>Datameet Community</a>",
+      "style": {
+        "line-opacity": 0,
+        "line-join": "round",
+        "line-width": 0,
+        "fill-color": [
+          "case",
+          [">", ["get", "confidence"], 0.8],
+          "black",
+          [">", ["get", "confidence"], 0.6],
+          "#222",
+          [">", ["get", "confidence"], 0.2],
+          "#444",
+          "#777"
+        ],
+        "fill-opacity": [
+          "interpolate",
+          [
+            "linear"
+          ],
+          [
+            "zoom"
+          ],
+          14,
+          0.9,
+          19,
+          0.2
         ]
       }
     },

@@ -454,11 +454,24 @@ async function loadConfiguration() {
                 let resolvedLayer = layerRegistry.getLayer(layerConfig.id, atlasId);
                 
                 if (resolvedLayer) {
+                    // Debug: Check if resolvedLayer has type
+                    if (!resolvedLayer.type) {
+                        console.warn(`[LayerRegistry] Resolved layer ${layerConfig.id} from registry is missing type property. Registry entry:`, resolvedLayer);
+                    }
+                    
                     // Merge the resolved layer with any custom overrides from config
                     // Preserve important URL-specific properties
+                    // Note: layerConfig is spread after resolvedLayer, so it can override properties
+                    // But we explicitly preserve critical properties from resolvedLayer if layerConfig doesn't provide them
+                    // Preserve type before merging - critical for cross-atlas references
+                    const preservedType = layerConfig.type || resolvedLayer.type;
+                    
                     const mergedLayer = { 
                         ...resolvedLayer, 
                         ...layerConfig,
+                        // Explicitly set type to ensure it's never lost during merge
+                        // layerConfig.type takes precedence if provided, otherwise use resolvedLayer.type
+                        type: preservedType,
                         // Ensure these critical properties are preserved
                         ...(layerConfig._originalJson && { _originalJson: layerConfig._originalJson }),
                         ...(layerConfig.initiallyChecked !== undefined && { initiallyChecked: layerConfig.initiallyChecked }),
@@ -470,6 +483,9 @@ async function loadConfiguration() {
                     // Verify the merge preserved important properties
                     if (!mergedLayer.title) {
                         console.warn(`[LayerRegistry] Cross-atlas layer ${layerConfig.id} from ${resolvedLayer._sourceAtlas} atlas missing title after merge (this is unusual)`);
+                    }
+                    if (!mergedLayer.type) {
+                        console.warn(`[LayerRegistry] Cross-atlas layer ${layerConfig.id} from ${resolvedLayer._sourceAtlas} atlas missing type after merge - this may cause layer creation to fail`);
                     }
                     
                     validLayers.push(mergedLayer);

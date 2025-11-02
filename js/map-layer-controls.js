@@ -285,9 +285,21 @@ export class MapLayerControl {
             } else {
                 // Explicitly hide layers that should not be visible initially
                 // This is especially important for style layers which are visible by default
-                requestAnimationFrame(() => {
-                    this._toggleLayerGroup(groupIndex, false);
-                });
+                // For style layers, we need to ensure the map style is loaded before hiding
+                const shouldDelay = group.type === 'style' && !this._map.getStyle();
+                
+                if (shouldDelay) {
+                    // Wait for style to load before hiding style layers
+                    this._map.once('style.load', () => {
+                        requestAnimationFrame(() => {
+                            this._toggleLayerGroup(groupIndex, false);
+                        });
+                    });
+                } else {
+                    requestAnimationFrame(() => {
+                        this._toggleLayerGroup(groupIndex, false);
+                    });
+                }
             }
         });
     }
@@ -511,6 +523,26 @@ export class MapLayerControl {
         }
 
         try {
+            // If type is missing, try to resolve it from the registry
+            if (!group.type && group.id && window.layerRegistry) {
+                const resolvedLayer = window.layerRegistry.getLayer(group.id);
+                if (resolvedLayer && resolvedLayer.type) {
+                    console.warn(`[MapLayerControl] Resolved missing type for layer ${group.id} from registry: ${resolvedLayer.type}`);
+                    group = { ...group, type: resolvedLayer.type };
+                    // Update the group in state so we don't have to resolve it again
+                    const stateGroupIndex = this._state.groups.findIndex(g => g.id === group.id);
+                    if (stateGroupIndex !== -1) {
+                        this._state.groups[stateGroupIndex] = group;
+                    }
+                }
+            }
+            
+            // Validate that group has required properties
+            if (!group.type) {
+                console.error(`[MapLayerControl] Cannot toggle layer ${group.id} - missing type property. This usually indicates a registry resolution issue.`);
+                return;
+            }
+            
             if (visible) {
                 // Create or show the layer group
                 await this._mapboxAPI.createLayerGroup(group.id, group, { visible: true });
@@ -567,6 +599,27 @@ export class MapLayerControl {
     }
 
     /**
+     * Get atlas ID for a layer
+     */
+    _getAtlasIdForLayer(group) {
+        // First check if group already has _sourceAtlas set
+        if (group._sourceAtlas) {
+            return group._sourceAtlas;
+        }
+        
+        // Try to get from layer registry
+        if (window.layerRegistry) {
+            const resolvedLayer = window.layerRegistry.getLayer(group.id);
+            
+            if (resolvedLayer && resolvedLayer._sourceAtlas) {
+                return resolvedLayer._sourceAtlas;
+            }
+        }
+        
+        return null;
+    }
+
+    /**
      * Create group summary section
      */
     _createGroupSummary(group, $settingsButton, $opacityButton) {
@@ -580,7 +633,21 @@ export class MapLayerControl {
         });
 
         const $toggleTitleContainer = this._createToggleTitle(group);
-        $contentWrapper.append($toggleTitleContainer, $settingsButton, $opacityButton);
+        $contentWrapper.append($toggleTitleContainer);
+        
+        // Add atlas badge (right-aligned)
+        const atlasId = this._getAtlasIdForLayer(group);
+        if (atlasId) {
+            // Capitalize first letter
+            const displayName = atlasId.charAt(0).toUpperCase() + atlasId.slice(1);
+            const $atlasBadge = $('<span>', {
+                class: 'text-xs bg-blue-600 text-white px-2 py-1 rounded ml-auto',
+                text: displayName
+            });
+            $contentWrapper.append($atlasBadge);
+        }
+        
+        $contentWrapper.append($settingsButton, $opacityButton);
 
         // If headerImage is missing, try to resolve from registry
         let headerImage = group.headerImage;
@@ -1056,6 +1123,12 @@ export class MapLayerControl {
             return;
         }
         
+        // Skip layers without a type - they can't be properly handled
+        if (!layerConfig.type) {
+            console.warn(`[MapLayerControl] Skipping state manager registration for layer ${layerConfig.id} - missing type property`);
+            return;
+        }
+        
         // Register the layer - MapFeatureStateManager will handle raster vs vector distinction
         this._stateManager.registerLayer(layerConfig);
         
@@ -1501,9 +1574,10 @@ export class MapLayerControl {
         });
 
         // Add atlas badge
+        const displayAtlasName = layer._sourceAtlas.charAt(0).toUpperCase() + layer._sourceAtlas.slice(1);
         const $atlasBadge = $('<span>', {
             class: 'text-xs bg-blue-600 text-white px-2 py-1 rounded ml-auto',
-            text: layer._sourceAtlas
+            text: displayAtlasName
         });
 
         $contentWrapper.append($toggleLabel, $titleSpan, $atlasBadge);

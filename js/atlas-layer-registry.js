@@ -29,12 +29,25 @@ export class LayerRegistry {
         }
 
         // Load all atlas configurations
-        // Note: 'osm' should be loaded early so other atlases can reference its layers
-        const atlasConfigs = [
-            'osm', 'index', 'goa', 'mumbai', 'bengaluru-flood', 'bombay', 'madras',
-            'gurugram', 'maharashtra', 'telangana', 'kerala', 'india', 
-            'world', 'historic', 'community', 'mhadei'
-        ];
+        // First, load the index.atlas.json to get the list of atlases
+        let atlasConfigs = [];
+        try {
+            const indexResponse = await fetch('/config/index.atlas.json');
+            if (indexResponse.ok) {
+                const indexConfig = await indexResponse.json();
+                if (indexConfig.atlases && Array.isArray(indexConfig.atlases)) {
+                    atlasConfigs = indexConfig.atlases;
+                }
+            }
+        } catch (error) {
+            console.warn('[LayerRegistry] Failed to load atlas list from index.atlas.json:', error);
+            // Fallback to default list if loading fails
+            atlasConfigs = [
+                'osm', 'index', 'goa', 'mumbai', 'bengaluru-flood', 'bombay', 'madras',
+                'gurugram', 'maharashtra', 'telangana', 'kerala', 'india', 
+                'world', 'historic', 'community', 'mhadei', 'mapbox'
+            ];
+        }
         
         // Create a Set for fast lookup of known atlas IDs
         const knownAtlases = new Set(atlasConfigs);
@@ -54,6 +67,7 @@ export class LayerRegistry {
                                 // Check if the layer ID already has an atlas prefix
                                 const layerId = resolvedLayer.id;
                                 let prefixedId;
+                                let sourceAtlas = atlasId; // Default to current atlas
                                 
                                 // If the ID already contains a dash and might be prefixed, check if it's a valid atlas prefix
                                 if (layerId.includes('-')) {
@@ -61,6 +75,8 @@ export class LayerRegistry {
                                     // If it's a known atlas prefix, use the ID as-is (it's already prefixed)
                                     if (knownAtlases.has(potentialPrefix)) {
                                         prefixedId = layerId;
+                                        // The source atlas should be the prefix, not the current atlas
+                                        sourceAtlas = potentialPrefix;
                                     } else {
                                         // Not a valid prefix, add the atlas prefix
                                         prefixedId = `${atlasId}-${layerId}`;
@@ -70,12 +86,14 @@ export class LayerRegistry {
                                     prefixedId = `${atlasId}-${layerId}`;
                                 }
                                 
-                                // Only add to registry if not already present (avoid overwriting cross-atlas references)
-                                // A layer should be added by its defining atlas, not by atlases that reference it
-                                if (!this._registry.has(prefixedId)) {
+                                // Check if layer is already in registry
+                                const existingEntry = this._registry.get(prefixedId);
+                                
+                                if (!existingEntry) {
+                                    // Not in registry yet, add it
                                     this._registry.set(prefixedId, {
                                         ...resolvedLayer,
-                                        _sourceAtlas: atlasId,
+                                        _sourceAtlas: sourceAtlas,
                                         _prefixedId: prefixedId,
                                         // Store the original unprefixed ID for reference
                                         _originalId: layerId
@@ -84,7 +102,20 @@ export class LayerRegistry {
                                     // This is a reference to a layer defined elsewhere, skip it
                                     // The actual layer definition will be/has been loaded from its source atlas
                                     // Do nothing - the complete layer definition takes precedence
+                                } else if (existingEntry && (!existingEntry.type || !existingEntry.title)) {
+                                    // Registry has an incomplete entry (from a cross-atlas reference loaded earlier)
+                                    // Update it with the complete definition from the source atlas
+                                    console.debug(`[LayerRegistry] Updating incomplete registry entry for ${prefixedId} with complete definition from ${sourceAtlas} atlas`);
+                                    this._registry.set(prefixedId, {
+                                        ...resolvedLayer,
+                                        _sourceAtlas: sourceAtlas,
+                                        _prefixedId: prefixedId,
+                                        _originalId: layerId,
+                                        // Preserve any metadata from the incomplete entry
+                                        ...(existingEntry._crossAtlasReference && { _crossAtlasReference: existingEntry._crossAtlasReference })
+                                    });
                                 }
+                                // If entry exists and is complete, leave it as-is (first complete definition wins)
                                 
                             }
                         });
@@ -114,7 +145,9 @@ export class LayerRegistry {
         // Find all layers that are incomplete (missing title, type, etc.)
         const incompleteLayers = [];
         for (const [layerId, layer] of this._registry.entries()) {
-            if (!layer.title && !layer.type && layer.id.includes('-')) {
+            // Check if layer is incomplete - missing type or title (or both)
+            const isIncomplete = (!layer.type || !layer.title) && layer.id.includes('-');
+            if (isIncomplete) {
                 incompleteLayers.push({ layerId, layer });
             }
         }
@@ -136,10 +169,11 @@ export class LayerRegistry {
                         _crossAtlasReference: true,
                         _originalAtlas: potentialAtlas,
                         _originalId: originalId,
-                        _sourceAtlas: layer._sourceAtlas, // Preserve the source atlas
-                        _prefixedId: layer._prefixedId // Preserve the prefixed ID
+                        _sourceAtlas: layer._sourceAtlas || potentialAtlas, // Use potentialAtlas as source if not set
+                        _prefixedId: layer._prefixedId || layerId // Preserve the prefixed ID
                     };
                     
+                    console.debug(`[LayerRegistry] Resolved incomplete cross-atlas layer ${layerId} from ${potentialAtlas} atlas: ${originalId} -> type: ${originalLayer.type || 'missing'}`);
                     this._registry.set(layerId, resolvedLayer);
                 }
             }

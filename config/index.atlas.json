@@ -14,10 +14,30 @@
     "title": "Maps नकासो",
     "shareButton": "Share वांटो"
   },
+  "atlases": [
+    "osm",
+    "index",
+    "goa",
+    "mumbai",
+    "bengaluru-flood",
+    "bombay",
+    "madras",
+    "gurugram",
+    "maharashtra",
+    "telangana",
+    "kerala",
+    "india",
+    "world",
+    "historic",
+    "community",
+    "mhadei",
+    "mapbox"
+  ],
   "layers": [
     {
       "id": "mapbox-streets",
-      "title": "Street Map रस्त्याचो नकासो"
+      "title": "Street Map रस्त्याचो नकासो",
+      "initiallyChecked": false
     },
     {
       "id": "goa-plots"
