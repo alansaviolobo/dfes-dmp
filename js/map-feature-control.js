@@ -4526,6 +4526,12 @@ export class MapFeatureControl {
         // Hide the layers
         layersToHide.forEach(styleLayerId => {
             try {
+                // Skip slot layers (Mapbox GL JS v3+ feature) - they can't be hidden
+                const layer = this._map.getLayer(styleLayerId);
+                if (!layer || layer.type === 'slot') {
+                    return;
+                }
+                
                 this._map.setLayoutProperty(styleLayerId, 'visibility', 'none');
             } catch (error) {
                 console.warn(`Failed to hide layer ${styleLayerId}:`, error);
@@ -4559,6 +4565,12 @@ export class MapFeatureControl {
         // Restore visibility of all hidden layers
         this._layerHoverState.hiddenLayers.forEach(layerId => {
             try {
+                // Skip slot layers (Mapbox GL JS v3+ feature) - they can't be hidden
+                const layer = this._map.getLayer(layerId);
+                if (!layer || layer.type === 'slot') {
+                    return;
+                }
+                
                 this._map.setLayoutProperty(layerId, 'visibility', 'visible');
             } catch (error) {
                 console.warn(`Failed to restore layer ${layerId}:`, error);

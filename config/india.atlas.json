@@ -2197,6 +2197,17 @@
       }
     },
     {
+      "title": "National Landslide Susceptibility Map",
+      "description": "A national programme on landslide susceptibility mapping - Macro scale (1:50,000) National Landslide Susceptibility Mapping (NLSM) with an aim to cover the 0.42 million sq. km landslide prone areas of the country.",
+      "headerImage": null,
+      "legendImage": null,
+      "type": "wms",
+      "id": "nlsm",
+      "url": "https://bhukosh.gsi.gov.in/arcgis/services/Landslide/NLSM/MapServer/WMSServer?type4portal=WMS&SERVICE=WMS&REQUEST=GetMap&VERSION=1.3.0&LAYERS=0,2,3,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,21,24&FORMAT=image%2Fpng&WIDTH=1275&HEIGHT=775&BBOX=8208232.124329313,1746630.5071529609,8232596.427578078,1761440.18167672&CRS=EPSG%3A3857&STYLES=,,,,,,,,,,,,,,,,,,,&TRANSPARENT=TRUE",
+      "maxzoom": 12,
+      "attribution": "<a href='https://www.gsi.gov.in/webcenter/portal/OCBIS/pageQuickLinks/pageNLSM' target='_blank'>National Landslide Susceptibility Mapping (NLSM), Geological Survey Of India</a> via <a href='https://bhukosh.gsi.gov.in/Bhukosh/MapViewer.aspx' target='_blank'>Bhukosh</a>"
+    },
+    {
       "title": "Goa Admiralty Chart (1914)",
       "description": "Nautical chart of the West Coast of India from Achra River to Cape Ramas. Surveyed by Lieut. A.D. Taylor 1853-4 for Eat India Company. Not current - not to be used for navigation!",
       "headerImage": "assets/map-layers/map-layer-1914-admiralty-chart.png",

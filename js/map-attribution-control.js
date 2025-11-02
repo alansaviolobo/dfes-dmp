@@ -223,6 +223,7 @@ export class MapAttributionControl {
                 // Only add attributions for visible config layers
                 // Also verify that the config layer actually has visible style layers (not just pattern matches)
                 this._layerAttributions.forEach((attribution, layerId) => {
+                    
                     if (attribution && attribution.trim() && visibleConfigLayers.has(layerId)) {
                         // Double-check: verify at least one style layer with this config ID is actually visible
                         const hasVisibleStyleLayer = style.layers.some(styleLayer => {

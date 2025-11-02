@@ -977,6 +977,7 @@ export class MapboxAPI {
 
             const layerConfig = this._createLayerConfig({
                 id: layerId,
+                groupId: groupId,
                 source: sourceId,
                 style: {
                     ...(this._defaultStyles.raster || {}),
@@ -1022,11 +1023,15 @@ export class MapboxAPI {
             tileUrl = tileUrl.replace(/BBOX=[^&]+/, 'BBOX={bbox-epsg-3857}');
         }
         
-        // Ensure proper WIDTH and HEIGHT
-        if (!tileUrl.includes('WIDTH=')) {
+        // Ensure proper WIDTH and HEIGHT (replace if they exist with wrong values)
+        if (tileUrl.includes('WIDTH=')) {
+            tileUrl = tileUrl.replace(/WIDTH=\d+/, 'WIDTH=256');
+        } else {
             tileUrl += '&WIDTH=256';
         }
-        if (!tileUrl.includes('HEIGHT=')) {
+        if (tileUrl.includes('HEIGHT=')) {
+            tileUrl = tileUrl.replace(/HEIGHT=\d+/, 'HEIGHT=256');
+        } else {
             tileUrl += '&HEIGHT=256';
         }
         
@@ -1086,6 +1091,7 @@ export class MapboxAPI {
             // Re-add layer
             const layerConfig = this._createLayerConfig({
                 id: layerId,
+                groupId: groupId,
                 source: sourceId,
                 style: {
                     ...(this._defaultStyles.raster || {}),
