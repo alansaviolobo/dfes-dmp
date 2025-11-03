@@ -2198,13 +2198,24 @@
       }
     },
     {
-      "title": "National Landslide Susceptibility Map",
+      "title": "GSI National Landslide Susceptibility Map",
+      "description": "The landslide susceptibility maps show the total area classified into high, moderate and low zones based on their relative likelihood of susceptibility to landslide initiation, and can be used as a vital geo-information tool for regional land-use planning in landslide prone fragile slopes. GSI also collected information on 91,000 historical landslides using both remote sensing (RS) and field-based source data. A total number of 33,904 landslides are field validated and the database is continuously being updated with the new landslide data collected year-wise as part of post-disaster studies. <br>Statewise landslide reports are available at <a href='https://gsi.gov.in/webcenter/portal/OCBIS/pages_pageQuickLinks/pageStatewiselandslide' target='_blank'>GSI</a>",
+      "headerImage": "https://bhukosh.gsi.gov.in/Bhukosh/images/NLSM.png",
+      "legendImage": "https://bhukosh.gsi.gov.in/arcgis/services/Landslide/NLSM/MapServer/WMSServer?request=GetLegendGraphic%26version=1.3.0%26format=image/png%26layer=5",
+      "type": "wms",
+      "id": "gsi-nlsm",
+      "url": "https://bhukosh.gsi.gov.in/arcgis/services/Landslide/NLSM/MapServer/WMSServer?type4portal=WMS&SERVICE=WMS&REQUEST=GetMap&VERSION=1.3.0&LAYERS=0,2,3,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,21,24&FORMAT=image%2Fpng&WIDTH=1275&HEIGHT=775&BBOX=8208232.124329313,1746630.5071529609,8232596.427578078,1761440.18167672&CRS=EPSG%3A3857&STYLES=,,,,,,,,,,,,,,,,,,,&TRANSPARENT=TRUE",
+      "maxzoom": 12,
+      "attribution": "<a href='https://www.gsi.gov.in/webcenter/portal/OCBIS/pageQuickLinks/pageNLSM' target='_blank'>National Landslide Susceptibility Mapping (NLSM), Geological Survey Of India</a> via <a href='https://bhukosh.gsi.gov.in/Bhukosh/MapViewer.aspx' target='_blank'>Bhukosh</a>"
+    },
+    {
+      "title": "GSI Marine Geology Map",
       "description": "The landslide susceptibility maps show the total area classified into high, moderate and low zones based on their relative likelihood of susceptibility to landslide initiation, and can be used as a vital geo-information tool for regional land-use planning in landslide prone fragile slopes. GSI also collected information on 91,000 historical landslides using both remote sensing (RS) and field-based source data. A total number of 33,904 landslides are field validated and the database is continuously being updated with the new landslide data collected year-wise as part of post-disaster studies. Statewise landslide reports are available at <a href='https://gsi.gov.in/webcenter/portal/OCBIS/pages_pageQuickLinks/pageStatewiselandslide' target='_blank'>GSI</a>",
-      "headerImage": null,
+      "headerImage": "https://bhukosh.gsi.gov.in/Bhukosh/images/Marine%20Geology.png",
       "legendImage": "https://bhukosh.gsi.gov.in/arcgis/services/Marine/Marine_Geology/MapServer/WMSServer?request=GetLegendGraphic%26version=1.3.0%26format=image/png%26layer=5",
       "type": "wms",
-      "id": "nlsm",
-      "url": "https://bhukosh.gsi.gov.in/arcgis/services/Landslide/NLSM/MapServer/WMSServer?type4portal=WMS&SERVICE=WMS&REQUEST=GetMap&VERSION=1.3.0&LAYERS=0,2,3,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,21,24&FORMAT=image%2Fpng&WIDTH=1275&HEIGHT=775&BBOX=8208232.124329313,1746630.5071529609,8232596.427578078,1761440.18167672&CRS=EPSG%3A3857&STYLES=,,,,,,,,,,,,,,,,,,,&TRANSPARENT=TRUE",
+      "id": "gsi-marine-geology",
+      "url": "https://bhukosh.gsi.gov.in/arcgis/services/Marine/Marine_Geology/MapServer/WMSServer?type4portal=WMS&SERVICE=WMS&REQUEST=GetMap&VERSION=1.3.0&LAYERS=0,2,4,5,6,7,8&FORMAT=image%2Fpng&WIDTH=1275&HEIGHT=775&BBOX=7.302116383789734,68.47464354531868,12.747703894063509,77.43351332028521&CRS=EPSG%3A4326&STYLES=,,,,,,&TRANSPARENT=TRUE",
       "maxzoom": 12,
       "attribution": "<a href='https://www.gsi.gov.in/webcenter/portal/OCBIS/pageQuickLinks/pageNLSM' target='_blank'>National Landslide Susceptibility Mapping (NLSM), Geological Survey Of India</a> via <a href='https://bhukosh.gsi.gov.in/Bhukosh/MapViewer.aspx' target='_blank'>Bhukosh</a>"
     },
