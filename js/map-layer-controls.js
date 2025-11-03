@@ -640,8 +640,16 @@ export class MapLayerControl {
         if (atlasId) {
             // Capitalize first letter
             const displayName = atlasId.charAt(0).toUpperCase() + atlasId.slice(1);
+            
+            // Get color from registry, fallback to blue-600 if not available
+            let badgeColor = '#2563eb'; // Default blue
+            if (window.layerRegistry) {
+                badgeColor = window.layerRegistry.getAtlasColor(atlasId);
+            }
+            
             const $atlasBadge = $('<span>', {
-                class: 'text-xs bg-blue-600 text-white px-2 py-1 rounded ml-auto',
+                class: 'text-xs text-white px-2 py-1 rounded ml-auto',
+                style: `background-color: ${badgeColor};`,
                 text: displayName
             });
             $contentWrapper.append($atlasBadge);
@@ -1575,8 +1583,16 @@ export class MapLayerControl {
 
         // Add atlas badge
         const displayAtlasName = layer._sourceAtlas.charAt(0).toUpperCase() + layer._sourceAtlas.slice(1);
+        
+        // Get color from registry, fallback to blue-600 if not available
+        let badgeColor = '#2563eb'; // Default blue
+        if (window.layerRegistry) {
+            badgeColor = window.layerRegistry.getAtlasColor(layer._sourceAtlas);
+        }
+        
         const $atlasBadge = $('<span>', {
-            class: 'text-xs bg-blue-600 text-white px-2 py-1 rounded ml-auto',
+            class: 'text-xs text-white px-2 py-1 rounded ml-auto',
+            style: `background-color: ${badgeColor};`,
             text: displayAtlasName
         });
 

@@ -6,6 +6,7 @@ export class LayerRegistry {
         this._registry = new Map(); // layerId -> layer config
         this._libraryLayers = new Map(); // library layer presets
         this._atlasLayers = new Map(); // atlasId -> array of layer configs
+        this._atlasMetadata = new Map(); // atlasId -> atlas metadata (color, name, etc.)
         this._currentAtlas = 'index'; // default atlas
         this._initialized = false;
     }
@@ -57,6 +58,14 @@ export class LayerRegistry {
                 const response = await fetch(`/config/${atlasId}.atlas.json`);
                 if (response.ok) {
                     const config = await response.json();
+                    
+                    // Store atlas metadata (color, name, etc.)
+                    this._atlasMetadata.set(atlasId, {
+                        color: config.color || '#2563eb', // Default to blue if not specified
+                        name: config.name || atlasId,
+                        areaOfInterest: config.areaOfInterest || ''
+                    });
+                    
                     if (config.layers && Array.isArray(config.layers)) {
                         this._atlasLayers.set(atlasId, config.layers);
                         
@@ -329,6 +338,25 @@ export class LayerRegistry {
      */
     isInitialized() {
         return this._initialized;
+    }
+
+    /**
+     * Get atlas metadata (color, name, etc.) by atlas ID
+     * @param {string} atlasId - The atlas ID
+     * @returns {object|null} The atlas metadata or null if not found
+     */
+    getAtlasMetadata(atlasId) {
+        return this._atlasMetadata.get(atlasId) || null;
+    }
+
+    /**
+     * Get the color for an atlas by ID
+     * @param {string} atlasId - The atlas ID
+     * @returns {string} The color hex code (defaults to blue if not found)
+     */
+    getAtlasColor(atlasId) {
+        const metadata = this._atlasMetadata.get(atlasId);
+        return metadata?.color || '#2563eb'; // Default to blue
     }
 }
 

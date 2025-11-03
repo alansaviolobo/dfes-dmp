@@ -4,6 +4,7 @@
   "areaOfInterest": "Mumbai, India",
   "startDate": "1857",
   "endDate": "1901",
+  "color": "#9333ea",
   "map": {
     "center": [
       72.8,
