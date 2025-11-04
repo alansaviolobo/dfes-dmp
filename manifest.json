@@ -1,7 +1,7 @@
 {
-  "name": "Community Atlas",
-  "short_name": "amche.in",
-  "description": "Explore Goa's interactive map featuring detailed cadastral boundaries, land use zones, construction sites, hill slopes, coastal zones, and community-contributed locations.",
+  "name": "DFES DMP",
+  "short_name": "dfesdmp.online",
+  "description": "Explore Goa's disaster response resource map featuring detailed hospitals, cyclone shelters, fire fighting resources.",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#ffffff",
