@@ -53,83 +53,106 @@ export class LayerRegistry {
         // Create a Set for fast lookup of known atlas IDs
         const knownAtlases = new Set(atlasConfigs);
 
-        for (const atlasId of atlasConfigs) {
+        // Load all atlas configurations in parallel
+        const atlasPromises = atlasConfigs.map(async (atlasId) => {
             try {
                 const response = await fetch(`/config/${atlasId}.atlas.json`);
                 if (response.ok) {
                     const config = await response.json();
-                    
-                    // Store atlas metadata (color, name, etc.)
-                    this._atlasMetadata.set(atlasId, {
-                        color: config.color || '#2563eb', // Default to blue if not specified
-                        name: config.name || atlasId,
-                        areaOfInterest: config.areaOfInterest || ''
-                    });
-                    
-                    if (config.layers && Array.isArray(config.layers)) {
-                        this._atlasLayers.set(atlasId, config.layers);
-                        
-                        // Register each layer with appropriate ID
-                        config.layers.forEach(layer => {
-                            const resolvedLayer = this._resolveLayer(layer, atlasId);
-                            if (resolvedLayer) {
-                                // Check if the layer ID already has an atlas prefix
-                                const layerId = resolvedLayer.id;
-                                let prefixedId;
-                                let sourceAtlas = atlasId; // Default to current atlas
-                                
-                                // If the ID already contains a dash and might be prefixed, check if it's a valid atlas prefix
-                                if (layerId.includes('-')) {
-                                    const potentialPrefix = layerId.split('-')[0];
-                                    // If it's a known atlas prefix, use the ID as-is (it's already prefixed)
-                                    if (knownAtlases.has(potentialPrefix)) {
-                                        prefixedId = layerId;
-                                        // The source atlas should be the prefix, not the current atlas
-                                        sourceAtlas = potentialPrefix;
-                                    } else {
-                                        // Not a valid prefix, add the atlas prefix
-                                        prefixedId = `${atlasId}-${layerId}`;
-                                    }
-                                } else {
-                                    // No dash, definitely not prefixed
-                                    prefixedId = `${atlasId}-${layerId}`;
-                                }
-                                
-                                // Check if layer is already in registry
-                                const existingEntry = this._registry.get(prefixedId);
-                                
-                                if (!existingEntry) {
-                                    // Not in registry yet, add it
-                                    this._registry.set(prefixedId, {
-                                        ...resolvedLayer,
-                                        _sourceAtlas: sourceAtlas,
-                                        _prefixedId: prefixedId,
-                                        // Store the original unprefixed ID for reference
-                                        _originalId: layerId
-                                    });
-                                } else if (!resolvedLayer.type && !resolvedLayer.title) {
-                                    // This is a reference to a layer defined elsewhere, skip it
-                                    // The actual layer definition will be/has been loaded from its source atlas
-                                    // Do nothing - the complete layer definition takes precedence
-                                } else if (existingEntry && (!existingEntry.type || !existingEntry.title)) {
-                                    // Registry has an incomplete entry (from a cross-atlas reference loaded earlier)
-                                    // Update it with the complete definition from the source atlas
-                                    this._registry.set(prefixedId, {
-                                        ...resolvedLayer,
-                                        _sourceAtlas: sourceAtlas,
-                                        _prefixedId: prefixedId,
-                                        _originalId: layerId,
-                                        // Preserve any metadata from the incomplete entry
-                                        ...(existingEntry._crossAtlasReference && { _crossAtlasReference: existingEntry._crossAtlasReference })
-                                    });
-                                }
-                                // If entry exists and is complete, leave it as-is (first complete definition wins)
-                                
-                            }
-                        });
-                    }
+                    return { atlasId, config, success: true };
+                } else {
+                    return { atlasId, error: `HTTP ${response.status}`, success: false };
                 }
             } catch (error) {
+                return { atlasId, error: error.message, success: false };
+            }
+        });
+
+        // Wait for all atlas fetches to complete (whether successful or not)
+        const atlasResults = await Promise.allSettled(atlasPromises);
+
+        // Process all successfully loaded atlas configurations
+        for (const result of atlasResults) {
+            if (result.status === 'fulfilled' && result.value.success) {
+                const { atlasId, config } = result.value;
+                
+                // Store atlas metadata (color, name, etc.)
+                this._atlasMetadata.set(atlasId, {
+                    color: config.color || '#2563eb', // Default to blue if not specified
+                    name: config.name || atlasId,
+                    areaOfInterest: config.areaOfInterest || ''
+                });
+                
+                if (config.layers && Array.isArray(config.layers)) {
+                    this._atlasLayers.set(atlasId, config.layers);
+                    
+                    // Register each layer with appropriate ID
+                    config.layers.forEach(layer => {
+                        const resolvedLayer = this._resolveLayer(layer, atlasId);
+                        if (resolvedLayer) {
+                            // Check if the layer ID already has an atlas prefix
+                            const layerId = resolvedLayer.id;
+                            let prefixedId;
+                            let sourceAtlas = atlasId; // Default to current atlas
+                            
+                            // If the ID already contains a dash and might be prefixed, check if it's a valid atlas prefix
+                            if (layerId.includes('-')) {
+                                const potentialPrefix = layerId.split('-')[0];
+                                // If it's a known atlas prefix, use the ID as-is (it's already prefixed)
+                                if (knownAtlases.has(potentialPrefix)) {
+                                    prefixedId = layerId;
+                                    // The source atlas should be the prefix, not the current atlas
+                                    sourceAtlas = potentialPrefix;
+                                } else {
+                                    // Not a valid prefix, add the atlas prefix
+                                    prefixedId = `${atlasId}-${layerId}`;
+                                }
+                            } else {
+                                // No dash, definitely not prefixed
+                                prefixedId = `${atlasId}-${layerId}`;
+                            }
+                            
+                            // Check if layer is already in registry
+                            const existingEntry = this._registry.get(prefixedId);
+                            
+                            if (!existingEntry) {
+                                // Not in registry yet, add it
+                                this._registry.set(prefixedId, {
+                                    ...resolvedLayer,
+                                    _sourceAtlas: sourceAtlas,
+                                    _prefixedId: prefixedId,
+                                    // Store the original unprefixed ID for reference
+                                    _originalId: layerId
+                                });
+                            } else if (!resolvedLayer.type && !resolvedLayer.title) {
+                                // This is a reference to a layer defined elsewhere, skip it
+                                // The actual layer definition will be/has been loaded from its source atlas
+                                // Do nothing - the complete layer definition takes precedence
+                            } else if (existingEntry && (!existingEntry.type || !existingEntry.title)) {
+                                // Registry has an incomplete entry (from a cross-atlas reference loaded earlier)
+                                // Update it with the complete definition from the source atlas
+                                this._registry.set(prefixedId, {
+                                    ...resolvedLayer,
+                                    _sourceAtlas: sourceAtlas,
+                                    _prefixedId: prefixedId,
+                                    _originalId: layerId,
+                                    // Preserve any metadata from the incomplete entry
+                                    ...(existingEntry._crossAtlasReference && { _crossAtlasReference: existingEntry._crossAtlasReference })
+                                });
+                            }
+                            // If entry exists and is complete, leave it as-is (first complete definition wins)
+                            
+                        }
+                    });
+                }
+            } else {
+                // Handle failed atlas loads
+                const atlasId = result.status === 'fulfilled' 
+                    ? result.value.atlasId 
+                    : 'unknown';
+                const error = result.status === 'fulfilled' 
+                    ? result.value.error 
+                    : result.reason?.message || 'Unknown error';
                 console.warn(`[LayerRegistry] Failed to load atlas ${atlasId}:`, error);
             }
         }
