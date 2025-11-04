@@ -31,6 +31,9 @@ export class MapLayerControl {
         this._initialized = false;
         this._sourceControls = [];
         this._editMode = false;
+        
+        // Cache for loaded legend images to avoid reloading
+        this._legendImageCache = new Map();
 
         // Global click handler tracking
         this._globalClickHandlerAdded = false;
@@ -333,6 +336,14 @@ export class MapLayerControl {
         // Add type-specific content
         this._addTypeSpecificContent($groupHeader, group, groupIndex);
 
+        // If layer is initially checked and expanded, load legend image immediately
+        if (group.initiallyChecked && group.legendImage) {
+            // Use setTimeout to ensure DOM is fully ready
+            setTimeout(() => {
+                this._loadLegendImageIfNeeded($groupHeader[0], group.legendImage);
+            }, 100);
+        }
+
         return $groupHeader;
     }
 
@@ -399,6 +410,12 @@ export class MapLayerControl {
     _setupGroupHeaderEvents($groupHeader, group, groupIndex, $opacityButton, $settingsButton) {
         $groupHeader[0].addEventListener('sl-show', (event) => {
             this._handleGroupShow(event, group, groupIndex, $opacityButton, $settingsButton);
+            
+            // Load legend image when details panel is expanded (if layer is enabled)
+            const toggleInput = event.target.querySelector('.toggle-switch input[type="checkbox"]');
+            if (toggleInput && toggleInput.checked && group.legendImage) {
+                this._loadLegendImageIfNeeded(event.target, group.legendImage);
+            }
         });
 
         $groupHeader[0].addEventListener('sl-hide', (event) => {
@@ -430,6 +447,9 @@ export class MapLayerControl {
         $opacityButton.toggleClass('hidden', false);
         $settingsButton.toggleClass('hidden', false);
         $(event.target).closest('.group-header').addClass('active');
+        
+        // Load legend image if it exists and hasn't been loaded yet
+        this._loadLegendImageIfNeeded(event.target, group.legendImage);
         
         // Dispatch custom event for URL sync
         console.log('🔗 LayerControl: Dispatching layer-toggled event (show)', { layerId: group.id, visible: true, isCrossAtlas: isCrossAtlas });
@@ -777,13 +797,14 @@ export class MapLayerControl {
                 break;
         }
 
-        // Add legend if available
+        // Add legend container if available (but don't load image yet)
         if (group.legendImage) {
-            $groupHeader.append(`
-                <div class="legend-container">
-                    ${this._renderLegendImage(group.legendImage)}
-                </div>
-            `);
+            const $legendContainer = $('<div>', {
+                class: 'legend-container',
+                'data-legend-url': group.legendImage,
+                'data-legend-loaded': 'false'
+            });
+            $groupHeader.append($legendContainer);
         }
     }
 
@@ -1011,6 +1032,36 @@ export class MapLayerControl {
     }
 
     /**
+     * Load legend image on-demand when layer is enabled and expanded
+     */
+    _loadLegendImageIfNeeded(groupElement, legendImageUrl) {
+        if (!legendImageUrl || !groupElement) return;
+        
+        const $legendContainer = $(groupElement).find('.legend-container');
+        if ($legendContainer.length === 0) return;
+        
+        // Check if already loaded
+        const isLoaded = $legendContainer.attr('data-legend-loaded') === 'true';
+        if (isLoaded) return;
+        
+        // Check if image is cached
+        if (this._legendImageCache.has(legendImageUrl)) {
+            const cachedContent = this._legendImageCache.get(legendImageUrl);
+            $legendContainer.html(cachedContent);
+            $legendContainer.attr('data-legend-loaded', 'true');
+            return;
+        }
+        
+        // Render and cache the legend image
+        const legendContent = this._renderLegendImage(legendImageUrl);
+        $legendContainer.html(legendContent);
+        $legendContainer.attr('data-legend-loaded', 'true');
+        
+        // Cache the content for future use
+        this._legendImageCache.set(legendImageUrl, legendContent);
+    }
+
+    /**
      * Render legend image (PDF or regular image)
      */
     _renderLegendImage(legendImageUrl) {
@@ -1026,7 +1077,8 @@ export class MapLayerControl {
                 </div>
             `;
         } else {
-            return `<img src="${legendImageUrl}" alt="Legend" class="legend-image">`;
+            // Use loading="lazy" for better performance, but still load when needed
+            return `<img src="${legendImageUrl}" alt="Legend" class="legend-image" loading="lazy">`;
         }
     }
 
