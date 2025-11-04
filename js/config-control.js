@@ -4,6 +4,8 @@
  * and adding them to the currently loaded configuration
  */
 
+import { layerRegistry } from './atlas-layer-registry.js';
+
 export class ConfigControl {
     constructor() {
         this.configCache = new Map();
@@ -216,6 +218,26 @@ export class ConfigControl {
     async loadConfig(configFile) {
         if (this.configCache.has(configFile)) {
             return this.configCache.get(configFile);
+        }
+
+        // Try to use cached data from layerRegistry first to avoid duplicate requests
+        if (layerRegistry.isInitialized() && configFile !== 'index') {
+            const atlasLayers = layerRegistry.getAtlasLayers(configFile);
+            const atlasMetadata = layerRegistry.getAtlasMetadata(configFile);
+            
+            if (atlasLayers && atlasLayers.length > 0) {
+                // Reconstruct config object from registry data
+                const config = {
+                    layers: atlasLayers,
+                    ...atlasMetadata
+                };
+                
+                // Process layers with library lookup (similar to map-init.js)
+                await this.processConfigLayers(config);
+                
+                this.configCache.set(configFile, config);
+                return config;
+            }
         }
 
         try {
