@@ -240,9 +240,9 @@ async function loadConfiguration() {
         var layersParam = getUrlParameter('layers');
     }
 
-    let configPath = 'config/index.atlas.json';
+    let configPath = 'config/dfes-dmp.atlas.json';
     let config;
-    let atlasId = 'index'; // Track which atlas we're using
+    let atlasId = 'dfes-dmp'; // Track which atlas we're using
 
     // If a config parameter is provided, determine how to handle it
     if (configParam) {

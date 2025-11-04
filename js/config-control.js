@@ -242,8 +242,8 @@ export class ConfigControl {
 
         try {
             let configPath;
-            if (configFile === 'index') {
-                configPath = 'config/index.atlas.json';
+            if (configFile === 'dfes-dmp') {
+                configPath = 'config/dfes-dmp.atlas.json';
             } else if (configFile.startsWith('examples/')) {
                 configPath = `config/${configFile}.atlas.json`;
             } else {
