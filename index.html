@@ -218,10 +218,10 @@
         <div class="flex gap-4 items-center">
             <!-- Add Layer button for new data source/atlas -->
             <sl-icon-button name="plus-square" id="add-layer-btn" class="add-layer-button"
-                label="Add new data source or atlas" title="Add new data source or atlas"></sl-icon-button>
+                aria-label="Add new data source or atlas" title="Add new data source or atlas"></sl-icon-button>
             <!-- Map Navigation Links button -->
             <sl-icon-button name="box-arrow-in-up-right" id="map-links-btn" class="map-links-button"
-                label="Open map in external services" title="Open map in external services"></sl-icon-button>
+                aria-label="Open map in external services" title="Open map in external services"></sl-icon-button>
             <!-- Share button container for ShareLink plugin -->
             <div id="share-button-container"></div>
         </div>
@@ -258,11 +258,12 @@
 
             <div id="edit-mode-control" style="display: none;"
                 class="mapboxgl-ctrl mapboxgl-ctrl-group absolute bottom-10 right-0 z-10 bg-white rounded shadow-md mr-2">
-                <button id="edit-mode-toggle"
-                    class="px-2 py-1 text-sm flex items-center justify-center hover:bg-blue-500"
-                    title="Toggle Edit Mode">
-                    📌
-                </button>
+            <button id="edit-mode-toggle"
+                class="px-2 py-1 text-sm flex items-center justify-center hover:bg-blue-500"
+                aria-label="Toggle Edit Mode"
+                title="Toggle Edit Mode">
+                <span aria-hidden="true">📌</span>
+            </button>
             </div>
         </main>
     </div>

@@ -432,6 +432,7 @@ export class MapFeatureControl {
         // Close button
         const closeButton = document.createElement('button');
         closeButton.textContent = '×';
+        closeButton.setAttribute('aria-label', 'Close');
         closeButton.style.cssText = `
             position: absolute;
             top: 5px;
@@ -1458,6 +1459,7 @@ export class MapFeatureControl {
         zoomBtn.size = 'small';
         zoomBtn.variant = 'text';
         zoomBtn.innerHTML = '<sl-icon name="zoom-in"></sl-icon>';
+        zoomBtn.setAttribute('aria-label', 'Zoom to layer extent');
         zoomBtn.title = 'Zoom to layer extent';
         zoomBtn.style.cssText = `
             min-width: auto;
@@ -2096,6 +2098,8 @@ export class MapFeatureControl {
         // Add settings button - always visible
         const settingsButton = document.createElement('button');
         settingsButton.className = 'feature-action-button';
+        settingsButton.setAttribute('aria-label', 'Settings');
+        settingsButton.setAttribute('title', 'Settings');
         settingsButton.style.cssText = `
             display: flex;
             align-items: center;
@@ -2143,6 +2147,8 @@ export class MapFeatureControl {
         if (this._map) {
             const exportButton = document.createElement('button');
             exportButton.className = 'feature-action-button';
+            exportButton.setAttribute('aria-label', 'Export');
+            exportButton.setAttribute('title', 'Export');
             exportButton.style.cssText = `
                 display: flex;
                 align-items: center;
@@ -2446,6 +2452,7 @@ export class MapFeatureControl {
         const closeBtn = document.createElement('button');
         closeBtn.className = 'legend-modal-close';
         closeBtn.innerHTML = '×';
+        closeBtn.setAttribute('aria-label', 'Close legend');
         closeBtn.style.cssText = `
             position: absolute;
             top: 0.5rem;
@@ -2688,6 +2695,7 @@ export class MapFeatureControl {
             // Show close button when collapsed
             const closeBtn = document.createElement('button');
             closeBtn.innerHTML = '×';
+            closeBtn.setAttribute('aria-label', 'Close');
             closeBtn.style.cssText = `
                 background: none;
                 border: none;
@@ -2731,6 +2739,7 @@ export class MapFeatureControl {
             opacityBtn.setAttribute('name', 'lightbulb-fill'); // Start with full lightbulb (high opacity)
             opacityBtn.setAttribute('data-opacity', '0.9'); // Start at high opacity so first click goes to low
             opacityBtn.setAttribute('data-hover-state', 'false'); // Track if we're in hover preview mode
+            opacityBtn.setAttribute('aria-label', 'Toggle opacity');
             opacityBtn.title = 'Toggle opacity';
             opacityBtn.style.cssText = `
                 --sl-color-neutral-600: #ffffff;

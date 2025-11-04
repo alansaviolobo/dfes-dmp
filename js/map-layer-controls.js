@@ -357,7 +357,8 @@ export class MapLayerControl {
         const $settingsButton = $('<sl-icon-button>', {
             name: 'gear-fill',
             class: 'settings-button ml-auto hidden',
-            label: 'Layer Settings'
+            'aria-label': 'Layer Settings',
+            title: 'Layer Settings'
         });
 
         $settingsButton[0].addEventListener('click', (e) => {
@@ -380,6 +381,7 @@ export class MapLayerControl {
         const $opacityButton = $('<sl-icon-button>', {
             class: 'opacity-toggle hidden',
             'data-opacity': '0.4',
+            'aria-label': 'Toggle opacity',
             title: 'Toggle opacity',
             name: 'lightbulb-fill'
         });
