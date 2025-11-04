@@ -27,7 +27,7 @@ export class MapInitializer {
 
         let configPath = window.amche.DEFAULT_ATLAS;
         let config;
-        let atlasId = 'index'; // Track which atlas we're using
+    let atlasId = 'dfes-dmp'; // Track which atlas we're using
 
         // If a config parameter is provided, determine how to handle it
         if (configParam) {
