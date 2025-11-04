@@ -91,8 +91,9 @@
             <!-- Left Navigation Dropdown -->
             <sl-dropdown>
                 <sl-button slot="trigger" variant="text" size="small"
-                    class="nav-dropdown-trigger interactive-nav-button">
-                    <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 20 20">
+                    class="nav-dropdown-trigger interactive-nav-button"
+                    aria-label="Navigation menu">
+                    <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 20 20" aria-hidden="true">
                         <path fill-rule="evenodd"
                             d="M12 1.586l-4 4v12.828l4-4V1.586zM3.707 3.293A1 1 0 002 4v10a1 1 0 00.293.707L6 18.414V5.586L3.707 3.293zM17.707 5.293L14 1.586v12.828l2.293 2.293A1 1 0 0018 16V6a1 1 0 00-.293-.707z"
                             clip-rule="evenodd" />
@@ -217,10 +218,10 @@
         <div class="flex gap-4 items-center">
             <!-- Add Layer button for new data source/atlas -->
             <sl-icon-button name="plus-square" id="add-layer-btn" class="add-layer-button"
-                title="Add new data source or atlas"></sl-icon-button>
+                label="Add new data source or atlas" title="Add new data source or atlas"></sl-icon-button>
             <!-- Map Navigation Links button -->
             <sl-icon-button name="box-arrow-in-up-right" id="map-links-btn" class="map-links-button"
-                title="Open map in external services"></sl-icon-button>
+                label="Open map in external services" title="Open map in external services"></sl-icon-button>
             <!-- Share button container for ShareLink plugin -->
             <div id="share-button-container"></div>
         </div>

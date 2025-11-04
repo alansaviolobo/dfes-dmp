@@ -76,6 +76,9 @@ export class MapLayerControl {
         // Add global click handler early
         this._addGlobalClickHandler();
 
+        // Add drawer focus management to prevent aria-hidden accessibility issues
+        this._setupDrawerFocusManagement();
+
         // Initialize the control UI
         if (this._map.isStyleLoaded()) {
             this._initializeControl($(container));
@@ -1458,6 +1461,32 @@ export class MapLayerControl {
         });
 
         this._globalClickHandlerAdded = true;
+    }
+
+    /**
+     * Set up drawer focus management to prevent aria-hidden accessibility issues
+     * Blurs focused elements inside the drawer before it's hidden
+     */
+    _setupDrawerFocusManagement() {
+        // Wait for drawer to be available
+        const findDrawer = () => {
+            const drawer = document.querySelector('#map-controls-drawer');
+            if (drawer) {
+                // Listen for drawer hide event (fires before hiding)
+                drawer.addEventListener('sl-hide', () => {
+                    // Check if the currently focused element is inside the drawer
+                    const activeElement = document.activeElement;
+                    if (activeElement && drawer.contains(activeElement)) {
+                        // Blur the focused element to prevent aria-hidden accessibility violation
+                        activeElement.blur();
+                    }
+                });
+            } else {
+                // Retry if drawer not found yet
+                setTimeout(findDrawer, 100);
+            }
+        };
+        findDrawer();
     }
 
     /**

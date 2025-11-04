@@ -138,6 +138,7 @@ class MapSearchControl {
             if ($resultsList.length > 0) {
                 const removedCount = $resultsList.find('.local-suggestion').length;
                 $resultsList.find('.local-suggestion').remove();
+                this.updateComboboxAriaExpanded(false); // Update aria-expanded on clear
             }
         } catch (error) {
             console.error('Error clearing injected suggestions:', error);
@@ -177,6 +178,9 @@ class MapSearchControl {
         this.searchBox.setAttribute('language', this.options.language);
         this.searchBox.setAttribute('types', this.options.types);
         
+        // Add required ARIA attributes for the combobox input
+        this.setupComboboxAriaAttributes();
+        
         // Add event listeners
         this.searchBox.addEventListener('suggest', this.handleSuggest.bind(this));
         this.searchBox.addEventListener('retrieve', this.handleRetrieve.bind(this));
@@ -196,9 +200,105 @@ class MapSearchControl {
         // Add map moveend listener to refresh search results when viewport changes
         this.map.on('moveend', this.handleMapMoveEnd.bind(this));
         
+        // Monitor for changes to update aria-expanded when suggestions appear/disappear
+        this.setupAriaExpandedMonitoring();
     }
     
-
+    /**
+     * Set up required ARIA attributes for the combobox input
+     */
+    setupComboboxAriaAttributes() {
+        try {
+            // Find the input element in shadow DOM or regular DOM
+            const findInput = () => {
+                if (this.searchBox.shadowRoot) {
+                    return this.searchBox.shadowRoot.querySelector('input[role="combobox"]');
+                }
+                return this.searchBox.querySelector('input[role="combobox"]');
+            };
+            
+            // Set attributes after a short delay to ensure the component is fully initialized
+            setTimeout(() => {
+                const input = findInput();
+                if (input) {
+                    // Add required ARIA attributes for combobox
+                    input.setAttribute('aria-expanded', 'false');
+                    input.setAttribute('aria-haspopup', 'listbox');
+                    
+                    // Get the results list ID if it exists
+                    const resultsList = this.searchBox.shadowRoot?.querySelector('[role="listbox"]') ||
+                                      this.searchBox.querySelector('[role="listbox"]');
+                    if (resultsList && resultsList.id) {
+                        input.setAttribute('aria-controls', resultsList.id);
+                    }
+                    
+                    console.debug('Set ARIA attributes on combobox input');
+                }
+            }, 100);
+        } catch (error) {
+            console.error('Error setting up combobox ARIA attributes:', error);
+        }
+    }
+    
+    /**
+     * Update aria-expanded attribute on the combobox input
+     * @param {boolean} expanded - Whether the combobox is expanded
+     */
+    updateComboboxAriaExpanded(expanded) {
+        try {
+            const input = this.searchBox.shadowRoot?.querySelector('input[role="combobox"]') ||
+                         this.searchBox.querySelector('input[role="combobox"]');
+            if (input) {
+                input.setAttribute('aria-expanded', expanded.toString());
+            }
+        } catch (error) {
+            // Silently fail to avoid console spam
+        }
+    }
+    
+    /**
+     * Monitor and update aria-expanded attribute based on suggestions visibility
+     */
+    setupAriaExpandedMonitoring() {
+        // Use MutationObserver to watch for changes in the results list
+        const observer = new MutationObserver(() => {
+            try {
+                const input = this.searchBox.shadowRoot?.querySelector('input[role="combobox"]') ||
+                             this.searchBox.querySelector('input[role="combobox"]');
+                const resultsList = this.searchBox.shadowRoot?.querySelector('[role="listbox"]') ||
+                                   this.searchBox.querySelector('[role="listbox"]');
+                
+                if (input && resultsList) {
+                    // Check if results list is visible and has options
+                    const isVisible = resultsList.offsetParent !== null || 
+                                     resultsList.style.display !== 'none' ||
+                                     window.getComputedStyle(resultsList).display !== 'none';
+                    const hasOptions = resultsList.querySelectorAll('[role="option"]').length > 0;
+                    
+                    const expanded = isVisible && hasOptions;
+                    input.setAttribute('aria-expanded', expanded.toString());
+                }
+            } catch (error) {
+                // Silently fail to avoid console spam
+            }
+        });
+        
+        // Observe changes in the shadow DOM or regular DOM
+        try {
+            const target = this.searchBox.shadowRoot || this.searchBox;
+            observer.observe(target, {
+                childList: true,
+                subtree: true,
+                attributes: true,
+                attributeFilter: ['style', 'class', 'hidden']
+            });
+        } catch (error) {
+            console.error('Error setting up aria-expanded monitoring:', error);
+        }
+        
+        // Store observer for cleanup
+        this.ariaObserver = observer;
+    }
     
     /**
      * Handle keydown events to handle Enter key for coordinates
@@ -311,6 +411,7 @@ class MapSearchControl {
             if ($resultsList.length > 0) {
                 const removedCount = $resultsList.find('.local-suggestion').length;
                 $resultsList.find('.local-suggestion').remove();
+                this.updateComboboxAriaExpanded(false); // Update aria-expanded on clear
                 console.debug(`Cleared ${removedCount} injected suggestions from UI`);
             }
         } catch (error) {
@@ -1036,6 +1137,13 @@ class MapSearchControl {
         this.map.off('moveend', this.handleMapMoveEnd.bind(this));
         console.debug('Removed map event listeners');
         
+        // Disconnect MutationObserver for aria-expanded monitoring
+        if (this.ariaObserver) {
+            this.ariaObserver.disconnect();
+            this.ariaObserver = null;
+            console.debug('Disconnected aria-expanded monitoring observer');
+        }
+        
         console.debug('MapSearchControl cleanup complete');
         console.debug('=== MAP SEARCH CONTROL CLEANUP COMPLETE ===');
     }
@@ -1255,6 +1363,9 @@ class MapSearchControl {
                 markersVisible: this.suggestionMarkers.filter(m => m.visible).length,
                 hoveredIndex: this.hoveredMarkerIndex
             });
+            
+            // Update aria-expanded on the combobox input since we have suggestions
+            this.updateComboboxAriaExpanded(true);
             
             // Mark this query as injected
             this.lastInjectedQuery = this.currentQuery;
@@ -1642,4 +1753,4 @@ class MapSearchControl {
 }
 
 // Export the class
-window.MapSearchControl = MapSearchControl; 
+window.MapSearchControl = MapSearchControl;
