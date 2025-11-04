@@ -822,13 +822,16 @@ const styles = `
 // Add styles to document
 document.head.insertAdjacentHTML('beforeend', styles);
 
-// Auto-initialize when DOM is ready
-if (document.readyState === 'loading') {
-  document.addEventListener('DOMContentLoaded', () => {
+// Auto-initialize only if explicitly enabled via window.ENABLE_INTRO_CONTENT
+// This allows index.js (or other scripts) to control when intro content loads
+if (window.ENABLE_INTRO_CONTENT === true) {
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', () => {
+      new IntroContentManager();
+    });
+  } else {
     new IntroContentManager();
-  });
-} else {
-  new IntroContentManager();
+  }
 }
 
 // Export for manual initialization if needed
