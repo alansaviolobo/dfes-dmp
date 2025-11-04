@@ -37,6 +37,7 @@ class ViewControl {
         // Create image with jQuery
         const $img = $('<img>', {
             src: this.options.iconUrl,
+            alt: 'Fit Map to Goa',
             width: 20,
             height: 20,
             css: { display: 'block' }
