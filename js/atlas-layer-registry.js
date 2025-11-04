@@ -114,7 +114,6 @@ export class LayerRegistry {
                                 } else if (existingEntry && (!existingEntry.type || !existingEntry.title)) {
                                     // Registry has an incomplete entry (from a cross-atlas reference loaded earlier)
                                     // Update it with the complete definition from the source atlas
-                                    console.debug(`[LayerRegistry] Updating incomplete registry entry for ${prefixedId} with complete definition from ${sourceAtlas} atlas`);
                                     this._registry.set(prefixedId, {
                                         ...resolvedLayer,
                                         _sourceAtlas: sourceAtlas,
@@ -138,10 +137,19 @@ export class LayerRegistry {
         // After all atlases are loaded, resolve cross-atlas references
         this._resolveCrossAtlasReferences();
         
-        // Sort registry by layer ID for consistent logging
-        const sortedRegistry = Array.from(this._registry.entries())
-            .sort(([a], [b]) => a.localeCompare(b));
-        console.log(`[LayerRegistry] Initialized with ${this._registry.size} layers from ${this._atlasLayers.size} atlases`, sortedRegistry);
+        // Create consolidated index of atlas to layer IDs
+        const layerIndex = {};
+        for (const [layerId, layer] of this._registry.entries()) {
+            const atlasId = layer._sourceAtlas || 'unknown';
+            if (!layerIndex[atlasId]) {
+                layerIndex[atlasId] = [];
+            }
+            layerIndex[atlasId].push({
+                id: layerId,
+                title: layer.title || layer.name || layerId
+            });
+        }
+        console.log(`[AtlasLayerRegistry] Loaded ${this._registry.size} layers from ${this._atlasLayers.size} atlases`, layerIndex);
         
         
         this._initialized = true;

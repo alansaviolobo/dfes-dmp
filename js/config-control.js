@@ -59,12 +59,26 @@ export class ConfigControl {
     async expandNavigationMenu() {
         // Wait for Shoelace components to be ready
         await customElements.whenDefined('sl-menu-item');
-        
-        // Extract config menu items directly from the HTML
-        const configMenuItems = this.extractConfigMenuItems();
 
+        // Prefer atlases declared in config/index.atlas.json
+        try {
+            const indexConfig = await this.loadConfig('index');
+            const atlases = Array.isArray(indexConfig?.atlases) ? indexConfig.atlases : [];
+
+            if (atlases.length > 0) {
+                for (const atlasId of atlases) {
+                    await this.expandConfigMenuItem(atlasId);
+                }
+                return;
+            }
+        } catch (e) {
+            console.warn('Failed to load atlases from index.atlas.json, falling back to DOM extraction:', e);
+        }
+
+        // Fallback: Extract config menu items directly from the HTML
+        const configMenuItems = this.extractConfigMenuItems();
         for (const item of configMenuItems) {
-            await this.expandConfigMenuItem(item.name, item.config);
+            await this.expandConfigMenuItem(item.config);
         }
     }
 
@@ -105,30 +119,25 @@ export class ConfigControl {
 
     /**
      * Expand a specific config menu item with its layers
-     * @param {string} configName - Display name of the config
-     * @param {string} configFile - Config file name (without .json)
+     * @param {string} configFile - Config file name/id (without .json)
      */
-    async expandConfigMenuItem(configName, configFile) {
+    async expandConfigMenuItem(configFile) {
         try {
             // Find the menu item for this config
             const menuItems = document.querySelectorAll('sl-menu-item[href]');
             let targetMenuItem = null;
+            const expectedHref = (configFile === 'index') ? './' : `./?atlas=${configFile}`;
             
             for (const item of menuItems) {
                 const href = item.getAttribute('href');
-                const itemName = item.textContent.trim();
-                
-                // Match by both href and name to ensure we get the right item
-                if (itemName === configName && 
-                    ((configFile === 'index' && href === './') || 
-                     href === `./?atlas=${configFile}`)) {
+                if (href === expectedHref) {
                     targetMenuItem = item;
                     break;
                 }
             }
 
             if (!targetMenuItem) {
-                console.warn(`Could not find menu item for config: ${configName} (looking for href="./?atlas=${configFile}" or "./" for index)`);
+                console.warn(`Could not find menu item for config: ${configFile} (looking for href="${expectedHref}")`);
                 return;
             }
 
@@ -171,11 +180,12 @@ export class ConfigControl {
 
             // Replace the simple menu item with one that has a submenu
             const newMenuItem = document.createElement('sl-menu-item');
+            const configNameForLabel = targetMenuItem.textContent.trim();
             newMenuItem.innerHTML = `
                 <svg slot="prefix" class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
                     <path fill-rule="evenodd" d="M12 1.586l-4 4v12.828l4-4V1.586zM3.707 3.293A1 1 0 002 4v10a1 1 0 00.293.707L6 18.414V5.586L3.707 3.293zM17.707 5.293L14 1.586v12.828l2.293 2.293A1 1 0 0018 16V6a1 1 0 00-.293-.707z" clip-rule="evenodd"/>
                 </svg>
-                ${configName}
+                ${configNameForLabel}
             `;
             
             // Add the original navigation functionality
