@@ -103,14 +103,23 @@ Data is directly mirrored from external sources and is not hosted or controlled 
 
 See [/data](./data) for more information for any custom data processing code.
 
-## Software
+## Development
 
-The development of amche.in was largely made pausible due to [Claude](https://claude.ai/) and [Cursor](https://www.cursor.com/). The website has a simple static site structure with minimal Javascript libraries and is intentionally developed to be as simple as possible to setup, contribute and build.
+The development of amche.in was largely done with [Cursor](https://www.cursor.com/) and [Claude](https://claude.ai/). The website has a simple static site structure with minimal Javascript libraries and is intentionally developed to be as simple as possible to setup, contribute and test with minimum dependencies.
 
+**Setup**
 - To setup, open your terminal:
   - `git clone git@github.com:publicmap/amche-goa.git` and `cd amche-goa`
-  - `npm install` to install all code dependencies. Requires [Node.JS](https://nodejs.org/en)
+  - Requires [Node.JS](https://nodejs.org/en). Verify Node and NPM installation has no errors. Windows users may have to run ` Set-ExecutionPolicy -Scope CurrentUser -ExecutionPolicy RemoteSigned -Force` if running scripts are blocked in terminal.
+``` 
+node -v
+npm -v
+```
+  - `npm install` to install all code dependencies
   - `npm start` to start a local server. Open `http://localhost:4035/` in your broswer
+
+**Contributing**
+
 - Source code hosted on Github and served via [Github Pages](https://pages.github.com/)
   - Code on `main` branch deploys to https://amche.in and `dev` branch to https://amche.in/dev . Deployment time is currently under 1 minute.
 - Take a look at the [Project Board](https://github.com/publicmap/amche-goa/projects) to take up an issue to contribute to
