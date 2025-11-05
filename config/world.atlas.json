@@ -77,7 +77,7 @@
       "description": "Open data of AI generated building footprints from satellite imagery upto 2023. For technical details see <a href='https://arxiv.org/abs/2107.12283'>Continental-Scale Building Detection from High Resolution Satellite Imagery</a>.",
       "headerImage": "assets/map-layers/map-layer-open-buildings.png",
       "type": "vector",
-      "id": "2023open-buildings",
+      "id": "2023-open-buildings",
       "url": "https://indianopenmaps.fly.dev/google-buildings/{z}/{x}/{y}.pbf",
       "sourceLayer": "google_buildings",
       "maxzoom": 14,
@@ -291,12 +291,42 @@
       "attribution": "<a href='https://www.protectedplanet.net/'>UNEP-WCMC</a> via <a href='https://nasa-gibs.github.io/gibs-api-docs/GIBS'>GIBS</a>"
     },
     {
-      "id": "osm",
+      "id": "osm-mapnik",
       "initiallyChecked": true
     },
     {
-      "initiallyChecked": true,
       "id": "mapbox-satellite"
+    },
+    {
+      "title": "ESRI World Imagery",
+      "description": "ESRI World Imagery",
+      "headerImage": null,
+      "legendImage": null,
+      "type": "tms",
+      "id": "esri-world-imagery",
+      "url": "https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",
+      "attribution": "<a href='https://www.arcgis.com/home/item.html?id=10df2279f9684e4a9f6a7f08febac2a9'>ESRI World Imagery</a> via <a href='https://services.arcgisonline.com/arcgis/rest/services/World_Imagery/MapServer'>ArcGIS Online</a>"
+    },
+    {
+      "title": "ESRI Hillshade",
+      "description": "ESRI World Imagery",
+      "headerImage": null,
+      "legendImage": null,
+      "type": "tms",
+      "id": "esri-hillshade",
+      "url": "https://server.arcgisonline.com/arcgis/rest/services/Elevation/World_Hillshade/MapServer/tile/{z}/{y}/{x}",
+      "attribution": "<a href='https://www.arcgis.com/home/item.html?id=10df2279f9684e4a9f6a7f08febac2a9'>ESRI World Imagery</a> via <a href='https://services.arcgisonline.com/arcgis/rest/services/World_Imagery/MapServer'>ArcGIS Online</a>"
+    },
+    {
+      "title": "GEBCO Bathymetry",
+      "tags": ["basemap", "bathymetry"],
+      "description": "A color shaded relief visualization of the General Bathymetric Chart of the <a href='https://www.gebco.net/data_and_products/gridded_bathymetry_data/'>Oceans GEBCO_2024 grid</a>, combined with generalized land cover coloration from the Natural Earth 1 dataset.",
+      "headerImage": null,
+      "legendImage": null,
+      "type": "tms",
+      "id": "gebco-bathymetry",
+      "url": "https://tiles.arcgis.com/tiles/C8EMgrsFcRFL6LrL/arcgis/rest/services/GEBCO_basemap_NCEI/MapServer/tile/{z}/{y}/{x}",
+      "attribution": "CC-0 <a href='https://www.gebco.net/data-products/gridded-bathymetry-data'>GEBCO Bathymetry</a> via <a href='https://tiles.arcgis.com/tiles/C8EMgrsFcRFL6LrL/arcgis/rest/services/GEBCO_basemap_NCEI/MapServer'>ArcGIS Online</a>"
     }
   ]
 }
