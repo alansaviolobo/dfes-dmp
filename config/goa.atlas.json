@@ -1529,7 +1529,7 @@
       "headerImage": "assets/map-layers/map-layer-bus.png",
       "type": "img",
       "url": "https://upload.wikimedia.org/wikipedia/commons/4/43/Goa_Bus_Network_Map_2025.png",
-      "bbox": [
+      "bounds": [
         73.657,
         14.863,
         74.362,
