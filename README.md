@@ -1,15 +1,17 @@
-# amche-goa
+# amche-atlas
 
-**amche-atlas** is designed to be a flexible and interactive web based GIS software to quickly visualize spatial data layers from a vareity of sources using the latest open web map technologies.
+**amche-atlas** is designed to be a flexible and interactive web based GIS software to quickly visualize spatial data layers from a variety of data sources.
 
 amche-atlas is currently deployed at the following urls:
-- Homepage: https://amche.in/
+- Homepage: https://amche.in/ 
 - Development preview: https://amche.in/dev
 
 **Forks**
 - [Goa Disaster Management Dashboard](https://github.com/alansaviolobo/dfes-dmp)
 
-`amche` translates to 'ours' in the Indian language of [Konkani](https://en.wikipedia.org/wiki/Konkani_language), the native language in Goa.
+`amche` translates to 'ours' in [Konkani](https://en.wikipedia.org/wiki/Konkani_language), the native language of the [Konkan region](https://en.wikipedia.org/wiki/Konkan). 
+
+The region lies along India's [western ghats mountain range](https://en.wikipedia.org/wiki/Western_Ghats), recognized as one of the [world’s eight ‘hottest hotspots’ of biological diversity](https://whc.unesco.org/en/list/1342/).
 
 **amche.in**
 
