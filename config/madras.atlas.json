@@ -13,10 +13,6 @@
   },
   "layers": [
     {
-      "id": "mapbox-streets",
-      "title": "Street Map தெரு வரைபடம்"
-    },
-    {
       "title": "Madras contour map 1918",
       "description": "Lanchester, H.V. (1918). Town planning in Madras. A review of the conditions and requirements of city improvement and development in the Madras Presidency. London: Constable & Company Limited.",
       "source": "<a href='https://commons.wikimedia.org/wiki/File:Madras_contour_map.jpg' target='_blank'>File:Madras_contour_map.jpg</a>",

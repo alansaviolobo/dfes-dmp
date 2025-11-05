@@ -18,10 +18,6 @@
   },
   "layers": [
     {
-      "id": "mapbox-streets",
-      "title": "Street Map ನಕ್ಷೆಗಳು"
-    },
-    {
       "id": "open-buildings"
     },
     {

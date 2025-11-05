@@ -13,10 +13,6 @@
   },
   "layers": [
     {
-      "id": "mapbox-streets",
-      "title": "Street Map रस्त्याचो नकासो"
-    },
-    {
       "title": "Kerala NCSCM Coastal Cadastrals",
       "description": "Cadastral Boundaries from the <a href='https://czmp.ncscm.res.in/'>National Centre for Sustainable Coastal Management</a>. The map is provided for information purpose only.",
       "headerImage": "assets/map-layers/map-layer-survey.png",

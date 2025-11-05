@@ -13,10 +13,6 @@
     },
     "layers": [
       {
-        "id": "mapbox-streets",
-        "title": "Mapbox Street Map"
-      },
-      {
         "id": "places",
         "title": "Places",
         "description": "Places from the OpenStreetMap project. See <a href='https://wiki.openstreetmap.org/wiki/India/Tags/Place'>OpenStreetMap India Wiki</a> for details.",

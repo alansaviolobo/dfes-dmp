@@ -13,10 +13,6 @@
   },
   "layers": [
     {
-      "id": "mapbox-streets",
-      "title": "Street Map रस्त्याचो नकासो"
-    },
-    {
       "title": "Zonation Map of Madei Wildlife Sanctuary",
       "description": "From the Management Plan, Madei WLS",
       "source": "https://forest.goa.gov.in/sites/default/files/2025-09/Management-Plan-of-Madei-Widllife-Sanctuary.pdf",

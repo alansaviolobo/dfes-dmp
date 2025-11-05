@@ -36,6 +36,10 @@ describe('Config File Validation', () => {
         const content = fs.readFileSync(fullPath, 'utf8');
         const data = JSON.parse(content);
         
+        // Extract atlas ID from filename (e.g., "goa" from "goa.atlas.json")
+        const fileName = path.basename(filePath);
+        const atlasId = fileName.replace('.atlas.json', '');
+        
         // Handle different layer array structures
         let layersArray = data.layers;
         if (!layersArray && data.layersConfig) {
@@ -46,7 +50,15 @@ describe('Config File Validation', () => {
           layersArray.forEach(layer => {
             // Add layers that have inline definitions (have title and one of type/url/style)
             if (layer.id && layer.title && (layer.type || layer.url || layer.style)) {
+              // Add the unprefixed ID
               allAvailableLayerIds.add(layer.id);
+              
+              // Also add the prefixed version (atlasId-layerId) unless the ID already has a prefix
+              // Check if ID already contains a dash (might already be prefixed)
+              if (!layer.id.includes('-') || !layer.id.startsWith(atlasId + '-')) {
+                const prefixedId = `${atlasId}-${layer.id}`;
+                allAvailableLayerIds.add(prefixedId);
+              }
             }
           });
         }

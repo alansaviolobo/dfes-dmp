@@ -13,10 +13,6 @@
   },
   "layers": [
     {
-      "id": "mapbox-streets",
-      "title": "Street Map"
-    },
-    {
       "title": "Cadastral Plot Boundaries",
       "description": "Cadastral Boundaries from the <a href='https://mrsac.gov.in/MRSAC/'>Maharashtra Remote Sensing Application Centre</a>. 1) Maps are only for viewing purposes. 2) The maps cannot be used for commercial or legal purposes. 3) Citizens can get authorized copy of maps from the concerned taluka Deputy Superintendent of Land Records Office.",
       "headerImage": "assets/map-layers/map-layer-survey.png",

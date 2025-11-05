@@ -13,10 +13,6 @@
   },
   "layers": [
     {
-      "id": "mapbox-streets",
-      "title": "Street Map"
-    },
-    {
       "id": "karmashape-populated-places",
       "title": "Populated Places",
       "description": "Place locations from Karmashape",

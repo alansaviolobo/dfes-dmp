@@ -13,10 +13,6 @@
   },
   "layers": [
     {
-      "id": "mapbox-streets",
-      "title": "Street Map रस्त्याचो नकासो"
-    },
-    {
       "title": "Live Fire Trucks",
       "description": "Live locations of fire trucks from the Directorate of Fire Emergency Services. Location updated every 5 minutes from <a href='https://github.com/publicmap/goa-fire-trucks-geojson/'>Goa Fire Trucks API</a>.",
       "headerImage": "assets/map-layers/map-layer-fire-trucks.png",

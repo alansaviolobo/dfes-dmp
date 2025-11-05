@@ -9,9 +9,6 @@
   },
   "layers": [
     {
-      "id": "mapbox-streets"
-    },
-    {
       "title": "Cadastral Plot Boundaries",
       "description": "Cadastral boundaries for Haryana. The map is provided for information purpose only. An official copy can be obtained from <a href='https://hsac.org.in/eodb/#' target='_blank' rel='noopener noreferrer'>Digital Land Record, Haryana</a>",
       "headerImage": "assets/map-layers/map-layer-survey.png",
