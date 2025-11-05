@@ -99,6 +99,9 @@
     },
     {
       "id": "osm-mapnik"
+    },
+    {
+      "id": "mapbox-satellite"
     }
     ]
 }
