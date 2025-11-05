@@ -13,10 +13,6 @@
   },
   "layers": [
     {
-      "id": "mapbox-streets",
-      "title": "Street Map"
-    },
-    {
       "title": "iNaturalist Observations",
       "type": "tms",
       "id": "inaturalist",
