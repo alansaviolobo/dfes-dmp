@@ -80,6 +80,9 @@ export class MapFeatureControl {
         // Animation state tracking to prevent mouse interference during camera movements
         this._isAnimating = false;
         
+        // Drag event listeners storage for cleanup
+        this._dragListeners = null;
+        
         // Initialized
         
         // Set up resize listener for responsive height adjustments
@@ -330,7 +333,7 @@ export class MapFeatureControl {
         const button = document.createElement('button');
         button.className = 'mapboxgl-ctrl-icon';
         button.type = 'button';
-        button.setAttribute('aria-label', 'Layer Inspector');
+        button.setAttribute('aria-label', 'Map Layers');
         button.style.cssText = `
             display: flex;
             align-items: center;
@@ -379,11 +382,13 @@ export class MapFeatureControl {
         this._panel.className = 'map-feature-panel';
         this._panel.style.cssText = `
             position: absolute;
-            top: 40px;
+            top: 10px;
             left: 10px;
             width: 350px;
             max-width: 90vw;
-            max-height: 70vh;
+            max-height: calc(100vh - 120px);
+            min-width: 250px;
+            min-height: 200px;
             background-color: white;
             border: 1px solid #ccc;
             border-radius: 4px;
@@ -392,7 +397,8 @@ export class MapFeatureControl {
             display: flex;
             flex-direction: column;
             font-size: 14px;
-            overflow: hidden;
+            overflow: auto;
+            resize: both;
         `;
         
 
@@ -405,15 +411,20 @@ export class MapFeatureControl {
             min-height: 0;
         `;
 
-        // Title
+        // Title - make it draggable
         const title = document.createElement('h3');
-        title.textContent = 'Layer Inspector';
+        title.textContent = 'Map Layers';
         title.style.cssText = `
             margin: 10px 0 5px 5px;
             font-size: 16px;
             font-weight: bold;
             color: #333;
+            cursor: move;
+            user-select: none;
         `;
+        
+        // Add drag functionality to the title
+        this._setupPanelDrag(title);
 
         // Create actions section for main details
         const actionsSection = this._createMainDetailsActions();
@@ -472,6 +483,82 @@ export class MapFeatureControl {
 
         // Add panel to map container
         this._map.getContainer().appendChild(this._panel);
+    }
+
+    /**
+     * Setup drag functionality for the panel using the title as drag handle
+     */
+    _setupPanelDrag(dragHandle) {
+        let isDragging = false;
+        let currentX;
+        let currentY;
+        let initialX;
+        let initialY;
+        let xOffset = 0;
+        let yOffset = 0;
+
+        const dragStart = (e) => {
+            if (e.type === "touchstart") {
+                initialX = e.touches[0].clientX - xOffset;
+                initialY = e.touches[0].clientY - yOffset;
+            } else {
+                initialX = e.clientX - xOffset;
+                initialY = e.clientY - yOffset;
+            }
+
+            if (e.target === dragHandle) {
+                isDragging = true;
+            }
+        };
+
+        const dragEnd = (e) => {
+            initialX = currentX;
+            initialY = currentY;
+            isDragging = false;
+        };
+
+        const drag = (e) => {
+            if (isDragging) {
+                e.preventDefault();
+                
+                if (e.type === "touchmove") {
+                    currentX = e.touches[0].clientX - initialX;
+                    currentY = e.touches[0].clientY - initialY;
+                } else {
+                    currentX = e.clientX - initialX;
+                    currentY = e.clientY - initialY;
+                }
+
+                xOffset = currentX;
+                yOffset = currentY;
+
+                this._setTranslate(currentX, currentY, this._panel);
+            }
+        };
+
+        const _setTranslate = (xPos, yPos, el) => {
+            el.style.transform = `translate3d(${xPos}px, ${yPos}px, 0)`;
+        };
+
+        this._setTranslate = _setTranslate;
+
+        // Add event listeners
+        dragHandle.addEventListener("mousedown", dragStart);
+        dragHandle.addEventListener("touchstart", dragStart);
+        
+        document.addEventListener("mouseup", dragEnd);
+        document.addEventListener("touchend", dragEnd);
+        
+        document.addEventListener("mousemove", drag);
+        document.addEventListener("touchmove", drag);
+        
+        // Store listeners for cleanup
+        this._dragListeners = {
+            dragHandle,
+            dragStart,
+            dragEnd,
+            drag
+        };
     }
 
     /**
@@ -1768,7 +1855,6 @@ export class MapFeatureControl {
         const content = document.createElement('div');
         content.className = 'features-content';
         content.style.cssText = `
-                max-height: 200px;
                 overflow-y: auto;
             background: transparent;
             padding: 4px 0;
@@ -1850,7 +1936,7 @@ export class MapFeatureControl {
         const tableContent = document.createElement('div');
         tableContent.className = 'feature-inspector-table-content';
         tableContent.id = `table-content-${layerId}-${featureId}`;
-        tableContent.style.cssText = 'max-height: 200px; overflow-y: auto;';
+        tableContent.style.cssText = 'overflow-y: auto;';
         
         // Build the properties table with intelligent formatting (reuse existing logic)
         const table = document.createElement('table');
@@ -3850,6 +3936,18 @@ export class MapFeatureControl {
             window.removeEventListener('resize', this._resizeListener);
             window.removeEventListener('orientationchange', this._resizeListener);
             this._resizeListener = null;
+        }
+        
+        // Clean up drag listeners
+        if (this._dragListeners) {
+            const { dragHandle, dragStart, dragEnd, drag } = this._dragListeners;
+            dragHandle.removeEventListener("mousedown", dragStart);
+            dragHandle.removeEventListener("touchstart", dragStart);
+            document.removeEventListener("mouseup", dragEnd);
+            document.removeEventListener("touchend", dragEnd);
+            document.removeEventListener("mousemove", drag);
+            document.removeEventListener("touchmove", drag);
+            this._dragListeners = null;
         }
         
         // Clean up layer isolation state
