@@ -1,11 +1,11 @@
-import { fetchTileJSON } from './map-utils.js';
+import {fetchTileJSON} from './map-utils.js';
 
 // Get all layers from the current atlas configuration
 function getCurrentAtlasLayers() {
     if (!window.layerControl || !window.layerControl._state || !window.layerControl._state.groups) {
         return [];
     }
-    
+
     const layers = [];
     window.layerControl._state.groups.forEach(group => {
         if (group.title && group.id) {
@@ -17,14 +17,14 @@ function getCurrentAtlasLayers() {
             });
         }
     });
-    
+
     return layers;
 }
 
 // Determine the data format from layer configuration
 function getLayerFormat(layer) {
     if (!layer.type && !layer.url) return 'unknown';
-    
+
     // Check by layer type first
     switch (layer.type) {
         case 'vector':
@@ -51,7 +51,7 @@ function getLayerFormat(layer) {
         case 'markers':
             return 'markers';
     }
-    
+
     // If no type, try to guess from URL
     if (layer.url) {
         const url = layer.url.toLowerCase();
@@ -64,7 +64,7 @@ function getLayerFormat(layer) {
         if (url.includes('{z}') && (url.includes('.png') || url.includes('.jpg'))) return 'raster';
         if (url.includes('mapbox://')) return 'mapbox';
     }
-    
+
     return 'unknown';
 }
 
@@ -102,92 +102,6 @@ function createLayerCreatorDialog() {
     </sl-dialog>
     `;
     $(document.body).append(dialogHtml);
-    
-    // Add consistent modal styling
-    const style = document.createElement('style');
-    style.textContent = `
-        .layer-creator-modal::part(panel) {
-            max-width: 95vw;
-            max-height: 95vh;
-            width: 100%;
-            height: auto;
-            background-color: hsl(218, 12.30%, 30.40%);
-            border: 1px solid #4b5563;
-            border-radius: 8px;
-        }
-        
-        .layer-creator-modal::part(header) {
-            background-color: hsl(218, 12.30%, 30.40%);
-            color: #f9fafb;
-            border-bottom: 1px solid #4b5563;
-        }
-        
-        .layer-creator-modal::part(body) {
-            background-color: hsl(218, 12.30%, 30.40%);
-            color: #f9fafb;
-        }
-        
-        .layer-creator-modal::part(footer) {
-            background-color: hsl(218, 12.30%, 30.40%);
-            border-top: 1px solid #4b5563;
-        }
-        
-        .layer-creator-btn {
-            cursor: pointer;
-            transition: all 0.2s ease;
-        }
-        
-        .layer-creator-btn::part(base) {
-            transition: all 0.2s ease;
-            border: 1px solid #4b5563;
-            border-color: hsl(0, 0%, 51%);
-            color: #f9fafb;
-            background-color: #6b7280;
-        }
-        
-        .layer-creator-btn:hover::part(base) {
-            border-color: #60a5fa;
-            background-color: #9ca3af;
-            border-color: hsl(0, 0%, 51%);
-            transform: translateY(-1px);
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
-        }
-        
-        .layer-creator-btn[variant="primary"]::part(base) {
-            background-color: #3b82f6;
-            border-color: #3b82f6;
-        }
-        
-        .layer-creator-btn[variant="primary"]:hover::part(base) {
-            background-color: #2563eb;
-            border-color: #2563eb;
-        }
-        
-        .layer-creator-modal sl-input::part(base),
-        .layer-creator-modal sl-select::part(base),
-        .layer-creator-modal sl-textarea::part(base) {
-            background-color: #ffffff;
-            border-color: #4b5563;
-            color: #1f2937;
-        }
-        
-        .layer-creator-modal sl-input::part(base):focus,
-        .layer-creator-modal sl-select::part(base):focus,
-        .layer-creator-modal sl-textarea::part(base):focus {
-            border-color: #60a5fa;
-            box-shadow: 0 0 0 2px rgba(96, 165, 250, 0.2);
-        }
-        
-        .layer-creator-modal code {
-            background-color: #1f2937;
-            color: #e5e7eb;
-            padding: 0.125rem 0.25rem;
-            border-radius: 0.25rem;
-            font-size: 0.875rem;
-            font-family: ui-monospace, SFMono-Regular, "SF Mono", Consolas, "Liberation Mono", Menlo, monospace;
-        }
-    `;
-    document.head.appendChild(style);
 }
 
 function guessLayerType(url) {
@@ -203,8 +117,8 @@ function makeLayerConfig(url, tilejson, metadata = null) {
     let config = {};
     if (type === 'vector') {
         // Generate a random color in hex format
-        const randomColor = '#' + Math.floor(Math.random()*16777215).toString(16).padStart(6, '0');
-        
+        const randomColor = '#' + Math.floor(Math.random() * 16777215).toString(16).padStart(6, '0');
+
         // Extract map_id from URL if it's an api-main URL
         let attribution = tilejson?.attribution || '© OpenStreetMap contributors';
         let mapId = null;
@@ -215,12 +129,12 @@ function makeLayerConfig(url, tilejson, metadata = null) {
                 attribution = `© Original Creator - via <a href='https://www.maphub.co/map/${mapId}'>Maphub</a>`;
             }
         }
-        
+
         // Convert any double quotes in attribution to single quotes for consistency
         if (attribution && typeof attribution === 'string') {
             attribution = attribution.replace(/"/g, "'");
         }
-        
+
         config = {
             title: tilejson?.name || 'Vector Tile Layer',
             description: tilejson?.description || 'Vector tile layer from custom source',
@@ -236,13 +150,13 @@ function makeLayerConfig(url, tilejson, metadata = null) {
                 id: tilejson?.vector_layers?.[0]?.fields?.gid ? "gid" : (tilejson?.vector_layers?.[0]?.fields?.id ? "id" : "gid"),
                 title: tilejson?.vector_layers?.[0]?.fields?.mon_name ? "Monument Name" : "Name",
                 label: tilejson?.vector_layers?.[0]?.fields?.mon_name ? "mon_name" : (tilejson?.vector_layers?.[0]?.fields?.name ? "name" : "mon_name"),
-                fields: tilejson?.vector_layers?.[0]?.fields ? 
-                    Object.keys(tilejson.vector_layers[0].fields).slice(0, 6) : 
+                fields: tilejson?.vector_layers?.[0]?.fields ?
+                    Object.keys(tilejson.vector_layers[0].fields).slice(0, 6) :
                     ["id", "description", "class", "type"],
-                fieldTitles: tilejson?.vector_layers?.[0]?.fields ? 
-                    Object.keys(tilejson.vector_layers[0].fields).slice(0, 6).map(field => 
+                fieldTitles: tilejson?.vector_layers?.[0]?.fields ?
+                    Object.keys(tilejson.vector_layers[0].fields).slice(0, 6).map(field =>
                         field.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())
-                    ) : 
+                    ) :
                     ["ID", "Description", "Class", "Type"]
             }
         };
@@ -280,7 +194,7 @@ function makeLayerConfig(url, tilejson, metadata = null) {
         // Helper function to format description with wiki links
         const formatDescription = (description, sourceUrl) => {
             if (!description) return undefined;
-            
+
             // Check if description contains "From:" pattern with a URL
             const fromMatch = description.match(/From:\s*(https?:\/\/[^\s]+)/);
             if (fromMatch) {
@@ -290,31 +204,31 @@ function makeLayerConfig(url, tilejson, metadata = null) {
                     return `From: ${formatWikiLink(url, fileName)}`;
                 }
             }
-            
+
             return description;
         };
 
         // Helper function to format attribution
         const formatAttribution = (metadata) => {
             if (!metadata) return undefined;
-            
+
             const sourceUrl = metadata.source;
             const originalUrl = metadata.originalUrl;
-            
+
             let attribution = '';
-            
+
             // Add source link if it's a commons wiki link
             if (sourceUrl && sourceUrl.includes('commons.wikimedia.org/wiki/File:')) {
                 const fileName = sourceUrl.split('/').pop();
                 attribution += formatWikiLink(sourceUrl, fileName);
             }
-            
+
             // Add "via MapWarper" link
             if (originalUrl) {
                 attribution += attribution ? ' via ' : '';
                 attribution += `<a href='${originalUrl}' target='_blank'>MapWarper</a>`;
             }
-            
+
             return attribution || undefined;
         };
 
@@ -336,7 +250,7 @@ function makeLayerConfig(url, tilejson, metadata = null) {
             bbox: metadata && metadata.bbox ? metadata.bbox : undefined, // Add bbox directly
             initiallyChecked: false
         };
-        
+
         // Remove undefined properties to keep config clean
         Object.keys(config).forEach(key => {
             if (config[key] === undefined) {
@@ -371,7 +285,7 @@ function makeLayerConfig(url, tilejson, metadata = null) {
             }
         };
     } else {
-        config = { url };
+        config = {url};
     }
     return config;
 }
@@ -380,7 +294,7 @@ async function handleUrlInput(url) {
     let actualUrl = url;
     let tilejson = null;
     let mapwarperMetadata = null;
-    
+
     // Special handling for MapWarper URLs
     if (url.includes('mapwarper.net/maps/') || url.includes('warper.wmflabs.org/maps/')) {
         try {
@@ -388,25 +302,25 @@ async function handleUrlInput(url) {
             // Examples: 
             // https://mapwarper.net/maps/95676#Export_tab -> https://mapwarper.net/maps/tile/95676/{z}/{x}/{y}.png
             // https://warper.wmflabs.org/maps/8940#Show_tab -> https://warper.wmflabs.org/maps/tile/8940/{z}/{x}/{y}.png
-            
+
             const mapIdMatch = url.match(/\/maps\/(\d+)/);
             if (mapIdMatch) {
                 const mapId = mapIdMatch[1];
                 let baseUrl;
-                
+
                 if (url.includes('mapwarper.net')) {
                     baseUrl = 'https://mapwarper.net';
                 } else if (url.includes('warper.wmflabs.org')) {
                     baseUrl = 'https://warper.wmflabs.org';
                 }
-                
+
                 if (baseUrl) {
                     actualUrl = `${baseUrl}/maps/tile/${mapId}/{z}/{x}/{y}.png`;
-                    
+
                     // Sanitize the original URL by removing hash fragment
                     // This prevents hash from breaking URL parameters when JSON is serialized
                     const sanitizedUrl = url.split('#')[0];
-                    
+
                     // Fetch map metadata from MapWarper API
                     try {
                         const apiUrl = `${baseUrl}/api/v1/maps/${mapId}`;
@@ -415,7 +329,7 @@ async function handleUrlInput(url) {
                             const apiResponse = await response.json();
                             const mapData = apiResponse.data?.attributes || {};
                             const links = apiResponse.data?.links || {};
-                            
+
                             // Store the metadata for use in config generation
                             mapwarperMetadata = {
                                 title: mapData.title || `MapWarper Map ${mapId}`,
@@ -448,7 +362,7 @@ async function handleUrlInput(url) {
             // Becomes: https://indianopenmaps.fly.dev/not-so-open/cultural/monuments/zones/asi/bhuvan/{z}/{x}/{y}.pbf
             const baseUrl = url.split('/view')[0];
             actualUrl = `${baseUrl}/{z}/{x}/{y}.pbf`;
-            
+
             // Also fetch the TileJSON
             const tilejsonUrl = `${baseUrl}/tiles.json`;
             tilejson = await fetchTileJSON(tilejsonUrl);
@@ -456,7 +370,7 @@ async function handleUrlInput(url) {
             console.warn('Failed to fetch TileJSON from indianopenmaps.fly.dev view URL:', error);
         }
     }
-    
+
     const type = guessLayerType(actualUrl);
     let config = {};
     if (type === 'vector') {
@@ -470,12 +384,12 @@ async function handleUrlInput(url) {
                 console.warn('Failed to fetch TileJSON from indianopenmaps.fly.dev:', error);
             }
         }
-        
+
         // Fallback: try to fetch TileJSON from the original URL
         if (!tilejson) {
             tilejson = await fetchTileJSON(actualUrl);
         }
-        
+
         config = makeLayerConfig(actualUrl, tilejson, mapwarperMetadata);
     } else {
         config = makeLayerConfig(actualUrl, tilejson, mapwarperMetadata);
@@ -490,32 +404,32 @@ async function handleUrlInput(url) {
 function fitBoundsToMapwarperLayer(layerConfig) {
     // Check if this is a layer with bbox (either direct bbox or in metadata)
     const bbox = layerConfig?.bbox || layerConfig?.metadata?.bbox;
-    
+
     if (!bbox || !window.map) {
         return;
     }
-    
+
     // Check if bbox is valid (not unrectified map)
     if (bbox === "0.0,0.0,0.0,0.0") {
         console.log('Skipping fitBounds: layer has no valid bbox (unrectified map)');
         return;
     }
-    
+
     try {
         // Parse bbox string "minLng,minLat,maxLng,maxLat"
         const [minLng, minLat, maxLng, maxLat] = bbox.split(',').map(parseFloat);
-        
+
         // Validate coordinates
         if (isNaN(minLng) || isNaN(minLat) || isNaN(maxLng) || isNaN(maxLat)) {
             console.warn('Invalid bbox coordinates:', bbox);
             return;
         }
-        
+
         // Create bounds array for Mapbox: [[minLng, minLat], [maxLng, maxLat]]
         const bounds = [[minLng, minLat], [maxLng, maxLat]];
-        
+
         console.log('Fitting map to layer bounds:', bounds);
-        
+
         // Fit map to bounds with some padding
         window.map.fitBounds(bounds, {
             padding: {
@@ -554,27 +468,27 @@ function openLayerCreatorDialog() {
     const configTextarea = document.getElementById('layer-config-json');
     const form = document.getElementById('layer-creator-form');
     const cancelBtn = document.getElementById('cancel-layer-creator');
-    
+
     // Clear inputs
     configTextarea.value = '';
     urlInput.value = '';
-    
+
     // Populate dropdown with current atlas layers
     const currentLayers = getCurrentAtlasLayers();
     presetDropdown.innerHTML = '';
-    
+
     // Add empty option
     const emptyOption = document.createElement('sl-option');
     emptyOption.value = '';
     emptyOption.textContent = 'Duplicate existing layer...';
     presetDropdown.appendChild(emptyOption);
-    
+
     // Add layers to dropdown
     currentLayers.forEach(layer => {
         const option = document.createElement('sl-option');
         option.value = layer.id;
         option.dataset.config = JSON.stringify(layer.config);
-        
+
         // Create HTML content with title and format indicator
         option.innerHTML = `
             <div class="flex justify-between items-center w-full">
@@ -582,20 +496,20 @@ function openLayerCreatorDialog() {
                 <span class="text-xs text-gray-500 ml-2 flex-shrink-0">${layer.format}</span>
             </div>
         `;
-        
+
         presetDropdown.appendChild(option);
     });
-    
+
     dialog.show();
-    
+
     let lastUrl = '';
     let lastConfig = '';
-    
+
     // Remove previous listeners to avoid duplicates
     presetDropdown.onchange = null;
     urlInput.oninput = null;
     form.onsubmit = null;
-    
+
     // Handle preset dropdown selection
     presetDropdown.addEventListener('sl-change', (e) => {
         const selectedOption = presetDropdown.querySelector(`sl-option[value="${e.target.value}"]`);
@@ -606,34 +520,34 @@ function openLayerCreatorDialog() {
             urlInput.value = '';
         }
     });
-    
+
     // Handle URL input
     urlInput.addEventListener('input', async (e) => {
         const url = e.target.value.trim();
         if (!url || url === lastUrl) return;
         lastUrl = url;
-        
+
         // Clear preset dropdown when URL is entered
         presetDropdown.value = '';
-        
+
         configTextarea.value = 'Loading...';
         const config = await handleUrlInput(url);
         lastConfig = JSON.stringify(config, null, 2);
         configTextarea.value = lastConfig;
     });
-    
+
     cancelBtn.onclick = () => dialog.hide();
-    
+
     form.onsubmit = (e) => {
         e.preventDefault();
         let configJson = configTextarea.value.trim();
         if (!configJson) return;
         try {
             const configObj = JSON.parse(configJson);
-            
+
             // Fit bounds to mapwarper layer if applicable
             fitBoundsToMapwarperLayer(configObj);
-            
+
             // Use the current shareable URL as base
             let baseUrl = getShareableUrl();
             let url = new URL(baseUrl);
