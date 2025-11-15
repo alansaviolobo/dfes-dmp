@@ -40,13 +40,11 @@ module.exports = {
                         return content;
                     }
                 },
-                { from: 'data', to: 'data' },
                 { from: 'docs', to: 'docs' },
                 { from: 'assets', to: 'assets' },
                 { from: 'config', to: 'config' },
-                { from: 'offline.html', to: 'offline.html' },
-                { from: 'privacy.html', to: 'privacy.html' },
                 { from: 'manifest.json', to: 'manifest.json' },
+                { from: '.nojekyll', to: '.nojekyll' },
             ],
         }),
     ],

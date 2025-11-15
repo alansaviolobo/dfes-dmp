@@ -1,0 +1,104 @@
+name: Deploy main and dev content to dfesdmp.online via GitHub Pages
+
+on:
+  push:
+    branches:
+      - "main"
+
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: "pages"
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+
+    steps:
+      # Setup Node.js
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      # Fetch and prepare main branch content
+      - name: Fetch main branch content into temporary directory
+        run: |
+          echo "Fetching main branch content..."
+          mkdir -p temp_main
+          git clone --branch main --depth 1 https://github.com/${{ github.repository }} temp_main
+
+      # Install dependencies and Build Webpack for main
+      - name: Build main branch
+        run: |
+          cd temp_main
+          echo "Installing dependencies..."
+          npm ci
+          echo "Running Webpack build..."
+          npm run build:webpack
+
+      # Copy main branch build to deploy directory
+      - name: Copy main branch content to deploy directory
+        run: |
+          mkdir -p deploy
+          # Copy the contents of dist/ to deploy/
+          rsync -av temp_main/dist/ deploy/
+
+      # Check if dev branch exists before attempting to fetch
+      - name: Check if dev branch exists
+        id: check_dev
+        run: |
+          if git ls-remote --heads https://github.com/${{ github.repository }} dev | grep 'dev'; then
+            echo "dev_exists=true" >> $GITHUB_ENV
+          else
+            echo "dev_exists=false" >> $GITHUB_ENV
+          fi
+
+      # Fetch and prepare dev branch content if it exists
+      - name: Fetch dev branch content into temporary directory
+        if: env.dev_exists == 'true'
+        run: |
+          echo "Fetching dev branch content..."
+          mkdir -p temp_dev
+          git clone --branch dev --depth 1 https://github.com/${{ github.repository }} temp_dev
+
+      # Install dependencies and Build Webpack for dev
+      - name: Build dev branch
+        if: env.dev_exists == 'true'
+        run: |
+          cd temp_dev
+          echo "Installing dependencies..."
+          npm ci
+          echo "Running Webpack build..."
+          npm run build:webpack
+
+      # Copy dev branch content to /dev/ directory
+      - name: Copy dev branch content to /dev/ directory
+        if: env.dev_exists == 'true'
+        run: |
+          mkdir -p deploy/dev
+          rsync -av temp_dev/dist/ deploy/dev/
+
+      - name: Verify Content Structure
+        run: |
+          echo "Final deployment directory structure:"
+          tree deploy || echo "tree command not available"
+
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: deploy
+
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
