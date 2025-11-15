@@ -622,8 +622,8 @@ export class MapLayerControl {
         // Add header background if exists
         if (headerImage) {
             const $headerBg = $('<div>', {
-                class: 'absolute top-0 left-0 right-0 w-full h-full bg-cover bg-center bg-no-repeat',
-                style: `background-image: url('${headerImage}')`
+                class: 'absolute top-0 left-0 right-0 w-full h-full bg-cover bg-no-repeat',
+                style: `background-image: url('${headerImage}'); background-position: ${group.headerPosition}`
             });
 
             const $headerOverlay = $('<div>', {
