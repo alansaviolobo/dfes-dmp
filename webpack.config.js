@@ -40,7 +40,6 @@ module.exports = {
                         return content;
                     }
                 },
-                { from: 'data', to: 'data' },
                 { from: 'docs', to: 'docs' },
                 { from: 'assets', to: 'assets' },
                 { from: 'config', to: 'config' },
