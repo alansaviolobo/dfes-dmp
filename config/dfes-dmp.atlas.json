@@ -19,14 +19,16 @@
   ],
   "layers": [
     {
+      "id": "fire-appliances",
       "title": "Fire Appliances",
-      "description": "Live locations of fire appliances.",
-      "headerImage": "assets/map-layers/map-layer-fire-appliances.png",
-      "type": "geojson",
-      "id": "firetrucks",
-      "url": "https://raw.githubusercontent.com/publicmap/goa-fire-trucks-geojson/refs/heads/main/data/goa-fire-trucks.geojson",
-      "refresh": 30000,
+      "description": "Live locations of Fire Appliances.",
       "attribution": "<a href='https://dfes.goa.gov.in/dashboard/'>Directorate of Fire & Emergency Services, Govt. of Goa</a>",
+      "headerImage": "assets/map-layers/dfes-dmp/all-image-sprite.png",
+      "headerPosition": "0 -200px",
+      "type": "geojson",
+      "refresh": 30000,
+      "initiallyChecked": false,
+      "url": "https://raw.githubusercontent.com/publicmap/goa-fire-trucks-geojson/refs/heads/main/data/goa-fire-trucks.geojson",
       "style": {
         "circle-radius": 6,
         "circle-color": [
@@ -89,14 +91,15 @@
       }
     },
     {
+      "id": "fire-stations",
       "title": "Fire Stations",
       "description": "Location of Fire Stations",
-      "headerImage": "assets/map-layers/map-layer-fire-stations.png",
+      "attribution": "<a href='https://dfes.goa.gov.in/dashboard/'>Directorate of Fire & Emergency Services, Govt. of Goa</a>",
+      "headerImage": "assets/map-layers/dfes-dmp/all-image-sprite.png",
+      "headerPosition": "0 -250px",
       "type": "geojson",
-      "id": "fire-stations",
+      "initiallyChecked": false,
       "url": "https://gist.githubusercontent.com/alansaviolobo/e87a9cf06b0396eeae76041d97661986/raw/f9320135354012a9db7262cdc7572c334512c3cf/fire_stations.geojson",
-      "cache": "",
-      "attribution": "",
       "style": {
         "circle-color": "#4c7fff",
         "circle-stroke-width": 1.5,
@@ -115,14 +118,15 @@
       }
     },
     {
+      "id": "police-stations",
       "title": "Police Stations",
       "description": "Location of Police Stations",
-      "headerImage": "assets/map-layers/map-layer-police-stations.png",
-      "type": "geojson",
-      "id": "police-stations",
-      "url": "https://gist.githubusercontent.com/alansaviolobo/40033d9982c08818210ba1d52bb43d2e/raw/3228c5782ec5037bbc8e84bc46ac8836a2ca3e35/police_stations.geojson",
-      "cache": "",
       "attribution": "",
+      "headerImage": "assets/map-layers/dfes-dmp/all-image-sprite.png",
+      "headerPosition": "0 -600px",
+      "type": "geojson",
+      "initiallyChecked": false,
+      "url": "https://gist.githubusercontent.com/alansaviolobo/40033d9982c08818210ba1d52bb43d2e/raw/3228c5782ec5037bbc8e84bc46ac8836a2ca3e35/police_stations.geojson",
       "style": {
         "circle-color": "#4c7fff",
         "circle-stroke-width": 1.5,
@@ -143,14 +147,15 @@
       }
     },
     {
+      "id": "civil-supplies-godowns",
       "title": "Civil Supplies Godowns",
       "description": "Location of Civil Supplies Godowns",
-      "headerImage": "assets/map-layers/map-layer-civil-supplies-godowns.png",
-      "type": "geojson",
-      "id": "civil-supplies-godowns",
-      "url": "https://gist.githubusercontent.com/alansaviolobo/4698b4ae8ce4dd3592d8848bb369a299/raw/bd7e39f9b151ac71bcbcb87f5a733146b7af782c/civil_supplies_godowns.geojson",
       "attribution": "",
+      "headerImage": "assets/map-layers/dfes-dmp/all-image-sprite.png",
+      "headerPosition": "0 -50px",
+      "type": "geojson",
       "initiallyChecked": false,
+      "url": "https://gist.githubusercontent.com/alansaviolobo/4698b4ae8ce4dd3592d8848bb369a299/raw/bd7e39f9b151ac71bcbcb87f5a733146b7af782c/civil_supplies_godowns.geojson",
       "style": {
         "text-color": "white",
         "text-halo-color": "#0084f7",
@@ -178,14 +183,15 @@
       }
     },
     {
+      "id": "river-flooding-gauges",
       "title": "River Flooding Gauges",
       "description": "Location of River Flooding Gauges",
-      "headerImage": "assets/map-layers/map-layer-river-flooding-gauges.png",
-      "type": "geojson",
-      "id": "river-flooding-gauges",
-      "url": "https://gist.githubusercontent.com/alansaviolobo/83a4067c36e906ba2a3287830d6245f3/raw/67c3be304f8a6f2f0f27c6201aa7001ee22e8071/river_gauges.geojson",
       "attribution": "",
+      "headerImage": "assets/map-layers/dfes-dmp/all-image-sprite.png",
+      "headerPosition": "0 -650px",
+      "type": "geojson",
       "initiallyChecked": false,
+      "url": "https://gist.githubusercontent.com/alansaviolobo/83a4067c36e906ba2a3287830d6245f3/raw/67c3be304f8a6f2f0f27c6201aa7001ee22e8071/river_gauges.geojson",
       "paint": {
         "circle-radius": 10,
         "circle-color": "#FF0000"
@@ -215,14 +221,15 @@
       }
     },
     {
+      "id": "cyclone-shelters",
       "title": "Cyclone Shelters",
       "description": "Location of Cyclone Shelters",
-      "headerImage": "assets/map-layers/map-layer-cyclone-shelters.png",
-      "type": "geojson",
-      "id": "cyclone-shelters",
-      "url": "https://gist.githubusercontent.com/alansaviolobo/7d045e0b6c6c53b14892b2f9591b5757/raw/29088daa72be07e6e59a732b542cd4a2a367c42c/cyclone_shelters.geojson",
       "attribution": "",
+      "headerImage": "assets/map-layers/dfes-dmp/all-image-sprite.png",
+      "headerPosition": "0 -100px",
+      "type": "geojson",
       "initiallyChecked": false,
+      "url": "https://gist.githubusercontent.com/alansaviolobo/7d045e0b6c6c53b14892b2f9591b5757/raw/29088daa72be07e6e59a732b542cd4a2a367c42c/cyclone_shelters.geojson",
       "paint": {
         "circle-radius": 10,
         "circle-color": "#FF0000"
@@ -252,14 +259,15 @@
       }
     },
     {
+      "id": "schools",
       "title": "Schools",
       "description": "Location of Schools",
-      "headerImage": "assets/map-layers/map-layer-schools.png",
-      "type": "geojson",
-      "id": "schools",
-      "url": "https://gist.githubusercontent.com/alansaviolobo/771a08edf43e34627b4fb748fadcef3b/raw/07ada7a19fc68adcd4d416cb5f3d9babaf7d0919/schools.geojson",
       "attribution": "",
+      "headerImage": "assets/map-layers/dfes-dmp/all-image-sprite.png",
+      "headerPosition": "0 -700px",
+      "type": "geojson",
       "initiallyChecked": false,
+      "url": "https://gist.githubusercontent.com/alansaviolobo/771a08edf43e34627b4fb748fadcef3b/raw/07ada7a19fc68adcd4d416cb5f3d9babaf7d0919/schools.geojson",
       "paint": {
         "circle-radius": 10,
         "circle-color": "#FF0000"
@@ -289,14 +297,15 @@
       }
     },
     {
+      "id": "water-resources",
       "title": "Water Resources",
       "description": "Location of Water Resources",
-      "headerImage": "assets/map-layers/map-layer-water-resources.png",
-      "type": "geojson",
-      "id": "water-resources",
-      "url": "https://gist.githubusercontent.com/alansaviolobo/294c6d0b934829d46ea74336c298513c/raw/10b478bae5abf59dd3db63bab22edeb75b46c766/water_resources.geojson",
       "attribution": "",
+      "headerImage": "assets/map-layers/dfes-dmp/all-image-sprite.png",
+      "headerPosition": "0 -900px",
+      "type": "geojson",
       "initiallyChecked": false,
+      "url": "https://gist.githubusercontent.com/alansaviolobo/294c6d0b934829d46ea74336c298513c/raw/10b478bae5abf59dd3db63bab22edeb75b46c766/water_resources.geojson",
       "paint": {
         "circle-radius": 10,
         "circle-color": "#FF0000"
@@ -326,14 +335,15 @@
       }
     },
     {
+      "id": "mutual-aid-agencies",
       "title": "Mutual Aid Agencies",
       "description": "Location of Mutual Aid Agencies",
-      "headerImage": "assets/map-layers/map-layer-mutual-aid-agencies.png",
-      "type": "geojson",
-      "id": "mutual-aid-agencies",
-      "url": "https://gist.githubusercontent.com/alansaviolobo/43acdb2c97c73ab163927f56178d707a/raw/c57c970cbc2cbaee3ab6cd906885b7b231491bfd/mutual_aid_agencies.geojson",
       "attribution": "",
+      "headerImage": "assets/map-layers/dfes-dmp/all-image-sprite.png",
+      "headerPosition": "0 -550px",
+      "type": "geojson",
       "initiallyChecked": false,
+      "url": "https://gist.githubusercontent.com/alansaviolobo/43acdb2c97c73ab163927f56178d707a/raw/c57c970cbc2cbaee3ab6cd906885b7b231491bfd/mutual_aid_agencies.geojson",
       "style": {
         "text-color": "white",
         "text-halo-color": "#0084f7",
@@ -357,14 +367,15 @@
       }
     },
     {
+      "id": "mha-units",
       "title": "MHA Units",
       "description": "Location of MHA Units",
-      "headerImage": "assets/map-layers/map-layer-mha-units.png",
-      "type": "geojson",
-      "id": "mha-units",
-      "url": "https://gist.githubusercontent.com/alansaviolobo/a46fbea981c43226e3645a2b446aac4a/raw/36ce21431834803288a189b0bafe8eb6ed678865/mha_units.geojson",
       "attribution": "",
+      "headerImage": "assets/map-layers/dfes-dmp/all-image-sprite.png",
+      "headerPosition": "0 -500px",
+      "type": "geojson",
       "initiallyChecked": false,
+      "url": "https://gist.githubusercontent.com/alansaviolobo/a46fbea981c43226e3645a2b446aac4a/raw/36ce21431834803288a189b0bafe8eb6ed678865/mha_units.geojson",
       "paint": {
         "circle-radius": 10,
         "circle-color": "#FF0000"
@@ -392,14 +403,15 @@
       }
     },
     {
+      "id": "dam-levels",
       "title": "Dam Levels",
       "description": "Dam Levels",
-      "headerImage": "assets/map-layers/map-layer-dam-levels.png",
-      "type": "geojson",
-      "id": "dam-levels",
-      "url": "https://gist.githubusercontent.com/alansaviolobo/e7ffaf4015c46e0abefd7979519a363a/raw/8bc04d20ae3cb4a751760f643389232cf3486b2c/dam_levels.geojson",
       "attribution": "",
+      "headerImage": "assets/map-layers/dfes-dmp/all-image-sprite.png",
+      "headerPosition": "0 -150px",
+      "type": "geojson",
       "initiallyChecked": false,
+      "url": "https://gist.githubusercontent.com/alansaviolobo/e7ffaf4015c46e0abefd7979519a363a/raw/8bc04d20ae3cb4a751760f643389232cf3486b2c/dam_levels.geojson",
       "style": {
         "text-color": "white",
         "text-halo-color": "#0084f7",
@@ -425,14 +437,15 @@
       }
     },
     {
+      "id": "hospitals",
       "title": "Hospitals",
       "description": "Hospitals",
-      "headerImage": "assets/map-layers/map-layer-hospitals.png",
-      "type": "geojson",
-      "id": "hospitals",
-      "url": "https://gist.githubusercontent.com/alansaviolobo/5d179194f07f3fb37c0941b13ecf3bf8/raw/ce618ae5f383f283bd54f1edde5b1ba04ec197e7/hospitals.geojson",
       "attribution": "",
+      "headerImage": "assets/map-layers/dfes-dmp/all-image-sprite.png",
+      "headerPosition": "0 -400px",
+      "type": "geojson",
       "initiallyChecked": false,
+      "url": "https://gist.githubusercontent.com/alansaviolobo/5d179194f07f3fb37c0941b13ecf3bf8/raw/ce618ae5f383f283bd54f1edde5b1ba04ec197e7/hospitals.geojson",
       "style": {
         "text-color": "white",
         "text-halo-color": "#0084f7",
@@ -458,14 +471,15 @@
       }
     },
     {
+      "id": "ambulances",
       "title": "Ambulances",
       "description": "Ambulances",
-      "headerImage": "assets/map-layers/map-layer-ambulances.png",
-      "type": "geojson",
-      "id": "ambulances",
-      "url": "https://gist.githubusercontent.com/alansaviolobo/7dff3b0135532f2c2ea79b808baa1745/raw/9f2ee678011a5a1e3fd9b8d80f56b21ca0f43691/ambulances.geojson",
       "attribution": "",
+      "headerImage": "assets/map-layers/dfes-dmp/all-image-sprite.png",
+      "headerPosition": "0 0",
+      "type": "geojson",
       "initiallyChecked": false,
+      "url": "https://gist.githubusercontent.com/alansaviolobo/7dff3b0135532f2c2ea79b808baa1745/raw/9f2ee678011a5a1e3fd9b8d80f56b21ca0f43691/ambulances.geojson",
       "style": {
         "text-color": "white",
         "text-halo-color": "#0084f7",
@@ -493,14 +507,15 @@
       }
     },
     {
+      "id": "gas-pipelines",
       "title": "Gas Pipelines",
       "description": "Gas Pipelines",
-      "headerImage": "assets/map-layers/map-layer-gas-pipelines.png",
-      "type": "geojson",
-      "id": "gas-pipelines",
-      "url": "https://gist.githubusercontent.com/alansaviolobo/618378ae02a60efdd41b84e3cbee5350/raw/657eca5c0fc646c45a1ef9083707068be30f7612/gas_pipelines.geojson",
       "attribution": "",
+      "headerImage": "assets/map-layers/dfes-dmp/all-image-sprite.png",
+      "headerPosition": "0 -300px",
+      "type": "geojson",
       "initiallyChecked": false,
+      "url": "https://gist.githubusercontent.com/alansaviolobo/618378ae02a60efdd41b84e3cbee5350/raw/657eca5c0fc646c45a1ef9083707068be30f7612/gas_pipelines.geojson",
       "style": {
         "text-color": "white",
         "text-halo-color": "#0084f7",
@@ -526,14 +541,15 @@
       }
     },
     {
+      "id": "heavy-machinery",
       "title": "Heavy Machinery",
       "description": "Heavy Machinery",
-      "headerImage": "assets/map-layers/map-layer-heavy-machinery.png",
-      "type": "geojson",
-      "id": "heavy-machinery",
-      "url": "https://gist.githubusercontent.com/alansaviolobo/ae72bcdc08628ccbb3a3765f2cc3575d/raw/644213d3f3413c990aaf319e94790a0de547e827/heavy_machinery.geojson",
       "attribution": "",
+      "headerImage": "assets/map-layers/dfes-dmp/all-image-sprite.png",
+      "headerPosition": "0 -350px",
+      "type": "geojson",
       "initiallyChecked": false,
+      "url": "https://gist.githubusercontent.com/alansaviolobo/ae72bcdc08628ccbb3a3765f2cc3575d/raw/644213d3f3413c990aaf319e94790a0de547e827/heavy_machinery.geojson",
       "style": {
         "text-color": "white",
         "text-halo-color": "#0084f7",
@@ -561,14 +577,15 @@
       }
     },
     {
+      "id": "tree-cutters",
       "title": "Tree Cutters",
       "description": "Tree Cutters",
-      "headerImage": "assets/map-layers/map-layer-tree-cutters.png",
-      "type": "geojson",
-      "id": "tree-cutters",
-      "url": "https://gist.githubusercontent.com/alansaviolobo/bd6322d2588e3b56e99826b1f07cef8b/raw/79c1d8412aab51a7e99f97f63b901717b64f5ff3/tree_cutters.geojson",
       "attribution": "",
+      "headerImage": "assets/map-layers/dfes-dmp/all-image-sprite.png",
+      "headerPosition": "0 -800px",
+      "type": "geojson",
       "initiallyChecked": false,
+      "url": "https://gist.githubusercontent.com/alansaviolobo/bd6322d2588e3b56e99826b1f07cef8b/raw/79c1d8412aab51a7e99f97f63b901717b64f5ff3/tree_cutters.geojson",
       "style": {
         "text-color": "white",
         "text-halo-color": "#0084f7",
@@ -594,14 +611,15 @@
       }
     },
     {
+      "id": "village-panchayats",
       "title": "Village Panchayats",
       "description": "Village Panchayat boundaries",
-      "headerImage": "assets/map-layers/map-layer-village-panchayats.png",
-      "type": "geojson",
-      "id": "village-panchayats",
-      "url": "https://gist.githubusercontent.com/alansaviolobo/7a324cc42b827e0eeb3a8c0f02b01918/raw/b54a0e5e4c82dbeace95403e73222033cbd1968a/village_panchayats.geojson",
       "attribution": "",
+      "headerImage": "assets/map-layers/dfes-dmp/all-image-sprite.png",
+      "headerPosition": "0 -850px",
+      "type": "geojson",
       "initiallyChecked": false,
+      "url": "https://gist.githubusercontent.com/alansaviolobo/7a324cc42b827e0eeb3a8c0f02b01918/raw/b54a0e5e4c82dbeace95403e73222033cbd1968a/village_panchayats.geojson",
       "style": {
         "text-color": "white",
         "text-halo-color": "#0084f7",
@@ -627,16 +645,17 @@
       }
     },
     {
+      "id": "mask",
       "title": "Goa Mask",
       "description": "Mask for the state of Goa",
-      "headerImage": "assets/map-layers/map-layer-mask.png",
+      "attribution": "",
+      "headerImage": "assets/map-layers/dfes-dmp/all-image-sprite.png",
+      "headerPosition": "0 -450px",
       "type": "vector",
-      "id": "mask",
-      "url": "https://indianopenmaps.fly.dev/not-so-open/states/lgd/{z}/{x}/{y}.pbf",
+      "initiallyChecked": true,
       "sourceLayer": "LGD_States",
       "maxzoom": 10,
-      "attribution": "",
-      "initiallyChecked": true,
+      "url": "https://indianopenmaps.fly.dev/not-so-open/states/lgd/{z}/{x}/{y}.pbf",
       "style": {
         "fill-color": [
           "interpolate",
@@ -697,7 +716,8 @@
       "title": "Street Map",
       "description": "Detailed street map showing places, landmarks, roads & rivers",
       "type": "style",
-      "headerImage": "assets/map-layers/map-layer-osm.png",
+      "headerImage": "assets/map-layers/dfes-dmp/all-image-sprite.png",
+      "headerPosition": "0 -750px",
       "initiallyChecked": true,
       "layers": [
         {
