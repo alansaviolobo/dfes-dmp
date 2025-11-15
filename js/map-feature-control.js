@@ -4584,6 +4584,7 @@ export class MapFeatureControl {
 
     /**
      * Isolate a specific layer by hiding all other non-basemap layers
+     * Ensures basemap layers (tagged with 'basemap') remain visible for reference
      */
     _isolateLayer(layerId, config) {
         if (!this._map) return;
@@ -4591,7 +4592,7 @@ export class MapFeatureControl {
         // Get matching style layers for the hovered config layer
         const hoveredLayerIds = this._getMatchingLayerIds(config);
 
-        // Get all basemap layer IDs from config
+        // Get all basemap layer IDs from config - CRITICAL: these must remain visible
         const basemapLayerIds = this._getBasemapLayerIds();
 
         // Get all currently visible layers from the map
@@ -4616,7 +4617,8 @@ export class MapFeatureControl {
                 return;
             }
 
-            // Skip if this layer belongs to a basemap config layer
+            // CRITICAL: Skip if this layer belongs to a basemap config layer
+            // Basemap layers (like satellite imagery) must remain visible for reference
             if (basemapLayerIds.includes(styleLayerId)) {
                 layersToKeep.push(styleLayerId + ' (basemap)');
                 return;
@@ -4654,7 +4656,6 @@ export class MapFeatureControl {
 
         // Update attribution to reflect only visible layers (isolated layer + basemaps)
         if (window.attributionControl) {
-            console.debug('[FeatureControl] Updating attribution after layer isolation:', layerId);
             window.attributionControl._updateAttribution();
         }
 
@@ -4694,51 +4695,141 @@ export class MapFeatureControl {
 
         // Update attribution to reflect all visible layers
         if (window.attributionControl) {
-            console.debug('[FeatureControl] Updating attribution after restoring all layers');
             window.attributionControl._updateAttribution();
         }
     }
 
     /**
      * Get all matching style layer IDs for basemap config layers
+     * Basemap layers are identified by having the 'basemap' tag in their config
+     * These layers remain visible during layer isolation to provide reference background
+     * Checks both current config and layer registry for cross-atlas basemap layers
      */
     _getBasemapLayerIds() {
-        // Try to get config from multiple sources
+        const basemapLayerIds = [];
+        const basemapConfigs = [];
+
+        // Helper function to check if a layer has basemap tag
+        const hasBasemapTag = (layer) => {
+            return layer.tags && (
+                (Array.isArray(layer.tags) && layer.tags.includes('basemap')) ||
+                (typeof layer.tags === 'string' && layer.tags === 'basemap')
+            );
+        };
+
+        // Helper function to process a layer config and add matching style layer IDs
+        const processBasemapLayer = (layer) => {
+            if (hasBasemapTag(layer)) {
+                basemapConfigs.push(layer);
+                const matchingIds = this._getMatchingLayerIds(layer);
+                basemapLayerIds.push(...matchingIds);
+            }
+        };
+
+        // Strategy 1: Check current config (for current atlas layers)
         let config = this._config;
         if (!config && window.layerControl && window.layerControl._config) {
             config = window.layerControl._config;
         }
 
-        if (!config) {
-            console.warn('[MapFeatureControl] No config available for basemap detection');
-            return [];
+        if (config) {
+            // Find all config layers tagged with 'basemap'
+            if (config.layers && Array.isArray(config.layers)) {
+                config.layers.forEach(layer => processBasemapLayer(layer));
+            }
+
+            // Also check groups if they exist (older config format)
+            if (config.groups && Array.isArray(config.groups)) {
+                config.groups.forEach(group => processBasemapLayer(group));
+            }
         }
 
-        const basemapLayerIds = [];
-        const basemapConfigs = [];
-
-        // Find all config layers tagged with 'basemap'
-        if (config.layers && Array.isArray(config.layers)) {
-            config.layers.forEach(layer => {
-                if (layer.tags && layer.tags.includes('basemap')) {
-                    basemapConfigs.push(layer);
-                    const matchingIds = this._getMatchingLayerIds(layer);
-                    basemapLayerIds.push(...matchingIds);
+        // Strategy 2: Check active layers from state manager (layers currently on the map)
+        // This ensures we catch basemap layers that are already active
+        if (this._stateManager) {
+            const activeLayers = this._stateManager.getActiveLayers();
+            if (activeLayers && activeLayers.size > 0) {
+                for (const [layerId, layerData] of activeLayers.entries()) {
+                    let layerConfig = layerData.config;
+                    
+                    // If config doesn't have tags, try to get it from registry (for cross-atlas layers)
+                    if (layerConfig && !layerConfig.tags && window.layerRegistry) {
+                        const registryConfig = window.layerRegistry.getLayer(layerId);
+                        if (registryConfig && registryConfig.tags) {
+                            // Merge registry config tags into the layer config
+                            layerConfig = {...layerConfig, tags: registryConfig.tags};
+                        }
+                    }
+                    
+                    if (layerConfig && hasBasemapTag(layerConfig)) {
+                        // This basemap layer is currently active, process it
+                        processBasemapLayer(layerConfig);
+                    }
                 }
-            });
+            }
         }
 
-        // Also check groups if they exist (older config format)
-        if (config.groups && Array.isArray(config.groups)) {
-            config.groups.forEach(group => {
-                if (group.tags && group.tags.includes('basemap')) {
-                    basemapConfigs.push(group);
-                    const matchingIds = this._getMatchingLayerIds(group);
-                    basemapLayerIds.push(...matchingIds);
+        // Strategy 3: Check layer registry for basemap layers across ALL atlases
+        // This is critical for cross-atlas scenarios (e.g., mapbox-satellite from mapbox atlas)
+        if (window.layerRegistry && typeof window.layerRegistry.isInitialized === 'function' && window.layerRegistry.isInitialized()) {
+            // Check if we can access atlas layers (may be private property)
+            const atlasLayers = window.layerRegistry._atlasLayers;
+            if (atlasLayers && typeof atlasLayers.entries === 'function') {
+                // Iterate through all atlases in the registry
+                for (const [atlasId, layers] of atlasLayers.entries()) {
+                    if (Array.isArray(layers)) {
+                        layers.forEach(layer => {
+                            // Check if this layer has basemap tag (check original config, not prefixed)
+                            if (hasBasemapTag(layer)) {
+                                // Get the layer ID - could be prefixed or not
+                                const layerId = layer.id;
+                                
+                                // Try to get the full resolved layer config from registry
+                                // First try with atlas prefix, then without
+                                let fullLayerConfig = null;
+                                const prefixedId = `${atlasId}-${layerId}`;
+                                
+                                // Try prefixed ID first
+                                if (window.layerRegistry.getLayer) {
+                                    fullLayerConfig = window.layerRegistry.getLayer(prefixedId) || 
+                                                     window.layerRegistry.getLayer(layerId);
+                                }
+                                
+                                // Fallback to original layer config if registry lookup fails
+                                fullLayerConfig = fullLayerConfig || layer;
+                                
+                                // Process the basemap layer
+                                processBasemapLayer(fullLayerConfig);
+                            }
+                        });
+                    }
                 }
-            });
+            }
         }
 
+        // Strategy 4: Direct check of map style layers for basemap layers
+        // This is a fallback to catch basemap layers that might not be in config/registry
+        // Check for common basemap layer IDs directly on the map
+        if (this._map) {
+            try {
+                const style = this._map.getStyle();
+                if (style && style.layers) {
+                    // Common basemap layer IDs to check
+                    const commonBasemapIds = ['satellite', 'gebco-bathymetry'];
+                    
+                    commonBasemapIds.forEach(basemapId => {
+                        const styleLayer = style.layers.find(l => l.id === basemapId);
+                        if (styleLayer && !basemapLayerIds.includes(basemapId)) {
+                            basemapLayerIds.push(basemapId);
+                        }
+                    });
+                }
+            } catch (error) {
+                // Silently handle errors
+            }
+        }
+
+        // Remove duplicates and return unique basemap layer IDs
         const uniqueBasemapIds = [...new Set(basemapLayerIds)];
 
         return uniqueBasemapIds;
