@@ -1604,7 +1604,7 @@
     },
     {
       "id": "2024-landslide-susceptibility-map",
-      "url": "https://earthengine.googleapis.com/v1/projects/earthengine-legacy/maps/5bc0f5e3b498438cf56cc26f6b4386d6-2e6cfc868b0328c93e92403338440c44/tiles/{z}/{x}/{y}",
+      "url": "https://earthengine.googleapis.com/v1/projects/earthengine-legacy/maps/5bc0f5e3b498438cf56cc26f6b4386d6-b037c77e34fde29615de6eab42bf3e54/tiles/{z}/{x}/{y}",
       "type": "tms",
       "title": "Indian Landslide Susceptibility Map 2024",
       "description": "Potential of slope failure for given geo-environmental conditions.  landslide susceptibility mapping using ensemble machine learning and geospatial big data. See <a href='https://github.com/hydrosenselab/ILSM'>source code</a> for technical details.",
