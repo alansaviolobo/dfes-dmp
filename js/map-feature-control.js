@@ -1892,6 +1892,56 @@ export class MapFeatureControl {
     }
 
     /**
+     * Convert URLs in text to clickable links
+     * @param {string} text - The text that may contain URLs
+     * @param {boolean} isDarkTheme - Whether the link should use dark theme colors (default: false)
+     * @returns {HTMLElement} - A container element with clickable links
+     */
+    _makeUrlsClickable(text, isDarkTheme = false) {
+        const container = document.createElement('span');
+        const textStr = String(text);
+        
+        // URL regex pattern: matches http://, https://, or www. URLs
+        const urlRegex = /(https?:\/\/[^\s]+|www\.[^\s]+)/gi;
+        const parts = textStr.split(urlRegex);
+        
+        // Choose link color based on theme
+        const linkColor = isDarkTheme ? '#60a5fa' : '#2563eb'; // Lighter blue for dark theme, darker blue for light theme
+        
+        parts.forEach(part => {
+            // Check if part matches URL pattern without using test() to avoid regex state issues
+            const urlMatch = part.match(/^(https?:\/\/[^\s]+|www\.[^\s]+)$/i);
+            if (urlMatch) {
+                // This is a URL - create a clickable link
+                const link = document.createElement('a');
+                let href = part;
+                
+                // Add http:// if it starts with www.
+                if (part.toLowerCase().startsWith('www.')) {
+                    href = 'http://' + part;
+                }
+                
+                link.href = href;
+                link.target = '_blank';
+                link.rel = 'noopener noreferrer';
+                link.textContent = part;
+                link.style.cssText = `
+                    color: ${linkColor};
+                    text-decoration: underline;
+                    cursor: pointer;
+                `;
+                
+                container.appendChild(link);
+            } else if (part) {
+                // Regular text - create text node
+                container.appendChild(document.createTextNode(part));
+            }
+        });
+        
+        return container;
+    }
+
+    /**
      * Render feature within details component structure
      */
     _renderFeatureInDetails(container, featureState, layerConfig, layerId) {
@@ -2060,7 +2110,9 @@ export class MapFeatureControl {
                 line-height: 1.2;
                 vertical-align: top;
             `;
-            valueCell.textContent = String(field.value);
+            // Make URLs clickable (dark theme for nested details view)
+            const urlContainer = this._makeUrlsClickable(field.value, true);
+            valueCell.appendChild(urlContainer);
 
             row.appendChild(keyCell);
             row.appendChild(valueCell);
@@ -3287,7 +3339,9 @@ export class MapFeatureControl {
                 line-height: 1.3;
                 vertical-align: top;
             `;
-            valueCell.textContent = String(field.value);
+            // Make URLs clickable (light theme for main panel view)
+            const urlContainer = this._makeUrlsClickable(field.value, false);
+            valueCell.appendChild(urlContainer);
 
             row.appendChild(keyCell);
             row.appendChild(valueCell);
