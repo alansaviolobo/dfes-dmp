@@ -1989,15 +1989,12 @@ export class MapboxAPI {
             // Reference: https://docs.mapbox.com/style-spec/reference/layers/#layer-properties
             layerConfig.slot = insertPosition;
             this._map.addLayer(layerConfig);
-            console.log(`[MapboxAPI] Added layer ${layerConfig.id} to slot: ${insertPosition}`);
         } else if (insertPosition) {
             // Use traditional beforeId insertion
             this._map.addLayer(layerConfig, insertPosition);
-            console.log(`[MapboxAPI] Added layer ${layerConfig.id} before: ${insertPosition}`);
         } else {
             // No position specified, append to end
             this._map.addLayer(layerConfig);
-            console.log(`[MapboxAPI] Added layer ${layerConfig.id} (no position specified)`);
         }
     }
 

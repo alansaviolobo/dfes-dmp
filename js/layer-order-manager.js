@@ -70,8 +70,6 @@ function getInsertPosition(map, type, layerType, currentGroup, orderedGroups) {
     // This ensures proper layer ordering: rasters at bottom, vectors in middle
     const slot = getSlotForLayerType(type, layerType);
 
-    console.log(`[LayerOrder] Layer type: ${type}, assigned to slot: ${slot}`);
-
     // Return the slot name - Mapbox will handle insertion into the correct slot
     return slot;
 

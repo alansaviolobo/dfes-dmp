@@ -696,7 +696,8 @@ export class MapFeatureStateManager extends EventTarget {
             const matchingLayerIds = this._getMatchingLayerIds(layerConfig);
 
             if (matchingLayerIds.length === 0) {
-                console.warn(`[StateManager] No matching layers found for ${layerConfig.id}`);
+                // Don't warn here - the retry mechanism will handle it
+                // Only warn if retries are exhausted (handled in _setupLayerEventsWithRetry)
                 return false;
             }
 
@@ -1234,6 +1235,10 @@ export class MapFeatureStateManager extends EventTarget {
                 layersToReregister.forEach(([layerId, layerConfig]) => {
                     this._setupLayerEventsWithRetry(layerConfig);
                 });
+            } else {
+                // Not a style change, but layers may have been added
+                // Retry any failed layer registrations
+                this._retryFailedLayers();
             }
         };
 
@@ -1257,20 +1262,27 @@ export class MapFeatureStateManager extends EventTarget {
      * Retry failed layer registrations
      */
     _retryFailedLayers() {
-        console.debug('[StateManager] Retrying failed layer registrations');
-
         const failedLayers = [];
 
         this._registeredLayers.forEach((config, layerId) => {
+            // Skip raster layers - they don't need event setup
+            if (this._isRasterLayer(config)) {
+                return;
+            }
+
             // Check if layer setup was successful by looking for matching style layers
             const matchingIds = this._getMatchingLayerIds(config);
             if (matchingIds.length === 0) {
-                failedLayers.push(config);
+                // Only retry if not already in a retry cycle (to avoid duplicate retries)
+                // If it's already retrying, the existing retry will handle it
+                if (!this._retryAttempts.has(layerId)) {
+                    failedLayers.push(config);
+                }
             }
         });
 
         if (failedLayers.length > 0) {
-            console.debug(`[StateManager] Found ${failedLayers.length} failed layers, retrying...`);
+            console.debug(`[StateManager] Retrying ${failedLayers.length} failed layer registration(s)`);
             failedLayers.forEach(config => {
                 this._setupLayerEventsWithRetry(config);
             });
