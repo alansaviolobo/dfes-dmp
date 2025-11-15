@@ -85,7 +85,6 @@
     <script defer type="module" src="js/intro-content.js"></script>
     <script defer type="module" src="js/atlas-layer-registry.js"></script>
     <script defer type="module" src="js/map-init.js"></script>
-    <script defer type="module" src="js/layer-creator-ui.js"></script><!-- Add layer-creator-ui.js module loader -->
     <script defer type="module" src="js/index.js"></script>
 </head>
 
@@ -93,14 +92,25 @@
     <!-- Header -->
     <header class="bg-gray-900 text-white p-4 flex justify-between items-center">
         <div class="flex items-center gap-4">
-            <!-- Left Navigation Dropdown -->
+            <div id="mapbox-search-box-container"></div>
+        </div>
+        <div class="flex gap-4 items-center">
+            <!-- Add Layer button for new data source/atlas -->
+            <sl-icon-button name="plus-square" id="add-layer-btn" class="add-layer-button"
+                aria-label="Add new data source or atlas" title="Add new data source or atlas"></sl-icon-button>
+            <!-- Map Navigation Links button -->
+            <sl-icon-button name="box-arrow-in-up-right" id="map-links-btn" class="map-links-button"
+                aria-label="Open map in external services" title="Open map in external services"></sl-icon-button>
+            <!-- Share button container for ShareLink plugin -->
+            <div id="share-button-container"></div>
+            <!-- Navigation Dropdown -->
             <sl-dropdown>
                 <sl-button slot="trigger" variant="text" size="small"
                     class="nav-dropdown-trigger interactive-nav-button"
                     aria-label="Navigation menu">
-                    <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 20 20" aria-hidden="true">
+                    <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20" aria-hidden="true">
                         <path fill-rule="evenodd"
-                            d="M12 1.586l-4 4v12.828l4-4V1.586zM3.707 3.293A1 1 0 002 4v10a1 1 0 00.293.707L6 18.414V5.586L3.707 3.293zM17.707 5.293L14 1.586v12.828l2.293 2.293A1 1 0 0018 16V6a1 1 0 00-.293-.707z"
+                            d="M3 5a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zM3 10a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zM3 15a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1z"
                             clip-rule="evenodd" />
                     </svg>
                 </sl-button>
@@ -110,61 +120,6 @@
                         Welcome
                     </sl-menu-item>
                     <sl-divider></sl-divider>
-                    <sl-menu-item>
-                        <svg slot="prefix" class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-                            <path fill-rule="evenodd"
-                                d="M12 1.586l-4 4v12.828l4-4V1.586zM3.707 3.293A1 1 0 002 4v10a1 1 0 00.293.707L6 18.414V5.586L3.707 3.293zM17.707 5.293L14 1.586v12.828l2.293 2.293A1 1 0 0018 16V6a1 1 0 00-.293-.707z"
-                                clip-rule="evenodd" />
-                        </svg>
-                        Atlas
-                        <sl-menu slot="submenu">
-                            <sl-menu-item href="./" class="nav-active">
-                                Default
-                            </sl-menu-item>
-                            <sl-menu-item href="./?atlas=goa">
-                                Goa
-                            </sl-menu-item>
-                            <sl-menu-item href="./?atlas=osm">
-                                OpenStreetMap
-                            </sl-menu-item>
-                            <sl-menu-item href="./?atlas=mhadei">
-                                Mhadei River
-                            </sl-menu-item>
-                            <sl-menu-item href="./?atlas=india">
-                                India
-                            </sl-menu-item>
-                            <sl-menu-item href="./?atlas=historic">
-                                Historic
-                            </sl-menu-item>
-                            <sl-menu-item href="./?atlas=mumbai">
-                                Mumbai
-                            </sl-menu-item>
-                            <sl-menu-item href="./?atlas=bombay">
-                                Bombay (Historic)
-                            </sl-menu-item>
-                            <sl-menu-item href="./?atlas=madras">
-                                Madras (Historic)
-                            </sl-menu-item>
-                            <sl-menu-item href="./?atlas=gurugram">
-                                Gurugram
-                            </sl-menu-item>
-                            <sl-menu-item href="./?atlas=maharashtra">
-                                Maharashtra
-                            </sl-menu-item>
-                            <sl-menu-item href="./?atlas=telangana">
-                                Telangana
-                            </sl-menu-item>
-                            <sl-menu-item href="./?atlas=kerala">
-                                Kerala
-                            </sl-menu-item>
-                            <sl-menu-item href="./?atlas=examples/index">
-                                Example Template
-                            </sl-menu-item>
-                            <sl-menu-item href="./?atlas=world">
-                                World
-                            </sl-menu-item>
-                        </sl-menu>
-                    </sl-menu-item>
                     <sl-menu-item href="./bus/">
                         <svg slot="prefix" class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
                             <path
@@ -205,18 +160,6 @@
                     </sl-menu-item>
                 </sl-menu>
             </sl-dropdown>
-
-            <div id="mapbox-search-box-container"></div>
-        </div>
-        <div class="flex gap-4 items-center">
-            <!-- Add Layer button for new data source/atlas -->
-            <sl-icon-button name="plus-square" id="add-layer-btn" class="add-layer-button"
-                aria-label="Add new data source or atlas" title="Add new data source or atlas"></sl-icon-button>
-            <!-- Map Navigation Links button -->
-            <sl-icon-button name="box-arrow-in-up-right" id="map-links-btn" class="map-links-button"
-                aria-label="Open map in external services" title="Open map in external services"></sl-icon-button>
-            <!-- Share button container for ShareLink plugin -->
-            <div id="share-button-container"></div>
         </div>
     </header>
 

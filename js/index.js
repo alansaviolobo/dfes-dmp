@@ -56,11 +56,9 @@ customElements.whenDefined('sl-drawer').then(() => {
         // Don't automatically change drawer state if the user manually toggled it
         if (userToggledDrawer) return;
 
-        if (window.innerWidth > 768) { // Desktop
-            drawer.show();
-        } else { // Mobile
-            drawer.hide();
-        }
+        // Keep drawer closed by default on all screen sizes
+        // Users can manually open it if needed
+        drawer.hide();
     }
 
     // Initial state - with a delay to ensure components are fully initialized

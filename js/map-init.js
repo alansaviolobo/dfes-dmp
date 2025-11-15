@@ -792,6 +792,13 @@ async function initializeMap() {
         featureControl.addTo(map);
         featureControl.initialize(stateManager, config);
 
+        // Show feature control panel by default on initial load
+        setTimeout(() => {
+            if (featureControl._panel) {
+                featureControl._showPanel();
+            }
+        }, 300); // Small delay to ensure panel is fully initialized
+
         // Make components globally accessible
         window.featureControl = featureControl;
         window.stateManager = stateManager;

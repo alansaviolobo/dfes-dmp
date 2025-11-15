@@ -1677,24 +1677,30 @@ sl-divider {
 /* Interactive navigation button styling */
 .interactive-nav-button::part(base) {
     color: white;
-    background: rgba(255, 255, 255, 0.1);
-    border: 1px solid rgba(255, 255, 255, 0.2);
-    border-radius: 8px;
-    padding: 0.5rem;
+    background: transparent;
+    border: none;
+    border-radius: 0;
+    padding: 0.25rem;
     transition: all 0.2s ease;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    box-shadow: none;
+    outline: none;
 }
 
 .interactive-nav-button:hover::part(base) {
-    background: rgba(255, 255, 255, 0.2);
-    border-color: rgba(255, 255, 255, 0.4);
-    transform: translateY(-1px);
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    background: rgba(255, 255, 255, 0.1);
+    border: none;
+    transform: none;
+    box-shadow: none;
 }
 
 .interactive-nav-button:active::part(base) {
-    transform: translateY(0);
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    transform: none;
+    box-shadow: none;
+}
+
+.interactive-nav-button:focus::part(base) {
+    outline: none;
+    box-shadow: none;
 }
 
 /* Dark theme styling for navigation dropdown menu */

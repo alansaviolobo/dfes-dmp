@@ -577,4 +577,7 @@ function openLayerCreatorDialog() {
 }
 
 // Attach to button
-$(document).on('click', '#add-layer-btn', openLayerCreatorDialog); 
+$(document).on('click', '#add-layer-btn', openLayerCreatorDialog);
+
+// Export the function for use in other modules
+export { openLayerCreatorDialog }; 

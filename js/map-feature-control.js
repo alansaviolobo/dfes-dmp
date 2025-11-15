@@ -13,6 +13,7 @@
 import {drawerStateManager} from './drawer-state-manager.js';
 import {convertToKML} from './map-utils.js';
 import {LayerSettingsModal} from './layer-settings.js';
+import {openLayerCreatorDialog} from './layer-creator-ui.js';
 
 export class MapFeatureControl {
     constructor(options = {}) {
@@ -440,6 +441,52 @@ export class MapFeatureControl {
             min-height: 0;
         `;
 
+        // Create footer section for tooltips (only on non-touch devices)
+        const isTouchDevice = this._isMobileScreen();
+        const footer = document.createElement('div');
+        footer.className = 'map-feature-panel-footer';
+        footer.style.cssText = `
+            padding: 8px 4px;
+            background: rgba(0, 0, 0, 0.02);
+            border-top: 1px solid rgba(0, 0, 0, 0.08);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            flex-shrink: 0;
+            ${isTouchDevice ? 'display: none;' : ''}
+        `;
+
+        // Add tooltips controls to footer
+        footer.appendChild(this._inspectSwitch);
+        
+        // Create label for the inspect switch with icon
+        const inspectSwitchLabel = document.createElement('label');
+        inspectSwitchLabel.style.cssText = `
+            font-size: 12px;
+            color: #6b7280;
+            font-weight: 500;
+            cursor: pointer;
+            user-select: none;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        `;
+
+        const inspectIcon = document.createElement('sl-icon');
+        inspectIcon.name = 'chat-square';
+        inspectIcon.style.fontSize = '12px';
+
+        inspectSwitchLabel.appendChild(inspectIcon);
+        inspectSwitchLabel.appendChild(document.createTextNode('Tooltips'));
+
+        // Make label clickable
+        inspectSwitchLabel.addEventListener('click', () => {
+            this._inspectSwitch.checked = !this._inspectSwitch.checked;
+            this._toggleInspectMode();
+        });
+
+        footer.appendChild(inspectSwitchLabel);
+
         // Close button
         const closeButton = document.createElement('button');
         closeButton.textContent = '×';
@@ -467,6 +514,7 @@ export class MapFeatureControl {
         content.appendChild(title);
         content.appendChild(actionsSection);
         content.appendChild(this._layersContainer);
+        content.appendChild(footer);
         this._panel.appendChild(closeButton);
         this._panel.appendChild(content);
 
@@ -608,16 +656,42 @@ export class MapFeatureControl {
         `;
 
         const addIcon = document.createElement('sl-icon');
-        addIcon.name = 'plus';
+        addIcon.name = 'search';
         addIcon.setAttribute('slot', 'prefix');
         addIcon.style.fontSize = '12px';
 
         this._addLayerBtn.appendChild(addIcon);
-        this._addLayerBtn.appendChild(document.createTextNode('Add Map Layer'));
+        this._addLayerBtn.appendChild(document.createTextNode('Find Layers'));
 
         // Add click handler to open layer drawer
         this._addLayerBtn.addEventListener('click', (e) => {
             this._openLayerDrawer();
+        });
+
+        // Create "New Data Source" button
+        this._newDataSourceBtn = document.createElement('sl-button');
+        this._newDataSourceBtn.size = 'small';
+        this._newDataSourceBtn.variant = 'default';
+        this._newDataSourceBtn.style.cssText = `
+            --sl-color-primary-600: #3b82f6;
+            --sl-color-primary-500: #3b82f6;
+            font-size: 11px;
+            font-weight: 500;
+        `;
+
+        const newDataSourceIcon = document.createElement('sl-icon');
+        newDataSourceIcon.name = 'plus-square';
+        newDataSourceIcon.setAttribute('slot', 'prefix');
+        newDataSourceIcon.style.fontSize = '12px';
+
+        this._newDataSourceBtn.appendChild(newDataSourceIcon);
+        this._newDataSourceBtn.appendChild(document.createTextNode('New Data Source'));
+
+        // Add click handler to open layer creator dialog
+        this._newDataSourceBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            openLayerCreatorDialog();
         });
 
         // Create inspect mode toggle switch - hide on touch devices
@@ -634,33 +708,6 @@ export class MapFeatureControl {
 
         // Add click handler to toggle inspect mode
         this._inspectSwitch.addEventListener('sl-change', (e) => {
-            this._toggleInspectMode();
-        });
-
-        // Create label for the inspect switch with icon
-        const inspectSwitchLabel = document.createElement('label');
-        inspectSwitchLabel.style.cssText = `
-            font-size: 12px;
-            color: #6b7280;
-            font-weight: 500;
-            cursor: pointer;
-            user-select: none;
-            display: flex;
-            align-items: center;
-            gap: 4px;
-            ${isTouchDevice ? 'display: none;' : ''}
-        `;
-
-        const inspectIcon = document.createElement('sl-icon');
-        inspectIcon.name = 'chat-square';
-        inspectIcon.style.fontSize = '12px';
-
-        inspectSwitchLabel.appendChild(inspectIcon);
-        inspectSwitchLabel.appendChild(document.createTextNode('Tooltips'));
-
-        // Make label clickable
-        inspectSwitchLabel.addEventListener('click', () => {
-            this._inspectSwitch.checked = !this._inspectSwitch.checked;
             this._toggleInspectMode();
         });
 
@@ -691,24 +738,14 @@ export class MapFeatureControl {
             this._clearAllSelections();
         });
 
-        // Add all controls to the actions section
+        // Add all controls to the actions section (buttons row)
         actionsSection.appendChild(this._addLayerBtn);
+        actionsSection.appendChild(this._newDataSourceBtn);
 
-        // Only add tooltip controls and separators on non-touch devices
-        if (!isTouchDevice) {
-            // Add separator
-            const separator1 = document.createElement('div');
-            separator1.style.cssText = 'width: 1px; height: 16px; background: rgba(0,0,0,0.1); margin: 0 4px;';
-            actionsSection.appendChild(separator1);
-
-            actionsSection.appendChild(this._inspectSwitch);
-            actionsSection.appendChild(inspectSwitchLabel);
-
-            // Add separator
-            const separator2 = document.createElement('div');
-            separator2.style.cssText = 'width: 1px; height: 16px; background: rgba(0,0,0,0.1); margin: 0 4px;';
-            actionsSection.appendChild(separator2);
-        }
+        // Add separator after layer buttons
+        const separator0 = document.createElement('div');
+        separator0.style.cssText = 'width: 1px; height: 16px; background: rgba(0,0,0,0.1); margin: 0 4px;';
+        actionsSection.appendChild(separator0);
 
         actionsSection.appendChild(this._clearSelectionBtn);
 
