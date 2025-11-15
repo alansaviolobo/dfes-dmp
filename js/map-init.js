@@ -1,7 +1,6 @@
 import {MapLayerControl} from './map-layer-controls.js';
 import {MapFeatureControl} from './map-feature-control.js';
 import {MapFeatureStateManager} from './map-feature-state-manager.js';
-import {configControl} from './config-control.js';
 import {localization} from './localization.js';
 import {URLManager} from './url-api.js';
 import {permalinkHandler} from './permalink-handler.js';
@@ -141,7 +140,7 @@ function needsURLPrettification() {
 async function getAvailableConfigs() {
     // Return a list of known config files based on the file structure
     // This could be made dynamic by fetching a directory listing in the future
-    return ['index', 'maharashtra', 'community', 'historic', 'bombay', 'mumbai', 'madras', 'gurugram', 'bengaluru-flood'].join(', ');
+    return ['index', 'maharashtra', 'community', 'historic', 'bombay', 'mumbai', 'madras', 'gurugram'].join(', ');
 }
 
 // Helper function to try loading a layer from a different config file
@@ -853,9 +852,6 @@ async function initializeMap() {
                 window.geolocationManager.geolocate.trigger();
             }
         });
-
-        // Initialize config control after layer control is ready
-        configControl.initialize(layerControl);
 
         // Add navigation controls
         map.addControl(new mapboxgl.NavigationControl({

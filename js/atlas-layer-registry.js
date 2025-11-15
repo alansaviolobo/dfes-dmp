@@ -44,7 +44,7 @@ export class LayerRegistry {
             console.warn('[LayerRegistry] Failed to load atlas list from index.atlas.json:', error);
             // Fallback to default list if loading fails
             atlasConfigs = [
-                'osm', 'index', 'goa', 'mumbai', 'bengaluru-flood', 'bombay', 'madras',
+                'osm', 'index', 'goa', 'mumbai', 'bombay', 'madras',
                 'gurugram', 'maharashtra', 'telangana', 'kerala', 'india',
                 'world', 'historic', 'community', 'mhadei', 'mapbox'
             ];
@@ -58,12 +58,30 @@ export class LayerRegistry {
             try {
                 const response = await fetch(`/config/${atlasId}.atlas.json`);
                 if (response.ok) {
+                    // Check Content-Type to ensure we're getting JSON, not HTML (e.g., 404 page)
+                    const contentType = response.headers.get('content-type') || '';
+                    if (!contentType.includes('application/json') && !contentType.includes('text/json')) {
+                        return {
+                            atlasId,
+                            error: `Invalid content type: ${contentType} (expected JSON)`,
+                            success: false
+                        };
+                    }
+                    
                     const config = await response.json();
                     return {atlasId, config, success: true};
                 } else {
                     return {atlasId, error: `HTTP ${response.status}`, success: false};
                 }
             } catch (error) {
+                // Handle JSON parsing errors specifically
+                if (error.message.includes('JSON') || error.message.includes('DOCTYPE')) {
+                    return {
+                        atlasId,
+                        error: `Invalid JSON response (likely HTML/404 page)`,
+                        success: false
+                    };
+                }
                 return {atlasId, error: error.message, success: false};
             }
         });
