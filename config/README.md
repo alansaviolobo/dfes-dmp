@@ -163,11 +163,6 @@ The map supports three different ways to load configurations via the URL paramet
 - Best for: Quick testing, embedding full configs in URLs
 - Note: URL-encode the JSON for special characters
 
-**Quick Test:**
-```
-https://amche.in/?atlas={"name":"Test","layers":[{"id":"mapbox-streets"},{"id":"forests"}]}
-```
-
 ### Additional Testing Methods
 
 ### Method 1: GitHub Gist (Recommended for Sharing)

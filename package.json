@@ -1,5 +1,5 @@
 {
-  "name": "amche-goa",
+  "name": "dfes-dmp",
   "version": "0.1.0",
   "description": "Open community web GIS platform to interact with map data from various sources, made in Goa for the world.",
   "main": "index.html",
@@ -22,7 +22,7 @@
     "open-data",
     "mapbox"
   ],
-  "author": "Amche Goa Community",
+  "author": "DFES",
   "license": "MIT",
   "devDependencies": {
     "@playwright/test": "^1.57.0",
@@ -48,9 +48,9 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/publicmap/amche-goa.git"
+    "url": "https://github.com/alansaviolobo/dfes-dmp"
   },
-  "homepage": "https://amche.in",
+  "homepage": "https://dfesdmp.online/",
   "dependencies": {
     "html2canvas": "^1.4.1",
     "jspdf": "^3.0.4",
