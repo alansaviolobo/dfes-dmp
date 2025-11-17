@@ -1140,8 +1140,10 @@ export class MapFeatureControl {
             }
         });
 
-        // Process layers in config order to maintain stable ordering
-        configOrder.forEach(layerId => {
+        // Process layers in reverse config order so newest layers appear first
+        // Create a reversed array to process newest layers first
+        const reversedConfigOrder = [...configOrder].reverse();
+        reversedConfigOrder.forEach(layerId => {
             if (activeLayers.has(layerId)) {
                 const layerData = activeLayers.get(layerId);
                 const layerHash = this._getLayerDataHash(layerData);
@@ -2667,30 +2669,10 @@ export class MapFeatureControl {
      * Insert layer element in the correct position based on config order
      */
     _insertLayerInOrder(layerElement, layerId) {
-        const configOrder = this._getConfigLayerOrder();
-        const layerIndex = configOrder.indexOf(layerId);
-
-        if (layerIndex === -1) {
-            // Not found in config, append at end
-            this._layersContainer.appendChild(layerElement);
-            return;
-        }
-
-        // Find the position to insert based on config order
-        const existingLayers = Array.from(this._layersContainer.children);
-        let insertBeforeElement = null;
-
-        for (let i = layerIndex + 1; i < configOrder.length; i++) {
-            const nextLayerId = configOrder[i];
-            const nextElement = existingLayers.find(el => el.getAttribute('data-layer-id') === nextLayerId);
-            if (nextElement) {
-                insertBeforeElement = nextElement;
-                break;
-            }
-        }
-
-        if (insertBeforeElement) {
-            this._layersContainer.insertBefore(layerElement, insertBeforeElement);
+        // Insert new layers at the top (beginning) so newest layers appear first
+        const firstChild = this._layersContainer.firstChild;
+        if (firstChild) {
+            this._layersContainer.insertBefore(layerElement, firstChild);
         } else {
             this._layersContainer.appendChild(layerElement);
         }

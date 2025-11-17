@@ -231,6 +231,9 @@ class URLManager {
         const crossAtlasLayers = this.getActiveCrossAtlasLayers();
         activeLayers.push(...crossAtlasLayers);
 
+        // Reverse the order so newest layers appear first in the URL
+        activeLayers.reverse();
+
         console.log('🔗 URLManager: Found active layers:', activeLayers);
         return activeLayers;
     }
