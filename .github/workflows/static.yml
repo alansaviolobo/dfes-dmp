@@ -37,9 +37,9 @@ jobs:
         with:
           node-version: '20'
 
-      # Install uglifycss
-      - name: Install uglifycss
-        run: npm install -g uglifycss
+      # Install clean-css-cli for CSS minification
+      - name: Install clean-css-cli
+        run: npm install -g clean-css-cli
 
       # Fetch and prepare main branch content
       - name: Fetch main branch content into temporary directory
@@ -52,8 +52,18 @@ jobs:
       - name: Minify CSS for main branch
         run: |
           cd temp_main
-          uglifycss styles.css --output styles.min.css
+          echo "Original CSS file size:"
+          ls -lh styles.css
+          cleancss -o styles.min.css styles.css
+          echo "Minified CSS file size:"
+          ls -lh styles.min.css
+          echo "Verifying minification worked..."
+          if [ ! -f styles.min.css ]; then
+            echo "ERROR: styles.min.css was not created!"
+            exit 1
+          fi
           sed -i 's/styles.css/styles.min.css/g' index.html
+          echo "Updated index.html to reference styles.min.css"
 
       # Copy main branch content to deploy directory
       - name: Copy main branch content to deploy directory
@@ -84,8 +94,18 @@ jobs:
         if: env.dev_exists == 'true'
         run: |
           cd temp_dev
-          uglifycss styles.css --output styles.min.css
+          echo "Original CSS file size:"
+          ls -lh styles.css
+          cleancss -o styles.min.css styles.css
+          echo "Minified CSS file size:"
+          ls -lh styles.min.css
+          echo "Verifying minification worked..."
+          if [ ! -f styles.min.css ]; then
+            echo "ERROR: styles.min.css was not created!"
+            exit 1
+          fi
           sed -i 's/styles.css/styles.min.css/g' index.html
+          echo "Updated index.html to reference styles.min.css"
 
       # Copy dev branch content to /dev/ directory
       - name: Copy dev branch content to /dev/ directory
