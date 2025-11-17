@@ -239,7 +239,7 @@ async function loadConfiguration() {
         var layersParam = getUrlParameter('layers');
     }
 
-    let configPath = 'config/index.atlas.json';
+    let configPath = window.amche.DEFAULT_ATLAS;
     let config;
     let atlasId = 'index'; // Track which atlas we're using
 
@@ -696,14 +696,9 @@ async function initializeMap() {
     window.map = map;
 
     // Add custom attribution control that handles formatting and removes duplicates
-    const attributionControl = new MapAttributionControl({
-        compact: false
-        // Note: customAttribution removed - attributions now come dynamically from layer configs
-    });
+    const attributionControl = new MapAttributionControl();
     map.addControl(attributionControl, 'bottom-right');
-
-    // Make attribution control globally accessible
-    window.attributionControl = attributionControl;
+    window.attributionControl = attributionControl; // Make attribution control globally accessible
 
     // Setup proper cursor handling for map dragging
     map.on('load', () => {
