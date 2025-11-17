@@ -679,10 +679,19 @@ export class MapLayerControl {
             }
 
             const $atlasBadge = $('<span>', {
-                class: 'text-xs text-white px-2 py-1 rounded ml-auto',
+                class: 'text-xs text-white px-2 py-1 rounded ml-auto cursor-pointer hover:opacity-80 transition-opacity',
                 style: `background-color: ${badgeColor};`,
-                text: displayName
+                text: displayName,
+                title: `Switch to ${displayName} atlas`
             });
+            
+            // Make badge clickable to navigate to atlas
+            $atlasBadge.on('click', (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                this._navigateToAtlas(atlasId);
+            });
+            
             $contentWrapper.append($atlasBadge);
         }
 
@@ -1678,9 +1687,17 @@ export class MapLayerControl {
         }
 
         const $atlasBadge = $('<span>', {
-            class: 'text-xs text-white px-2 py-1 rounded ml-auto',
+            class: 'text-xs text-white px-2 py-1 rounded ml-auto cursor-pointer hover:opacity-80 transition-opacity',
             style: `background-color: ${badgeColor};`,
-            text: displayAtlasName
+            text: displayAtlasName,
+            title: `Switch to ${displayAtlasName} atlas`
+        });
+        
+        // Make badge clickable to navigate to atlas
+        $atlasBadge.on('click', (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            this._navigateToAtlas(layer._sourceAtlas);
         });
 
         $contentWrapper.append($toggleLabel, $titleSpan, $atlasBadge);
@@ -1778,6 +1795,19 @@ export class MapLayerControl {
         window.dispatchEvent(new CustomEvent('layer-toggled', {
             detail: {layerId: layerWithPrefix.id, visible: true, isCrossAtlas: true}
         }));
+    }
+
+    /**
+     * Navigate to a different atlas
+     */
+    _navigateToAtlas(atlasId) {
+        if (!atlasId) return;
+        
+        const url = new URL(window.location.href);
+        url.searchParams.set('atlas', atlasId);
+        
+        // Navigate to the new URL
+        window.location.href = url.toString();
     }
 
     /**

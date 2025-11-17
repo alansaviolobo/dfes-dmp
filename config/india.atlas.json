@@ -56,7 +56,7 @@
       "type": "vector",
       "url": "https://indianopenmaps.fly.dev/not-so-open/education/schools/udise/ncog/{z}/{x}/{y}.pbf",
       "sourceLayer": "NCOG_UDISE_Schools",
-      "attribution": "<a href='https://schoolgis.nic.in'>Ministry of Education, Department of School Education & Literacy</a> - Collected by <a href='https://github.com/ramSeraph/indian_admin_boundaries/releases/tag/postal'>Datameet Community</a>",
+      "attribution": "<a href='https://schoolgis.nic.in'>Ministry of Education, Department of School Education & Literacy</a> - Collected by <a href='https://github.com/ramSeraph/indian_facilities/releases/tag/education'>Datameet Community</a>",
       "maxzoom": 10,
       "style": {
         "text-field": [
@@ -71,20 +71,16 @@
         "title": "School",
         "label": "Name",
         "fields": [
-          "Principal",
-          "Mobile",
-          "Email",
-          "Capacity",
-          "Gr_Panchayat",
-          "Gr_Taluka"
+          "school_nam",
+          "sch_mgmt",
+          "sch_cate_1",
+          "estd_year"
         ],
         "fieldTitles": [
-          "Principal",
-          "Mobile",
-          "Email",
-          "Capacity",
-          "Panchayat",
-          "Taluka"
+          "Name",
+          "Management",
+          "Category",
+          "Established"
         ]
       }
     },
@@ -1613,8 +1609,8 @@
       "legendImage": "assets/map-layers/india/legend-landslide-risk.png"
     },
     {
-      "title": "SOI Toposheets",
-      "description": "Survey of India",
+      "title": "SOI 1:50K Open Series Maps",
+      "description": "Open Series Map Toposheets from Survey of India as per the <a href='https://www.surveyofindia.gov.in/files/nmp/National%20Map%20Policy.pdf'>National Map Policy 2005</a> for supporting development activities in the country. See <a href='https://www.pmv.ac.in/pdf/lecture/geography/OSM-Numbering-System.pdf'>OSM sheet numbering system</a> for more details.",
       "headerImage": "assets/map-layers/india/map-layer-soi.png",
       "legendImage": "assets/map-layers/india/legend-soi.png",
       "type": "tms",
