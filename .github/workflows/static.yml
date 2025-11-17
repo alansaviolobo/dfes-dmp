@@ -31,13 +31,33 @@ jobs:
       url: ${{ steps.deployment.outputs.page_url }}
 
     steps:
+      # Setup Node.js for CSS minification
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      # Install uglifycss
+      - name: Install uglifycss
+        run: npm install -g uglifycss
+
       # Fetch and prepare main branch content
       - name: Fetch main branch content into temporary directory
         run: |
           echo "Fetching main branch content..."
           mkdir -p temp_main
           git clone --branch main --depth 1 https://github.com/${{ github.repository }} temp_main
-          echo "Copying main branch content to deploy directory..."
+
+      # Minify CSS for main branch
+      - name: Minify CSS for main branch
+        run: |
+          cd temp_main
+          uglifycss styles.css --output styles.min.css
+          sed -i 's/styles.css/styles.min.css/g' index.html
+
+      # Copy main branch content to deploy directory
+      - name: Copy main branch content to deploy directory
+        run: |
           mkdir -p deploy
           rsync -av --exclude='.git' temp_main/ deploy/
 
@@ -58,7 +78,19 @@ jobs:
           echo "Fetching dev branch content..."
           mkdir -p temp_dev
           git clone --branch dev --depth 1 https://github.com/${{ github.repository }} temp_dev
-          echo "Copying dev branch content to /dev/ directory..."
+
+      # Minify CSS for dev branch
+      - name: Minify CSS for dev branch
+        if: env.dev_exists == 'true'
+        run: |
+          cd temp_dev
+          uglifycss styles.css --output styles.min.css
+          sed -i 's/styles.css/styles.min.css/g' index.html
+
+      # Copy dev branch content to /dev/ directory
+      - name: Copy dev branch content to /dev/ directory
+        if: env.dev_exists == 'true'
+        run: |
           mkdir -p deploy/dev
           rsync -av --exclude='.git' temp_dev/ deploy/dev/
 
