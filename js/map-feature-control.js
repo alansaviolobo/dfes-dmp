@@ -388,8 +388,7 @@ export class MapFeatureControl {
             width: 350px;
             max-width: 90vw;
             max-height: calc(100vh - 120px);
-            min-width: 250px;
-            min-height: 200px;
+            min-width: 220px;
             background-color: white;
             border: 1px solid #ccc;
             border-radius: 4px;

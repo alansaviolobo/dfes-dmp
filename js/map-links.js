@@ -97,6 +97,11 @@ export class MapLinks {
                 icon: 'https://upload.wikimedia.org/wikipedia/commons/b/b0/Openstreetmap_logo.svg'
             },
             {
+                name: 'OpenStreetMap SpyGlass',
+                url: `http://test.osm2pgsql.org/#p=${zoom}/${lat}/${lng}`,
+                icon: 'http://test.osm2pgsql.org/img/spyglass.svg'
+            },
+            {
                 name: 'Google Maps',
                 url: `https://www.google.com/maps/search/?api=1&query=${lat},${lng}`,
                 icon: 'https://upload.wikimedia.org/wikipedia/commons/a/aa/Google_Maps_icon_%282020%29.svg'
