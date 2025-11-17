@@ -1609,12 +1609,12 @@
       "legendImage": "assets/map-layers/india/legend-landslide-risk.png"
     },
     {
-      "title": "SOI 1:50K Open Series Maps",
-      "description": "Open Series Map Toposheets from Survey of India as per the <a href='https://www.surveyofindia.gov.in/files/nmp/National%20Map%20Policy.pdf'>National Map Policy 2005</a> for supporting development activities in the country. See <a href='https://www.pmv.ac.in/pdf/lecture/geography/OSM-Numbering-System.pdf'>OSM sheet numbering system</a> for more details.",
+      "title": "SOI 1:50K Open Series Maps 2011",
+      "description": "Open Series Map from Survey of India as per the <a href='https://www.surveyofindia.gov.in/files/nmp/National%20Map%20Policy.pdf'>National Map Policy 2005</a> for supporting development activities in the country. See <a href='https://www.pmv.ac.in/pdf/lecture/geography/OSM-Numbering-System.pdf'>OSM sheet numbering system</a> for more details.",
       "headerImage": "assets/map-layers/india/map-layer-soi.png",
       "legendImage": "assets/map-layers/india/legend-soi.png",
       "type": "tms",
-      "id": "soi-map",
+      "id": "soi-open-2011",
       "url": "https://indianopenmaps.fly.dev/soi/osm/{z}/{x}/{y}.webp",
       "attribution": "<a href='https://onlinemaps.surveyofindia.gov.in/FreeMapSpecification.aspx'>Open Series Toposheets from Survey of India</a>"
     },
