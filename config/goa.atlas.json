@@ -1612,6 +1612,7 @@
         ]
       }
     },
+ 
     {
       "title": "Bhutani Project Site Plan With Contours",
       "description": "For proposed project in Survey No. 257/1 in Sancoale, Mormugao, Goa.\r\n\r\nObtained via RTI",
@@ -1621,20 +1622,17 @@
       "id": "bhutani-site-contours",
       "url": "https://mapwarper.net/maps/tile/99226/{z}/{x}/{y}.png",
       "style": {
-        "raster-opacity": [
+        "raster-opacity": 1,
+        "raster-color": [
           "interpolate",
-          [
-            "linear"
-          ],
-          [
-            "zoom"
-          ],
-          6,
-          0.95,
-          18,
+          ["linear"],
+          ["raster-value"],
+          0,
+          "black",
           0.8,
-          19,
-          0.3
+          "black",
+          1,
+          "rgba(255, 255, 255,0)"
         ]
       },
       "attribution": "<a href='https://mapwarper.net/maps/99226' target='_blank'>MapWarper</a>",
@@ -1651,28 +1649,16 @@
       "id": "bhutani-site-drainage",
       "url": "https://mapwarper.net/maps/tile/99229/{z}/{x}/{y}.png",
       "style": {
-        "raster-opacity": [
-          "interpolate",
-          [
-            "linear"
-          ],
-          [
-            "zoom"
-          ],
-          6,
-          0.95,
-          18,
-          0.8,
-          19,
-          0.3
-        ],
+        "raster-opacity": 1,
         "raster-color": [
           "interpolate",
           ["linear"],
           ["raster-value"],
           0,
-          "blue",
-          1,
+          "red",
+          0.3,
+          "red",
+          0.8,
           "white"
         ]
       },
