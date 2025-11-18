@@ -1629,7 +1629,7 @@
           ["raster-value"],
           0,
           "black",
-          0.8,
+          0.9,
           "black",
           1,
           "rgba(255, 255, 255,0)"
@@ -1656,10 +1656,10 @@
           ["raster-value"],
           0,
           "red",
-          0.3,
-          "red",
           0.8,
-          "white"
+          "red",
+          1,
+         "rgba(255, 255, 255,0)"
         ]
       },
       "attribution": "<a href='https://mapwarper.net/maps/99229' target='_blank'>MapWarper</a>",

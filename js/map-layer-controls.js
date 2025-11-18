@@ -322,13 +322,12 @@ export class MapLayerControl {
 
         // Create control buttons
         const $settingsButton = this._createSettingsButton(group);
-        const $opacityButton = this._createOpacityButton(group, groupIndex);
 
         // Set up event handlers
-        this._setupGroupHeaderEvents($groupHeader, group, groupIndex, $opacityButton, $settingsButton);
+        this._setupGroupHeaderEvents($groupHeader, group, groupIndex, $settingsButton);
 
         // Create summary section
-        const $summary = this._createGroupSummary(group, $settingsButton, $opacityButton);
+        const $summary = this._createGroupSummary(group, $settingsButton);
         $groupHeader.append($summary);
 
         // Add description and attribution
@@ -368,51 +367,13 @@ export class MapLayerControl {
         return $settingsButton;
     }
 
-    /**
-     * Create opacity button
-     */
-    _createOpacityButton(group, groupIndex) {
-        if (!['tms', 'vector', 'geojson', 'layer-group', 'img', 'raster-style-layer'].includes(group.type)) {
-            return $('<span>');
-        }
-
-        const $opacityButton = $('<sl-icon-button>', {
-            class: 'opacity-toggle hidden',
-            'data-opacity': '0.4',
-            'aria-label': 'Toggle opacity',
-            title: 'Toggle opacity',
-            name: 'lightbulb-fill'
-        });
-
-        $opacityButton[0].addEventListener('click', (e) => {
-            e.preventDefault();
-            e.stopPropagation();
-            this._handleOpacityToggle(group, $opacityButton);
-        });
-
-        return $opacityButton;
-    }
-
-    /**
-     * Handle opacity toggle using MapboxAPI
-     */
-    _handleOpacityToggle(group, $opacityButton) {
-        const currentOpacity = parseFloat($opacityButton.attr('data-opacity'));
-        const newOpacity = currentOpacity === 0.4 ? 0.9 : 0.4;
-
-        $opacityButton.attr('data-opacity', newOpacity);
-        $opacityButton.attr('name', newOpacity === 0.9 ? 'lightbulb-fill' : 'lightbulb');
-
-        // Use MapboxAPI to update opacity
-        this._mapboxAPI.updateLayerOpacity(group.id, group, newOpacity);
-    }
 
     /**
      * Set up group header event handlers
      */
-    _setupGroupHeaderEvents($groupHeader, group, groupIndex, $opacityButton, $settingsButton) {
+    _setupGroupHeaderEvents($groupHeader, group, groupIndex, $settingsButton) {
         $groupHeader[0].addEventListener('sl-show', (event) => {
-            this._handleGroupShow(event, group, groupIndex, $opacityButton, $settingsButton);
+            this._handleGroupShow(event, group, groupIndex, $settingsButton);
 
             // Load legend image when details panel is expanded (if layer is enabled)
             const toggleInput = event.target.querySelector('.toggle-switch input[type="checkbox"]');
@@ -422,14 +383,14 @@ export class MapLayerControl {
         });
 
         $groupHeader[0].addEventListener('sl-hide', (event) => {
-            this._handleGroupHide(event, group, groupIndex, $opacityButton, $settingsButton);
+            this._handleGroupHide(event, group, groupIndex, $settingsButton);
         });
     }
 
     /**
      * Handle group show event
      */
-    _handleGroupShow(event, group, groupIndex, $opacityButton, $settingsButton) {
+    _handleGroupShow(event, group, groupIndex, $settingsButton) {
         const toggleInput = event.target.querySelector('.toggle-switch input[type="checkbox"]');
 
         if (toggleInput && !toggleInput.checked) {
@@ -447,7 +408,6 @@ export class MapLayerControl {
 
         this._toggleLayerGroup(effectiveGroupIndex, true);
 
-        $opacityButton.toggleClass('hidden', false);
         $settingsButton.toggleClass('hidden', false);
         $(event.target).closest('.group-header').addClass('active');
 
@@ -468,7 +428,7 @@ export class MapLayerControl {
     /**
      * Handle group hide event
      */
-    _handleGroupHide(event, group, groupIndex, $opacityButton, $settingsButton) {
+    _handleGroupHide(event, group, groupIndex, $settingsButton) {
         const toggleInput = event.target.querySelector('.toggle-switch input[type="checkbox"]');
 
         if (toggleInput && toggleInput.checked) {
@@ -486,7 +446,6 @@ export class MapLayerControl {
 
         this._toggleLayerGroup(effectiveGroupIndex, false);
 
-        $opacityButton.toggleClass('hidden', true);
         $settingsButton.toggleClass('hidden', true);
         $(event.target).closest('.group-header').removeClass('active');
 
@@ -653,7 +612,7 @@ export class MapLayerControl {
     /**
      * Create group summary section
      */
-    _createGroupSummary(group, $settingsButton, $opacityButton) {
+    _createGroupSummary(group, $settingsButton) {
         const $summary = $('<div>', {
             slot: 'summary',
             class: 'flex items-center relative w-full h-12 bg-gray-800'
@@ -695,7 +654,7 @@ export class MapLayerControl {
             $contentWrapper.append($atlasBadge);
         }
 
-        $contentWrapper.append($settingsButton, $opacityButton);
+        $contentWrapper.append($settingsButton);
 
         // If headerImage is missing, try to resolve from registry
         let headerImage = group.headerImage;
