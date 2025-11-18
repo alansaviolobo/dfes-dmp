@@ -661,9 +661,23 @@
         "fill-opacity": 0.3
       },
       "filter": [
-          "any",
-          ["==", ["get", "Village"], "Saligao"],
-          ["==", ["get", "Village"], "Goltim"]
+        "any",
+        [
+          "==",
+          [
+            "get",
+            "Village"
+          ],
+          "Saligao"
+        ],
+        [
+          "==",
+          [
+            "get",
+            "Village"
+          ],
+          "Goltim"
+        ]
       ],
       "inspect": {
         "id": "Owners",
@@ -1599,6 +1613,75 @@
       }
     },
     {
+      "title": "Bhutani Project Site Plan With Contours",
+      "description": "For proposed project in Survey No. 257/1 in Sancoale, Mormugao, Goa.\r\n\r\nObtained via RTI",
+      "source": "https://drive.google.com/drive/folders/1PlkPwtWfuFjfjHiPmDuC7y-KNXp2QZz6",
+      "dateDepicted": "",
+      "type": "tms",
+      "id": "bhutani-site-contours",
+      "url": "https://mapwarper.net/maps/tile/99226/{z}/{x}/{y}.png",
+      "style": {
+        "raster-opacity": [
+          "interpolate",
+          [
+            "linear"
+          ],
+          [
+            "zoom"
+          ],
+          6,
+          0.95,
+          18,
+          0.8,
+          19,
+          0.3
+        ]
+      },
+      "attribution": "<a href='https://mapwarper.net/maps/99226' target='_blank'>MapWarper</a>",
+      "headerImage": "https://mapwarper.net/uploads/99226/thumb/Contour_Plan___Section.png",
+      "bbox": "73.887982,15.3975793,73.8910762,15.4018527",
+      "initiallyChecked": false
+    },
+    {
+      "title": "Bhutani Project Site Plan With Drainage",
+      "description": "For proposed project in Survey No. 257/1 in Sancoale, Mormugao, Goa. Obtained via RTI ",
+      "source": "",
+      "dateDepicted": "",
+      "type": "tms",
+      "id": "bhutani-site-drainage",
+      "url": "https://mapwarper.net/maps/tile/99229/{z}/{x}/{y}.png",
+      "style": {
+        "raster-opacity": [
+          "interpolate",
+          [
+            "linear"
+          ],
+          [
+            "zoom"
+          ],
+          6,
+          0.95,
+          18,
+          0.8,
+          19,
+          0.3
+        ],
+        "raster-color": [
+          "interpolate",
+          ["linear"],
+          ["raster-value"],
+          0,
+          "blue",
+          1,
+          "white"
+        ]
+      },
+      "attribution": "<a href='https://mapwarper.net/maps/99229' target='_blank'>MapWarper</a>",
+      "headerImage": "https://mapwarper.net/uploads/99229/thumb/Site_Plan_with_Drainage_System.png",
+      "bbox": "73.8875597,15.3975526,73.8906675,15.401894",
+      "initiallyChecked": false
+    },
+    {
       "title": "Swadesh Darshan - Project Plans",
       "description": "Map 14: Proposed Interventions for Development of Nautical and Ecological Experience in and around Ekoshim Creek<br>Map 15: Proposed Elements of Ekoshim Road Promenade Development",
       "source": "https://sd2.tourism.gov.in/DocumentRepoFiles/MasterPlan/MP353addb8-ecdb-4942-8cff-6f71e069304a.pdf",
@@ -1967,8 +2050,7 @@
       "type": "tms",
       "id": "salvador-do-mundo-landuse-survey",
       "url": "https://mapwarper.net/maps/tile/96085/{z}/{x}/{y}.png",
-      "style": {
-      },
+      "style": {},
       "attribution": "© MapWarper - <a href=\"https://mapwarper.net/maps/96085#Rectify_tab\" target=\"_blank\">View Original</a>",
       "headerImage": "https://mapwarper.net/uploads/96085/thumb/Salvador_M_lulc__1_.png",
       "initiallyChecked": false

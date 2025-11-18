@@ -386,9 +386,9 @@ export class MapFeatureControl {
             top: 10px;
             left: 10px;
             width: 350px;
-            max-width: 90vw;
+            max-width: 85vw;
             max-height: calc(100vh - 120px);
-            min-width: 220px;
+            min-width: 200px;
             background-color: white;
             border: 1px solid #ccc;
             border-radius: 4px;
@@ -396,7 +396,7 @@ export class MapFeatureControl {
             z-index: 1000;
             display: flex;
             flex-direction: column;
-            font-size: 14px;
+            font-size: 12px;
             overflow: auto;
             resize: both;
         `;
