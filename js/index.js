@@ -9,10 +9,10 @@ import './map-feature-state-manager.js';
 import './map-layer-controls.js';
 import './map-feature-control.js';
 import './map-attribution-control.js';
-import './intro-content.js';
-import './atlas-layer-registry.js';
+import './intro-content-manager.js';
+import './layer-registry.js';
 import './map-init.js';
-import './geolocation-control.js';
+import './geolocation-manager.js';
 import './mapbox-gl-view-control.js';
 import './map-search-control.js';
 
