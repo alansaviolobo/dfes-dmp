@@ -154,7 +154,6 @@ window.addEventListener('mapReady', (event) => {
 /**
  * ShareLink plugin initialization
  */
-// Initialize ShareLink plugin when DOM is ready
 document.addEventListener('DOMContentLoaded', () => {
     const shareLink = new ShareLink({
         containerId: 'share-button-container',
