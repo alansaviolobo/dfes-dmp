@@ -1,4 +1,10 @@
 /**
+ * Javascript Entry Point
+ */
+import {MapLinks} from './map-links.js';
+import {ShareLink} from './share-link.js';
+
+/**
  * Navigates to the sound page.
  */
 function navigateToSound(event) {
@@ -126,8 +132,6 @@ customElements.whenDefined('sl-menu-item').then(() => {
 /**
  * MapLinks plugin initialization
  */
-import {MapLinks} from './map-links.js';
-
 window.addEventListener('mapReady', (event) => {
     const mapLinks = new MapLinks({
         buttonId: 'map-links-btn',
@@ -138,9 +142,6 @@ window.addEventListener('mapReady', (event) => {
 /**
  * ShareLink plugin initialization
  */
-import {ShareLink} from './share-link.js';
-
-// Initialize ShareLink plugin when DOM is ready
 document.addEventListener('DOMContentLoaded', () => {
     const shareLink = new ShareLink({
         containerId: 'share-button-container',
