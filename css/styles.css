@@ -301,7 +301,7 @@ body {
 
 /* Update main container */
 main {
-    height: calc(100% - 56px);
+    height: 100%;
     width: 100%;
     position: relative;
     overflow: hidden;
