@@ -12,7 +12,7 @@ import {
 } from './transit-data.js';
 
 // Import URL API for deep linking support
-import { URLManager } from '../js/url-api.js';
+import { URLManager } from '../js/url-manager.js';
 
 class TransitExplorer {
     constructor() {
