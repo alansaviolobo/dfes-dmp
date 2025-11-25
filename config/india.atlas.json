@@ -2190,6 +2190,35 @@
       }
     },
     {
+      "title": "All India Tiger Presence 2022",
+      "source": "https://ntca.gov.in/assets/uploads/Reports/AITM/status_of_tiger-copredators-2022.pdf",
+      "dateDepicted": "",
+      "type": "tms",
+      "id": "ntca-tiger-presence-2022",
+      "url": "https://mapwarper.net/maps/tile/97908/{z}/{x}/{y}.png",
+      "style": {
+        "raster-opacity": [
+          "interpolate",
+          [
+            "linear"
+          ],
+          [
+            "zoom"
+          ],
+          6,
+          0.95,
+          18,
+          0.8,
+          19,
+          0.3
+        ]
+      },
+      "attribution": "<a href='https://mapwarper.net/maps/97908' target='_blank'>MapWarper</a>",
+      "headerImage": "https://mapwarper.net/uploads/97908/thumb/Screenshot_2025-10-12_at_1.54.08%E2%80%AFPM.png",
+      "bbox": "65.8455538,6.6779257,99.7729434,37.4049672",
+      "initiallyChecked": false
+    },
+    {
       "title": "GSI National Landslide Susceptibility Map",
       "description": "The landslide susceptibility maps show the total area classified into high, moderate and low zones based on their relative likelihood of susceptibility to landslide initiation, and can be used as a vital geo-information tool for regional land-use planning in landslide prone fragile slopes. GSI also collected information on 91,000 historical landslides using both remote sensing (RS) and field-based source data. A total number of 33,904 landslides are field validated and the database is continuously being updated with the new landslide data collected year-wise as part of post-disaster studies. <br>Statewise landslide reports are available at <a href='https://gsi.gov.in/webcenter/portal/OCBIS/pages_pageQuickLinks/pageStatewiselandslide' target='_blank'>GSI</a>",
       "headerImage": "https://bhukosh.gsi.gov.in/Bhukosh/images/NLSM.png",

@@ -1834,6 +1834,18 @@ export class MapFeatureControl {
         }
     }
 
+    /**
+     * Open layer settings modal
+     */
+    _openLayerSettings(layerId) {
+        const config = this._getLayerConfig(layerId);
+        if (config && this._layerSettingsModal) {
+            this._layerSettingsModal.show(config);
+        } else {
+            console.warn(`Cannot open settings for layer ${layerId}: config or modal not available`);
+        }
+    }
+
 
 
     /**

@@ -321,14 +321,11 @@ export class MapLayerControl {
         $groupHeader.attr('data-layer-id', group.id);
         this._sourceControls[groupIndex] = $groupHeader[0];
 
-        // Create control buttons
-        const $settingsButton = this._createSettingsButton(group);
-
         // Set up event handlers
-        this._setupGroupHeaderEvents($groupHeader, group, groupIndex, $settingsButton);
+        this._setupGroupHeaderEvents($groupHeader, group, groupIndex);
 
         // Create summary section
-        const $summary = this._createGroupSummary(group, $settingsButton);
+        const $summary = this._createGroupSummary(group);
         $groupHeader.append($summary);
 
         // Add description and attribution
@@ -348,33 +345,14 @@ export class MapLayerControl {
         return $groupHeader;
     }
 
-    /**
-     * Create settings button
-     */
-    _createSettingsButton(group) {
-        const $settingsButton = $('<sl-icon-button>', {
-            name: 'gear-fill',
-            class: 'settings-button ml-auto hidden',
-            'aria-label': 'Layer Settings',
-            title: 'Layer Settings'
-        });
-
-        $settingsButton[0].addEventListener('click', (e) => {
-            e.preventDefault();
-            e.stopPropagation();
-            this._layerSettingsModal.show(group);
-        });
-
-        return $settingsButton;
-    }
 
 
     /**
      * Set up group header event handlers
      */
-    _setupGroupHeaderEvents($groupHeader, group, groupIndex, $settingsButton) {
+    _setupGroupHeaderEvents($groupHeader, group, groupIndex) {
         $groupHeader[0].addEventListener('sl-show', (event) => {
-            this._handleGroupShow(event, group, groupIndex, $settingsButton);
+            this._handleGroupShow(event, group, groupIndex);
 
             // Load legend image when details panel is expanded (if layer is enabled)
             const toggleInput = event.target.querySelector('.toggle-switch input[type="checkbox"]');
@@ -384,14 +362,14 @@ export class MapLayerControl {
         });
 
         $groupHeader[0].addEventListener('sl-hide', (event) => {
-            this._handleGroupHide(event, group, groupIndex, $settingsButton);
+            this._handleGroupHide(event, group, groupIndex);
         });
     }
 
     /**
      * Handle group show event
      */
-    _handleGroupShow(event, group, groupIndex, $settingsButton) {
+    _handleGroupShow(event, group, groupIndex) {
         const toggleInput = event.target.querySelector('.toggle-switch input[type="checkbox"]');
 
         if (toggleInput && !toggleInput.checked) {
@@ -409,7 +387,6 @@ export class MapLayerControl {
 
         this._toggleLayerGroup(effectiveGroupIndex, true);
 
-        $settingsButton.toggleClass('hidden', false);
         $(event.target).closest('.group-header').addClass('active');
 
         // Load legend image if it exists and hasn't been loaded yet
@@ -434,7 +411,7 @@ export class MapLayerControl {
     /**
      * Handle group hide event
      */
-    _handleGroupHide(event, group, groupIndex, $settingsButton) {
+    _handleGroupHide(event, group, groupIndex) {
         const toggleInput = event.target.querySelector('.toggle-switch input[type="checkbox"]');
 
         if (toggleInput && toggleInput.checked) {
@@ -452,7 +429,6 @@ export class MapLayerControl {
 
         this._toggleLayerGroup(effectiveGroupIndex, false);
 
-        $settingsButton.toggleClass('hidden', true);
         $(event.target).closest('.group-header').removeClass('active');
 
         // Dispatch custom event for URL sync
@@ -465,6 +441,8 @@ export class MapLayerControl {
             detail: { layerId: group.id, visible: false, isCrossAtlas: isCrossAtlas }
         }));
     }
+
+
 
     /**
      * Sync sublayer toggle states for style layers
@@ -618,7 +596,7 @@ export class MapLayerControl {
     /**
      * Create group summary section
      */
-    _createGroupSummary(group, $settingsButton) {
+    _createGroupSummary(group) {
         const $summary = $('<div>', {
             slot: 'summary',
             class: 'flex items-center relative w-full h-12 bg-gray-800'
@@ -659,8 +637,6 @@ export class MapLayerControl {
 
             $contentWrapper.append($atlasBadge);
         }
-
-        $contentWrapper.append($settingsButton);
 
         // If headerImage is missing, try to resolve from registry
         let headerImage = group.headerImage;
