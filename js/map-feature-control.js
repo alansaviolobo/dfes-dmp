@@ -14,6 +14,7 @@ import { drawerStateManager } from './drawer-state-manager.js';
 import { convertToKML } from './map-utils.js';
 import { LayerSettingsModal } from './layer-settings.js';
 import { openLayerCreatorDialog } from './layer-creator-ui.js';
+import { LayerStyleControl } from './layer-style-control.js';
 
 export class MapFeatureControl {
     constructor(options = {}) {
@@ -78,6 +79,9 @@ export class MapFeatureControl {
         // Layer settings modal - initialize after map is available
         this._layerSettingsModal = null;
 
+        // Layer style control - initialize after map is available
+        this._layerStyleControl = null;
+
         // Animation state tracking to prevent mouse interference during camera movements
         this._isAnimating = false;
 
@@ -106,6 +110,39 @@ export class MapFeatureControl {
         this._layerSettingsModal = new LayerSettingsModal(this);
 
         return this._container;
+    }
+
+    /**
+     * Get MapboxAPI reference from layer control
+     */
+    _getMapboxAPI() {
+        if (this._mapboxAPI) {
+            return this._mapboxAPI;
+        }
+
+        // Try to get from global layer control
+        if (window.layerControl && window.layerControl._mapboxAPI) {
+            return window.layerControl._mapboxAPI;
+        }
+
+        return null;
+    }
+
+    /**
+     * Initialize layer style control if not already initialized
+     */
+    _ensureLayerStyleControl() {
+        if (this._layerStyleControl) {
+            return true;
+        }
+
+        const mapboxAPI = this._getMapboxAPI();
+        if (mapboxAPI && this._map) {
+            this._layerStyleControl = new LayerStyleControl(mapboxAPI, this._map);
+            return true;
+        }
+
+        return false;
     }
 
     /**
@@ -1470,9 +1507,23 @@ export class MapFeatureControl {
         // Check type OR if we actually have features (fallback for missing type)
         const hasFeatures = (config.type === 'vector' || config.type === 'geojson' || (features && features.size > 0));
         const hasSelectedFeatures = hasFeatures && features && Array.from(features.values()).some(f => f.isSelected);
+        // Check if layer has style properties that can be edited
+        this._ensureLayerStyleControl();
+        const mapboxAPI = this._getMapboxAPI();
+        let hasStyleControls = false;
+        if (this._layerStyleControl && mapboxAPI) {
+            const layerGroupIds = mapboxAPI.getLayerGroupIds(layerId, config);
+            hasStyleControls = layerGroupIds.length > 0;
+            console.log('[MapFeatureControl] Style check for', layerId, ':', {
+                hasStyleControl: !!this._layerStyleControl,
+                hasMapboxAPI: !!mapboxAPI,
+                layerGroupIds: layerGroupIds,
+                hasStyleControls: hasStyleControls
+            });
+        }
 
         // If no content at all, don't show tabs
-        if (!hasLegend && !hasInfo && !hasFeatures) {
+        if (!hasLegend && !hasInfo && !hasFeatures && !hasStyleControls) {
             const emptyMsg = document.createElement('div');
             emptyMsg.textContent = 'No details available';
             emptyMsg.style.cssText = 'padding: 10px; font-size: 11px; color: #9ca3af; font-style: italic;';
@@ -1502,6 +1553,14 @@ export class MapFeatureControl {
             });
         }
 
+        // Add Style tab if layer has editable style properties
+        if (hasStyleControls) {
+            tabs.push({ id: 'style', label: 'Style', icon: 'palette' });
+            console.log('[MapFeatureControl] Added Style tab for layer', layerId);
+        }
+
+        console.log('[MapFeatureControl] Tabs for layer', layerId, ':', tabs.map(t => t.id));
+
         // Check if we have multiple tabs or just one
         if (tabs.length === 1) {
             // Single tab - Render content directly without tab headers
@@ -1522,6 +1581,10 @@ export class MapFeatureControl {
                 panel.style.padding = '0';
                 const featuresContent = this._createFeaturesContent(layerId, config, features);
                 panel.appendChild(featuresContent);
+            } else if (tab.id === 'style') {
+                panel.style.padding = '0';
+                const styleContent = this._createStyleContent(layerId, config);
+                panel.appendChild(styleContent);
             }
 
             contentContainer.appendChild(panel);
@@ -1608,6 +1671,17 @@ export class MapFeatureControl {
                 const featuresContent = this._createFeaturesContent(layerId, config, features);
                 featuresPanel.appendChild(featuresContent);
                 tabGroup.appendChild(featuresPanel);
+            }
+
+            // 4. Style Panel
+            if (hasStyleControls) {
+                const stylePanel = document.createElement('sl-tab-panel');
+                stylePanel.name = 'style';
+                stylePanel.style.cssText = '--padding: 0;';
+
+                const styleContent = this._createStyleContent(layerId, config);
+                stylePanel.appendChild(styleContent);
+                tabGroup.appendChild(stylePanel);
             }
 
             // Append tab group to container FIRST (important for Shoelace initialization)
@@ -2075,6 +2149,26 @@ export class MapFeatureControl {
         }
 
         return content;
+    }
+
+    /**
+     * Create Style content for Style tab
+     */
+    _createStyleContent(layerId, config) {
+        if (!this._layerStyleControl) {
+            const emptyDiv = document.createElement('div');
+            emptyDiv.style.cssText = `
+                padding: 12px;
+                text-align: center;
+                color: #999;
+                font-size: 10px;
+                font-style: italic;
+            `;
+            emptyDiv.textContent = 'Style editor not available';
+            return emptyDiv;
+        }
+
+        return this._layerStyleControl.renderStyleEditor(layerId, config);
     }
 
     /**
