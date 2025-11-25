@@ -1,4 +1,22 @@
 /**
+ * The Single Entry Point
+ */
+import {MapLinks} from './map-links.js';
+import {ShareLink} from './share-link.js';
+import './drawer-state-manager.js';
+import './mapbox-api.js';
+import './map-feature-state-manager.js';
+import './map-layer-controls.js';
+import './map-feature-control.js';
+import './map-attribution-control.js';
+import './intro-content.js';
+import './atlas-layer-registry.js';
+import './map-init.js';
+import './geolocation-control.js';
+import './mapbox-gl-view-control.js';
+import './map-search-control.js';
+
+/**
  * Navigates to the sound page.
  */
 function navigateToSound(event) {
@@ -126,8 +144,6 @@ customElements.whenDefined('sl-menu-item').then(() => {
 /**
  * MapLinks plugin initialization
  */
-import {MapLinks} from './map-links.js';
-
 window.addEventListener('mapReady', (event) => {
     const mapLinks = new MapLinks({
         buttonId: 'map-links-btn',
@@ -138,8 +154,6 @@ window.addEventListener('mapReady', (event) => {
 /**
  * ShareLink plugin initialization
  */
-import {ShareLink} from './share-link.js';
-
 // Initialize ShareLink plugin when DOM is ready
 document.addEventListener('DOMContentLoaded', () => {
     const shareLink = new ShareLink({
