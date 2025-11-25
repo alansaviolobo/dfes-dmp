@@ -2221,7 +2221,7 @@ export class MapFeatureControl {
         tableContent.style.cssText = 'overflow-y: auto;';
 
         // Build the properties table with intelligent formatting (reuse existing logic)
-        const table = document.createElement('table');
+        let table = document.createElement('table');
         table.className = 'feature-inspector-properties-table values-refreshing'; // Start with values hidden
         table.id = `properties-table-${layerId}-${featureId}`;
         table.style.cssText = `
@@ -2371,8 +2371,10 @@ export class MapFeatureControl {
             viewRawButton.textContent = 'View Raw';
             viewRawButton.className = 'view-raw-button';
             viewRawButton.style.cssText = `
-                margin-top: 8px;
-                padding: 4px 12px;
+                margin-top: 4px;
+                margin-bottom: 4px;
+                margin-left: 8px;
+                padding: 2px 6px;
                 font-size: 10px;
                 border: 1px solid #d1d5db;
                 background-color: #f9fafb;
@@ -2445,7 +2447,7 @@ export class MapFeatureControl {
 
                     table.replaceWith(rawTable);
                     table = rawTable;
-                    viewRawButton.textContent = 'View Filtered';
+                    viewRawButton.textContent = 'View Formatted';
                     showingRaw = true;
                 } else {
                     // Replace with filtered table
@@ -3493,7 +3495,7 @@ export class MapFeatureControl {
         tableContent.style.cssText = 'padding: 12px; max-height: 250px; overflow-y: auto;';
 
         // Build the properties table with intelligent formatting
-        const table = document.createElement('table');
+        let table = document.createElement('table');
         table.className = 'feature-inspector-properties-table';
         table.id = `properties-table-${layerId}-${featureId}`;
         table.style.cssText = `
@@ -3767,7 +3769,7 @@ export class MapFeatureControl {
 
                     table.replaceWith(rawTable);
                     table = rawTable;
-                    viewRawButton.textContent = 'View Filtered';
+                    viewRawButton.textContent = 'View Formatted';
                     showingRaw = true;
                 } else {
                     // Replace with filtered table
