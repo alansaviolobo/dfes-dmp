@@ -849,7 +849,7 @@ export class MapFeatureControl {
         let layerCount = 0;
 
         // Iterate through layer items to find selections
-        const layerItems = this._layersContainer.querySelectorAll('.feature-layer-item');
+        const layerItems = this._layersContainer.querySelectorAll('.layer-card');
         layerItems.forEach(item => {
             if (item.classList.contains('has-selection')) {
                 layerCount++;
