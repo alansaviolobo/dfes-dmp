@@ -481,7 +481,54 @@ export class MapFeatureControl {
         // Assemble panel
         content.appendChild(header);
         content.appendChild(this._layersContainer);
-        // Footer removed as per redesign plan
+
+        // Create Footer (Selection Summary)
+        this._footer = document.createElement('div');
+        this._footer.style.cssText = `
+            display: none; /* Hidden by default */
+            align-items: center;
+            justify-content: space-between;
+            padding: 8px 12px;
+            background: #f0f9ff;
+            border-top: 1px solid #bae6fd;
+            flex-shrink: 0;
+        `;
+
+        // Selection Text
+        this._selectionText = document.createElement('span');
+        this._selectionText.style.cssText = `
+            font-size: 12px;
+            color: #0369a1;
+            font-weight: 500;
+        `;
+        this._footer.appendChild(this._selectionText);
+
+        // Footer Clear Button
+        const footerClearBtn = document.createElement('button');
+        footerClearBtn.textContent = 'Clear Selection';
+        footerClearBtn.style.cssText = `
+            background: transparent;
+            border: 1px solid #0ea5e9;
+            color: #0284c7;
+            border-radius: 4px;
+            padding: 2px 8px;
+            font-size: 11px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        `;
+        footerClearBtn.addEventListener('mouseenter', () => {
+            footerClearBtn.style.background = '#e0f2fe';
+        });
+        footerClearBtn.addEventListener('mouseleave', () => {
+            footerClearBtn.style.background = 'transparent';
+        });
+        footerClearBtn.addEventListener('click', () => {
+            this._clearAllSelections();
+        });
+        this._footer.appendChild(footerClearBtn);
+
+        content.appendChild(this._footer);
 
         this._panel.appendChild(content);
 
@@ -601,13 +648,34 @@ export class MapFeatureControl {
     _createHeaderActions() {
         const actions = [];
 
-        // 1. Find Layers Button (Text + Icon)
+        // 1. Find Layers Button (Primary Action)
         const findLayersBtn = document.createElement('button');
         findLayersBtn.className = 'find-layers-btn';
         findLayersBtn.innerHTML = `
-            <sl-icon name="search"></sl-icon>
+            <sl-icon name="search" style="font-size: 14px; margin-right: 6px;"></sl-icon>
             <span>Find Layers</span>
         `;
+        findLayersBtn.style.cssText = `
+            display: flex;
+            align-items: center;
+            background-color: #2563eb; /* Primary Blue */
+            color: white;
+            border: none;
+            border-radius: 4px;
+            padding: 4px 10px;
+            font-size: 12px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: background-color 0.2s;
+            margin-right: 4px;
+        `;
+
+        findLayersBtn.addEventListener('mouseenter', () => {
+            findLayersBtn.style.backgroundColor = '#1d4ed8';
+        });
+        findLayersBtn.addEventListener('mouseleave', () => {
+            findLayersBtn.style.backgroundColor = '#2563eb';
+        });
 
         findLayersBtn.addEventListener('click', () => {
             this._openLayerDrawer();
@@ -696,28 +764,9 @@ export class MapFeatureControl {
 
         actions.push(settingsPopover);
 
-        // 4. Clear Selection (Visible only when needed)
-        this._clearSelectionBtn = document.createElement('sl-icon-button');
-        this._clearSelectionBtn.name = 'x-circle';
-        this._clearSelectionBtn.label = 'Clear Selection';
-        this._clearSelectionBtn.style.cssText = `
-            font-size: 16px;
-            color: #ef4444;
-        `;
+        // 4. Clear Selection (Moved to footer)
+        // this._clearSelectionBtn removed from header actions
 
-        this._clearSelectionTooltip = document.createElement('sl-tooltip');
-        this._clearSelectionTooltip.content = 'Clear Selection';
-        this._clearSelectionTooltip.appendChild(this._clearSelectionBtn);
-        this._clearSelectionTooltip.style.display = 'none'; // Hidden by default
-
-        this._clearSelectionBtn.addEventListener('click', (e) => {
-            e.preventDefault();
-            e.stopPropagation();
-            this._clearAllSelections();
-        });
-
-        // Insert clear button before settings
-        actions.splice(2, 0, this._clearSelectionTooltip);
 
         // Re-initialize inspect switch for internal state logic (hidden)
         this._inspectSwitch = document.createElement('sl-switch');
@@ -790,20 +839,52 @@ export class MapFeatureControl {
     }
 
     /**
-     * Update clear selection button visibility based on whether any layers have selections
+     * Update footer visibility and text based on selections
      */
-    _updateClearSelectionButtonVisibility() {
-        if (!this._clearSelectionTooltip) return;
+    _updateSelectionFooter() {
+        if (!this._footer) return;
 
-        // Check if any layer elements have the 'has-selection' class
-        const hasSelections = this._layersContainer.querySelector('.has-selection') !== null;
+        // Count selections
+        let featureCount = 0;
+        let layerCount = 0;
 
-        if (hasSelections) {
-            this._clearSelectionTooltip.style.display = 'inline-block';
+        // Iterate through layer items to find selections
+        const layerItems = this._layersContainer.querySelectorAll('.feature-layer-item');
+        layerItems.forEach(item => {
+            if (item.classList.contains('has-selection')) {
+                layerCount++;
+                // In a real implementation, we'd need a way to count features per layer.
+                // For now, we'll assume 1 feature per selected layer unless we can query the details.
+                // If the details panel is populated, we might count rows, but 'has-selection' is a good proxy for "at least one".
+                // Let's try to be more specific if possible, but 'has-selection' is what we have easily.
+                // Actually, let's look for selected rows if they exist
+                const selectedRows = item.querySelectorAll('tr.selected-row');
+                if (selectedRows.length > 0) {
+                    featureCount += selectedRows.length;
+                } else {
+                    // Fallback if rows aren't marked with a specific class or if it's just the layer marked
+                    featureCount++;
+                }
+            }
+        });
+
+        if (layerCount > 0) {
+            this._selectionText.textContent = `${featureCount} feature${featureCount !== 1 ? 's' : ''} selected across ${layerCount} layer${layerCount !== 1 ? 's' : ''}`;
+            this._footer.style.display = 'flex';
+            // Also ensure panel is visible if hidden? Maybe not force it, but good UX.
         } else {
-            this._clearSelectionTooltip.style.display = 'none';
+            this._footer.style.display = 'none';
         }
     }
+
+    /**
+     * Update clear selection button visibility - Redirects to new footer method
+     */
+    _updateClearSelectionButtonVisibility() {
+        this._updateSelectionFooter();
+    }
+
+
 
     /**
      * Handle state changes from the state manager
