@@ -2283,31 +2283,35 @@ export class MapFeatureControl {
             }
         });
 
-        // 3. Add remaining fields for completeness
-        Object.entries(properties).forEach(([key, value]) => {
-            // Skip if already added as label or priority field
-            if (key === labelField || priorityFields.includes(key)) {
-                return;
-            }
+        // 3. Add remaining fields (only if inspect.fields is not defined)
+        const hasConfiguredFields = priorityFields.length > 0;
 
-            // Skip empty values and internal/system fields
-            if (value === undefined || value === null || value === '') {
-                return;
-            }
+        if (!hasConfiguredFields) {
+            Object.entries(properties).forEach(([key, value]) => {
+                // Skip if already added as label or priority field
+                if (key === labelField || priorityFields.includes(key)) {
+                    return;
+                }
 
-            // Skip common internal/system fields that aren't useful to display
-            const systemFields = ['id', 'fid', '_id', 'objectid', 'gid', 'osm_id', 'way_id'];
-            if (systemFields.includes(key.toLowerCase())) {
-                return;
-            }
+                // Skip empty values and internal/system fields
+                if (value === undefined || value === null || value === '') {
+                    return;
+                }
 
-            organizedFields.push({
-                key: key,
-                value: value,
-                isOther: true,
-                displayName: key
+                // Skip common internal/system fields that aren't useful to display
+                const systemFields = ['id', 'fid', '_id', 'objectid', 'gid', 'osm_id', 'way_id'];
+                if (systemFields.includes(key.toLowerCase())) {
+                    return;
+                }
+
+                organizedFields.push({
+                    key: key,
+                    value: value,
+                    isOther: true,
+                    displayName: key
+                });
             });
-        });
+        }
 
         // Render the organized fields with compact styling
         organizedFields.forEach(field => {
@@ -2360,6 +2364,152 @@ export class MapFeatureControl {
         });
 
         tableContent.appendChild(table);
+
+        // Add "View Raw" button if fields are configured
+        if (hasConfiguredFields) {
+            const viewRawButton = document.createElement('button');
+            viewRawButton.textContent = 'View Raw';
+            viewRawButton.className = 'view-raw-button';
+            viewRawButton.style.cssText = `
+                margin-top: 8px;
+                padding: 4px 12px;
+                font-size: 10px;
+                border: 1px solid #d1d5db;
+                background-color: #f9fafb;
+                color: #374151;
+                border-radius: 4px;
+                cursor: pointer;
+                transition: all 0.15s ease;
+                font-weight: 500;
+            `;
+
+            viewRawButton.addEventListener('mouseenter', () => {
+                viewRawButton.style.backgroundColor = '#f3f4f6';
+                viewRawButton.style.borderColor = '#9ca3af';
+            });
+
+            viewRawButton.addEventListener('mouseleave', () => {
+                viewRawButton.style.backgroundColor = '#f9fafb';
+                viewRawButton.style.borderColor = '#d1d5db';
+            });
+
+            let showingRaw = false;
+            viewRawButton.addEventListener('click', () => {
+                if (!showingRaw) {
+                    // Replace table with raw properties
+                    const rawTable = document.createElement('table');
+                    rawTable.className = 'feature-inspector-properties-table';
+                    rawTable.id = `properties-table-${layerId}-${featureId}`;
+                    rawTable.style.cssText = table.style.cssText;
+
+                    Object.entries(properties).forEach(([key, value]) => {
+                        if (value === undefined || value === null || value === '') return;
+
+                        const row = document.createElement('tr');
+                        row.style.cssText = `
+                            border-bottom: 1px solid #f3f4f6;
+                            background-color: white;
+                            transition: background-color 0.1s ease;
+                        `;
+
+                        const keyCell = document.createElement('td');
+                        keyCell.style.cssText = `
+                            padding: 6px 8px;
+                            font-weight: 600;
+                            color: #6b7280;
+                            width: 35%;
+                            vertical-align: top;
+                            line-height: 1.4;
+                            font-size: 11px;
+                            border-right: 1px solid #f3f4f6;
+                        `;
+                        keyCell.textContent = key;
+
+                        const valueCell = document.createElement('td');
+                        valueCell.style.cssText = `
+                            padding: 6px 8px;
+                            word-break: break-word;
+                            font-size: 11px;
+                            font-weight: 400;
+                            color: #4b5563;
+                            line-height: 1.4;
+                            vertical-align: top;
+                        `;
+                        const urlContainer = this._makeUrlsClickable(value, false);
+                        valueCell.appendChild(urlContainer);
+
+                        row.appendChild(keyCell);
+                        row.appendChild(valueCell);
+                        rawTable.appendChild(row);
+                    });
+
+                    table.replaceWith(rawTable);
+                    table = rawTable;
+                    viewRawButton.textContent = 'View Filtered';
+                    showingRaw = true;
+                } else {
+                    // Replace with filtered table
+                    const filteredTable = document.createElement('table');
+                    filteredTable.className = 'feature-inspector-properties-table';
+                    filteredTable.id = `properties-table-${layerId}-${featureId}`;
+                    filteredTable.style.cssText = table.style.cssText;
+
+                    organizedFields.forEach(field => {
+                        const row = document.createElement('tr');
+                        let rowBackgroundColor = 'white';
+                        if (field.isLabel) {
+                            rowBackgroundColor = '#f3f4f6';
+                        } else if (field.isPriority) {
+                            rowBackgroundColor = '#f9fafb';
+                        }
+
+                        row.style.cssText = `
+                            border-bottom: 1px solid #f3f4f6;
+                            background-color: ${rowBackgroundColor};
+                            transition: background-color 0.1s ease;
+                        `;
+
+                        const keyCell = document.createElement('td');
+                        keyCell.style.cssText = `
+                            padding: 6px 8px;
+                            font-weight: 600;
+                            color: ${field.isLabel ? '#111827' : field.isPriority ? '#374151' : '#6b7280'};
+                            width: 35%;
+                            vertical-align: top;
+                            line-height: 1.4;
+                            font-size: 11px;
+                            border-right: 1px solid #f3f4f6;
+                        `;
+                        keyCell.textContent = field.displayName;
+
+                        const valueCell = document.createElement('td');
+                        valueCell.style.cssText = `
+                            padding: 6px 8px;
+                            word-break: break-word;
+                            font-size: 11px;
+                            font-weight: ${field.isLabel ? '600' : '400'};
+                            color: ${field.isLabel ? '#111827' : '#4b5563'};
+                            line-height: 1.4;
+                            vertical-align: top;
+                        `;
+                        const urlContainer = this._makeUrlsClickable(field.value, false);
+                        valueCell.appendChild(urlContainer);
+
+                        row.appendChild(keyCell);
+                        row.appendChild(valueCell);
+                        filteredTable.appendChild(row);
+                    });
+
+                    table.replaceWith(filteredTable);
+                    table = filteredTable;
+                    viewRawButton.textContent = 'View Raw';
+                    showingRaw = false;
+                }
+            });
+
+            tableContent.appendChild(viewRawButton);
+        }
+
         content.appendChild(tableContent);
 
         // Add source layer links content if applicable (simplified for nested view)
@@ -3398,32 +3548,36 @@ export class MapFeatureControl {
             }
         });
 
-        // 3. Add remaining fields (for layers without inspect, show all non-empty properties)
-        Object.entries(properties).forEach(([key, value]) => {
-            // Skip if already added as label or priority field
-            if (key === labelField || priorityFields.includes(key)) {
-                return;
-            }
+        // 3. Add remaining fields (only if inspect.fields is not defined)
+        const hasConfiguredFields = priorityFields.length > 0;
 
-            // For layers without inspect properties, be more inclusive
-            // Skip empty values and internal/system fields
-            if (value === undefined || value === null || value === '') {
-                return;
-            }
+        if (!hasConfiguredFields) {
+            Object.entries(properties).forEach(([key, value]) => {
+                // Skip if already added as label or priority field
+                if (key === labelField || priorityFields.includes(key)) {
+                    return;
+                }
 
-            // Skip common internal/system fields that aren't useful to display
-            const systemFields = ['id', 'fid', '_id', 'objectid', 'gid', 'osm_id', 'way_id'];
-            if (systemFields.includes(key.toLowerCase())) {
-                return;
-            }
+                // For layers without inspect properties, be more inclusive
+                // Skip empty values and internal/system fields
+                if (value === undefined || value === null || value === '') {
+                    return;
+                }
 
-            organizedFields.push({
-                key: key,
-                value: value,
-                isOther: true,
-                displayName: key
+                // Skip common internal/system fields that aren't useful to display
+                const systemFields = ['id', 'fid', '_id', 'objectid', 'gid', 'osm_id', 'way_id'];
+                if (systemFields.includes(key.toLowerCase())) {
+                    return;
+                }
+
+                organizedFields.push({
+                    key: key,
+                    value: value,
+                    isOther: true,
+                    displayName: key
+                });
             });
-        });
+        }
 
         // For layers without inspect properties, show at least some basic info if no fields were found
         if (organizedFields.length === 0 && !layerConfig.inspect) {
@@ -3525,6 +3679,178 @@ export class MapFeatureControl {
         });
 
         tableContent.appendChild(table);
+
+        // Add "View Raw" button if fields are configured
+        if (hasConfiguredFields) {
+            const viewRawButton = document.createElement('button');
+            viewRawButton.textContent = 'View Raw';
+            viewRawButton.className = 'view-raw-button';
+            viewRawButton.style.cssText = `
+                margin-top: 8px;
+                padding: 4px 12px;
+                font-size: 10px;
+                border: 1px solid #d1d5db;
+                background-color: #f9fafb;
+                color: #374151;
+                border-radius: 4px;
+                cursor: pointer;
+                transition: all 0.15s ease;
+                font-weight: 500;
+            `;
+
+            viewRawButton.addEventListener('mouseenter', () => {
+                viewRawButton.style.backgroundColor = '#f3f4f6';
+                viewRawButton.style.borderColor = '#9ca3af';
+            });
+
+            viewRawButton.addEventListener('mouseleave', () => {
+                viewRawButton.style.backgroundColor = '#f9fafb';
+                viewRawButton.style.borderColor = '#d1d5db';
+            });
+
+            let showingRaw = false;
+            viewRawButton.addEventListener('click', () => {
+                if (!showingRaw) {
+                    // Replace table with raw properties
+                    const rawTable = document.createElement('table');
+                    rawTable.className = 'feature-inspector-properties-table';
+                    rawTable.id = `properties-table-${layerId}-${featureId}`;
+                    rawTable.style.cssText = table.style.cssText;
+
+                    Object.entries(properties).forEach(([key, value]) => {
+                        if (value === undefined || value === null || value === '') return;
+
+                        const row = document.createElement('tr');
+                        row.style.cssText = `
+                            border-bottom: 1px solid #e5e7eb;
+                            background-color: #ffffff;
+                            transition: background-color 0.1s ease;
+                        `;
+
+                        row.addEventListener('mouseenter', () => {
+                            row.style.backgroundColor = '#f9fafb';
+                        });
+
+                        row.addEventListener('mouseleave', () => {
+                            row.style.backgroundColor = '#ffffff';
+                        });
+
+                        const keyCell = document.createElement('td');
+                        keyCell.style.cssText = `
+                            padding: 6px 8px;
+                            font-weight: 600;
+                            color: #6b7280;
+                            width: 40%;
+                            vertical-align: top;
+                            line-height: 1.3;
+                            font-size: 10px;
+                        `;
+                        keyCell.textContent = key;
+
+                        const valueCell = document.createElement('td');
+                        valueCell.style.cssText = `
+                            padding: 6px 8px;
+                            word-break: break-word;
+                            font-size: 10px;
+                            font-weight: 400;
+                            color: #374151;
+                            line-height: 1.3;
+                            vertical-align: top;
+                        `;
+                        const urlContainer = this._makeUrlsClickable(value, false);
+                        valueCell.appendChild(urlContainer);
+
+                        row.appendChild(keyCell);
+                        row.appendChild(valueCell);
+                        rawTable.appendChild(row);
+                    });
+
+                    table.replaceWith(rawTable);
+                    table = rawTable;
+                    viewRawButton.textContent = 'View Filtered';
+                    showingRaw = true;
+                } else {
+                    // Replace with filtered table
+                    const filteredTable = document.createElement('table');
+                    filteredTable.className = 'feature-inspector-properties-table';
+                    filteredTable.id = `properties-table-${layerId}-${featureId}`;
+                    filteredTable.style.cssText = table.style.cssText;
+
+                    organizedFields.forEach(field => {
+                        const row = document.createElement('tr');
+                        let rowBackgroundColor = '#ffffff';
+                        if (field.isLabel) {
+                            rowBackgroundColor = '#f8fafc';
+                        } else if (field.isPriority) {
+                            rowBackgroundColor = '#f9fafb';
+                        }
+
+                        row.style.cssText = `
+                            border-bottom: 1px solid #e5e7eb;
+                            background-color: ${rowBackgroundColor};
+                            transition: background-color 0.1s ease;
+                        `;
+
+                        row.addEventListener('mouseenter', () => {
+                            if (field.isLabel) {
+                                row.style.backgroundColor = '#f1f5f9';
+                            } else if (field.isPriority) {
+                                row.style.backgroundColor = '#f3f4f6';
+                            } else {
+                                row.style.backgroundColor = '#f9fafb';
+                            }
+                        });
+
+                        row.addEventListener('mouseleave', () => {
+                            row.style.backgroundColor = rowBackgroundColor;
+                        });
+
+                        const keyCell = document.createElement('td');
+                        keyCell.style.cssText = `
+                            padding: 6px 8px;
+                            font-weight: 600;
+                            color: ${field.isLabel ? '#1f2937' : field.isPriority ? '#374151' : '#6b7280'};
+                            width: 40%;
+                            vertical-align: top;
+                            line-height: 1.3;
+                            font-size: ${field.isLabel ? '11px' : '10px'};
+                        `;
+
+                        if (field.displayName !== field.key) {
+                            keyCell.textContent = field.displayName;
+                            keyCell.title = `Original field: ${field.key}`;
+                            keyCell.style.cursor = 'help';
+                        } else {
+                            keyCell.textContent = field.displayName;
+                        }
+
+                        const valueCell = document.createElement('td');
+                        valueCell.style.cssText = `
+                            padding: 6px 8px;
+                            word-break: break-word;
+                            font-size: ${field.isLabel ? '12px' : '10px'};
+                            font-weight: ${field.isLabel ? '600' : '400'};
+                            color: ${field.isLabel ? '#1f2937' : '#374151'};
+                            line-height: 1.3;
+                            vertical-align: top;
+                        `;
+                        const urlContainer = this._makeUrlsClickable(field.value, false);
+                        valueCell.appendChild(urlContainer);
+
+                        row.appendChild(keyCell);
+                        row.appendChild(valueCell);
+                        filteredTable.appendChild(row);
+                    });
+
+                    table.replaceWith(filteredTable);
+                    table = filteredTable;
+                    viewRawButton.textContent = 'View Raw';
+                    showingRaw = false;
+                }
+            });
+
+            tableContent.appendChild(viewRawButton);
+        }
 
         content.appendChild(tableContent);
 

@@ -635,11 +635,13 @@
         "label": "plot",
         "fields": [
           "villagenam",
-          "talname"
+          "talname",
+          "shape_area"
         ],
         "fieldTitles": [
           "Village",
-          "Taluk"
+          "Taluk",
+          "Shape Area (sqm)"
         ],
         "customHtml": "<a href='https://bhunaksha.goa.gov.in/bhunaksha/' target='_blank'>Bhunaksha Goa</a> | <a href='https://goaonline.gov.in/Appln/Uil/DeptServices?__DocId=REV&__ServiceId=REV31' target='_blank'>View RoR</a> | <a href='https://davepaiva.github.io/goa-cadastral-duckdb-demo/' target='_blank'>Search</a>"
       }
@@ -1612,7 +1614,6 @@
         ]
       }
     },
- 
     {
       "title": "Bhutani Project Site Plan With Contours",
       "description": "For proposed project in Survey No. 257/1 in Sancoale, Mormugao, Goa.\r\n\r\nObtained via RTI",
@@ -1625,8 +1626,12 @@
         "raster-opacity": 1,
         "raster-color": [
           "interpolate",
-          ["linear"],
-          ["raster-value"],
+          [
+            "linear"
+          ],
+          [
+            "raster-value"
+          ],
           0,
           "black",
           0.9,
@@ -1652,14 +1657,18 @@
         "raster-opacity": 1,
         "raster-color": [
           "interpolate",
-          ["linear"],
-          ["raster-value"],
+          [
+            "linear"
+          ],
+          [
+            "raster-value"
+          ],
           0,
           "red",
           0.8,
           "red",
           1,
-         "rgba(255, 255, 255,0)"
+          "rgba(255, 255, 255,0)"
         ]
       },
       "attribution": "<a href='https://mapwarper.net/maps/99229' target='_blank'>MapWarper</a>",
