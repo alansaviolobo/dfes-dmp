@@ -5,7 +5,7 @@ const ASSETS_TO_CACHE = [
     '/offline.html',
     '/styles.css',
     '/config/_defaults.json',
-    '/js/geolocation-control.js',
+    '/js/geolocation-manager.js',
     '/js/mapbox-gl-view-control.js',
     '/js/map-init.js',
     '/js/map-layer-controls.js',

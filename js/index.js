@@ -1,4 +1,22 @@
 /**
+ * The Single Entry Point
+ */
+import {MapLinks} from './map-links.js';
+import {ShareLink} from './share-link.js';
+import './drawer-state-manager.js';
+import './mapbox-api.js';
+import './map-feature-state-manager.js';
+import './map-layer-controls.js';
+import './map-feature-control.js';
+import './map-attribution-control.js';
+import './intro-content-manager.js';
+import './layer-registry.js';
+import './map-init.js';
+import './geolocation-manager.js';
+import './mapbox-gl-view-control.js';
+import './map-search-control.js';
+
+/**
  * Navigates to the sound page.
  */
 function navigateToSound(event) {

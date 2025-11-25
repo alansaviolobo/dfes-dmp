@@ -12,7 +12,7 @@
 
 import { drawerStateManager } from './drawer-state-manager.js';
 import { convertToKML } from './map-utils.js';
-import { LayerSettingsModal } from './layer-settings.js';
+import { LayerSettingsModal } from './layer-settings-modal.js';
 import { openLayerCreatorDialog } from './layer-creator-ui.js';
 import { LayerStyleControl } from './layer-style-control.js';
 

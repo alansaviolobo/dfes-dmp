@@ -5,7 +5,7 @@
  * keeping this class focused on UI management and configuration handling.
  */
 import { localization } from './localization.js';
-import { LayerSettingsModal } from './layer-settings.js';
+import { LayerSettingsModal } from './layer-settings-modal.js';
 import { MapboxAPI } from './mapbox-api.js';
 import { deepMerge } from './map-utils.js';
 import { openLayerCreatorDialog } from './layer-creator-ui.js';

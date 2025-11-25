@@ -2,15 +2,17 @@ import { MapLayerControl } from './map-layer-controls.js';
 import { MapFeatureControl } from './map-feature-control.js';
 import { MapFeatureStateManager } from './map-feature-state-manager.js';
 import { localization } from './localization.js';
-import { URLManager } from './url-api.js';
+import { URLManager } from './url-manager.js';
+import { GeolocationManager } from './geolocation-manager.js';
+import { ViewControl } from './mapbox-gl-view-control.js';
 import { permalinkHandler } from './permalink-handler.js';
-import { Terrain3DControl } from './3d-control.js';
+import { Terrain3DControl } from './terrain-3d-control.js';
 import { TimeControl } from './time-control.js';
 import { StatePersistence } from './pwa/state-persistence.js';
 import { MapAttributionControl } from './map-attribution-control.js';
-import { layerRegistry } from './atlas-layer-registry.js';
+import { layerRegistry } from './layer-registry.js';
 
-// Layer registry is now imported from atlas-layer-registry.js
+// Layer registry is now imported from layer-registry.js
 // Make it available globally for backwards compatibility
 window.layerRegistry = layerRegistry;
 

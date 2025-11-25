@@ -2,7 +2,7 @@
  * Mapbox GL View Controller
  */
 
-class ViewControl {
+export class ViewControl {
     constructor(options = {}) {
         this.options = {
             initialView: {

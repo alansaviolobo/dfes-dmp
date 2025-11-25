@@ -2,7 +2,7 @@
  * Geolocation Manager
  */
 
-class GeolocationManager {
+export class GeolocationManager {
     constructor(map, urlManager = null) {
         this.map = map;
         this.urlManager = urlManager;
