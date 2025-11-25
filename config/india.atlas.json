@@ -2290,14 +2290,6 @@
       "id": "1792-general-atlas",
       "url": "https://warper.wmflabs.org/maps/tile/7050/{z}/{x}/{y}.png",
       "attribution": "<a href='https://commons.wikimedia.org/wiki/File:Southern_India_Wilkinson.png'>Wikimedia Commons: Southern India Wilkinson.png </a> via <a href='https://warper.wmflabs.org/maps/7050'>Wikimaps Warper</a> released in public domain"
-    },
-    {
-      "id": "osm",
-      "initiallyChecked": true
-    },
-    {
-      "initiallyChecked": true,
-      "id": "mapbox-satellite"
     }
   ]
 }

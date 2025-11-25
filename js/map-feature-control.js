@@ -489,8 +489,8 @@ export class MapFeatureControl {
         // Use a timeout to avoid immediate hiding due to event bubbling
         setTimeout(() => {
             document.addEventListener('click', (e) => {
-                // Don't close panel if clicking on the panel itself, control button, or map canvas
-                if (!e.target.closest('.map-feature-panel, .mapboxgl-ctrl-icon, .mapboxgl-canvas-container')) {
+                // Don't close panel if clicking on the panel itself, control button, map canvas, or layer drawer
+                if (!e.target.closest('.map-feature-panel, .mapboxgl-ctrl-icon, .mapboxgl-canvas-container, #map-controls-drawer')) {
                     this._hidePanel();
                 }
             });
@@ -601,23 +601,18 @@ export class MapFeatureControl {
     _createHeaderActions() {
         const actions = [];
 
-        // 1. Find Layers Button (Icon only)
-        const findLayersBtn = document.createElement('sl-icon-button');
-        findLayersBtn.name = 'search';
-        findLayersBtn.label = 'Find Layers';
-        findLayersBtn.style.cssText = `
-            font-size: 16px;
-            color: #4b5563;
+        // 1. Find Layers Button (Text + Icon)
+        const findLayersBtn = document.createElement('button');
+        findLayersBtn.className = 'find-layers-btn';
+        findLayersBtn.innerHTML = `
+            <sl-icon name="search"></sl-icon>
+            <span>Find Layers</span>
         `;
-        // Add tooltip
-        const findTooltip = document.createElement('sl-tooltip');
-        findTooltip.content = 'Find Layers';
-        findTooltip.appendChild(findLayersBtn);
 
         findLayersBtn.addEventListener('click', () => {
             this._openLayerDrawer();
         });
-        actions.push(findTooltip);
+        actions.push(findLayersBtn);
 
         // 2. New Data Source Button (Icon only)
         const newDataSourceBtn = document.createElement('sl-icon-button');
@@ -898,6 +893,9 @@ export class MapFeatureControl {
             case 'layer-registered':
                 // Re-render when layers are registered (turned on)
                 this._scheduleRender();
+
+                // Ensure panel is visible when a new layer is added
+                this._showPanel();
 
                 // Ensure URL is updated when layers are turned on
                 if (window.urlManager) {
@@ -1229,7 +1227,6 @@ export class MapFeatureControl {
             background: white;
             border: 1px solid #e5e7eb;
             border-radius: 6px;
-            margin-bottom: 8px;
             overflow: hidden;
             box-shadow: 0 1px 2px rgba(0,0,0,0.05);
             transition: box-shadow 0.2s ease;
@@ -1247,7 +1244,7 @@ export class MapFeatureControl {
         const header = document.createElement('div');
         header.className = 'layer-card-header';
         header.style.cssText = `
-            padding: 8px 10px;
+            padding: 5px 5px;
             background: #f9fafb;
             border-bottom: 1px solid #e5e7eb;
             display: flex;
@@ -1261,7 +1258,7 @@ export class MapFeatureControl {
             layerCard.classList.add('has-header-image');
             layerCard.setAttribute('data-header-image', config.headerImage);
             // We'll apply the background to the header instead of summary
-            header.style.backgroundImage = `linear-gradient(to right, rgba(255,255,255,0.95), rgba(255,255,255,0.7)), url('${config.headerImage}')`;
+            header.style.backgroundImage = `linear-gradient(to right, rgba(255,255,255,0.9), rgba(255,255,255,0.4)), url('${config.headerImage}')`;
             header.style.backgroundSize = 'cover';
             header.style.backgroundPosition = 'center';
         }
@@ -1378,10 +1375,25 @@ export class MapFeatureControl {
         } else if (tabs.length > 1) {
             // Multiple tabs - Create Tab Group
             const tabGroup = document.createElement('sl-tab-group');
+            tabGroup.classList.add('feature-tab-group');
             tabGroup.style.cssText = `
                 --indicator-color: #3b82f6;
                 --track-color: #f3f4f6;
             `;
+
+            // Inject styles into shadow DOM to fix scrolling issue
+            tabGroup.updateComplete.then(() => {
+                const sheet = new CSSStyleSheet();
+                sheet.replaceSync(`
+                    .tab-group__nav {
+                        overflow-x: visible !important;
+                    }
+                `);
+                tabGroup.shadowRoot.adoptedStyleSheets = [
+                    ...tabGroup.shadowRoot.adoptedStyleSheets,
+                    sheet
+                ];
+            });
 
             // Create Tab Headers
             tabs.forEach(tab => {
@@ -3529,7 +3541,15 @@ export class MapFeatureControl {
     _removeLayerElement(layerId) {
         const existing = this._layersContainer.querySelector(`[data-layer-id="${layerId}"]`);
         if (existing) {
-            existing.remove();
+            // Add slide-out animation class
+            existing.classList.add('layer-slide-out');
+
+            // Wait for animation to complete before removing
+            setTimeout(() => {
+                if (existing && existing.parentNode) {
+                    existing.remove();
+                }
+            }, 400); // Match CSS animation duration
         }
 
         // Clean up header image CSS for this layer
@@ -4882,25 +4902,27 @@ export class MapFeatureControl {
 
     /**
      * Apply opacity effect to layer details UI elements when a layer is isolated
-     * Sets opacity to 0.5 for all layer details except the hovered one
+     * Sets opacity to 0.3 and grayscale for all layer details except the hovered one
      */
     _applyLayerDetailsOpacityEffect(hoveredLayerId) {
         if (!this._layersContainer) return;
 
-        // Get all layer details elements
-        const layerDetailsElements = this._layersContainer.querySelectorAll('.layer-details');
+        // Get all layer card elements
+        const layerDetailsElements = this._layersContainer.querySelectorAll('.layer-card');
 
         layerDetailsElements.forEach(element => {
             const elementLayerId = element.getAttribute('data-layer-id');
 
             if (elementLayerId !== hoveredLayerId) {
-                // Set opacity to 0.5 for non-hovered layers with smooth transition
-                element.style.transition = 'opacity 0.2s ease-in-out';
-                element.style.opacity = '0.5';
+                // Set opacity to 0.3 and grayscale for non-hovered layers with smooth transition
+                element.style.transition = 'opacity 0.2s ease-in-out, filter 0.2s ease-in-out';
+                element.style.opacity = '0.3';
+                element.style.filter = 'grayscale(100%)';
             } else {
-                // Ensure hovered layer stays fully opaque
-                element.style.transition = 'opacity 0.2s ease-in-out';
+                // Ensure hovered layer stays fully opaque and colored
+                element.style.transition = 'opacity 0.2s ease-in-out, filter 0.2s ease-in-out';
                 element.style.opacity = '1';
+                element.style.filter = 'none';
             }
         });
 
@@ -4912,13 +4934,14 @@ export class MapFeatureControl {
     _restoreLayerDetailsOpacity() {
         if (!this._layersContainer) return;
 
-        // Get all layer details elements
-        const layerDetailsElements = this._layersContainer.querySelectorAll('.layer-details');
+        // Get all layer card elements
+        const layerDetailsElements = this._layersContainer.querySelectorAll('.layer-card');
 
         layerDetailsElements.forEach(element => {
-            // Restore full opacity with smooth transition
-            element.style.transition = 'opacity 0.2s ease-in-out';
+            // Restore full opacity and color with smooth transition
+            element.style.transition = 'opacity 0.2s ease-in-out, filter 0.2s ease-in-out';
             element.style.opacity = '1';
+            element.style.filter = 'none';
         });
 
     }
