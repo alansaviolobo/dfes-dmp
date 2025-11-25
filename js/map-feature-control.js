@@ -84,6 +84,9 @@ export class MapFeatureControl {
         // Drag event listeners storage for cleanup
         this._dragListeners = null;
 
+        // Footer auto-fade timeout
+        this._footerTimeout = null;
+
         // Initialized
 
         // Set up resize listener for responsive height adjustments
@@ -218,7 +221,7 @@ export class MapFeatureControl {
 
                 // Create initial container with loading spinner
                 const containerHTML = `
-                    <div id="${containerId}" class="text-xs" style="color: #d1d5db;">
+                    <div id="${containerId}" class="text-xs">
                         <div class="mb-2 font-semibold">Additional Information from <a href="https://bhunaksha.goa.gov.in" target="_blank" style="color: #60a5fa;">Goa Bhunaksha</a></div>
                         <div class="flex items-center gap-2">
                             <sl-spinner style="font-size: 0.875rem; --indicator-color: #9ca3af;"></sl-spinner>
@@ -276,10 +279,10 @@ export class MapFeatureControl {
                                 }
 
                                 container.innerHTML = `
-                                    <div class="text-xs" style="color: #d1d5db;">
-                                        <div class="mb-2 font-semibold" style="color: #f3f4f6;">Additional Information from Bhunaksha</div>
-                                        <div class="mb-2" style="color: #e5e7eb;">${infoText}</div>
-                                        <div class="italic text-xs" style="color: #9ca3af;">
+                                    <div class="text-xs">
+                                        <div class="mb-2 font-semibold">Additional Information from Bhunaksha</div>
+                                        <div class="mb-2">${infoText}</div>
+                                        <div class="italic text-xs">
                                             <svg class="inline w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 20 20">
                                                 <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"></path>
                                             </svg>
@@ -303,8 +306,8 @@ export class MapFeatureControl {
                         const container = document.getElementById(containerId);
                         if (container) {
                             container.innerHTML = `
-                                <div class="text-xs" style="color: #d1d5db;">
-                                    <div class="mb-2 font-semibold" style="color: #f3f4f6;">Additional Information from Bhunaksha</div>
+                                <div class="text-xs">
+                                    <div class="mb-2 font-semibold">Additional Information from Bhunaksha</div>
                                     <span class="text-xs" style="color: #ef4444;">Error loading details</span>
                                 </div>
                             `;
@@ -373,6 +376,24 @@ export class MapFeatureControl {
 
         // Create panel
         this._createPanel();
+
+        // Add styles for visual feedback
+        const style = document.createElement('style');
+        style.textContent = `
+            @keyframes layer-flash {
+                0% { background-color: white; }
+                50% { background-color: #eff6ff; } /* blue-50 */
+                100% { background-color: white; }
+            }
+            .layer-flash {
+                animation: layer-flash 0.5s ease-in-out;
+            }
+            .values-refreshing td {
+                color: transparent !important;
+                transition: color 0.2s ease;
+            }
+        `;
+        document.head.appendChild(style);
     }
 
     /**
@@ -492,6 +513,8 @@ export class MapFeatureControl {
             background: #f0f9ff;
             border-top: 1px solid #bae6fd;
             flex-shrink: 0;
+            transition: opacity 0.5s ease;
+            opacity: 0;
         `;
 
         // Selection Text
@@ -870,10 +893,36 @@ export class MapFeatureControl {
 
         if (layerCount > 0) {
             this._selectionText.textContent = `${featureCount} feature${featureCount !== 1 ? 's' : ''} selected across ${layerCount} layer${layerCount !== 1 ? 's' : ''}`;
+
+            // Show footer
             this._footer.style.display = 'flex';
-            // Also ensure panel is visible if hidden? Maybe not force it, but good UX.
+            // Force reflow to ensure transition works
+            void this._footer.offsetWidth;
+            this._footer.style.opacity = '1';
+
+            // Clear existing timeout
+            if (this._footerTimeout) {
+                clearTimeout(this._footerTimeout);
+            }
+
+            // Set new timeout to fade out
+            this._footerTimeout = setTimeout(() => {
+                this._footer.style.opacity = '0';
+                // Wait for transition to finish before hiding
+                setTimeout(() => {
+                    // Only hide if opacity is still 0 (in case it was re-shown)
+                    if (this._footer.style.opacity === '0') {
+                        this._footer.style.display = 'none';
+                    }
+                }, 500);
+            }, 5000);
+
         } else {
             this._footer.style.display = 'none';
+            this._footer.style.opacity = '0';
+            if (this._footerTimeout) {
+                clearTimeout(this._footerTimeout);
+            }
         }
     }
 
@@ -1292,6 +1341,19 @@ export class MapFeatureControl {
         // Add to container if it's a new element, maintaining config order
         if (isNewElement) {
             this._insertLayerInOrder(layerElement, layerId);
+        } else {
+            // Existing element updated - trigger flash animation
+            layerElement.classList.remove('layer-flash');
+            // Force reflow
+            void layerElement.offsetWidth;
+            layerElement.classList.add('layer-flash');
+
+            // Remove class after animation
+            setTimeout(() => {
+                if (layerElement) {
+                    layerElement.classList.remove('layer-flash');
+                }
+            }, 500);
         }
     }
 
@@ -2150,7 +2212,7 @@ export class MapFeatureControl {
 
         // Build the properties table with intelligent formatting (reuse existing logic)
         const table = document.createElement('table');
-        table.className = 'feature-inspector-properties-table';
+        table.className = 'feature-inspector-properties-table values-refreshing'; // Start with values hidden
         table.id = `properties-table-${layerId}-${featureId}`;
         table.style.cssText = `
             width: 100%;
@@ -2162,6 +2224,13 @@ export class MapFeatureControl {
             overflow: hidden;
             font-size: 11px;
         `;
+
+        // Remove the refreshing class after a short delay to reveal values
+        setTimeout(() => {
+            if (table) {
+                table.classList.remove('values-refreshing');
+            }
+        }, 150);
 
         const properties = featureState.feature.properties || {};
         const inspect = layerConfig.inspect || {};
@@ -2327,6 +2396,7 @@ export class MapFeatureControl {
             padding: 8px;
             border-top: 1px solid #e5e7eb;
             background-color: #f9fafb;
+            color: #1f2937;
             border-radius: 0;
             font-size: 11px;
         `;
@@ -3489,6 +3559,7 @@ export class MapFeatureControl {
             padding: 12px;
             border-top: 1px solid #e5e7eb;
             background-color: #f9fafb;
+            color: #1f2937;
             border-radius: 0 0 4px 4px;
         `;
 
