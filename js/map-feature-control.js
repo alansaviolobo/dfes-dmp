@@ -219,10 +219,20 @@ export class MapFeatureControl {
                 // Create a unique container ID for this specific render
                 const containerId = `bhunaksha-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
 
+                // Helper to generate header
+                const getBhunakshaHeader = (options = {}) => {
+                    const { withLink = false, color = '' } = options;
+                    const style = color ? `style="color: ${color};"` : '';
+                    const content = withLink
+                        ? 'Additional Information from <a href="https://bhunaksha.goa.gov.in" target="_blank" style="color: #60a5fa;">Goa Bhunaksha</a>'
+                        : 'Additional Information from Bhunaksha';
+                    return `<div class="mb-2 font-semibold" ${style}>${content}</div>`;
+                };
+
                 // Create initial container with loading spinner
                 const containerHTML = `
                     <div id="${containerId}" class="text-xs">
-                        <div class="mb-2 font-semibold">Additional Information from <a href="https://bhunaksha.goa.gov.in" target="_blank" style="color: #60a5fa;">Goa Bhunaksha</a></div>
+                        ${getBhunakshaHeader({ withLink: true })}
                         <div class="flex items-center gap-2">
                             <sl-spinner style="font-size: 0.875rem; --indicator-color: #9ca3af;"></sl-spinner>
                             <span class="text-xs">Requesting Occupant Details...</span>
@@ -280,7 +290,7 @@ export class MapFeatureControl {
 
                                 container.innerHTML = `
                                     <div class="text-xs">
-                                        <div class="mb-2 font-semibold">Additional Information from Bhunaksha</div>
+                                        ${getBhunakshaHeader()}
                                         <div class="mb-2">${infoText}</div>
                                         <div class="italic text-xs">
                                             <svg class="inline w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 20 20">
@@ -293,7 +303,7 @@ export class MapFeatureControl {
                             } else {
                                 container.innerHTML = `
                                     <div class="text-xs" style="color: #d1d5db;">
-                                        <div class="mb-2 font-semibold" style="color: #f3f4f6;">Additional Information from Bhunaksha</div>
+                                        ${getBhunakshaHeader({ color: '#f3f4f6' })}
                                         <span class="text-xs" style="color: #9ca3af;">No occupant data available</span>
                                     </div>
                                 `;
@@ -307,7 +317,7 @@ export class MapFeatureControl {
                         if (container) {
                             container.innerHTML = `
                                 <div class="text-xs">
-                                    <div class="mb-2 font-semibold">Additional Information from Bhunaksha</div>
+                                    ${getBhunakshaHeader()}
                                     <span class="text-xs" style="color: #ef4444;">Error loading details</span>
                                 </div>
                             `;
