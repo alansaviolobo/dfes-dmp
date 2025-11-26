@@ -1108,6 +1108,12 @@ export class MapFeatureControl {
     _expandLayerForFeatureSelection(layerId) {
         const layerElement = this._layersContainer.querySelector(`[data-layer-id="${layerId}"]`);
         if (layerElement) {
+            // Expand the layer if it's collapsed
+            const isCollapsed = this._layerCollapseStates.get(layerId) || false;
+            if (isCollapsed) {
+                this._toggleLayerCollapse(layerId, layerElement);
+            }
+
             // Find the tab group
             const tabGroup = layerElement.querySelector('sl-tab-group');
             if (tabGroup) {
@@ -1430,6 +1436,13 @@ export class MapFeatureControl {
             layerCard.style.boxShadow = '0 1px 2px rgba(0,0,0,0.05)';
         });
 
+        // Set initial collapse state based on screen size
+        const isMobile = this._isMobileScreen();
+        if (!this._layerCollapseStates.has(layerId)) {
+            this._layerCollapseStates.set(layerId, isMobile);
+        }
+        const isCollapsed = this._layerCollapseStates.get(layerId);
+
         // Create Card Header
         const header = document.createElement('div');
         header.className = 'layer-card-header';
@@ -1441,17 +1454,40 @@ export class MapFeatureControl {
             align-items: center;
             justify-content: space-between;
             gap: 8px;
+            cursor: pointer;
+            user-select: none;
+            transition: background-color 0.15s ease;
         `;
+
+        // Add hover effect to header
+        header.addEventListener('mouseenter', () => {
+            header.style.backgroundColor = '#f3f4f6';
+        });
+        header.addEventListener('mouseleave', () => {
+            header.style.backgroundColor = '#f9fafb';
+        });
 
         // Add background image class if available
         if (config.headerImage) {
             layerCard.classList.add('has-header-image');
             layerCard.setAttribute('data-header-image', config.headerImage);
-            // We'll apply the background to the header instead of summary
             header.style.backgroundImage = `linear-gradient(to right, rgba(255,255,255,0.9), rgba(255,255,255,0.4)), url('${config.headerImage}')`;
             header.style.backgroundSize = 'cover';
             header.style.backgroundPosition = 'center';
         }
+
+        // Collapse Indicator Icon
+        const collapseIcon = document.createElement('sl-icon');
+        collapseIcon.name = isCollapsed ? 'chevron-right' : 'chevron-down';
+        collapseIcon.className = 'collapse-indicator';
+        collapseIcon.style.cssText = `
+            font-size: 14px;
+            color: #6b7280;
+            transition: transform 0.2s ease;
+            margin-right: 6px;
+            flex-shrink: 0;
+        `;
+        header.appendChild(collapseIcon);
 
         // Title
         const title = document.createElement('div');
@@ -1473,17 +1509,62 @@ export class MapFeatureControl {
         const actionsContainer = this._createLayerActions(layerId, config);
         header.appendChild(actionsContainer);
 
+        // Add click handler to header for collapse toggle
+        header.addEventListener('click', (e) => {
+            if (e.target.closest('.layer-actions')) {
+                return;
+            }
+            this._toggleLayerCollapse(layerId, layerCard);
+        });
+
         layerCard.appendChild(header);
 
         // Content Container (Tabs + Content)
         const contentContainer = document.createElement('div');
         contentContainer.className = 'layer-content';
+        contentContainer.style.cssText = `
+            display: ${isCollapsed ? 'none' : 'block'};
+            transition: all 0.2s ease;
+        `;
         layerCard.appendChild(contentContainer);
 
         // Add hover event handlers for layer isolation
         this._addLayerIsolationHoverHandlers(layerCard, layerId, config);
 
         return layerCard;
+    }
+
+    /**
+     * Toggle layer collapse/expand state
+     */
+    _toggleLayerCollapse(layerId, layerCard) {
+        const currentState = this._layerCollapseStates.get(layerId) || false;
+        const newState = !currentState;
+        this._layerCollapseStates.set(layerId, newState);
+
+        const collapseIcon = layerCard.querySelector('.collapse-indicator');
+        const contentContainer = layerCard.querySelector('.layer-content');
+        const actionsContainer = layerCard.querySelector('.layer-actions');
+
+        if (collapseIcon) {
+            collapseIcon.name = newState ? 'chevron-right' : 'chevron-down';
+        }
+
+        if (contentContainer) {
+            contentContainer.style.display = newState ? 'none' : 'block';
+        }
+
+        if (actionsContainer) {
+            const opacityBtn = actionsContainer.querySelector('[aria-label="Opacity"]')?.closest('sl-dropdown');
+            const settingsBtn = actionsContainer.querySelector('[title="Layer Settings"]');
+
+            if (opacityBtn) {
+                opacityBtn.style.display = newState ? 'none' : '';
+            }
+            if (settingsBtn) {
+                settingsBtn.style.display = newState ? 'none' : '';
+            }
+        }
     }
 
     /**
@@ -1715,17 +1796,21 @@ export class MapFeatureControl {
             gap: 4px;
         `;
 
+        const isCollapsed = this._layerCollapseStates.get(layerId) || false;
+
         // Opacity Button (Popover)
         const opacityBtn = document.createElement('sl-icon-button');
         opacityBtn.name = 'lightbulb';
         opacityBtn.style.fontSize = '14px';
         opacityBtn.style.color = '#6b7280';
         opacityBtn.setAttribute('title', 'Opacity');
+        opacityBtn.setAttribute('aria-label', 'Opacity');
 
         // Create opacity popover
         const opacityPopover = document.createElement('sl-dropdown');
         opacityPopover.distance = 5;
         opacityPopover.placement = 'bottom-end';
+        opacityPopover.style.display = isCollapsed ? 'none' : '';
 
         const opacityTrigger = document.createElement('div');
         opacityTrigger.setAttribute('slot', 'trigger');
@@ -1750,11 +1835,11 @@ export class MapFeatureControl {
         actionsContainer.appendChild(opacityPopover);
 
         // Settings Button (if available)
-        // This was previously only in feature inspector, now top-level
         const settingsBtn = document.createElement('sl-icon-button');
         settingsBtn.name = 'gear';
         settingsBtn.style.fontSize = '14px';
         settingsBtn.style.color = '#6b7280';
+        settingsBtn.style.display = isCollapsed ? 'none' : '';
         settingsBtn.setAttribute('title', 'Layer Settings');
 
         settingsBtn.addEventListener('click', (e) => {
