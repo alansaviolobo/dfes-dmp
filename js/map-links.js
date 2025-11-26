@@ -1,72 +1,110 @@
 /**
- * MapLinks Plugin
- * A reusable plugin for displaying map navigation links in a full-screen modal
+ * MapLinks Control - A Mapbox GL JS control for displaying map navigation links
  */
 export class MapLinks {
-    constructor(options) {
-        this.buttonId = options.buttonId;
-        this.map = options.map;
-        this.modalId = `${this.buttonId}-modal`;
+    constructor(options = {}) {
+        this._map = null;
+        this._container = null;
+        this._button = null;
+        this.modalId = 'map-links-modal';
+        this._modal = null;
+        this._closeButton = null;
 
-        this._init();
+        this._handleButtonClick = this._handleButtonClick.bind(this);
+        this._handleCloseClick = this._handleCloseClick.bind(this);
     }
 
-    _init() {
+    onAdd(map) {
+        this._map = map;
+        this._container = document.createElement('div');
+        this._container.className = 'mapboxgl-ctrl mapboxgl-ctrl-group';
+
+        this._button = document.createElement('button');
+        this._button.className = 'mapboxgl-ctrl-icon';
+        this._button.type = 'button';
+        this._button.setAttribute('aria-label', 'Open map in external services');
+        this._button.innerHTML = `
+            <svg style="width: 20px; height: 20px;" fill="currentColor" viewBox="0 0 20 20">
+                <path d="M11 3a1 1 0 100 2h2.586l-6.293 6.293a1 1 0 101.414 1.414L15 6.414V9a1 1 0 102 0V4a1 1 0 00-1-1h-5z" />
+                <path d="M5 5a2 2 0 00-2 2v8a2 2 0 002 2h8a2 2 0 002-2v-3a1 1 0 10-2 0v3H5V7h3a1 1 0 000-2H5z" />
+            </svg>
+        `;
+
+        this._button.addEventListener('click', this._handleButtonClick);
+        this._container.appendChild(this._button);
+
         this._createModal();
-        this._attachEventListeners();
+
+        return this._container;
+    }
+
+    onRemove() {
+        if (this._button) {
+            this._button.removeEventListener('click', this._handleButtonClick);
+        }
+
+        if (this._closeButton) {
+            this._closeButton.removeEventListener('click', this._handleCloseClick);
+        }
+
+        if (this._modal && this._modal.parentNode) {
+            this._modal.parentNode.removeChild(this._modal);
+        }
+
+        if (this._container && this._container.parentNode) {
+            this._container.parentNode.removeChild(this._container);
+        }
+
+        this._map = null;
+        this._container = null;
+        this._button = null;
+        this._modal = null;
+        this._closeButton = null;
     }
 
     _createModal() {
-        // Create modal HTML
         const modalHTML = `
             <sl-dialog id="${this.modalId}" label="Map Navigation Links" class="map-links-modal">
                 <div class="map-links-grid">
-                    <!-- Links will be populated here -->
                 </div>
                 <sl-button slot="footer" variant="neutral" id="${this.modalId}-close" class="map-links-btn">Close</sl-button>
             </sl-dialog>
         `;
 
-        // Append to body
         document.body.insertAdjacentHTML('beforeend', modalHTML);
+        this._modal = document.getElementById(this.modalId);
+        this._closeButton = document.getElementById(`${this.modalId}-close`);
+
+        if (this._closeButton) {
+            this._closeButton.addEventListener('click', this._handleCloseClick);
+        }
     }
 
-    _attachEventListeners() {
-        const button = document.getElementById(this.buttonId);
-        const modal = document.getElementById(this.modalId);
-        const closeButton = document.getElementById(`${this.modalId}-close`);
+    _handleButtonClick() {
+        this._showModal();
+    }
 
-        if (button) {
-            button.addEventListener('click', () => {
-                this._showModal();
-            });
-        }
-
-        if (closeButton) {
-            closeButton.addEventListener('click', () => {
-                modal.hide();
-            });
+    _handleCloseClick() {
+        if (this._modal) {
+            this._modal.hide();
         }
     }
 
     _showModal() {
-        const modal = document.getElementById(this.modalId);
-        const grid = modal.querySelector('.map-links-grid');
+        if (!this._modal || !this._map) return;
 
-        // Get current map context
-        const center = this.map.getCenter();
-        const zoom = Math.round(this.map.getZoom());
+        const grid = this._modal.querySelector('.map-links-grid');
+
+        const center = this._map.getCenter();
+        const zoom = Math.round(this._map.getZoom());
         const lat = center.lat;
         const lng = center.lng;
 
-        // Generate links
         const links = this._generateNavigationLinks(lat, lng, zoom);
 
-        // Populate grid
         grid.innerHTML = links.map(link => this._createLinkCard(link)).join('');
 
-        // Show modal
-        modal.show();
+        this._modal.show();
     }
 
     _createLinkCard(link) {
@@ -256,10 +294,4 @@ export class MapLinks {
         };
     }
 
-    destroy() {
-        const modal = document.getElementById(this.modalId);
-        if (modal) {
-            modal.remove();
-        }
-    }
 } 
