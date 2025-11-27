@@ -24,7 +24,8 @@ export class MapFeatureControl {
             maxWidth: '350px',
             minWidth: '250px',
             showHoverPopups: true, // New option to control hover popups
-            inspectMode: false, // Default inspect mode off
+            inspectMode: false, // Inspect mode disabled by default
+            showLayerOptions: false, // Layer options (settings icon & Paint tab) disabled by default
             ...options
         };
 
@@ -628,8 +629,8 @@ export class MapFeatureControl {
         const layerAtlasBtn = document.createElement('button');
         layerAtlasBtn.className = 'layer-atlas-btn';
         layerAtlasBtn.innerHTML = `
-            <sl-icon name="search" style="font-size: 14px; margin-right: 6px;"></sl-icon>
-            <span>Layer Atlas</span>
+            <sl-icon name="layers" style="font-size: 14px; margin-right: 6px;"></sl-icon>
+            <span>Browse Maps</span>
         `;
 
         layerAtlasBtn.addEventListener('click', () => {
@@ -714,6 +715,38 @@ export class MapFeatureControl {
         });
 
         menu.appendChild(tooltipItem);
+
+        // Layer Options Toggle Item
+        const layerOptionsItem = document.createElement('sl-menu-item');
+        layerOptionsItem.value = 'layer-options';
+
+        // Create switch for menu item
+        const layerOptionsSwitch = document.createElement('sl-switch');
+        layerOptionsSwitch.checked = this.options.showLayerOptions;
+        layerOptionsSwitch.size = 'small';
+        layerOptionsSwitch.style.pointerEvents = 'none'; // Let menu item handle click
+
+        const layerOptionsLabel = document.createElement('span');
+        layerOptionsLabel.textContent = 'Show Advanced Options';
+        layerOptionsLabel.style.marginLeft = '8px';
+
+        layerOptionsItem.appendChild(layerOptionsSwitch);
+        layerOptionsItem.appendChild(layerOptionsLabel);
+
+        // Handle toggle
+        layerOptionsItem.addEventListener('click', (e) => {
+            e.stopPropagation(); // Keep menu open
+            layerOptionsSwitch.checked = !layerOptionsSwitch.checked;
+            this.options.showLayerOptions = layerOptionsSwitch.checked;
+            this._toggleLayerOptions();
+        });
+
+        // Sync switch state when menu opens
+        settingsPopover.addEventListener('sl-show', () => {
+            layerOptionsSwitch.checked = this.options.showLayerOptions;
+        });
+
+        menu.appendChild(layerOptionsItem);
         settingsPopover.appendChild(menu);
 
         // Store reference to update later
@@ -778,6 +811,21 @@ export class MapFeatureControl {
 
         // Inspect mode toggled silently to reduce noise
     }
+
+    /**
+     * Toggle layer options (settings icon and Paint tab visibility)
+     */
+    _toggleLayerOptions() {
+        // Update visibility of all layer settings buttons
+        const settingsBtns = this._layersContainer.querySelectorAll('.layer-settings-btn');
+        settingsBtns.forEach(btn => {
+            btn.style.display = this.options.showLayerOptions ? '' : 'none';
+        });
+
+        // Re-render all layers to update tab visibility
+        this._scheduleRender();
+    }
+
 
     /**
      * Clear all selections across all layers
@@ -1407,7 +1455,8 @@ export class MapFeatureControl {
                 opacityBtn.style.display = newState ? 'none' : '';
             }
             if (settingsBtn) {
-                settingsBtn.style.display = newState ? 'none' : '';
+                // Settings button should be hidden if collapsed OR if showLayerOptions is disabled
+                settingsBtn.style.display = (newState || !this.options.showLayerOptions) ? 'none' : '';
             }
         }
     }
@@ -1444,7 +1493,8 @@ export class MapFeatureControl {
                 hasStyleControl: !!this._layerStyleControl,
                 hasMapboxAPI: !!mapboxAPI,
                 layerGroupIds: layerGroupIds,
-                hasStyleControls: hasStyleControls
+                hasStyleControls: hasStyleControls,
+                showLayerOptions: this.options.showLayerOptions
             });
         }
 
@@ -1479,13 +1529,11 @@ export class MapFeatureControl {
             });
         }
 
-        // Add Style tab if layer has editable style properties
-        if (hasStyleControls) {
-            tabs.push({ id: 'style', label: 'Style', icon: 'palette' });
-            console.log('[MapFeatureControl] Added Style tab for layer', layerId);
+        // Add Style tab if layer has editable style properties AND showLayerOptions is enabled
+        if (hasStyleControls && this.options.showLayerOptions) {
+            tabs.push({ id: 'style', label: 'Paint', icon: 'palette' });
+            console.log('[MapFeatureControl] Added Paint tab for layer', layerId);
         }
-
-        console.log('[MapFeatureControl] Tabs for layer', layerId, ':', tabs.map(t => t.id));
 
         // Check if we have multiple tabs or just one
         if (tabs.length === 1) {
@@ -1507,7 +1555,7 @@ export class MapFeatureControl {
                 panel.style.padding = '0';
                 const featuresContent = this._createFeaturesContent(layerId, config, features);
                 panel.appendChild(featuresContent);
-            } else if (tab.id === 'style') {
+            } else if (tab.id === 'style' && this.options.showLayerOptions) {
                 panel.style.padding = '0';
                 const styleContent = this._createStyleContent(layerId, config);
                 panel.appendChild(styleContent);
@@ -1600,7 +1648,7 @@ export class MapFeatureControl {
             }
 
             // 4. Style Panel
-            if (hasStyleControls) {
+            if (hasStyleControls && this.options.showLayerOptions) {
                 const stylePanel = document.createElement('sl-tab-panel');
                 stylePanel.name = 'style';
                 stylePanel.style.cssText = '--padding: 0;';
@@ -1671,7 +1719,8 @@ export class MapFeatureControl {
         const settingsBtn = document.createElement('sl-icon-button');
         settingsBtn.name = 'gear';
         settingsBtn.className = 'layer-settings-btn';
-        settingsBtn.style.display = isCollapsed ? 'none' : '';
+        // Hide if collapsed OR if showLayerOptions is disabled
+        settingsBtn.style.display = (isCollapsed || !this.options.showLayerOptions) ? 'none' : '';
         settingsBtn.setAttribute('title', 'Layer Settings');
 
         settingsBtn.addEventListener('click', (e) => {

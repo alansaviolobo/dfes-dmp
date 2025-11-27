@@ -3709,7 +3709,7 @@ Styles moved from layer-settings.js
 
 
 .map-feature-panel-header-left {
-    flex: 1;
+    flex: 0;
     display: flex;
     align-items: center;
 }
@@ -3794,9 +3794,9 @@ Styles moved from layer-settings.js
 .layer-atlas-btn {
     display: flex;
     align-items: center;
-    background-color: #717171;
-    color: #ffffff;
-    border: none;
+    background-color: transparent;
+    color: #eee;
+    border: 1px solid #eee;
     border-radius: 4px;
     padding: 4px 10px;
     font-size: 12px;
@@ -3805,39 +3805,18 @@ Styles moved from layer-settings.js
     transition: all 0.2s;
     flex: 1;
     justify-content: left;
+    width: 140px;
 }
 
 .layer-atlas-btn:hover {
-    background-color: #aaa;
+    background-color: #ffffff1a;
+    color: orange;
+    border: 1px solid orange;
     transform: translateY(-1px);
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
 }
 
 .layer-atlas-btn sl-icon {
-    font-size: 14px;
-    margin-right: 6px;
-}
-
-.find-layers-btn {
-    display: flex;
-    align-items: center;
-    background-color: #2563eb;
-    color: white;
-    border: none;
-    border-radius: 4px;
-    padding: 4px 10px;
-    font-size: 12px;
-    font-weight: 500;
-    cursor: pointer;
-    transition: background-color 0.2s;
-    margin-right: 4px;
-}
-
-.find-layers-btn:hover {
-    background-color: #1d4ed8;
-}
-
-.find-layers-btn sl-icon {
     font-size: 14px;
     margin-right: 6px;
 }
@@ -3899,7 +3878,6 @@ Styles moved from layer-settings.js
 
 .layer-card-title {
     font-size: 13px;
-    font-weight: 600;
     color: #ffffff;
     flex: 1;
     line-height: 1.3;

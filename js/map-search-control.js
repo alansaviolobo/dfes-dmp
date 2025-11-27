@@ -77,7 +77,7 @@ class MapSearchControl {
             scale: 1.2
         })
             .setLngLat(coordinates)
-            .setPopup(new mapboxgl.Popup({offset: 25}).setHTML(`<div><strong>${title}</strong></div>`))
+            .setPopup(new mapboxgl.Popup({ offset: 25 }).setHTML(`<div><strong>${title}</strong></div>`))
             .addTo(this.map);
 
     }
@@ -96,7 +96,7 @@ class MapSearchControl {
                 searchBoxInput.value = value;
 
                 // Trigger an input event to update the component's internal state
-                const inputEvent = new Event('input', {bubbles: true});
+                const inputEvent = new Event('input', { bubbles: true });
                 searchBoxInput.dispatchEvent(inputEvent);
             } else {
                 console.warn('Could not find search box input element to update');
@@ -231,8 +231,6 @@ class MapSearchControl {
                     if (resultsList && resultsList.id) {
                         input.setAttribute('aria-controls', resultsList.id);
                     }
-
-                    console.debug('Set ARIA attributes on combobox input');
                 }
             }, 100);
         } catch (error) {
@@ -559,7 +557,7 @@ class MapSearchControl {
                     if (bounds) {
                         console.debug('Fitting map to show reference and coordinate location');
                         this.map.fitBounds(bounds, {
-                            padding: {top: 50, bottom: 50, left: 50, right: 50},
+                            padding: { top: 50, bottom: 50, left: 50, right: 50 },
                             maxZoom: 16,
                             duration: 1000
                         });
@@ -783,7 +781,7 @@ class MapSearchControl {
                                 sourceLayer: 'Onemapgoa_GA_Cadastrals',
                                 id: feature.properties._featureId
                             },
-                            {selected: true}
+                            { selected: true }
                         );
                         console.debug('Successfully set feature state to selected');
                     } catch (error) {
