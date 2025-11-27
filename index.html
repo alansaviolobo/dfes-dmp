@@ -9,7 +9,7 @@
     <script>
         window.amche = {};
         window.amche.ENABLE_INTRO_CONTENT = false; // Set to true to enable intro content auto-loading
-        window.amche.MAPBOXGL_ACCESS_TOKEN = 'pk.eyJ1IjoicGxhbmVtYWQiLCJhIjoiY2l3ZmNjNXVzMDAzZzJ0cDV6b2lkOG9odSJ9.eep6sUoBS0eMN4thZUWpyQ'; // Mapbox Token by @planemad. Migrate to community token.
+        window.amche.MAPBOXGL_ACCESS_TOKEN = 'pk.eyJ1IjoicGxhbmVtYWQiLCJhIjoiY2l3ZmNjNXVzMDAzZzJ0cDV6b2lkOG9odSJ9.eep6sUoBS0eMN4thZUWpyQ'; // Mapbox Token by OpenStreetMap India Community for amche.in
         window.amche.GOOGLE_ANALYTICS = 'G-FBVGZ4HJV0';
         window.amche.DOMAIN_URL = 'amche.in';
         window.amche.DEFAULT_ATLAS = '/config/index.atlas.json';
@@ -70,7 +70,7 @@
         href="https://cdn.jsdelivr.net/npm/mapbox-gl@3.16.0/dist/mapbox-gl.min.css">
     <link rel="preload" as="style" onload="this.onload=null;this.rel='stylesheet'"
         href="https://cdn.jsdelivr.net/npm/@shoelace-style/shoelace@2.19.1/cdn/themes/light.css">
-    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="css/styles.css">
     <link rel="stylesheet" href="css/layer-interactions.css">
 
     <!-- Application Scripts -->
@@ -119,7 +119,7 @@
                 <sl-menu>
                     <sl-menu-item id="help-menu-item">
                         <sl-icon slot="prefix" name="info-circle-fill"></sl-icon>
-                        Welcome
+                        About
                     </sl-menu-item>
                     <sl-divider></sl-divider>
                     <sl-menu-item href="./bus/">
