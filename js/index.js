@@ -1,8 +1,8 @@
 /**
  * The Single Entry Point
  */
-import {MapLinks} from './map-links.js';
-import {ShareLink} from './share-link.js';
+import { MapLinks } from './map-links.js';
+import { ShareLink } from './share-link.js';
 import './drawer-state-manager.js';
 import './mapbox-api.js';
 import './map-feature-state-manager.js';
@@ -15,6 +15,13 @@ import './map-init.js';
 import './geolocation-manager.js';
 import './mapbox-gl-view-control.js';
 import './map-search-control.js';
+import { NavigationControl } from './navigation-control.js';
+
+// Initialize NavigationControl
+document.addEventListener('DOMContentLoaded', () => {
+    const navigationControl = new NavigationControl();
+    navigationControl.render();
+});
 
 /**
  * Navigates to the sound page.
@@ -52,7 +59,7 @@ if (window.location.hostname === window.amche.DOMAIN_URL) {
 const skeletonContainer = document.getElementById('skeleton-container');
 const numberOfSkeletons = 15;
 
-Array.from({length: numberOfSkeletons}).forEach(() => {
+Array.from({ length: numberOfSkeletons }).forEach(() => {
     const skeleton = document.createElement('sl-skeleton');
     skeleton.className = 'skeleton-map-controls';
     skeleton.setAttribute('effect', 'pulse');
@@ -110,36 +117,7 @@ customElements.whenDefined('sl-drawer').then(() => {
 });
 
 // Handle navigation dropdown menu clicks
-customElements.whenDefined('sl-menu-item').then(() => {
-    // Handle help menu item click
-    const helpMenuItem = document.getElementById('help-menu-item');
-    if (helpMenuItem) {
-        helpMenuItem.addEventListener('click', (event) => {
-            event.preventDefault();
-            // Create new IntroContentManager instance without auto-close
-            new IntroContentManager({enableAutoClose: false});
-        });
-    }
-
-    document.querySelectorAll('sl-menu-item[href]').forEach(item => {
-        item.addEventListener('click', (event) => {
-            const href = item.getAttribute('href');
-            if (href && href.startsWith('http')) {
-                // External links - open in new tab if target="_blank"
-                if (item.getAttribute('target') === '_blank') {
-                    event.preventDefault();
-                    window.open(href, '_blank');
-                }
-            } else if (href) {
-                // Internal navigation
-                if (!item.hasAttribute('onclick')) {
-                    event.preventDefault();
-                    window.location.href = href;
-                }
-            }
-        });
-    });
-});
+// Event handling is now managed by the NavigationControl class in navigation-control.js
 
 /**
  * MapLinks and ShareLink controls initialization
@@ -165,11 +143,11 @@ document.addEventListener('DOMContentLoaded', () => {
     const parentElement = document.getElementById('mapbox-search-box-container');
     var searchbox = document.createElement('mapbox-search-box');
     Object.assign(searchbox, {
-        'access-token' : window.amche.MAPBOXGL_ACCESS_TOKEN,
-        types : "place,locality,postcode,region,district,street,address,poi",
-        country : "IN",
-        language : "en",
-        proximity : "73.87916,15.26032"
+        'access-token': window.amche.MAPBOXGL_ACCESS_TOKEN,
+        types: "place,locality,postcode,region,district,street,address,poi",
+        country: "IN",
+        language: "en",
+        proximity: "73.87916,15.26032"
     });
     parentElement.appendChild(searchbox);
 })
