@@ -1326,17 +1326,17 @@ export class MapFeatureControl {
 
         // Add hover effect to header
         header.addEventListener('mouseenter', () => {
-            header.style.backgroundColor = '#f3f4f6';
+            header.style.backgroundColor = '#374151';
         });
         header.addEventListener('mouseleave', () => {
-            header.style.backgroundColor = '#f9fafb';
+            header.style.backgroundColor = '#1f2937';
         });
 
         // Add background image class if available
         if (config.headerImage) {
             layerCard.classList.add('has-header-image');
             layerCard.setAttribute('data-header-image', config.headerImage);
-            header.style.backgroundImage = `linear-gradient(to right, rgba(255,255,255,0.9), rgba(255,255,255,0.4)), url('${config.headerImage}')`;
+            header.style.backgroundImage = `linear-gradient(to right, rgba(0,0,0,0.6), rgba(0,0,0,0.4)), url('${config.headerImage}')`;
             header.style.backgroundSize = 'cover';
             header.style.backgroundPosition = 'center';
         }

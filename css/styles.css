@@ -3699,7 +3699,7 @@ Styles moved from layer-settings.js
     display: flex;
     align-items: center;
     justify-content: space-between;
-    background: #f9fafb;
+    background: #1f2937;
     flex-shrink: 0;
     cursor: move;
     gap: 8px;
@@ -3794,22 +3794,23 @@ Styles moved from layer-settings.js
 .layer-atlas-btn {
     display: flex;
     align-items: center;
-    background-color: #ddd;
-    color: #444;
+    background-color: #717171;
+    color: #ffffff;
     border: none;
     border-radius: 4px;
     padding: 4px 10px;
     font-size: 12px;
-    font-weight: 500;
+    font-weight: 600;
     cursor: pointer;
-    transition: background-color 0.2s;
+    transition: all 0.2s;
     flex: 1;
     justify-content: left;
 }
 
 .layer-atlas-btn:hover {
-    background-color: #eee;
-    border: 1px solid #ccc;
+    background-color: #aaa;
+    transform: translateY(-1px);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
 }
 
 .layer-atlas-btn sl-icon {
@@ -3843,18 +3844,18 @@ Styles moved from layer-settings.js
 
 .header-icon-btn {
     font-size: 16px;
-    color: #4b5563;
+    color: #d1d5db;
 }
 
 .header-close-btn {
     font-size: 14px;
-    color: #6b7280;
+    color: #d1d5db;
 }
 
 /* Layer Cards */
 .layer-card {
     background: white;
-    border: 1px solid #e5e7eb;
+    border: 1px solid #797979;
     border-radius: 6px;
     overflow: hidden;
     box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
@@ -3868,8 +3869,8 @@ Styles moved from layer-settings.js
 /* Layer Card Header */
 .layer-card-header {
     padding: 5px 5px;
-    background: #f9fafb;
-    border-bottom: 1px solid #e5e7eb;
+    background: #1f2937;
+    border-bottom: 1px solid #374151;
     display: flex;
     align-items: center;
     justify-content: space-between;
@@ -3880,7 +3881,7 @@ Styles moved from layer-settings.js
 }
 
 .layer-card-header:hover {
-    background-color: #f3f4f6;
+    background-color: #374151;
 }
 
 .layer-card-header.has-header-image {
@@ -3890,7 +3891,7 @@ Styles moved from layer-settings.js
 
 .layer-card .collapse-indicator {
     font-size: 14px;
-    color: #6b7280;
+    color: #d1d5db;
     transition: transform 0.2s ease;
     margin-right: 6px;
     flex-shrink: 0;
@@ -3899,7 +3900,7 @@ Styles moved from layer-settings.js
 .layer-card-title {
     font-size: 13px;
     font-weight: 600;
-    color: #1f2937;
+    color: #ffffff;
     flex: 1;
     line-height: 1.3;
     display: -webkit-box;
