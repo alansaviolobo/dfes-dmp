@@ -1734,14 +1734,35 @@ export class MapLayerControl {
         const atlasName = atlasMetadata?.name || atlasId;
         const atlasColor = atlasMetadata?.color || '#2563eb';
 
-        // Add header with atlas name and color
-        $crossAtlasContainer.append($('<div>', {
-            class: 'text-sm text-gray-400 mb-2 px-2 flex items-center gap-2',
+        // Get atlas configuration to access map location
+        const atlasLayers = window.layerRegistry.getAtlasLayers(atlasId);
+        const atlasConfig = atlasLayers.length > 0 ? atlasLayers[0] : null;
+
+        // Add header with atlas name, color, and View Location button
+        const $header = $('<div>', {
+            class: 'text-sm text-gray-400 mb-2 px-2 flex items-center gap-2 justify-between'
+        });
+
+        const $leftSection = $('<div>', {
+            class: 'flex items-center gap-2',
             html: `
                 <span style="width: 12px; height: 12px; border-radius: 50%; background-color: ${atlasColor}; display: inline-block;"></span>
                 <span>Layers from ${atlasName}:</span>
             `
-        }));
+        });
+
+        const $viewLocationBtn = $('<button>', {
+            class: 'atlas-view-location-btn',
+            html: '<sl-icon name="geo-alt" style="font-size: 12px; margin-right: 4px;"></sl-icon><span>View Location</span>'
+        });
+
+        // Add click handler to navigate to atlas location
+        $viewLocationBtn.on('click', () => {
+            this._navigateToAtlasLocation(atlasId);
+        });
+
+        $header.append($leftSection, $viewLocationBtn);
+        $crossAtlasContainer.append($header);
 
         // Add each layer from the atlas (skipping duplicates)
         layers.forEach(layer => {
@@ -1931,6 +1952,35 @@ export class MapLayerControl {
         // Navigate to the new URL
         window.location.href = url.toString();
     }
+
+    /**
+     * Navigate map to the atlas's defined location
+     */
+    _navigateToAtlasLocation(atlasId) {
+        if (!atlasId || !this._map) return;
+
+        // Fetch the atlas configuration to get map location
+        fetch(`/config/${atlasId}.atlas.json`)
+            .then(response => response.json())
+            .then(config => {
+                if (config.map) {
+                    const { center, zoom } = config.map;
+                    if (center && zoom !== undefined) {
+                        // Animate to the atlas location
+                        this._map.flyTo({
+                            center: center,
+                            zoom: zoom,
+                            duration: 2000,
+                            essential: true
+                        });
+                    }
+                }
+            })
+            .catch(error => {
+                console.error(`Failed to load atlas configuration for ${atlasId}:`, error);
+            });
+    }
+
 
     /**
      * Remove a cross-atlas layer from the active state

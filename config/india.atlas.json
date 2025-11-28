@@ -1,15 +1,15 @@
 {
-  "name": "Development map layer configuration defined by amche-goa community",
+  "name": "India",
   "areaOfInterest": "India",
   "version": "0.1.0",
   "url": "https://github.com/publicmap/amche-goa/blob/main/config/india.atlas.json",
   "color": "#f97316",
   "map": {
     "center": [
-      80.26,
-      13.07
+      79,
+      22
     ],
-    "zoom": 12.3
+    "zoom": 4
   },
   "layers": [
     {

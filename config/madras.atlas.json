@@ -11,6 +11,10 @@
     ],
     "zoom": 12.3
   },
+  "ui": {
+    "title": "Maps வரைபடங்கள்",
+    "shareButton": "Share वांटो"
+  },
   "layers": [
     {
       "title": "Madras contour map 1918",

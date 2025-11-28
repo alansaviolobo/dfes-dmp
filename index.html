@@ -183,13 +183,13 @@
                 <div id="map-layer-filter" class="sticky top-0 z-10 hidden">
                     <!-- Search and Atlas Filter in a single row -->
                     <div class="flex gap-2 items-stretch">
-                        <div style="flex: 1;">
+                        <div style="width: 60%; min-width: 0;">
                             <sl-input id="layer-search-input" placeholder="Search layers..." clearable class="w-full"
                                 size="small">
                                 <sl-icon slot="prefix" name="search"></sl-icon>
                             </sl-input>
                         </div>
-                        <div style="width: 40%;">
+                        <div style="width: 40%; min-width: 0;">
                             <button id="atlas-filter-select" class="atlas-selector-btn w-full">
                                 <sl-icon name="globe" style="font-size: 14px; margin-right: 6px;"></sl-icon>
                                 <span id="atlas-filter-text">All Atlases</span>

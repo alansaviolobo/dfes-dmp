@@ -1,6 +1,19 @@
 {
-  "name": "amche.in",
+  "name": "Amche Goa",
   "areaOfInterest": "Goa, India",
+  "tags": [
+    "historic",
+    "india",
+    "streets",
+    "traffic",
+    "pedestrian",
+    "roads",
+    "geology",
+    "atlas",
+    "survey",
+    "plan",
+    "regulation"
+  ],
   "version": "0.1.0",
   "url": "https://github.com/publicmap/amche-goa/blob/main/config/index.atlas.json",
   "color": "#2563eb",
