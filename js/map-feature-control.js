@@ -627,10 +627,16 @@ export class MapFeatureControl {
      */
     _createLayerAtlasButton() {
         const layerAtlasBtn = document.createElement('button');
-        layerAtlasBtn.className = 'layer-atlas-btn';
+        layerAtlasBtn.className = 'layer-atlas-btn primary-action-btn';
+
+        // Get current atlas name
+        const currentAtlas = window.layerRegistry?._currentAtlas || 'index';
+        const atlasMetadata = window.layerRegistry?.getAtlasMetadata(currentAtlas);
+        const atlasName = atlasMetadata?.name || 'Browse Maps';
+
         layerAtlasBtn.innerHTML = `
             <sl-icon name="layers" style="font-size: 14px; margin-right: 6px;"></sl-icon>
-            <span>Browse Maps</span>
+            <span>${atlasName}</span>
         `;
 
         layerAtlasBtn.addEventListener('click', () => {

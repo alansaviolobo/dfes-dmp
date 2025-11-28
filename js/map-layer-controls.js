@@ -1451,6 +1451,8 @@ export class MapLayerControl {
         setTimeout(() => {
             const searchInput = document.getElementById('layer-search-input');
             const hideInactiveSwitch = document.getElementById('hide-inactive-switch');
+            const atlasFilterBtn = document.getElementById('atlas-filter-select');
+            const atlasFilterText = document.getElementById('atlas-filter-text');
 
             if (searchInput) {
                 searchInput.addEventListener('sl-input', (e) => {
@@ -1466,11 +1468,123 @@ export class MapLayerControl {
                     this._applyAllFilters();
                 });
             }
+
+            if (atlasFilterBtn) {
+                // Set initial text to current atlas name
+                this._updateAtlasButtonText();
+
+                // Create and populate atlas dropdown menu
+                this._createAtlasDropdownMenu(atlasFilterBtn);
+            }
         }, 100);
     }
 
     /**
-     * Apply all filters (search and hide inactive) - uses layer registry for cross-atlas search
+     * Update the atlas button text to show current atlas or default
+     */
+    _updateAtlasButtonText() {
+        const atlasFilterText = document.getElementById('atlas-filter-text');
+        if (!atlasFilterText || !window.layerRegistry) return;
+
+        const currentAtlas = window.layerRegistry._currentAtlas || 'index';
+        const atlasMetadata = window.layerRegistry.getAtlasMetadata(currentAtlas);
+
+        if (this._selectedAtlasFilter) {
+            // Show selected filter atlas
+            const selectedMetadata = window.layerRegistry.getAtlasMetadata(this._selectedAtlasFilter);
+            atlasFilterText.textContent = selectedMetadata?.name || this._selectedAtlasFilter;
+        } else {
+            // Show current atlas as default
+            atlasFilterText.textContent = atlasMetadata?.name || 'All Atlases';
+        }
+    }
+
+    /**
+     * Create dropdown menu for atlas selection
+     */
+    _createAtlasDropdownMenu(buttonElement) {
+        if (!window.layerRegistry || !window.layerRegistry._atlasMetadata) return;
+
+        // Store parent node before any manipulation
+        const parentNode = buttonElement.parentNode;
+
+        // Create dropdown element
+        const dropdown = document.createElement('sl-dropdown');
+        dropdown.distance = 5;
+        dropdown.placement = 'bottom-start';
+        dropdown.style.width = '100%';
+
+        // Create menu
+        const menu = document.createElement('sl-menu');
+        menu.style.minWidth = '200px';
+
+        // Add "All Atlases" option
+        const allOption = document.createElement('sl-menu-item');
+        allOption.value = '';
+        allOption.innerHTML = `
+            <sl-icon slot="prefix" name="globe"></sl-icon>
+            <span>All Atlases</span>
+        `;
+        allOption.addEventListener('click', () => {
+            this._selectedAtlasFilter = null;
+            this._updateAtlasButtonText();
+            this._applyAllFilters();
+            dropdown.hide();
+        });
+        menu.appendChild(allOption);
+
+        // Add divider
+        const divider = document.createElement('sl-divider');
+        menu.appendChild(divider);
+
+        // Get all atlases from the registry
+        const atlases = Array.from(window.layerRegistry._atlasMetadata.entries());
+
+        // Sort atlases alphabetically by name
+        atlases.sort((a, b) => {
+            const nameA = a[1].name || a[0];
+            const nameB = b[1].name || b[0];
+            return nameA.localeCompare(nameB);
+        });
+
+        // Add options for each atlas
+        atlases.forEach(([atlasId, metadata]) => {
+            const option = document.createElement('sl-menu-item');
+            option.value = atlasId;
+
+            // Add a colored badge using the atlas color
+            if (metadata.color) {
+                option.innerHTML = `
+                    <span style="width: 12px; height: 12px; border-radius: 50%; background-color: ${metadata.color}; display: inline-block;" slot="prefix"></span>
+                    <span>${metadata.name || atlasId}</span>
+                `;
+            } else {
+                option.textContent = metadata.name || atlasId;
+            }
+
+            option.addEventListener('click', () => {
+                this._selectedAtlasFilter = atlasId;
+                this._updateAtlasButtonText();
+                this._applyAllFilters();
+                dropdown.hide();
+            });
+
+            menu.appendChild(option);
+        });
+
+        // Append menu to dropdown
+        dropdown.appendChild(menu);
+
+        // Set button as trigger and append to dropdown
+        buttonElement.setAttribute('slot', 'trigger');
+        dropdown.appendChild(buttonElement);
+
+        // Insert dropdown into parent where button was
+        parentNode.appendChild(dropdown);
+    }
+
+    /**
+     * Apply all filters (search, hide inactive, and atlas) - uses layer registry for cross-atlas search
      */
     _applyAllFilters() {
         try {
@@ -1481,7 +1595,9 @@ export class MapLayerControl {
 
             const searchTerm = searchInput ? searchInput.value.toLowerCase().trim() : '';
             const hideInactive = hideInactiveSwitch ? hideInactiveSwitch.checked : false;
+            const selectedAtlas = this._selectedAtlasFilter || '';
             const isSearching = searchTerm.length > 0;
+            const isAtlasFiltering = selectedAtlas.length > 0;
 
             const layerGroups = this._container.querySelectorAll('.group-header');
 
@@ -1490,6 +1606,12 @@ export class MapLayerControl {
             if (isSearching) {
                 const currentAtlas = window.layerRegistry._currentAtlas;
                 crossAtlasResults = window.layerRegistry.searchLayers(searchTerm, currentAtlas);
+            }
+
+            // If atlas filtering, get all layers from the selected atlas
+            let atlasLayers = [];
+            if (isAtlasFiltering) {
+                atlasLayers = window.layerRegistry.getAtlasLayers(selectedAtlas);
             }
 
             // Get current atlas layer IDs for deduplication
@@ -1509,17 +1631,27 @@ export class MapLayerControl {
 
                 const searchMatches = this._layerMatchesSearch(groupData, searchTerm);
 
+                // Check if layer matches atlas filter
+                let atlasMatches = true;
+                if (isAtlasFiltering) {
+                    const atlasId = this._getAtlasIdForLayer(groupData);
+                    atlasMatches = atlasId === selectedAtlas;
+                }
+
                 const toggleInput = groupElement.querySelector('.toggle-switch input[type="checkbox"]');
                 const isActive = toggleInput && toggleInput.checked;
                 const activeMatches = !hideInactive || isActive;
 
-                // Show if matches search and active filter
-                groupElement.style.display = (searchMatches && activeMatches) ? '' : 'none';
+                // Show if matches all filters
+                groupElement.style.display = (searchMatches && activeMatches && atlasMatches) ? '' : 'none';
             });
 
             // Add cross-atlas search results dynamically (if not already in current atlas)
             if (isSearching && crossAtlasResults.length > 0) {
                 this._showCrossAtlasSearchResults(crossAtlasResults, currentLayerIds);
+            } else if (isAtlasFiltering && atlasLayers.length > 0) {
+                // Show all layers from the selected atlas
+                this._showAtlasFilterResults(atlasLayers, selectedAtlas, currentLayerIds);
             } else {
                 this._hideCrossAtlasSearchResults();
             }
@@ -1575,6 +1707,56 @@ export class MapLayerControl {
 
             // Create layer element with cross-atlas styling
             const $layerElement = this._createCrossAtlasLayerElement(layer);
+            $crossAtlasContainer.append($layerElement);
+        });
+    }
+
+    /**
+     * Show atlas filter results - displays all layers from selected atlas
+     */
+    _showAtlasFilterResults(layers, atlasId, currentLayerIds) {
+        // Check if we already have a cross-atlas container
+        let $crossAtlasContainer = $(this._container).find('.cross-atlas-results');
+
+        if ($crossAtlasContainer.length === 0) {
+            // Create container for cross-atlas results
+            $crossAtlasContainer = $('<div>', {
+                class: 'cross-atlas-results mt-4 border-t-2 border-gray-700 pt-4'
+            });
+            $(this._container).append($crossAtlasContainer);
+        }
+
+        // Clear existing results
+        $crossAtlasContainer.empty();
+
+        // Get atlas metadata for header
+        const atlasMetadata = window.layerRegistry.getAtlasMetadata(atlasId);
+        const atlasName = atlasMetadata?.name || atlasId;
+        const atlasColor = atlasMetadata?.color || '#2563eb';
+
+        // Add header with atlas name and color
+        $crossAtlasContainer.append($('<div>', {
+            class: 'text-sm text-gray-400 mb-2 px-2 flex items-center gap-2',
+            html: `
+                <span style="width: 12px; height: 12px; border-radius: 50%; background-color: ${atlasColor}; display: inline-block;"></span>
+                <span>Layers from ${atlasName}:</span>
+            `
+        }));
+
+        // Add each layer from the atlas (skipping duplicates)
+        layers.forEach(layer => {
+            // Resolve the layer to get full details
+            const resolvedLayer = window.layerRegistry.getLayer(layer.id, atlasId);
+            if (!resolvedLayer) return;
+
+            // Skip if already in current atlas (visible in main list)
+            const layerIdToCheck = resolvedLayer._originalId || resolvedLayer.id || layer.id;
+            if (currentLayerIds.has(layerIdToCheck)) {
+                return;
+            }
+
+            // Create layer element with cross-atlas styling
+            const $layerElement = this._createCrossAtlasLayerElement(resolvedLayer);
             $crossAtlasContainer.append($layerElement);
         });
     }

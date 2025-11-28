@@ -1,5 +1,9 @@
 {
-  "color": "#f59e0b",
+  "name": "Gurugram",
+  "areaOfInterest": "Gurgaon, India",
+  "version": "0.1.0",
+  "url": "https://github.com/publicmap/amche-goa/blob/main/config/gurugram.atlas.json",
+  "color": "orange",
   "map": {
     "center": [
       77.01,

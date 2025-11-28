@@ -3790,8 +3790,10 @@ Styles moved from layer-settings.js
     background-color: #ffffff;
 }
 
-/* Header Actions */
-.layer-atlas-btn {
+/* Header Actions - Primary Action Buttons (shared styling) */
+.primary-action-btn,
+.layer-atlas-btn,
+.atlas-selector-btn {
     display: flex;
     align-items: center;
     background-color: transparent;
@@ -3803,12 +3805,45 @@ Styles moved from layer-settings.js
     font-weight: 600;
     cursor: pointer;
     transition: all 0.2s;
-    flex: 1;
     justify-content: left;
-    width: 140px;
 }
 
-.layer-atlas-btn:hover {
+.layer-atlas-btn {
+    flex: 1;
+    min-width: 0;
+}
+
+.layer-atlas-btn span {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    flex: 1;
+}
+
+.layer-atlas-btn sl-icon {
+    flex-shrink: 0;
+}
+
+.atlas-selector-btn {
+    height: 32px;
+    min-width: 0;
+    width: 100%;
+}
+
+.atlas-selector-btn span {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    flex: 1;
+}
+
+.atlas-selector-btn sl-icon {
+    flex-shrink: 0;
+}
+
+.primary-action-btn:hover,
+.layer-atlas-btn:hover,
+.atlas-selector-btn:hover {
     background-color: #ffffff1a;
     color: orange;
     border: 1px solid orange;
@@ -3816,7 +3851,9 @@ Styles moved from layer-settings.js
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
 }
 
-.layer-atlas-btn sl-icon {
+.primary-action-btn sl-icon,
+.layer-atlas-btn sl-icon,
+.atlas-selector-btn sl-icon {
     font-size: 14px;
     margin-right: 6px;
 }
