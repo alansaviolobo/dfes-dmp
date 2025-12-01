@@ -3792,8 +3792,7 @@ Styles moved from layer-settings.js
 
 /* Header Actions - Primary Action Buttons (shared styling) */
 .primary-action-btn,
-.layer-atlas-btn,
-.atlas-selector-btn {
+.layer-atlas-btn {
     display: flex;
     align-items: center;
     background-color: transparent;
@@ -3825,9 +3824,29 @@ Styles moved from layer-settings.js
 }
 
 .atlas-selector-btn {
-    height: 32px;
+    height: auto;
     min-width: 0;
-    width: 100%;
+    flex: 1;
+    background-color: transparent;
+    color: #d1d5db;
+    border: none;
+    border-radius: 0;
+    padding: 6px 0;
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
+    justify-content: flex-start;
+    text-align: left;
+    position: relative;
+}
+
+.atlas-selector-btn::after {
+    content: '▼';
+    font-size: 10px;
+    margin-left: 6px;
+    opacity: 0.6;
+    transition: all 0.2s;
 }
 
 .atlas-selector-btn span {
@@ -3835,63 +3854,52 @@ Styles moved from layer-settings.js
     overflow: hidden;
     text-overflow: ellipsis;
     flex: 1;
+    text-decoration: underline;
+    text-decoration-style: dotted;
+    text-decoration-color: rgba(209, 213, 219, 0.4);
+    text-underline-offset: 3px;
 }
 
-.atlas-selector-btn sl-icon {
-    flex-shrink: 0;
-}
-
-.primary-action-btn:hover,
-.layer-atlas-btn:hover,
 .atlas-selector-btn:hover {
-    background-color: #ffffff1a;
-    color: orange;
-    border: 1px solid orange;
-    transform: translateY(-1px);
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+    background-color: transparent;
+    color: #ffffff;
+    border: none;
+    transform: none;
+    box-shadow: none;
 }
 
-.primary-action-btn sl-icon,
-.layer-atlas-btn sl-icon,
-.atlas-selector-btn sl-icon {
-    font-size: 14px;
-    margin-right: 6px;
+.atlas-selector-btn:hover span {
+    text-decoration-color: rgba(251, 191, 36, 0.8);
+    text-decoration-style: solid;
 }
 
-.header-icon-btn {
-    font-size: 16px;
-    color: #d1d5db;
+.atlas-selector-btn:hover::after {
+    opacity: 1;
+    color: #fbbf24;
 }
 
-.header-close-btn {
-    font-size: 14px;
-    color: #d1d5db;
-}
-
-/* Atlas View Location Button */
+/* Atlas View Location Button - Icon only */
 .atlas-view-location-btn {
     display: flex;
     align-items: center;
+    justify-content: center;
     background-color: transparent;
     color: #9ca3af;
     border: 1px solid #4b5563;
     border-radius: 4px;
-    padding: 2px 8px;
-    font-size: 11px;
-    font-weight: 500;
+    padding: 6px;
+    width: 32px;
+    height: 32px;
+    font-size: 14px;
     cursor: pointer;
     transition: all 0.2s;
-    white-space: nowrap;
+    flex-shrink: 0;
 }
 
 .atlas-view-location-btn:hover {
     background-color: #374151;
     color: #60a5fa;
     border-color: #60a5fa;
-}
-
-.atlas-view-location-btn sl-icon {
-    flex-shrink: 0;
 }
 
 /* New Layer Button */

@@ -69,11 +69,11 @@ export class LayerRegistry {
                             success: false
                         };
                     }
-                    
+
                     const config = await response.json();
-                    return {atlasId, config, success: true};
+                    return { atlasId, config, success: true };
                 } else {
-                    return {atlasId, error: `HTTP ${response.status}`, success: false};
+                    return { atlasId, error: `HTTP ${response.status}`, success: false };
                 }
             } catch (error) {
                 // Handle JSON parsing errors specifically
@@ -84,7 +84,7 @@ export class LayerRegistry {
                         success: false
                     };
                 }
-                return {atlasId, error: error.message, success: false};
+                return { atlasId, error: error.message, success: false };
             }
         });
 
@@ -94,13 +94,14 @@ export class LayerRegistry {
         // Process all successfully loaded atlas configurations
         for (const result of atlasResults) {
             if (result.status === 'fulfilled' && result.value.success) {
-                const {atlasId, config} = result.value;
+                const { atlasId, config } = result.value;
 
                 // Store atlas metadata (color, name, etc.)
                 this._atlasMetadata.set(atlasId, {
                     color: config.color || '#2563eb', // Default to blue if not specified
                     name: config.name || atlasId,
-                    areaOfInterest: config.areaOfInterest || ''
+                    areaOfInterest: config.areaOfInterest || '',
+                    bbox: this._extractBboxFromGeojson(config.geojson)
                 });
 
                 if (config.layers && Array.isArray(config.layers)) {
@@ -157,7 +158,7 @@ export class LayerRegistry {
                                     _prefixedId: prefixedId,
                                     _originalId: layerId,
                                     // Preserve any metadata from the incomplete entry
-                                    ...(existingEntry._crossAtlasReference && {_crossAtlasReference: existingEntry._crossAtlasReference})
+                                    ...(existingEntry._crossAtlasReference && { _crossAtlasReference: existingEntry._crossAtlasReference })
                                 });
                             }
                             // If entry exists and is complete, leave it as-is (first complete definition wins)
@@ -208,12 +209,12 @@ export class LayerRegistry {
             // Check if layer is incomplete - missing type or title (or both)
             const isIncomplete = (!layer.type || !layer.title) && layer.id.includes('-');
             if (isIncomplete) {
-                incompleteLayers.push({layerId, layer});
+                incompleteLayers.push({ layerId, layer });
             }
         }
 
         // Try to resolve each incomplete layer
-        for (const {layerId, layer} of incompleteLayers) {
+        for (const { layerId, layer } of incompleteLayers) {
             const potentialAtlas = layer.id.split('-')[0];
             const originalId = layer.id.substring(potentialAtlas.length + 1);
 
@@ -255,7 +256,7 @@ export class LayerRegistry {
         if (layer.id && !layer.type) {
             const libraryLayer = this._libraryLayers.get(layer.id);
             if (libraryLayer) {
-                return {...libraryLayer, ...layer};
+                return { ...libraryLayer, ...layer };
             }
         }
         return layer;
@@ -419,4 +420,4 @@ if (typeof window !== 'undefined') {
     window.layerRegistry = layerRegistry;
 }
 
-export {layerRegistry};
+export { layerRegistry };

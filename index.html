@@ -175,40 +175,34 @@
             <!-- Add drawer inside the map container -->
             <sl-drawer id="map-controls-drawer" label="Maps नकासो" placement="start" class="drawer-placement-start">
                 <div slot="label" class="flex items-center gap-2">
+                    <sl-icon name="globe" style="font-size: 16px;"></sl-icon>
                     Maps नकासो
                 </div>
                 <div id="layer-controls-loader" class="p-4">
                     <div class="flex flex-col gap-4" id="skeleton-container"></div>
                 </div>
                 <div id="map-layer-filter" class="sticky top-0 z-10 hidden">
-                    <!-- Search/New Layer Toggle -->
-                    <div class="flex gap-2 items-stretch mb-3">
-                        <sl-input id="layer-search-input" placeholder="Search layers..." clearable class="w-full"
-                            size="small">
-                            <sl-icon slot="prefix" name="search"></sl-icon>
-                        </sl-input>
-                        <button id="new-layer-btn" class="new-layer-btn">
-                            <sl-icon name="plus-circle" style="font-size: 14px; margin-right: 6px;"></sl-icon>
-                            <span>New Layer</span>
-                        </button>
-                    </div>
-
                     <!-- Atlas Section Heading -->
-                    <div class="atlas-section-header">
-                        <div class="flex items-center justify-between gap-2 mb-2">
-                            <button id="atlas-filter-select" class="atlas-selector-btn flex-1">
-                                <sl-icon name="globe" style="font-size: 14px; margin-right: 6px;"></sl-icon>
+                    <div class="atlas-section-header mb-2">
+                        <div class="flex items-center gap-2 mb-2">
+                            <button id="atlas-filter-select" class="atlas-selector-btn">
                                 <span id="atlas-filter-text">All Atlases</span>
                             </button>
                             <button id="atlas-view-location-btn" class="atlas-view-location-btn" style="display: none;">
-                                <sl-icon name="geo-alt" style="font-size: 12px; margin-right: 4px;"></sl-icon>
-                                <span>View Location</span>
+                                <sl-icon name="geo-alt" style="font-size: 14px;"></sl-icon>
                             </button>
                         </div>
 
-                        <div class="flex items-center justify-end gap-2">
-                            <label class="text-sm text-white">Hide inactive</label>
-                            <sl-switch id="hide-inactive-switch" size="small"></sl-switch>
+                        <!-- Search/New Layer Toggle -->
+                        <div class="flex gap-2 items-stretch">
+                            <sl-input id="layer-search-input" placeholder="Search layers..." clearable class="w-full"
+                                size="small">
+                                <sl-icon slot="prefix" name="search"></sl-icon>
+                            </sl-input>
+                            <button id="new-layer-btn" class="new-layer-btn">
+                                <sl-icon name="plus-circle" style="font-size: 14px; margin-right: 6px;"></sl-icon>
+                                <span>New Layer</span>
+                            </button>
                         </div>
                     </div>
                 </div>

@@ -1452,13 +1452,15 @@ export class MapLayerControl {
         setTimeout(() => {
             const searchInput = document.getElementById('layer-search-input');
             const newLayerBtn = document.getElementById('new-layer-btn');
-            const hideInactiveSwitch = document.getElementById('hide-inactive-switch');
             const atlasFilterBtn = document.getElementById('atlas-filter-select');
             const atlasFilterText = document.getElementById('atlas-filter-text');
             const atlasViewLocationBtn = document.getElementById('atlas-view-location-btn');
 
             // Initialize search input
             if (searchInput) {
+                // Update placeholder with layer count
+                this._updateSearchPlaceholder();
+
                 searchInput.addEventListener('sl-input', (e) => {
                     this._applyAllFilters();
                 });
@@ -1473,13 +1475,6 @@ export class MapLayerControl {
                     if (typeof openLayerCreatorDialog === 'function') {
                         openLayerCreatorDialog();
                     }
-                });
-            }
-
-            // Initialize hide inactive switch
-            if (hideInactiveSwitch) {
-                hideInactiveSwitch.addEventListener('sl-change', (e) => {
-                    this._applyAllFilters();
                 });
             }
 
@@ -1517,7 +1512,7 @@ export class MapLayerControl {
         if (this._selectedAtlasFilter) {
             // Show selected filter atlas
             const selectedMetadata = window.layerRegistry.getAtlasMetadata(this._selectedAtlasFilter);
-            atlasFilterText.textContent = selectedMetadata?.name || this._selectedAtlasFilter;
+            atlasFilterText.textContent = `Select Atlas: ${selectedMetadata?.name || this._selectedAtlasFilter}`;
 
             // Show View Location button when atlas is selected
             if (atlasViewLocationBtn) {
@@ -1525,13 +1520,37 @@ export class MapLayerControl {
             }
         } else {
             // Show current atlas as default
-            atlasFilterText.textContent = atlasMetadata?.name || 'All Atlases';
+            atlasFilterText.textContent = `Select Atlas: ${atlasMetadata?.name || 'All Atlases'}`;
 
             // Hide View Location button when no atlas filter is selected
             if (atlasViewLocationBtn) {
                 atlasViewLocationBtn.style.display = 'none';
             }
         }
+
+        // Update search placeholder with layer count
+        this._updateSearchPlaceholder();
+    }
+
+    /**
+     * Update the search input placeholder with layer count
+     */
+    _updateSearchPlaceholder() {
+        const searchInput = document.getElementById('layer-search-input');
+        if (!searchInput || !window.layerRegistry) return;
+
+        let layerCount = 0;
+
+        if (this._selectedAtlasFilter) {
+            // Count layers in selected atlas
+            const atlasLayers = window.layerRegistry.getAtlasLayers(this._selectedAtlasFilter);
+            layerCount = atlasLayers.length;
+        } else {
+            // Count all layers from current atlas
+            layerCount = this._state.groups.length;
+        }
+
+        searchInput.placeholder = `Search from ${layerCount} maps...`;
     }
 
     /**
@@ -1619,17 +1638,15 @@ export class MapLayerControl {
     }
 
     /**
-     * Apply all filters (search, hide inactive, and atlas) - uses layer registry for cross-atlas search
+     * Apply all filters (search and atlas) - uses layer registry for cross-atlas search
      */
     _applyAllFilters() {
         try {
             if (!this._container || !window.layerRegistry) return;
 
             const searchInput = document.getElementById('layer-search-input');
-            const hideInactiveSwitch = document.getElementById('hide-inactive-switch');
 
             const searchTerm = searchInput ? searchInput.value.toLowerCase().trim() : '';
-            const hideInactive = hideInactiveSwitch ? hideInactiveSwitch.checked : false;
             const selectedAtlas = this._selectedAtlasFilter || '';
             const isSearching = searchTerm.length > 0;
             const isAtlasFiltering = selectedAtlas.length > 0;
@@ -1674,11 +1691,9 @@ export class MapLayerControl {
                 }
 
                 const toggleInput = groupElement.querySelector('.toggle-switch input[type="checkbox"]');
-                const isActive = toggleInput && toggleInput.checked;
-                const activeMatches = !hideInactive || isActive;
 
                 // Show if matches all filters
-                groupElement.style.display = (searchMatches && activeMatches && atlasMatches) ? '' : 'none';
+                groupElement.style.display = (searchMatches && atlasMatches) ? '' : 'none';
             });
 
             // Add cross-atlas search results dynamically (if not already in current atlas)
