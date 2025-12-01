@@ -101,7 +101,7 @@ export class LayerRegistry {
                     color: config.color || '#2563eb', // Default to blue if not specified
                     name: config.name || atlasId,
                     areaOfInterest: config.areaOfInterest || '',
-                    bbox: this._extractBboxFromGeojson(config.geojson)
+                    bbox: this._extractBbox(config)
                 });
 
                 if (config.layers && Array.isArray(config.layers)) {
@@ -409,6 +409,84 @@ export class LayerRegistry {
     getAtlasColor(atlasId) {
         const metadata = this._atlasMetadata.get(atlasId);
         return metadata?.color || '#2563eb'; // Default to blue
+    }
+
+    /**
+     * Extract bounding box from atlas config (supports bbox, map.bounds, and geojson)
+     * @param {object} config - The atlas configuration object
+     * @returns {array|null} Bounding box as [west, south, east, north] or null
+     */
+    _extractBbox(config) {
+        // 1. Check for top-level bbox [west, south, east, north]
+        if (config.bbox && Array.isArray(config.bbox) && config.bbox.length === 4) {
+            return config.bbox;
+        }
+
+        // 2. Check for map.bounds format: [[west, south], [east, north]]
+        if (config.map && config.map.bounds && Array.isArray(config.map.bounds)) {
+            const bounds = config.map.bounds;
+            if (bounds.length === 2 && Array.isArray(bounds[0]) && Array.isArray(bounds[1])) {
+                const [sw, ne] = bounds;
+                return [sw[0], sw[1], ne[0], ne[1]]; // Convert to [west, south, east, north]
+            }
+        }
+
+        // 3. Fall back to geojson format
+        if (config.geojson) {
+            return this._extractBboxFromGeojson(config.geojson);
+        }
+
+        return null;
+    }
+
+    /**
+     * Extract bounding box from GeoJSON
+     * @param {object} geojson - The GeoJSON object
+     * @returns {array|null} Bounding box as [west, south, east, north] or null
+     */
+    _extractBboxFromGeojson(geojson) {
+        if (!geojson || !geojson.features || geojson.features.length === 0) {
+            return null;
+        }
+
+        const feature = geojson.features[0];
+        if (!feature.geometry || !feature.geometry.coordinates) {
+            return null;
+        }
+
+        // For Polygon type, coordinates are [[[lon, lat], ...]]
+        const coords = feature.geometry.coordinates[0];
+        if (!coords || coords.length === 0) {
+            return null;
+        }
+
+        // Calculate bbox from coordinates
+        let west = Infinity, south = Infinity, east = -Infinity, north = -Infinity;
+        coords.forEach(([lon, lat]) => {
+            west = Math.min(west, lon);
+            south = Math.min(south, lat);
+            east = Math.max(east, lon);
+            north = Math.max(north, lat);
+        });
+
+        return [west, south, east, north];
+    }
+
+    /**
+     * Check if a point (lng, lat) is within an atlas bbox
+     * @param {string} atlasId - The atlas ID
+     * @param {number} lng - Longitude
+     * @param {number} lat - Latitude
+     * @returns {boolean} True if point is within bbox
+     */
+    isPointInAtlasBbox(atlasId, lng, lat) {
+        const metadata = this._atlasMetadata.get(atlasId);
+        if (!metadata || !metadata.bbox) {
+            return false;
+        }
+
+        const [west, south, east, north] = metadata.bbox;
+        return lng >= west && lng <= east && lat >= south && lat <= north;
     }
 }
 

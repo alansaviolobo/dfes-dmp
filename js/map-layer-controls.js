@@ -1572,6 +1572,39 @@ export class MapLayerControl {
         const menu = document.createElement('sl-menu');
         menu.style.minWidth = '200px';
 
+        // Populate menu with atlases
+        this._populateAtlasMenu(menu, dropdown);
+
+        // Append menu to dropdown
+        dropdown.appendChild(menu);
+
+        // Set button as trigger and append to dropdown
+        buttonElement.setAttribute('slot', 'trigger');
+        dropdown.appendChild(buttonElement);
+
+        // Insert dropdown into parent where button was
+        parentNode.appendChild(dropdown);
+
+        // Store references for rebuilding
+        this._atlasDropdown = dropdown;
+        this._atlasDropdownButton = buttonElement;
+
+        // Add map move listener to update dropdown dynamically
+        if (this._map && !this._mapMoveListenerAdded) {
+            this._map.on('moveend', () => {
+                this._rebuildAtlasDropdown();
+            });
+            this._mapMoveListenerAdded = true;
+        }
+    }
+
+    /**
+     * Populate the atlas menu with categorized atlases
+     */
+    _populateAtlasMenu(menu, dropdown) {
+        // Clear existing menu content
+        menu.innerHTML = '';
+
         // Add "All Atlases" option
         const allOption = document.createElement('sl-menu-item');
         allOption.value = '';
@@ -1594,15 +1627,41 @@ export class MapLayerControl {
         // Get all atlases from the registry
         const atlases = Array.from(window.layerRegistry._atlasMetadata.entries());
 
-        // Sort atlases alphabetically by name
-        atlases.sort((a, b) => {
+        // Get current map center
+        const mapCenter = this._map.getCenter();
+        const centerLng = mapCenter.lng;
+        const centerLat = mapCenter.lat;
+
+        // Get the index atlas ID from window.amche.DEFAULT_ATLAS
+        const indexAtlasPath = window.amche.DEFAULT_ATLAS || '/config/index.atlas.json';
+        const indexAtlasId = indexAtlasPath.split('/').pop().replace('.atlas.json', '');
+
+        // Categorize atlases
+        const indexAtlas = [];
+        const intersectingAtlases = [];
+        const otherAtlases = [];
+
+        atlases.forEach(([atlasId, metadata]) => {
+            if (atlasId === indexAtlasId) {
+                indexAtlas.push([atlasId, metadata]);
+            } else if (window.layerRegistry.isPointInAtlasBbox(atlasId, centerLng, centerLat)) {
+                intersectingAtlases.push([atlasId, metadata]);
+            } else {
+                otherAtlases.push([atlasId, metadata]);
+            }
+        });
+
+        // Sort each category alphabetically by name
+        const sortByName = (a, b) => {
             const nameA = a[1].name || a[0];
             const nameB = b[1].name || b[0];
             return nameA.localeCompare(nameB);
-        });
+        };
+        intersectingAtlases.sort(sortByName);
+        otherAtlases.sort(sortByName);
 
-        // Add options for each atlas
-        atlases.forEach(([atlasId, metadata]) => {
+        // Helper function to create menu item
+        const createMenuItem = (atlasId, metadata) => {
             const option = document.createElement('sl-menu-item');
             option.value = atlasId;
 
@@ -1623,18 +1682,59 @@ export class MapLayerControl {
                 dropdown.hide();
             });
 
-            menu.appendChild(option);
-        });
+            return option;
+        };
 
-        // Append menu to dropdown
-        dropdown.appendChild(menu);
+        // Add index atlas if it exists
+        if (indexAtlas.length > 0) {
+            const [atlasId, metadata] = indexAtlas[0];
+            menu.appendChild(createMenuItem(atlasId, metadata));
 
-        // Set button as trigger and append to dropdown
-        buttonElement.setAttribute('slot', 'trigger');
-        dropdown.appendChild(buttonElement);
+            if (intersectingAtlases.length > 0 || otherAtlases.length > 0) {
+                const divider2 = document.createElement('sl-divider');
+                menu.appendChild(divider2);
+            }
+        }
 
-        // Insert dropdown into parent where button was
-        parentNode.appendChild(dropdown);
+        // Add intersecting atlases with a label
+        if (intersectingAtlases.length > 0) {
+            const nearbyLabel = document.createElement('sl-menu-label');
+            nearbyLabel.textContent = 'Nearby';
+            menu.appendChild(nearbyLabel);
+
+            intersectingAtlases.forEach(([atlasId, metadata]) => {
+                menu.appendChild(createMenuItem(atlasId, metadata));
+            });
+
+            if (otherAtlases.length > 0) {
+                const divider3 = document.createElement('sl-divider');
+                menu.appendChild(divider3);
+            }
+        }
+
+        // Add other atlases with a label
+        if (otherAtlases.length > 0) {
+            const othersLabel = document.createElement('sl-menu-label');
+            othersLabel.textContent = 'All Atlases';
+            menu.appendChild(othersLabel);
+
+            otherAtlases.forEach(([atlasId, metadata]) => {
+                menu.appendChild(createMenuItem(atlasId, metadata));
+            });
+        }
+
+    }
+
+    /**
+     * Rebuild the atlas dropdown menu with updated categories
+     */
+    _rebuildAtlasDropdown() {
+        if (!this._atlasDropdown) return;
+
+        const menu = this._atlasDropdown.querySelector('sl-menu');
+        if (menu) {
+            this._populateAtlasMenu(menu, this._atlasDropdown);
+        }
     }
 
     /**
