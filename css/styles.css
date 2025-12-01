@@ -3894,6 +3894,41 @@ Styles moved from layer-settings.js
     flex-shrink: 0;
 }
 
+/* New Layer Button */
+.new-layer-btn {
+    display: flex;
+    align-items: center;
+    background-color: #3b82f6;
+    color: white;
+    border: 1px solid #3b82f6;
+    border-radius: 4px;
+    padding: 6px 12px;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+    white-space: nowrap;
+    height: 32px;
+}
+
+.new-layer-btn:hover {
+    background-color: #2563eb;
+    border-color: #2563eb;
+    transform: translateY(-1px);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+.new-layer-btn sl-icon {
+    flex-shrink: 0;
+}
+
+/* Atlas Section Header */
+.atlas-section-header {
+    padding-bottom: 12px;
+    margin-bottom: 12px;
+    border-bottom: 2px solid #374151;
+}
+
 
 /* Layer Cards */
 .layer-card {
@@ -3966,6 +4001,31 @@ Styles moved from layer-settings.js
     display: flex;
     align-items: center;
     gap: 4px;
+}
+
+/* Layer action buttons - base styling using ::part(base) to target Shadow DOM */
+.layer-actions sl-icon-button::part(base) {
+    color: rgba(226, 226, 226, 0.8);
+    transition: opacity 0.2s ease, color 0.2s ease;
+}
+
+/* Hover and active states for all action buttons - override Shoelace defaults */
+.layer-actions sl-icon-button:hover::part(base),
+.layer-actions sl-icon-button:focus-visible::part(base),
+.layer-actions sl-icon-button:active::part(base) {
+    color: rgba(226, 226, 226, 1);
+}
+
+/* Delete/Remove button specific styling */
+.layer-actions .layer-remove-btn::part(base) {
+    color: #ef4444db;
+}
+
+/* Delete button hover/active - maintain red color with full opacity */
+.layer-actions .layer-remove-btn:hover::part(base),
+.layer-actions .layer-remove-btn:focus-visible::part(base),
+.layer-actions .layer-remove-btn:active::part(base) {
+    color: rgba(239, 68, 68, 1);
 }
 
 /* Opacity Controls */

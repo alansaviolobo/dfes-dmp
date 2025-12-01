@@ -5,6 +5,16 @@
   "url": "https://github.com/publicmap/amche-goa/blob/main/config/india.atlas.json",
   "color": "#f97316",
   "map": {
+    "bounds": [
+      [
+        68,
+        6
+      ],
+      [
+        97,
+        36
+      ]
+    ],
     "center": [
       79,
       22

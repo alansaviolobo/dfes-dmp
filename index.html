@@ -181,25 +181,35 @@
                     <div class="flex flex-col gap-4" id="skeleton-container"></div>
                 </div>
                 <div id="map-layer-filter" class="sticky top-0 z-10 hidden">
-                    <!-- Search and Atlas Filter in a single row -->
-                    <div class="flex gap-2 items-stretch">
-                        <div style="width: 60%; min-width: 0;">
-                            <sl-input id="layer-search-input" placeholder="Search layers..." clearable class="w-full"
-                                size="small">
-                                <sl-icon slot="prefix" name="search"></sl-icon>
-                            </sl-input>
-                        </div>
-                        <div style="width: 40%; min-width: 0;">
-                            <button id="atlas-filter-select" class="atlas-selector-btn w-full">
+                    <!-- Search/New Layer Toggle -->
+                    <div class="flex gap-2 items-stretch mb-3">
+                        <sl-input id="layer-search-input" placeholder="Search layers..." clearable class="w-full"
+                            size="small">
+                            <sl-icon slot="prefix" name="search"></sl-icon>
+                        </sl-input>
+                        <button id="new-layer-btn" class="new-layer-btn">
+                            <sl-icon name="plus-circle" style="font-size: 14px; margin-right: 6px;"></sl-icon>
+                            <span>New Layer</span>
+                        </button>
+                    </div>
+
+                    <!-- Atlas Section Heading -->
+                    <div class="atlas-section-header">
+                        <div class="flex items-center justify-between gap-2 mb-2">
+                            <button id="atlas-filter-select" class="atlas-selector-btn flex-1">
                                 <sl-icon name="globe" style="font-size: 14px; margin-right: 6px;"></sl-icon>
                                 <span id="atlas-filter-text">All Atlases</span>
                             </button>
+                            <button id="atlas-view-location-btn" class="atlas-view-location-btn" style="display: none;">
+                                <sl-icon name="geo-alt" style="font-size: 12px; margin-right: 4px;"></sl-icon>
+                                <span>View Location</span>
+                            </button>
                         </div>
-                    </div>
 
-                    <div class="flex items-center justify-end gap-2 mt-2">
-                        <label class="text-sm text-white">Hide inactive</label>
-                        <sl-switch id="hide-inactive-switch" size="small"></sl-switch>
+                        <div class="flex items-center justify-end gap-2">
+                            <label class="text-sm text-white">Hide inactive</label>
+                            <sl-switch id="hide-inactive-switch" size="small"></sl-switch>
+                        </div>
                     </div>
                 </div>
                 <div id="layer-controls-container" class="hidden"></div>

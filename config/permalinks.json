@@ -1,7 +1,7 @@
 {
   "version": "1.0",
   "permalinks": {
-    "quitla-1970-map": {
+    "1970-quitla-map": {
       "url": "https://amche.in/?atlas=goa-community&layers=community-maps,mapbox-satellite#14.63/15.60487/73.87082",
       "title": "Quitla Village Map (1970) by Henrique Fernandes",
       "description": "Hand-drawn historical map of Quitla village from 1970",
@@ -9,7 +9,7 @@
         "2025-06-10": "Fish Curry and Rice"
       }
     },
-    "goa-cadastral-atlas": {
+    "goa-land-atlas": {
       "url": "https://amche.in/?layers=communidade-land,notified-wetlands,plot,open-buildings-2023,open-buildings,regional-plan,mapbox-satellite,3d-terrain#11.87/15.51624/73.8246",
       "title": "Communidade owned lands of Goa",
       "description": "Plots owned by the Communidade of Goa",

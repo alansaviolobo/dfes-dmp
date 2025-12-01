@@ -8,6 +8,7 @@ import { localization } from './localization.js';
 import { LayerSettingsModal } from './layer-settings.js';
 import { MapboxAPI } from './mapbox-api.js';
 import { deepMerge } from './map-utils.js';
+import { openLayerCreatorDialog } from './layer-creator-ui.js';
 
 export class MapLayerControl {
     constructor(options) {
@@ -1450,10 +1451,13 @@ export class MapLayerControl {
     _initializeFilterControls() {
         setTimeout(() => {
             const searchInput = document.getElementById('layer-search-input');
+            const newLayerBtn = document.getElementById('new-layer-btn');
             const hideInactiveSwitch = document.getElementById('hide-inactive-switch');
             const atlasFilterBtn = document.getElementById('atlas-filter-select');
             const atlasFilterText = document.getElementById('atlas-filter-text');
+            const atlasViewLocationBtn = document.getElementById('atlas-view-location-btn');
 
+            // Initialize search input
             if (searchInput) {
                 searchInput.addEventListener('sl-input', (e) => {
                     this._applyAllFilters();
@@ -1463,12 +1467,23 @@ export class MapLayerControl {
                 });
             }
 
+            // Initialize New Layer button
+            if (newLayerBtn) {
+                newLayerBtn.addEventListener('click', () => {
+                    if (typeof openLayerCreatorDialog === 'function') {
+                        openLayerCreatorDialog();
+                    }
+                });
+            }
+
+            // Initialize hide inactive switch
             if (hideInactiveSwitch) {
                 hideInactiveSwitch.addEventListener('sl-change', (e) => {
                     this._applyAllFilters();
                 });
             }
 
+            // Initialize atlas filter
             if (atlasFilterBtn) {
                 // Set initial text to current atlas name
                 this._updateAtlasButtonText();
@@ -1476,14 +1491,24 @@ export class MapLayerControl {
                 // Create and populate atlas dropdown menu
                 this._createAtlasDropdownMenu(atlasFilterBtn);
             }
+
+            // Initialize View Location button
+            if (atlasViewLocationBtn) {
+                atlasViewLocationBtn.addEventListener('click', () => {
+                    if (this._selectedAtlasFilter) {
+                        this._navigateToAtlasLocation(this._selectedAtlasFilter);
+                    }
+                });
+            }
         }, 100);
     }
 
     /**
-     * Update the atlas button text to show current atlas or default
+     * Update the atlas button text and View Location button visibility
      */
     _updateAtlasButtonText() {
         const atlasFilterText = document.getElementById('atlas-filter-text');
+        const atlasViewLocationBtn = document.getElementById('atlas-view-location-btn');
         if (!atlasFilterText || !window.layerRegistry) return;
 
         const currentAtlas = window.layerRegistry._currentAtlas || 'index';
@@ -1493,9 +1518,19 @@ export class MapLayerControl {
             // Show selected filter atlas
             const selectedMetadata = window.layerRegistry.getAtlasMetadata(this._selectedAtlasFilter);
             atlasFilterText.textContent = selectedMetadata?.name || this._selectedAtlasFilter;
+
+            // Show View Location button when atlas is selected
+            if (atlasViewLocationBtn) {
+                atlasViewLocationBtn.style.display = 'flex';
+            }
         } else {
             // Show current atlas as default
             atlasFilterText.textContent = atlasMetadata?.name || 'All Atlases';
+
+            // Hide View Location button when no atlas filter is selected
+            if (atlasViewLocationBtn) {
+                atlasViewLocationBtn.style.display = 'none';
+            }
         }
     }
 
