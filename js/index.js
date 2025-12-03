@@ -1,8 +1,6 @@
 /**
  * The Single Entry Point
  */
-import { MapLinks } from './map-links.js';
-import { ShareLink } from './share-link.js';
 import './drawer-state-manager.js';
 import './mapbox-api.js';
 import './map-feature-state-manager.js';
@@ -15,6 +13,8 @@ import './map-init.js';
 import './geolocation-manager.js';
 import './mapbox-gl-view-control.js';
 import './map-search-control.js';
+import { MapLinks } from './map-links.js';
+import { ShareLink } from './share-link.js';
 import { NavigationControl } from './navigation-control.js';
 
 // Initialize NavigationControl
@@ -122,8 +122,6 @@ customElements.whenDefined('sl-drawer').then(() => {
 /**
  * MapLinks and ShareLink controls initialization
  */
-import {MapLinks} from './map-links.js';
-import {ShareLink} from './share-link.js';
 
 window.addEventListener('mapReady', (event) => {
     const map = event.detail.map;
