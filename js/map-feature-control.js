@@ -1448,7 +1448,6 @@ export class MapFeatureControl {
         if (collapseIcon) {
             collapseIcon.name = newState ? 'chevron-right' : 'chevron-down';
         }
-    }
 
         if (contentContainer) {
             contentContainer.style.display = newState ? 'none' : 'block';
