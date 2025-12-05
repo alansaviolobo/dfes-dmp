@@ -9,7 +9,7 @@
     <script>
         window.amche = {};
         window.amche.ENABLE_INTRO_CONTENT = false; // Set to true to enable intro content auto-loading
-        window.amche.MAPBOXGL_ACCESS_TOKEN = 'pk.eyJ1IjoicGxhbmVtYWQiLCJhIjoiY2l3ZmNjNXVzMDAzZzJ0cDV6b2lkOG9odSJ9.eep6sUoBS0eMN4thZUWpyQ'; // Mapbox Token by @planemad. Migrate to community token.
+        window.amche.MAPBOXGL_ACCESS_TOKEN = 'pk.eyJ1IjoicGxhbmVtYWQiLCJhIjoiY2l3ZmNjNXVzMDAzZzJ0cDV6b2lkOG9odSJ9.eep6sUoBS0eMN4thZUWpyQ'; // Mapbox Token by OpenStreetMap India Community for amche.in
         window.amche.GOOGLE_ANALYTICS = 'G-FBVGZ4HJV0';
         window.amche.DOMAIN_URL = 'amche.in';
         window.amche.DEFAULT_ATLAS = '/config/index.atlas.json';
@@ -34,8 +34,9 @@
         content="Explore and create various maps for free using this citizen maintained digital mapping resource. Made in Goa, for the world." />
 
     <!-- Open Graph Meta Tags for Social Media -->
-    <meta property="og:title" content="amche.in - Open 3D Atlas"/>
-    <meta property="og:description" content="An open mapping resource to explore earth data relevant to our local communities and the world. Run by citizen volunteers from Goa, India." />
+    <meta property="og:title" content="amche.in - community map atlas" />
+    <meta property="og:description"
+        content="Explore free 3D maps from your local government and community. Run by citizen volunteers from Goa, India." />
     <meta property="og:type" content="website" />
     <meta property="og:url" content="https://amche.in" />
     <meta property="og:image" content="https://amche.in/assets/img/og_image.jpg" />
@@ -60,20 +61,28 @@
     <!-- Open Sans font -->
     <link rel="preconnect" href="https://fonts.googleapis.com" crossorigin />
     <link rel="preconnect" href="https://cdn.jsdelivr.net" />
-    <link rel="preload" as="fetch" crossorigin="anonymous" href="config/_defaults.json" /><!-- Add this in the head section, before the map-init.js script -->
+    <link rel="preload" as="fetch" crossorigin="anonymous" href="config/_defaults.json" />
+    <!-- Add this in the head section, before the map-init.js script -->
 
-    <link rel="preload" as="style" onload="this.onload=null;this.rel='stylesheet'" href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@600&display=swap">
-    <link rel="preload" as="style" onload="this.onload=null;this.rel='stylesheet'" href="https://cdn.jsdelivr.net/npm/mapbox-gl@3.16.0/dist/mapbox-gl.min.css">
-    <link rel="preload" as="style" onload="this.onload=null;this.rel='stylesheet'" href="https://cdn.jsdelivr.net/npm/@shoelace-style/shoelace@2.19.1/cdn/themes/light.css">
-    <link rel="preload" as="style" onload="this.onload=null;this.rel='stylesheet'" href="styles.css">
+    <link rel="preload" as="style" onload="this.onload=null;this.rel='stylesheet'"
+        href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@600&display=swap">
+    <link rel="preload" as="style" onload="this.onload=null;this.rel='stylesheet'"
+        href="https://cdn.jsdelivr.net/npm/mapbox-gl@3.16.0/dist/mapbox-gl.min.css">
+    <link rel="preload" as="style" onload="this.onload=null;this.rel='stylesheet'"
+        href="https://cdn.jsdelivr.net/npm/@shoelace-style/shoelace@2.19.1/cdn/themes/light.css">
+    <link rel="stylesheet" href="css/styles.css">
+    <link rel="stylesheet" href="css/layer-interactions.css">
 
     <!-- Application Scripts -->
     <script defer src="https://cdn.tailwindcss.com"></script><!-- Tailwind CSS via CDN -->
     <script defer src="https://cdn.jsdelivr.net/npm/jquery@3.7.1/dist/jquery.min.js"></script><!-- Add jQuery -->
-    <script defer src="https://cdn.jsdelivr.net/npm/mapbox-gl@3.16.0/dist/mapbox-gl.min.js"></script><!-- Mapbox GL JS -->
+    <script defer src="https://cdn.jsdelivr.net/npm/mapbox-gl@3.16.0/dist/mapbox-gl.min.js"></script>
+    <!-- Mapbox GL JS -->
     <script defer src="https://cdn.jsdelivr.net/npm/marked@14.1.3/marked.min.js"></script><!-- Mapbox GL JS -->
     <script defer src="https://api.mapbox.com/search-js/v1.0.0/web.js"></script><!-- Mapbox Search JS -->
-    <script defer type="module" src="https://cdn.jsdelivr.net/npm/@shoelace-style/shoelace@2.19.1/cdn/shoelace.js"></script><!-- Shoelace Components -->
+    <script defer type="module"
+        src="https://cdn.jsdelivr.net/npm/@shoelace-style/shoelace@2.19.1/cdn/shoelace.js"></script>
+    <!-- Shoelace Components -->
     <script defer src="js/geolocation-control.js"></script>
     <script defer src="js/mapbox-gl-view-control.js"></script>
     <script defer src="js/map-search-control.js"></script>
@@ -97,14 +106,10 @@
             <div id="mapbox-search-box-container"></div>
         </div>
         <div class="flex gap-4 items-center">
-            <!-- Map Navigation Links button -->
-            <sl-icon-button name="box-arrow-in-up-right" id="map-links-btn" class="map-links-button"
-                label="Open map in external services" title="Open map in external services"></sl-icon-button>
-            <!-- Share button container for ShareLink plugin -->
-            <div id="share-button-container"></div>
             <!-- Navigation Dropdown -->
             <sl-dropdown>
-                <sl-button slot="trigger" variant="text" size="small" class="nav-dropdown-trigger interactive-nav-button" title="Navigation menu">
+                <sl-button slot="trigger" variant="text" size="small"
+                    class="nav-dropdown-trigger interactive-nav-button" title="Navigation menu">
                     <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20" aria-hidden="true">
                         <path fill-rule="evenodd"
                             d="M3 5a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zM3 10a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zM3 15a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1z"
@@ -114,7 +119,11 @@
                 <sl-menu>
                     <sl-menu-item id="help-menu-item">
                         <sl-icon slot="prefix" name="info-circle-fill"></sl-icon>
-                        Welcome
+                        About
+                    </sl-menu-item>
+                    <sl-divider></sl-divider>
+                    <sl-menu-item href="privacy.html">
+                        Privacy Policy
                     </sl-menu-item>
                     <sl-divider></sl-divider>
                     <sl-menu-item href="./bus/">
@@ -176,12 +185,23 @@
                     <div class="flex flex-col gap-4" id="skeleton-container"></div>
                 </div>
                 <div id="map-layer-filter" class="sticky top-0 z-10 hidden">
-                    <div class="relative">
-                        <sl-input id="layer-search-input" placeholder="Search layers..." clearable class="w-full">
-                            <sl-icon slot="prefix" name="search"></sl-icon>
-                        </sl-input>
+                    <!-- Search and Atlas Filter in a single row -->
+                    <div class="flex gap-2 items-stretch">
+                        <div style="width: 60%; min-width: 0;">
+                            <sl-input id="layer-search-input" placeholder="Search layers..." clearable class="w-full"
+                                size="small">
+                                <sl-icon slot="prefix" name="search"></sl-icon>
+                            </sl-input>
+                        </div>
+                        <div style="width: 40%; min-width: 0;">
+                            <button id="atlas-filter-select" class="atlas-selector-btn w-full">
+                                <sl-icon name="globe" style="font-size: 14px; margin-right: 6px;"></sl-icon>
+                                <span id="atlas-filter-text">All Atlases</span>
+                            </button>
+                        </div>
                     </div>
-                    <div class="flex items-center justify-end gap-2 mt-1">
+
+                    <div class="flex items-center justify-end gap-2 mt-2">
                         <label class="text-sm text-white">Hide inactive</label>
                         <sl-switch id="hide-inactive-switch" size="small"></sl-switch>
                     </div>
@@ -191,12 +211,11 @@
 
             <div id="edit-mode-control" style="display: none;"
                 class="mapboxgl-ctrl mapboxgl-ctrl-group absolute bottom-10 right-0 z-10 bg-white rounded shadow-md mr-2">
-            <button id="edit-mode-toggle"
-                class="px-2 py-1 text-sm flex items-center justify-center hover:bg-blue-500"
-                aria-label="Toggle Edit Mode"
-                title="Toggle Edit Mode">
-                <span aria-hidden="true">📌</span>
-            </button>
+                <button id="edit-mode-toggle"
+                    class="px-2 py-1 text-sm flex items-center justify-center hover:bg-blue-500"
+                    aria-label="Toggle Edit Mode" title="Toggle Edit Mode">
+                    <span aria-hidden="true">📌</span>
+                </button>
             </div>
         </main>
     </div>

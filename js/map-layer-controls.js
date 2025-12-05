@@ -4,22 +4,22 @@
  * This refactored version delegates all Mapbox-specific operations to the MapboxAPI class,
  * keeping this class focused on UI management and configuration handling.
  */
-import {localization} from './localization.js';
-import {LayerSettingsModal} from './layer-settings.js';
-import {MapboxAPI} from './mapbox-api.js';
-import {deepMerge} from './map-utils.js';
+import { localization } from './localization.js';
+import { LayerSettingsModal } from './layer-settings.js';
+import { MapboxAPI } from './mapbox-api.js';
+import { deepMerge } from './map-utils.js';
 
 export class MapLayerControl {
     constructor(options) {
         // Handle options structure for groups and configuration
         if (Array.isArray(options)) {
-            this._state = {groups: options};
+            this._state = { groups: options };
             this._config = {};
         } else if (options && options.groups) {
-            this._state = {groups: options.groups};
+            this._state = { groups: options.groups };
             this._config = options;
         } else {
-            this._state = {groups: [options]};
+            this._state = { groups: [options] };
             this._config = {};
         }
 
@@ -100,7 +100,7 @@ export class MapLayerControl {
             });
         }
 
-        $(container).append($('<div>', {class: 'layer-control'}));
+        $(container).append($('<div>', { class: 'layer-control' }));
     }
 
     /**
@@ -153,12 +153,12 @@ export class MapLayerControl {
     _getFallbackStyles() {
         return {
             vector: {
-                fill: {'fill-color': '#000000', 'fill-opacity': 0.5},
-                line: {'line-color': '#000000', 'line-width': 1},
-                text: {'text-color': '#000000', 'text-halo-width': 1},
-                circle: {'circle-radius': 5, 'circle-color': '#000000'}
+                fill: { 'fill-color': '#000000', 'fill-opacity': 0.5 },
+                line: { 'line-color': '#000000', 'line-width': 1 },
+                text: { 'text-color': '#000000', 'text-halo-width': 1 },
+                circle: { 'circle-radius': 5, 'circle-color': '#000000' }
             },
-            raster: {'raster-opacity': 1}
+            raster: { 'raster-opacity': 1 }
         };
     }
 
@@ -181,7 +181,7 @@ export class MapLayerControl {
             ...this._state,
             groups: newState.groups.map(newGroup => {
                 const existingGroup = this._state.groups.find(g => g.id === newGroup.id);
-                return existingGroup ? {...existingGroup, ...newGroup} : newGroup;
+                return existingGroup ? { ...existingGroup, ...newGroup } : newGroup;
             })
         };
 
@@ -248,7 +248,7 @@ export class MapLayerControl {
                 setTimeout(() => localization.forceUpdateUIElements(), 100);
             }
 
-            this._updateState({groups: config});
+            this._updateState({ groups: config });
 
         } catch (error) {
             console.error('Error loading external config:', error);
@@ -320,14 +320,11 @@ export class MapLayerControl {
         $groupHeader.attr('data-layer-id', group.id);
         this._sourceControls[groupIndex] = $groupHeader[0];
 
-        // Create control buttons
-        const $settingsButton = this._createSettingsButton(group);
-
         // Set up event handlers
-        this._setupGroupHeaderEvents($groupHeader, group, groupIndex, $settingsButton);
+        this._setupGroupHeaderEvents($groupHeader, group, groupIndex);
 
         // Create summary section
-        const $summary = this._createGroupSummary(group, $settingsButton);
+        const $summary = this._createGroupSummary(group);
         $groupHeader.append($summary);
 
         // Add description and attribution
@@ -347,33 +344,14 @@ export class MapLayerControl {
         return $groupHeader;
     }
 
-    /**
-     * Create settings button
-     */
-    _createSettingsButton(group) {
-        const $settingsButton = $('<sl-icon-button>', {
-            name: 'gear-fill',
-            class: 'settings-button ml-auto hidden',
-            'aria-label': 'Layer Settings',
-            title: 'Layer Settings'
-        });
-
-        $settingsButton[0].addEventListener('click', (e) => {
-            e.preventDefault();
-            e.stopPropagation();
-            this._layerSettingsModal.show(group);
-        });
-
-        return $settingsButton;
-    }
 
 
     /**
      * Set up group header event handlers
      */
-    _setupGroupHeaderEvents($groupHeader, group, groupIndex, $settingsButton) {
+    _setupGroupHeaderEvents($groupHeader, group, groupIndex) {
         $groupHeader[0].addEventListener('sl-show', (event) => {
-            this._handleGroupShow(event, group, groupIndex, $settingsButton);
+            this._handleGroupShow(event, group, groupIndex);
 
             // Load legend image when details panel is expanded (if layer is enabled)
             const toggleInput = event.target.querySelector('.toggle-switch input[type="checkbox"]');
@@ -383,14 +361,14 @@ export class MapLayerControl {
         });
 
         $groupHeader[0].addEventListener('sl-hide', (event) => {
-            this._handleGroupHide(event, group, groupIndex, $settingsButton);
+            this._handleGroupHide(event, group, groupIndex);
         });
     }
 
     /**
      * Handle group show event
      */
-    _handleGroupShow(event, group, groupIndex, $settingsButton) {
+    _handleGroupShow(event, group, groupIndex) {
         const toggleInput = event.target.querySelector('.toggle-switch input[type="checkbox"]');
 
         if (toggleInput && !toggleInput.checked) {
@@ -408,7 +386,6 @@ export class MapLayerControl {
 
         this._toggleLayerGroup(effectiveGroupIndex, true);
 
-        $settingsButton.toggleClass('hidden', false);
         $(event.target).closest('.group-header').addClass('active');
 
         // Load legend image if it exists and hasn't been loaded yet
@@ -421,14 +398,19 @@ export class MapLayerControl {
             isCrossAtlas: isCrossAtlas
         });
         window.dispatchEvent(new CustomEvent('layer-toggled', {
-            detail: {layerId: group.id, visible: true, isCrossAtlas: isCrossAtlas}
+            detail: { layerId: group.id, visible: true, isCrossAtlas: isCrossAtlas }
         }));
+
+        // Auto-collapse the drawer when a layer is toggled on
+        if (drawerStateManager && drawerStateManager.isOpen()) {
+            drawerStateManager.close();
+        }
     }
 
     /**
      * Handle group hide event
      */
-    _handleGroupHide(event, group, groupIndex, $settingsButton) {
+    _handleGroupHide(event, group, groupIndex) {
         const toggleInput = event.target.querySelector('.toggle-switch input[type="checkbox"]');
 
         if (toggleInput && toggleInput.checked) {
@@ -446,7 +428,6 @@ export class MapLayerControl {
 
         this._toggleLayerGroup(effectiveGroupIndex, false);
 
-        $settingsButton.toggleClass('hidden', true);
         $(event.target).closest('.group-header').removeClass('active');
 
         // Dispatch custom event for URL sync
@@ -456,9 +437,11 @@ export class MapLayerControl {
             isCrossAtlas: isCrossAtlas
         });
         window.dispatchEvent(new CustomEvent('layer-toggled', {
-            detail: {layerId: group.id, visible: false, isCrossAtlas: isCrossAtlas}
+            detail: { layerId: group.id, visible: false, isCrossAtlas: isCrossAtlas }
         }));
     }
+
+
 
     /**
      * Sync sublayer toggle states for style layers
@@ -518,7 +501,7 @@ export class MapLayerControl {
                 const resolvedLayer = window.layerRegistry.getLayer(group.id);
                 if (resolvedLayer && resolvedLayer.type) {
                     console.warn(`[MapLayerControl] Resolved missing type for layer ${group.id} from registry: ${resolvedLayer.type}`);
-                    group = {...group, type: resolvedLayer.type};
+                    group = { ...group, type: resolvedLayer.type };
                     // Update the group in state so we don't have to resolve it again
                     const stateGroupIndex = this._state.groups.findIndex(g => g.id === group.id);
                     if (stateGroupIndex !== -1) {
@@ -535,7 +518,7 @@ export class MapLayerControl {
 
             if (visible) {
                 // Create or show the layer group
-                await this._mapboxAPI.createLayerGroup(group.id, group, {visible: true});
+                await this._mapboxAPI.createLayerGroup(group.id, group, { visible: true });
 
                 // Apply initial opacity from config if it exists
                 // Note: Pass 1.0 as the opacity value so the multiplier logic in mapbox-api.js
@@ -612,7 +595,7 @@ export class MapLayerControl {
     /**
      * Create group summary section
      */
-    _createGroupSummary(group, $settingsButton) {
+    _createGroupSummary(group) {
         const $summary = $('<div>', {
             slot: 'summary',
             class: 'flex items-center relative w-full h-12 bg-gray-800'
@@ -643,18 +626,16 @@ export class MapLayerControl {
                 text: displayName,
                 title: `Switch to ${displayName} atlas`
             });
-            
+
             // Make badge clickable to navigate to atlas
             $atlasBadge.on('click', (e) => {
                 e.preventDefault();
                 e.stopPropagation();
                 this._navigateToAtlas(atlasId);
             });
-            
+
             $contentWrapper.append($atlasBadge);
         }
-
-        $contentWrapper.append($settingsButton);
 
         // If headerImage is missing, try to resolve from registry
         let headerImage = group.headerImage;
@@ -688,12 +669,12 @@ export class MapLayerControl {
      * Create toggle title section
      */
     _createToggleTitle(group) {
-        const $toggleLabel = $('<label>', {class: 'toggle-switch'});
+        const $toggleLabel = $('<label>', { class: 'toggle-switch' });
         const $toggleInput = $('<input>', {
             type: 'checkbox',
             checked: group.initiallyChecked || false
         });
-        const $toggleSlider = $('<span>', {class: 'toggle-slider'});
+        const $toggleSlider = $('<span>', { class: 'toggle-slider' });
 
         $toggleLabel.append($toggleInput, $toggleSlider);
 
@@ -737,7 +718,7 @@ export class MapLayerControl {
         }
 
         if (description || attribution) {
-            const $contentArea = $('<div>', {class: 'description-area'});
+            const $contentArea = $('<div>', { class: 'description-area' });
 
             if (description) {
                 const $description = $('<div>', {
@@ -793,7 +774,7 @@ export class MapLayerControl {
     _addLayerGroupContent($groupHeader, group) {
         if (!group.groups) return;
 
-        const $radioGroup = $('<div>', {class: 'radio-group mt-2'});
+        const $radioGroup = $('<div>', { class: 'radio-group mt-2' });
 
         group.groups.forEach((subGroup, index) => {
             const $radioLabel = this._createRadioOption(subGroup, group, index);
@@ -809,7 +790,7 @@ export class MapLayerControl {
      * Create radio option for layer groups
      */
     _createRadioOption(subGroup, parentGroup, index) {
-        const $radioLabel = $('<label>', {class: 'radio-label'});
+        const $radioLabel = $('<label>', { class: 'radio-label' });
         const $radio = $('<input>', {
             type: 'radio',
             name: `layer-group-${this._instanceId}-${parentGroup.id}`,
@@ -823,7 +804,7 @@ export class MapLayerControl {
 
         $radioLabel.append(
             $radio,
-            $('<span>', {text: subGroup.title})
+            $('<span>', { text: subGroup.title })
         );
 
         // Add attribution and location links
@@ -876,7 +857,7 @@ export class MapLayerControl {
     _addStyleLayerContent($groupHeader, group) {
         if (!group.layers) return;
 
-        const $layerControls = $('<div>', {class: 'layer-controls mt-3'});
+        const $layerControls = $('<div>', { class: 'layer-controls mt-3' });
 
         group.layers.forEach((layer, index) => {
             const $layerControl = this._createStyleLayerControl(layer, group, index);
@@ -891,9 +872,9 @@ export class MapLayerControl {
      */
     _createStyleLayerControl(layer, parentGroup, index) {
         const layerId = `sublayer-${parentGroup.id}-${index}`;
-        const $layerControl = $('<div>', {class: 'flex items-center gap-2 text-black'});
+        const $layerControl = $('<div>', { class: 'flex items-center gap-2 text-black' });
 
-        const $sublayerToggleLabel = $('<label>', {class: 'toggle-switch'});
+        const $sublayerToggleLabel = $('<label>', { class: 'toggle-switch' });
 
         // Check actual layer visibility instead of just parentGroup.initiallyChecked
         const isLayerVisible = this._getStyleLayerVisibility(layer);
@@ -903,7 +884,7 @@ export class MapLayerControl {
             id: layerId,
             checked: isLayerVisible
         });
-        const $sublayerToggleSlider = $('<span>', {class: 'toggle-slider'});
+        const $sublayerToggleSlider = $('<span>', { class: 'toggle-slider' });
 
         $sublayerToggleLabel.append($sublayerToggleInput, $sublayerToggleSlider);
 
@@ -972,7 +953,7 @@ export class MapLayerControl {
      * Create terrain controls (simplified version)
      */
     _createTerrainControls() {
-        const $controlsContainer = $('<div>', {class: 'terrain-controls'});
+        const $controlsContainer = $('<div>', { class: 'terrain-controls' });
 
         // Add exaggeration slider
         const $exaggerationSlider = $('<input>', {
@@ -1001,8 +982,8 @@ export class MapLayerControl {
         });
 
         $controlsContainer.append(
-            $('<label>', {class: 'block text-sm text-gray-700 mb-1', text: 'Terrain Exaggeration'}),
-            $('<div>', {class: 'flex items-center'}).append($exaggerationSlider, $exaggerationValue)
+            $('<label>', { class: 'block text-sm text-gray-700 mb-1', text: 'Terrain Exaggeration' }),
+            $('<div>', { class: 'flex items-center' }).append($exaggerationSlider, $exaggerationValue)
         );
 
         return $controlsContainer;
@@ -1202,7 +1183,7 @@ export class MapLayerControl {
             const newGroups = [...this._state.groups];
             newGroups[groupIndex] = newConfig;
 
-            this._updateState({groups: newGroups});
+            this._updateState({ groups: newGroups });
         } catch (error) {
             console.error('Error saving layer settings:', error);
             alert('Failed to save layer settings. Please check the console for details.');
@@ -1470,6 +1451,8 @@ export class MapLayerControl {
         setTimeout(() => {
             const searchInput = document.getElementById('layer-search-input');
             const hideInactiveSwitch = document.getElementById('hide-inactive-switch');
+            const atlasFilterBtn = document.getElementById('atlas-filter-select');
+            const atlasFilterText = document.getElementById('atlas-filter-text');
 
             if (searchInput) {
                 searchInput.addEventListener('sl-input', (e) => {
@@ -1485,11 +1468,123 @@ export class MapLayerControl {
                     this._applyAllFilters();
                 });
             }
+
+            if (atlasFilterBtn) {
+                // Set initial text to current atlas name
+                this._updateAtlasButtonText();
+
+                // Create and populate atlas dropdown menu
+                this._createAtlasDropdownMenu(atlasFilterBtn);
+            }
         }, 100);
     }
 
     /**
-     * Apply all filters (search and hide inactive) - uses layer registry for cross-atlas search
+     * Update the atlas button text to show current atlas or default
+     */
+    _updateAtlasButtonText() {
+        const atlasFilterText = document.getElementById('atlas-filter-text');
+        if (!atlasFilterText || !window.layerRegistry) return;
+
+        const currentAtlas = window.layerRegistry._currentAtlas || 'index';
+        const atlasMetadata = window.layerRegistry.getAtlasMetadata(currentAtlas);
+
+        if (this._selectedAtlasFilter) {
+            // Show selected filter atlas
+            const selectedMetadata = window.layerRegistry.getAtlasMetadata(this._selectedAtlasFilter);
+            atlasFilterText.textContent = selectedMetadata?.name || this._selectedAtlasFilter;
+        } else {
+            // Show current atlas as default
+            atlasFilterText.textContent = atlasMetadata?.name || 'All Atlases';
+        }
+    }
+
+    /**
+     * Create dropdown menu for atlas selection
+     */
+    _createAtlasDropdownMenu(buttonElement) {
+        if (!window.layerRegistry || !window.layerRegistry._atlasMetadata) return;
+
+        // Store parent node before any manipulation
+        const parentNode = buttonElement.parentNode;
+
+        // Create dropdown element
+        const dropdown = document.createElement('sl-dropdown');
+        dropdown.distance = 5;
+        dropdown.placement = 'bottom-start';
+        dropdown.style.width = '100%';
+
+        // Create menu
+        const menu = document.createElement('sl-menu');
+        menu.style.minWidth = '200px';
+
+        // Add "All Atlases" option
+        const allOption = document.createElement('sl-menu-item');
+        allOption.value = '';
+        allOption.innerHTML = `
+            <sl-icon slot="prefix" name="globe"></sl-icon>
+            <span>All Atlases</span>
+        `;
+        allOption.addEventListener('click', () => {
+            this._selectedAtlasFilter = null;
+            this._updateAtlasButtonText();
+            this._applyAllFilters();
+            dropdown.hide();
+        });
+        menu.appendChild(allOption);
+
+        // Add divider
+        const divider = document.createElement('sl-divider');
+        menu.appendChild(divider);
+
+        // Get all atlases from the registry
+        const atlases = Array.from(window.layerRegistry._atlasMetadata.entries());
+
+        // Sort atlases alphabetically by name
+        atlases.sort((a, b) => {
+            const nameA = a[1].name || a[0];
+            const nameB = b[1].name || b[0];
+            return nameA.localeCompare(nameB);
+        });
+
+        // Add options for each atlas
+        atlases.forEach(([atlasId, metadata]) => {
+            const option = document.createElement('sl-menu-item');
+            option.value = atlasId;
+
+            // Add a colored badge using the atlas color
+            if (metadata.color) {
+                option.innerHTML = `
+                    <span style="width: 12px; height: 12px; border-radius: 50%; background-color: ${metadata.color}; display: inline-block;" slot="prefix"></span>
+                    <span>${metadata.name || atlasId}</span>
+                `;
+            } else {
+                option.textContent = metadata.name || atlasId;
+            }
+
+            option.addEventListener('click', () => {
+                this._selectedAtlasFilter = atlasId;
+                this._updateAtlasButtonText();
+                this._applyAllFilters();
+                dropdown.hide();
+            });
+
+            menu.appendChild(option);
+        });
+
+        // Append menu to dropdown
+        dropdown.appendChild(menu);
+
+        // Set button as trigger and append to dropdown
+        buttonElement.setAttribute('slot', 'trigger');
+        dropdown.appendChild(buttonElement);
+
+        // Insert dropdown into parent where button was
+        parentNode.appendChild(dropdown);
+    }
+
+    /**
+     * Apply all filters (search, hide inactive, and atlas) - uses layer registry for cross-atlas search
      */
     _applyAllFilters() {
         try {
@@ -1500,7 +1595,9 @@ export class MapLayerControl {
 
             const searchTerm = searchInput ? searchInput.value.toLowerCase().trim() : '';
             const hideInactive = hideInactiveSwitch ? hideInactiveSwitch.checked : false;
+            const selectedAtlas = this._selectedAtlasFilter || '';
             const isSearching = searchTerm.length > 0;
+            const isAtlasFiltering = selectedAtlas.length > 0;
 
             const layerGroups = this._container.querySelectorAll('.group-header');
 
@@ -1509,6 +1606,12 @@ export class MapLayerControl {
             if (isSearching) {
                 const currentAtlas = window.layerRegistry._currentAtlas;
                 crossAtlasResults = window.layerRegistry.searchLayers(searchTerm, currentAtlas);
+            }
+
+            // If atlas filtering, get all layers from the selected atlas
+            let atlasLayers = [];
+            if (isAtlasFiltering) {
+                atlasLayers = window.layerRegistry.getAtlasLayers(selectedAtlas);
             }
 
             // Get current atlas layer IDs for deduplication
@@ -1528,17 +1631,27 @@ export class MapLayerControl {
 
                 const searchMatches = this._layerMatchesSearch(groupData, searchTerm);
 
+                // Check if layer matches atlas filter
+                let atlasMatches = true;
+                if (isAtlasFiltering) {
+                    const atlasId = this._getAtlasIdForLayer(groupData);
+                    atlasMatches = atlasId === selectedAtlas;
+                }
+
                 const toggleInput = groupElement.querySelector('.toggle-switch input[type="checkbox"]');
                 const isActive = toggleInput && toggleInput.checked;
                 const activeMatches = !hideInactive || isActive;
 
-                // Show if matches search and active filter
-                groupElement.style.display = (searchMatches && activeMatches) ? '' : 'none';
+                // Show if matches all filters
+                groupElement.style.display = (searchMatches && activeMatches && atlasMatches) ? '' : 'none';
             });
 
             // Add cross-atlas search results dynamically (if not already in current atlas)
             if (isSearching && crossAtlasResults.length > 0) {
                 this._showCrossAtlasSearchResults(crossAtlasResults, currentLayerIds);
+            } else if (isAtlasFiltering && atlasLayers.length > 0) {
+                // Show all layers from the selected atlas
+                this._showAtlasFilterResults(atlasLayers, selectedAtlas, currentLayerIds);
             } else {
                 this._hideCrossAtlasSearchResults();
             }
@@ -1599,6 +1712,77 @@ export class MapLayerControl {
     }
 
     /**
+     * Show atlas filter results - displays all layers from selected atlas
+     */
+    _showAtlasFilterResults(layers, atlasId, currentLayerIds) {
+        // Check if we already have a cross-atlas container
+        let $crossAtlasContainer = $(this._container).find('.cross-atlas-results');
+
+        if ($crossAtlasContainer.length === 0) {
+            // Create container for cross-atlas results
+            $crossAtlasContainer = $('<div>', {
+                class: 'cross-atlas-results mt-4 border-t-2 border-gray-700 pt-4'
+            });
+            $(this._container).append($crossAtlasContainer);
+        }
+
+        // Clear existing results
+        $crossAtlasContainer.empty();
+
+        // Get atlas metadata for header
+        const atlasMetadata = window.layerRegistry.getAtlasMetadata(atlasId);
+        const atlasName = atlasMetadata?.name || atlasId;
+        const atlasColor = atlasMetadata?.color || '#2563eb';
+
+        // Get atlas configuration to access map location
+        const atlasLayers = window.layerRegistry.getAtlasLayers(atlasId);
+        const atlasConfig = atlasLayers.length > 0 ? atlasLayers[0] : null;
+
+        // Add header with atlas name, color, and View Location button
+        const $header = $('<div>', {
+            class: 'text-sm text-gray-400 mb-2 px-2 flex items-center gap-2 justify-between'
+        });
+
+        const $leftSection = $('<div>', {
+            class: 'flex items-center gap-2',
+            html: `
+                <span style="width: 12px; height: 12px; border-radius: 50%; background-color: ${atlasColor}; display: inline-block;"></span>
+                <span>Layers from ${atlasName}:</span>
+            `
+        });
+
+        const $viewLocationBtn = $('<button>', {
+            class: 'atlas-view-location-btn',
+            html: '<sl-icon name="geo-alt" style="font-size: 12px; margin-right: 4px;"></sl-icon><span>View Location</span>'
+        });
+
+        // Add click handler to navigate to atlas location
+        $viewLocationBtn.on('click', () => {
+            this._navigateToAtlasLocation(atlasId);
+        });
+
+        $header.append($leftSection, $viewLocationBtn);
+        $crossAtlasContainer.append($header);
+
+        // Add each layer from the atlas (skipping duplicates)
+        layers.forEach(layer => {
+            // Resolve the layer to get full details
+            const resolvedLayer = window.layerRegistry.getLayer(layer.id, atlasId);
+            if (!resolvedLayer) return;
+
+            // Skip if already in current atlas (visible in main list)
+            const layerIdToCheck = resolvedLayer._originalId || resolvedLayer.id || layer.id;
+            if (currentLayerIds.has(layerIdToCheck)) {
+                return;
+            }
+
+            // Create layer element with cross-atlas styling
+            const $layerElement = this._createCrossAtlasLayerElement(resolvedLayer);
+            $crossAtlasContainer.append($layerElement);
+        });
+    }
+
+    /**
      * Hide cross-atlas search results
      */
     _hideCrossAtlasSearchResults() {
@@ -1626,9 +1810,9 @@ export class MapLayerControl {
         });
 
         // Add toggle and title
-        const $toggleLabel = $('<label>', {class: 'toggle-switch'});
-        const $toggleInput = $('<input>', {type: 'checkbox', checked: false});
-        const $toggleSlider = $('<span>', {class: 'toggle-slider'});
+        const $toggleLabel = $('<label>', { class: 'toggle-switch' });
+        const $toggleInput = $('<input>', { type: 'checkbox', checked: false });
+        const $toggleSlider = $('<span>', { class: 'toggle-slider' });
         $toggleLabel.append($toggleInput, $toggleSlider);
 
         const $titleSpan = $('<span>', {
@@ -1651,7 +1835,7 @@ export class MapLayerControl {
             text: displayAtlasName,
             title: `Switch to ${displayAtlasName} atlas`
         });
-        
+
         // Make badge clickable to navigate to atlas
         $atlasBadge.on('click', (e) => {
             e.preventDefault();
@@ -1732,7 +1916,7 @@ export class MapLayerControl {
 
         // Activate the layer
         if (this._mapboxAPI) {
-            await this._mapboxAPI.createLayerGroup(layerWithPrefix.id, layerWithPrefix, {visible: true});
+            await this._mapboxAPI.createLayerGroup(layerWithPrefix.id, layerWithPrefix, { visible: true });
         }
 
         // Register with state manager if available
@@ -1752,7 +1936,7 @@ export class MapLayerControl {
 
         // Dispatch custom event for URL sync
         window.dispatchEvent(new CustomEvent('layer-toggled', {
-            detail: {layerId: layerWithPrefix.id, visible: true, isCrossAtlas: true}
+            detail: { layerId: layerWithPrefix.id, visible: true, isCrossAtlas: true }
         }));
     }
 
@@ -1761,13 +1945,42 @@ export class MapLayerControl {
      */
     _navigateToAtlas(atlasId) {
         if (!atlasId) return;
-        
+
         const url = new URL(window.location.href);
         url.searchParams.set('atlas', atlasId);
-        
+
         // Navigate to the new URL
         window.location.href = url.toString();
     }
+
+    /**
+     * Navigate map to the atlas's defined location
+     */
+    _navigateToAtlasLocation(atlasId) {
+        if (!atlasId || !this._map) return;
+
+        // Fetch the atlas configuration to get map location
+        fetch(`/config/${atlasId}.atlas.json`)
+            .then(response => response.json())
+            .then(config => {
+                if (config.map) {
+                    const { center, zoom } = config.map;
+                    if (center && zoom !== undefined) {
+                        // Animate to the atlas location
+                        this._map.flyTo({
+                            center: center,
+                            zoom: zoom,
+                            duration: 2000,
+                            essential: true
+                        });
+                    }
+                }
+            })
+            .catch(error => {
+                console.error(`Failed to load atlas configuration for ${atlasId}:`, error);
+            });
+    }
+
 
     /**
      * Remove a cross-atlas layer from the active state
@@ -1808,7 +2021,7 @@ export class MapLayerControl {
 
         // Dispatch custom event for URL sync
         window.dispatchEvent(new CustomEvent('layer-toggled', {
-            detail: {layerId: layerId, visible: false, isCrossAtlas: true}
+            detail: { layerId: layerId, visible: false, isCrossAtlas: true }
         }));
     }
 

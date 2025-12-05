@@ -1,5 +1,5 @@
 {
-  "name": "Development map layer configuration defined by amche-goa community",
+  "name": "Madras (1733-1918)",
   "areaOfInterest": "Chennai, India",
   "version": "0.1.0",
   "url": "https://github.com/publicmap/amche-goa/blob/main/config/index.atlas.json",
@@ -10,6 +10,10 @@
       13.07
     ],
     "zoom": 12.3
+  },
+  "ui": {
+    "title": "Maps வரைபடங்கள்",
+    "shareButton": "Share वांटो"
   },
   "layers": [
     {

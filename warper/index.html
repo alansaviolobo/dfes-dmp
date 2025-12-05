@@ -434,15 +434,43 @@
                 center: [0, 0],
                 zoom: 1,
                 transformRequest: (url, resourceType) => {
-                    // Debug all mapwarper requests
-                    if (url.includes('/maps/') || url.includes('/api/v1/maps/')) {                        
-                        // Check for unsubstituted placeholders
+                    if (url.includes('/maps/') || url.includes('/api/v1/maps/')) {
                         if (url.includes('{bbox-epsg-4326}') || url.includes('{bbox}') || url.includes('{z}') || url.includes('{x}') || url.includes('{y}')) {
                             console.warn('❌ Unsubstituted placeholders found:', url);
                         }
-                        
-                        // Return the URL with appropriate headers
-                        return { 
+
+                        if (url.includes('STATUS=unwarped') && url.includes('BBOX=')) {
+                            try {
+                                const urlObj = new URL(url);
+                                const bbox = urlObj.searchParams.get('BBOX');
+                                const width = urlObj.searchParams.get('_w');
+                                const height = urlObj.searchParams.get('_h');
+                                const scale = urlObj.searchParams.get('_s');
+
+                                if (bbox && !bbox.includes('{') && width && height && scale) {
+                                    const [minLng, minLat, maxLng, maxLat] = bbox.split(',').map(Number);
+                                    const w = parseFloat(width);
+                                    const h = parseFloat(height);
+                                    const s = parseFloat(scale);
+
+                                    const minX = minLng / s;
+                                    const minY = h - (maxLat / s);
+                                    const maxX = maxLng / s;
+                                    const maxY = h - (minLat / s);
+
+                                    urlObj.searchParams.set('BBOX', `${Math.round(minX)},${Math.round(minY)},${Math.round(maxX)},${Math.round(maxY)}`);
+                                    urlObj.searchParams.delete('_w');
+                                    urlObj.searchParams.delete('_h');
+                                    urlObj.searchParams.delete('_s');
+                                    url = urlObj.toString();
+                                    console.log('Transformed WMS URL:', url);
+                                }
+                            } catch (e) {
+                                console.error('Error transforming WMS URL:', e);
+                            }
+                        }
+
+                        return {
                             url: url,
                             headers: {
                                 'Accept': url.includes('/wms/') ? 'image/png,image/*;q=0.8,*/*;q=0.5' : 'image/*'
@@ -1069,42 +1097,30 @@
         
         async function loadMapImageDirectly(mapId, baseUrl) {
             try {
-                console.log(`Attempting to load map ${mapId} using direct image...`);
-                
-                // Try to get map metadata to find the original image
+                console.log(`Attempting to load map ${mapId} using WMS tiles...`);
+
                 const response = await fetch(`${baseUrl}/api/v1/maps/${mapId}.json`);
                 if (!response.ok) {
                     throw new Error(`Failed to fetch map metadata: ${response.status}`);
                 }
-                
+
                 const mapData = await response.json();
-                
-                // MapWarper API provides image URL in links, not attributes
-                // Try multiple possible image sources in order of preference
-                const imageUrl = mapData.data.attributes.image_url || // Some servers may have this
-                               mapData.data.links.png ||              // Export PNG
-                               mapData.data.links.geotiff ||          // Export GeoTIFF
-                               null;
-                               
                 const width = mapData.data.attributes.width;
                 const height = mapData.data.attributes.height;
-                
-                if (!imageUrl || !width || !height) {
-                    throw new Error('Missing image URL or dimensions in map metadata');
+
+                if (!width || !height) {
+                    throw new Error('Missing image dimensions in map metadata');
                 }
-                
-                console.log(`Loading direct image: ${imageUrl}`);
+
                 console.log(`Image dimensions: ${width}x${height}`);
-                
-                // Set a minimal blank style (no basemap)
+
                 sourceMap.setStyle({
                     version: 8,
                     sources: {},
                     layers: [],
                     glyphs: 'mapbox://fonts/mapbox/{fontstack}/{range}.pbf'
                 });
-                
-                // Wait for style to load
+
                 await new Promise(resolve => {
                     const checkStyle = () => {
                         if (sourceMap.isStyleLoaded()) {
@@ -1115,82 +1131,66 @@
                     };
                     checkStyle();
                 });
-                
-                // For unwarped images, we map the pixel space to a fake geographic space
-                // This allows us to display the image without any georeferencing
-                // Map pixel space (0,0 to width,height) to a simple coordinate system
-                const pixelToFakeGeo = 0.0001; // Each pixel = 0.0001 degrees
-                const centerLng = 0;
-                const centerLat = 0;
-                
-                // Calculate fake geographic bounds based on image dimensions
-                const halfWidth = (width * pixelToFakeGeo) / 2;
-                const halfHeight = (height * pixelToFakeGeo) / 2;
-                
-                const imageCoords = [
-                    [centerLng - halfWidth, centerLat + halfHeight],  // top-left
-                    [centerLng + halfWidth, centerLat + halfHeight],  // top-right
-                    [centerLng + halfWidth, centerLat - halfHeight],  // bottom-right
-                    [centerLng - halfWidth, centerLat - halfHeight]   // bottom-left
-                ];
-                
-                console.log('Fake geographic coordinates for pixel space:', imageCoords);
-                
-                // Store the image transformation for converting pixel coords to fake geographic coords
+
+                const maxDimension = Math.max(width, height);
+                const maxCoordinate = 85;
+                const pixelToFakeGeo = maxCoordinate / maxDimension;
+
+                const scaledWidth = width * pixelToFakeGeo;
+                const scaledHeight = height * pixelToFakeGeo;
+
                 imageTransform = {
                     width: width,
                     height: height,
                     bounds: {
-                        west: centerLng - halfWidth,
-                        south: centerLat - halfHeight,
-                        east: centerLng + halfWidth,
-                        north: centerLat + halfHeight
+                        west: 0,
+                        south: 0,
+                        east: scaledWidth,
+                        north: scaledHeight
                     },
                     pixelToFakeGeo: pixelToFakeGeo,
                     isFakeGeo: true
                 };
                 console.log('Image transform stored:', imageTransform);
-                
-                // Add the image as an overlay
-                sourceMap.addSource('image-source', {
-                    type: 'image',
-                    url: imageUrl,
-                    coordinates: imageCoords
-                });
-                
-                sourceMap.addLayer({
-                    id: 'image-layer',
+
+                sourceMap.addSource('wms-source', {
                     type: 'raster',
-                    source: 'image-source',
+                    tiles: [
+                        `${baseUrl}/maps/wms/${mapId}?FORMAT=image/png&STATUS=unwarped&SERVICE=WMS&VERSION=1.1.1&REQUEST=GetMap&STYLES=&SRS=EPSG:4326&WIDTH=256&HEIGHT=256&BBOX={bbox-epsg-4326}&_w=${width}&_h=${height}&_s=${imageTransform.pixelToFakeGeo}`
+                    ],
+                    tileSize: 256,
+                    scheme: 'xyz'
+                });
+
+                sourceMap.addLayer({
+                    id: 'wms-layer',
+                    type: 'raster',
+                    source: 'wms-source',
                     paint: {
                         'raster-fade-duration': 0
                     }
                 });
-                
-                console.log('Image layer added to source map');
-                
-                // Constrain the map to the image bounds so users can't pan outside
+
+                console.log('WMS layer added to source map');
+
                 const bounds = new mapboxgl.LngLatBounds(
-                    [imageCoords[3][0], imageCoords[3][1]], // southwest (bottom-left)
-                    [imageCoords[1][0], imageCoords[1][1]]  // northeast (top-right)
+                    [imageTransform.bounds.west, imageTransform.bounds.south],
+                    [imageTransform.bounds.east, imageTransform.bounds.north]
                 );
-                
+
                 sourceMap.setMaxBounds(bounds);
-                
-                // Initially center the map on the full image
-                // This will be overridden by fitMapToControlPoints() if markers exist
-                sourceMap.fitBounds([
-                    [imageCoords[0][0], imageCoords[0][1]],
-                    [imageCoords[2][0], imageCoords[2][1]]
-                ], {
-                    padding: 50,
-                    duration: 0
-                });
-                
-                console.log('Successfully loaded unwarped map using direct image with bounds constraint');
-                
+
+                const center = [
+                    (imageTransform.bounds.west + imageTransform.bounds.east) / 2,
+                    (imageTransform.bounds.south + imageTransform.bounds.north) / 2
+                ];
+                sourceMap.setCenter(center);
+                sourceMap.setZoom(1);
+
+                console.log('Successfully loaded unwarped map using WMS tiles');
+
             } catch (error) {
-                console.error('Error loading unwarped map image:', error);
+                console.error('Error loading unwarped map:', error);
                 alert(`Failed to load unwarped map: ${error.message}\n\nThe map image may not be available or accessible.`);
                 imageTransform = null;
             }

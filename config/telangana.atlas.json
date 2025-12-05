@@ -1,5 +1,5 @@
 {
-  "name": "Telangana Atlas",
+  "name": "Telangana",
   "areaOfInterest": "Telangana, India",
   "version": "0.1.0",
   "url": "https://github.com/publicmap/amche-goa/blob/main/config/telangana.atlas.json",
@@ -161,7 +161,7 @@
       "description": "Mask for the distate state of Kerala.",
       "headerImage": "assets/map-layers/map-layer-goa-districts.png",
       "type": "vector",
-      "id": "kerala-mask",
+      "id": "mask",
       "url": "https://indianopenmaps.fly.dev/not-so-open/districts/lgd/{z}/{x}/{y}.pbf ",
       "sourceLayer": "LGD_Districts",
       "maxzoom": 10,

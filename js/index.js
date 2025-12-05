@@ -124,34 +124,23 @@ customElements.whenDefined('sl-menu-item').then(() => {
 });
 
 /**
- * MapLinks plugin initialization
+ * MapLinks and ShareLink controls initialization
  */
 import {MapLinks} from './map-links.js';
-
-window.addEventListener('mapReady', (event) => {
-    const mapLinks = new MapLinks({
-        buttonId: 'map-links-btn',
-        map: event.detail.map
-    });
-});
-
-/**
- * ShareLink plugin initialization
- */
 import {ShareLink} from './share-link.js';
 
-// Initialize ShareLink plugin when DOM is ready
-document.addEventListener('DOMContentLoaded', () => {
+window.addEventListener('mapReady', (event) => {
+    const map = event.detail.map;
+
+    const mapLinks = new MapLinks();
+    map.addControl(mapLinks, 'bottom-right');
+
     const shareLink = new ShareLink({
-        containerId: 'share-button-container',
-        url: () => window.location.href, // Dynamic URL function
-        buttonText: 'Share वांटो',
-        buttonClasses: 'share-button',
+        url: () => window.location.href,
         showToast: true,
         qrCodeSize: 500
     });
-
-    shareLink.render();
+    map.addControl(shareLink, 'bottom-right');
 });
 
 document.addEventListener('DOMContentLoaded', () => {

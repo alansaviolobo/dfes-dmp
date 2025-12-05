@@ -1,66 +1,79 @@
 /**
- * ShareLink Plugin - A reusable share button with QR code functionality
+ * ShareLink Control - A Mapbox GL JS control for share button with QR code functionality
  *
  * Usage:
  * const shareLink = new ShareLink({
- *   containerId: 'my-container',
- *   url: 'https://example.com',
  *   buttonText: 'Share',
- *   buttonClasses: 'share-button'
+ *   qrCodeSize: 500
  * });
- * shareLink.render();
+ * map.addControl(shareLink, 'bottom-right');
  */
 
 export class ShareLink {
     constructor(options = {}) {
-        this.containerId = options.containerId || 'share-container';
         this.url = options.url || window.location.href;
         this.buttonText = options.buttonText || 'Share';
-        this.buttonClasses = options.buttonClasses || 'share-button';
-        this.buttonId = options.buttonId || 'share-link';
-        this.showToast = options.showToast !== false; // Default to true
+        this.showToast = options.showToast !== false;
         this.qrCodeSize = options.qrCodeSize || 500;
-        this.useURLManager = options.useURLManager !== false; // Default to true
+        this.useURLManager = options.useURLManager !== false;
 
-        // Bind methods to preserve context
+        this._map = null;
+        this._container = null;
+        this._button = null;
+
         this._handleShareClick = this._handleShareClick.bind(this);
         this._showToast = this._showToast.bind(this);
         this._onURLUpdated = this._onURLUpdated.bind(this);
 
-        // Set up URL manager integration if enabled
         if (this.useURLManager) {
             this.setupURLManagerIntegration();
         }
     }
 
-    /**
-     * Render the share button in the specified container
-     */
-    render() {
-        const container = document.getElementById(this.containerId);
-        if (!container) {
-            console.error(`ShareLink: Container with ID "${this.containerId}" not found`);
-            return;
-        }
+    onAdd(map) {
+        this._map = map;
+        this._container = document.createElement('div');
+        this._container.className = 'mapboxgl-ctrl mapboxgl-ctrl-group';
 
-        // Create share button HTML
-        const button = document.createElement('button');
-        button.id = this.buttonId;
-        button.className = this.buttonClasses;
-        button.innerHTML = `
-            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        this._button = document.createElement('button');
+        this._button.className = 'mapboxgl-ctrl-icon share-button';
+        this._button.type = 'button';
+        this._button.setAttribute('aria-label', 'Share Map');
+        this._button.innerHTML = `
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="width: 20px; height: 20px;">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                     d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z" />
             </svg>
-            ${this.buttonText}
         `;
 
-        // Add click event listener
-        button.addEventListener('click', this._handleShareClick);
+        this._button.addEventListener('click', this._handleShareClick);
+        this._container.appendChild(this._button);
 
-        // Clear container and add button
-        container.innerHTML = '';
-        container.appendChild(button);
+        return this._container;
+    }
+
+    onRemove() {
+        if (this._button) {
+            this._button.removeEventListener('click', this._handleShareClick);
+        }
+
+        if (this.useURLManager) {
+            window.removeEventListener('urlUpdated', this._onURLUpdated);
+        }
+
+        const toasts = document.querySelectorAll('.toast-notification');
+        toasts.forEach(toast => toast.remove());
+
+        const overlays = document.querySelectorAll('div[style*="position: fixed"][style*="z-index: 9999"]');
+        overlays.forEach(overlay => overlay.remove());
+
+        if (this._container && this._container.parentNode) {
+            this._container.parentNode.removeChild(this._container);
+        }
+
+        this._map = null;
+        this._container = null;
+        this._button = null;
     }
 
     /**
@@ -131,54 +144,40 @@ export class ShareLink {
      * Handle share button click
      */
     _handleShareClick() {
-        const shareButton = document.getElementById(this.buttonId);
-        if (!shareButton) return;
+        if (!this._button) return;
 
-        // Get the URL to share using the new method
         const urlToShare = this.getCurrentURL();
 
-        // Copy to clipboard
         navigator.clipboard.writeText(urlToShare).then(() => {
-            // Show toast notification
             if (this.showToast) {
                 this._showToast('Link copied to clipboard!');
             }
 
-            // Create QR code using Shoelace component
             const qrCode = document.createElement('sl-qr-code');
             qrCode.value = urlToShare;
             qrCode.size = 30;
             qrCode.style.cursor = 'pointer';
 
-            // Store original button content
-            const originalContent = shareButton.innerHTML;
+            const originalContent = this._button.innerHTML;
 
-            // Remove existing event listeners to prevent duplicates
-            const newButton = shareButton.cloneNode(false);
-            shareButton.parentNode.replaceChild(newButton, shareButton);
+            const newButton = this._button.cloneNode(false);
+            this._button.parentNode.replaceChild(newButton, this._button);
+            this._button = newButton;
 
-            // Replace button content with QR code
             newButton.innerHTML = '';
             newButton.appendChild(qrCode);
 
-            // Function to reset button to original state
             const resetButton = () => {
                 newButton.innerHTML = originalContent;
                 newButton.addEventListener('click', this._handleShareClick);
             };
 
-            // Add click handler to QR code to show full screen overlay
             qrCode.addEventListener('click', (e) => {
                 e.stopPropagation();
-
-                // Reset button content immediately
                 resetButton();
-
-                // Show full-screen QR code overlay
                 this._showQROverlay(urlToShare);
             });
 
-            // Auto-revert after 30 seconds (if user hasn't clicked the QR code)
             setTimeout(() => {
                 if (newButton.contains(qrCode)) {
                     resetButton();
@@ -281,26 +280,4 @@ export class ShareLink {
         });
     }
 
-    /**
-     * Remove the share button and clean up
-     */
-    destroy() {
-        const container = document.getElementById(this.containerId);
-        if (container) {
-            container.innerHTML = '';
-        }
-
-        // Clean up URL manager integration
-        if (this.useURLManager) {
-            window.removeEventListener('urlUpdated', this._onURLUpdated);
-        }
-
-        // Remove any existing toast notifications
-        const toasts = document.querySelectorAll('.toast-notification');
-        toasts.forEach(toast => toast.remove());
-
-        // Remove any QR overlays
-        const overlays = document.querySelectorAll('div[style*="position: fixed"][style*="z-index: 9999"]');
-        overlays.forEach(overlay => overlay.remove());
-    }
 } 

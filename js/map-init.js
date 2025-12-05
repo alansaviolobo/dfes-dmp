@@ -1,14 +1,14 @@
-import {MapLayerControl} from './map-layer-controls.js';
-import {MapFeatureControl} from './map-feature-control.js';
-import {MapFeatureStateManager} from './map-feature-state-manager.js';
-import {localization} from './localization.js';
-import {URLManager} from './url-api.js';
-import {permalinkHandler} from './permalink-handler.js';
-import {Terrain3DControl} from './3d-control.js';
-import {TimeControl} from './time-control.js';
-import {StatePersistence} from './pwa/state-persistence.js';
-import {MapAttributionControl} from './map-attribution-control.js';
-import {layerRegistry} from './atlas-layer-registry.js';
+import { MapLayerControl } from './map-layer-controls.js';
+import { MapFeatureControl } from './map-feature-control.js';
+import { MapFeatureStateManager } from './map-feature-state-manager.js';
+import { localization } from './localization.js';
+import { URLManager } from './url-api.js';
+import { permalinkHandler } from './permalink-handler.js';
+import { Terrain3DControl } from './3d-control.js';
+import { TimeControl } from './time-control.js';
+import { StatePersistence } from './pwa/state-persistence.js';
+import { MapAttributionControl } from './map-attribution-control.js';
+import { layerRegistry } from './atlas-layer-registry.js';
 
 // Layer registry is now imported from atlas-layer-registry.js
 // Make it available globally for backwards compatibility
@@ -87,15 +87,15 @@ function parseLayersFromUrl(layersParam) {
                         const parsedLayer = JSON.parse(jsonString);
                         // Minify the JSON by removing extra whitespace and use single quotes
                         const minifiedItem = JSON.stringify(parsedLayer).replace(/'/g, "\\'").replace(/"/g, "'");
-                        layers.push({...parsedLayer, _originalJson: minifiedItem});
+                        layers.push({ ...parsedLayer, _originalJson: minifiedItem });
                     } catch (error) {
                         console.warn('Failed to parse layer JSON:', trimmedItem, error);
                         // Treat as layer ID if JSON parsing fails
-                        layers.push({id: trimmedItem});
+                        layers.push({ id: trimmedItem });
                     }
                 } else {
                     // Simple layer ID
-                    layers.push({id: trimmedItem});
+                    layers.push({ id: trimmedItem });
                 }
             }
             currentItem = '';
@@ -115,15 +115,15 @@ function parseLayersFromUrl(layersParam) {
                 const parsedLayer = JSON.parse(jsonString);
                 // Minify the JSON by removing extra whitespace and use single quotes
                 const minifiedItem = JSON.stringify(parsedLayer).replace(/'/g, "\\'").replace(/"/g, "'");
-                layers.push({...parsedLayer, _originalJson: minifiedItem});
+                layers.push({ ...parsedLayer, _originalJson: minifiedItem });
             } catch (error) {
                 console.warn('Failed to parse layer JSON:', trimmedItem, error);
                 // Treat as layer ID if JSON parsing fails
-                layers.push({id: trimmedItem});
+                layers.push({ id: trimmedItem });
             }
         } else {
             // Simple layer ID
-            layers.push({id: trimmedItem});
+            layers.push({ id: trimmedItem });
         }
     }
 
@@ -179,9 +179,9 @@ async function tryLoadCrossConfigLayer(layerId, layerConfig) {
                     _sourceConfig: configPrefix,
                     _originalId: originalLayerId,
                     // Preserve important URL-specific properties
-                    ...(layerConfig._originalJson && {_originalJson: layerConfig._originalJson}),
-                    ...(layerConfig.initiallyChecked !== undefined && {initiallyChecked: layerConfig.initiallyChecked}),
-                    ...(layerConfig.opacity !== undefined && {opacity: layerConfig.opacity})
+                    ...(layerConfig._originalJson && { _originalJson: layerConfig._originalJson }),
+                    ...(layerConfig.initiallyChecked !== undefined && { initiallyChecked: layerConfig.initiallyChecked }),
+                    ...(layerConfig.opacity !== undefined && { opacity: layerConfig.opacity })
                 };
             }
         }
@@ -203,9 +203,9 @@ async function tryLoadCrossConfigLayer(layerId, layerConfig) {
                     _sourceConfig: configPrefix,
                     _originalId: originalLayerId,
                     // Preserve important URL-specific properties
-                    ...(layerConfig._originalJson && {_originalJson: layerConfig._originalJson}),
-                    ...(layerConfig.initiallyChecked !== undefined && {initiallyChecked: layerConfig.initiallyChecked}),
-                    ...(layerConfig.opacity !== undefined && {opacity: layerConfig.opacity})
+                    ...(layerConfig._originalJson && { _originalJson: layerConfig._originalJson }),
+                    ...(layerConfig.initiallyChecked !== undefined && { initiallyChecked: layerConfig.initiallyChecked }),
+                    ...(layerConfig.opacity !== undefined && { opacity: layerConfig.opacity })
                 };
             }
         } catch (libraryError) {
@@ -309,7 +309,7 @@ async function loadConfiguration() {
                 ...layer,
                 initiallyChecked: true,
                 // Preserve the original JSON for custom layers
-                ...(layer._originalJson && {_originalJson: layer._originalJson})
+                ...(layer._originalJson && { _originalJson: layer._originalJson })
             }));
 
 
@@ -386,9 +386,9 @@ async function loadConfiguration() {
                         ...finalLayers[existingIndex],
                         ...urlLayer,
                         // Ensure critical URL properties are preserved
-                        ...(urlLayer._originalJson && {_originalJson: urlLayer._originalJson}),
-                        ...(urlLayer.initiallyChecked !== undefined && {initiallyChecked: urlLayer.initiallyChecked}),
-                        ...(urlLayer.opacity !== undefined && {opacity: urlLayer.opacity})
+                        ...(urlLayer._originalJson && { _originalJson: urlLayer._originalJson }),
+                        ...(urlLayer.initiallyChecked !== undefined && { initiallyChecked: urlLayer.initiallyChecked }),
+                        ...(urlLayer.opacity !== undefined && { opacity: urlLayer.opacity })
                     };
                     lastInsertedIndex = existingIndex;
                 } else {
@@ -472,9 +472,9 @@ async function loadConfiguration() {
                         // layerConfig.type takes precedence if provided, otherwise use resolvedLayer.type
                         type: preservedType,
                         // Ensure these critical properties are preserved
-                        ...(layerConfig._originalJson && {_originalJson: layerConfig._originalJson}),
-                        ...(layerConfig.initiallyChecked !== undefined && {initiallyChecked: layerConfig.initiallyChecked}),
-                        ...(layerConfig.opacity !== undefined && {opacity: layerConfig.opacity}),
+                        ...(layerConfig._originalJson && { _originalJson: layerConfig._originalJson }),
+                        ...(layerConfig.initiallyChecked !== undefined && { initiallyChecked: layerConfig.initiallyChecked }),
+                        ...(layerConfig.opacity !== undefined && { opacity: layerConfig.opacity }),
                         // Store normalized ID for URL serialization
                         _normalizedId: layerRegistry.normalizeLayerId(layerConfig.id, atlasId)
                     };
@@ -595,12 +595,12 @@ function deepMerge(target, source) {
         Object.keys(source).forEach(key => {
             if (isObject(source[key])) {
                 if (!(key in target)) {
-                    Object.assign(output, {[key]: source[key]});
+                    Object.assign(output, { [key]: source[key] });
                 } else {
                     output[key] = deepMerge(target[key], source[key]);
                 }
             } else {
-                Object.assign(output, {[key]: source[key]});
+                Object.assign(output, { [key]: source[key] });
             }
         });
     }
@@ -663,16 +663,11 @@ function _initializeSlotLayers(map) {
                         id: slotName,
                         type: 'slot'
                     }, beforeLayerId);
-                    console.log(`[MapInit] Added slot layer: ${slotName}`);
                 } catch (error) {
                     console.error(`[MapInit] Failed to add slot layer ${slotName}:`, error);
                 }
-            } else {
-                console.log(`[MapInit] Slot layer ${slotName} already exists`);
             }
         });
-
-        console.log('[MapInit] Slot layers initialized successfully');
     } catch (error) {
         console.error('[MapInit] Error initializing slot layers:', error);
     }
@@ -684,7 +679,7 @@ async function initializeMap() {
     const layers = config.layers || [];
 
     // Apply map settings from config if available
-    const mapOptions = {...defaultMapOptions};
+    const mapOptions = { ...defaultMapOptions };
     if (config.map) {
         // Apply all properties from config.map to mapOptions
         Object.assign(mapOptions, config.map);
@@ -975,7 +970,7 @@ async function initializeMap() {
 
         // Emit mapReady event for plugins
         const mapReadyEvent = new CustomEvent('mapReady', {
-            detail: {map: map}
+            detail: { map: map }
         });
         window.dispatchEvent(mapReadyEvent);
     });

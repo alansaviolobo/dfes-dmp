@@ -10,10 +10,11 @@
  * UI uses a panel-based approach similar to 3D control with Shoelace details components.
  */
 
-import {drawerStateManager} from './drawer-state-manager.js';
-import {convertToKML} from './map-utils.js';
-import {LayerSettingsModal} from './layer-settings.js';
-import {openLayerCreatorDialog} from './layer-creator-ui.js';
+import { drawerStateManager } from './drawer-state-manager.js';
+import { convertToKML } from './map-utils.js';
+import { LayerSettingsModal } from './layer-settings.js';
+import { openLayerCreatorDialog } from './layer-creator-ui.js';
+import { LayerStyleControl } from './layer-style-control.js';
 
 export class MapFeatureControl {
     constructor(options = {}) {
@@ -23,7 +24,8 @@ export class MapFeatureControl {
             maxWidth: '350px',
             minWidth: '250px',
             showHoverPopups: true, // New option to control hover popups
-            inspectMode: false, // Default inspect mode off
+            inspectMode: false, // Inspect mode disabled by default
+            showLayerOptions: false, // Layer options (settings icon & Paint tab) disabled by default
             ...options
         };
 
@@ -78,11 +80,17 @@ export class MapFeatureControl {
         // Layer settings modal - initialize after map is available
         this._layerSettingsModal = null;
 
+        // Layer style control - initialize after map is available
+        this._layerStyleControl = null;
+
         // Animation state tracking to prevent mouse interference during camera movements
         this._isAnimating = false;
 
         // Drag event listeners storage for cleanup
         this._dragListeners = null;
+
+        // Footer auto-fade timeout
+        this._footerTimeout = null;
 
         // Initialized
 
@@ -103,6 +111,39 @@ export class MapFeatureControl {
         this._layerSettingsModal = new LayerSettingsModal(this);
 
         return this._container;
+    }
+
+    /**
+     * Get MapboxAPI reference from layer control
+     */
+    _getMapboxAPI() {
+        if (this._mapboxAPI) {
+            return this._mapboxAPI;
+        }
+
+        // Try to get from global layer control
+        if (window.layerControl && window.layerControl._mapboxAPI) {
+            return window.layerControl._mapboxAPI;
+        }
+
+        return null;
+    }
+
+    /**
+     * Initialize layer style control if not already initialized
+     */
+    _ensureLayerStyleControl() {
+        if (this._layerStyleControl) {
+            return true;
+        }
+
+        const mapboxAPI = this._getMapboxAPI();
+        if (mapboxAPI && this._map) {
+            this._layerStyleControl = new LayerStyleControl(mapboxAPI, this._map);
+            return true;
+        }
+
+        return false;
     }
 
     /**
@@ -209,17 +250,27 @@ export class MapFeatureControl {
             name: 'Bhunaksha',
             sourceLayer: 'Onemapgoa_GA_Cadastrals',
 
-            renderHTML: ({feature}) => {
+            renderHTML: ({ feature }) => {
                 const plot = feature.properties.plot || '';
                 const giscode = feature.properties.giscode || '';
 
                 // Create a unique container ID for this specific render
                 const containerId = `bhunaksha-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
 
+                // Helper to generate header
+                const getBhunakshaHeader = (options = {}) => {
+                    const { withLink = false, color = '' } = options;
+                    const style = color ? `style="color: ${color};"` : '';
+                    const content = withLink
+                        ? 'Additional Information from <a href="https://bhunaksha.goa.gov.in" target="_blank" style="color: #60a5fa;">Goa Bhunaksha</a>'
+                        : 'Additional Information from Bhunaksha';
+                    return `<div class="mb-2 font-semibold" ${style}>${content}</div>`;
+                };
+
                 // Create initial container with loading spinner
                 const containerHTML = `
-                    <div id="${containerId}" class="text-xs" style="color: #d1d5db;">
-                        <div class="mb-2 font-semibold">Additional Information from <a href="https://bhunaksha.goa.gov.in" target="_blank" style="color: #60a5fa;">Goa Bhunaksha</a></div>
+                    <div id="${containerId}" class="text-xs">
+                        ${getBhunakshaHeader({ withLink: true })}
                         <div class="flex items-center gap-2">
                             <sl-spinner style="font-size: 0.875rem; --indicator-color: #9ca3af;"></sl-spinner>
                             <span class="text-xs">Requesting Occupant Details...</span>
@@ -276,10 +327,10 @@ export class MapFeatureControl {
                                 }
 
                                 container.innerHTML = `
-                                    <div class="text-xs" style="color: #d1d5db;">
-                                        <div class="mb-2 font-semibold" style="color: #f3f4f6;">Additional Information from Bhunaksha</div>
-                                        <div class="mb-2" style="color: #e5e7eb;">${infoText}</div>
-                                        <div class="italic text-xs" style="color: #9ca3af;">
+                                    <div class="text-xs">
+                                        ${getBhunakshaHeader()}
+                                        <div class="mb-2">${infoText}</div>
+                                        <div class="italic text-xs">
                                             <svg class="inline w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 20 20">
                                                 <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"></path>
                                             </svg>
@@ -290,7 +341,7 @@ export class MapFeatureControl {
                             } else {
                                 container.innerHTML = `
                                     <div class="text-xs" style="color: #d1d5db;">
-                                        <div class="mb-2 font-semibold" style="color: #f3f4f6;">Additional Information from Bhunaksha</div>
+                                        ${getBhunakshaHeader({ color: '#f3f4f6' })}
                                         <span class="text-xs" style="color: #9ca3af;">No occupant data available</span>
                                     </div>
                                 `;
@@ -303,8 +354,8 @@ export class MapFeatureControl {
                         const container = document.getElementById(containerId);
                         if (container) {
                             container.innerHTML = `
-                                <div class="text-xs" style="color: #d1d5db;">
-                                    <div class="mb-2 font-semibold" style="color: #f3f4f6;">Additional Information from Bhunaksha</div>
+                                <div class="text-xs">
+                                    ${getBhunakshaHeader()}
                                     <span class="text-xs" style="color: #ef4444;">Error loading details</span>
                                 </div>
                             `;
@@ -332,27 +383,13 @@ export class MapFeatureControl {
 
         // Create button
         const button = document.createElement('button');
-        button.className = 'mapboxgl-ctrl-icon';
+        button.className = 'mapboxgl-ctrl-icon map-feature-control-btn';
         button.type = 'button';
         button.setAttribute('aria-label', 'Map Layers');
-        button.style.cssText = `
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            width: 40px;
-            height: 40px;
-            font-size: 12px;
-            font-weight: bold;
-            color: #666;
-        `;
 
         // Create Shoelace icon
         const icon = document.createElement('sl-icon');
         icon.name = 'stack';
-        icon.style.cssText = `
-            font-size: 18px;
-            color: inherit;
-        `;
 
         button.appendChild(icon);
 
@@ -373,6 +410,24 @@ export class MapFeatureControl {
 
         // Create panel
         this._createPanel();
+
+        // Add styles for visual feedback
+        const style = document.createElement('style');
+        style.textContent = `
+            @keyframes layer-flash {
+                0% { background-color: white; }
+                50% { background-color: #eff6ff; } /* blue-50 */
+                100% { background-color: white; }
+            }
+            .layer-flash {
+                animation: layer-flash 0.5s ease-in-out;
+            }
+            .values-refreshing td {
+                color: transparent !important;
+                transition: color 0.2s ease;
+            }
+        `;
+        document.head.appendChild(style);
     }
 
     /**
@@ -381,120 +436,88 @@ export class MapFeatureControl {
     _createPanel() {
         this._panel = document.createElement('div');
         this._panel.className = 'map-feature-panel';
-        this._panel.style.cssText = `
-            position: absolute;
-            top: 10px;
-            left: 10px;
-            width: 350px;
-            max-width: 85vw;
-            max-height: calc(100vh - 120px);
-            min-width: 200px;
-            background-color: white;
-            border: 1px solid #ccc;
-            border-radius: 4px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-            z-index: 1000;
-            display: flex;
-            flex-direction: column;
-            font-size: 12px;
-            overflow: auto;
-            resize: both;
-        `;
 
 
-        // Create panel content
+        // Create panel content wrapper
         const content = document.createElement('div');
-        content.style.cssText = `
-            display: flex;
-            flex-direction: column;
-            flex: 1;
-            min-height: 0;
-        `;
+        content.className = 'map-feature-panel-content';
 
-        // Title - make it draggable
-        const title = document.createElement('h3');
-        title.textContent = 'Map Layers';
-        title.style.cssText = `
-            margin: 10px 0 5px 5px;
-            font-size: 16px;
-            font-weight: bold;
-            color: #333;
-            cursor: move;
-            user-select: none;
-        `;
+        // Create Header (Layer Atlas + Actions)
+        const header = document.createElement('div');
+        header.className = 'map-feature-panel-header';
 
-        // Add drag functionality to the title
-        this._setupPanelDrag(title);
+        // Layer Atlas Button Container (left side, expands to fill space)
+        const layerAtlasContainer = document.createElement('div');
+        layerAtlasContainer.className = 'map-feature-panel-header-left';
+        const layerAtlasBtn = this._createLayerAtlasButton();
+        layerAtlasContainer.appendChild(layerAtlasBtn);
+        header.appendChild(layerAtlasContainer);
 
-        // Create actions section for main details
-        const actionsSection = this._createMainDetailsActions();
+        // Header Actions Container (right side)
+        const headerActions = document.createElement('div');
+        headerActions.className = 'map-feature-panel-header-actions';
 
-        // Create layers container
-        this._layersContainer = document.createElement('div');
-        this._layersContainer.className = 'feature-control-layers';
-        this._layersContainer.style.cssText = `
-            flex: 1;
-            overflow-y: auto;
-            background: transparent;
-            padding: 0;
-            min-height: 0;
-        `;
+        // Add actions to header (without Layer Atlas, which is now on the left)
+        const actions = this._createHeaderActions();
+        actions.forEach(action => headerActions.appendChild(action));
 
-        // Create footer section for tooltips (only on non-touch devices)
-        const isTouchDevice = this._isMobileScreen();
-        const footer = document.createElement('div');
-        footer.className = 'map-feature-panel-footer';
-        footer.style.cssText = `
-            padding: 8px 4px;
-            background: rgba(0, 0, 0, 0.02);
-            border-top: 1px solid rgba(0, 0, 0, 0.08);
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            flex-shrink: 0;
-            ${isTouchDevice ? 'display: none;' : ''}
-        `;
-
-        // Add tooltips controls to footer
-        footer.appendChild(this._inspectSwitch);
-
-        // Close button
-        const closeButton = document.createElement('button');
-        closeButton.textContent = '×';
-        closeButton.setAttribute('aria-label', 'Close');
-        closeButton.style.cssText = `
-            position: absolute;
-            top: 5px;
-            right: 10px;
-            background: none;
-            border: none;
-            font-size: 18px;
-            cursor: pointer;
-            color: #999;
-            padding: 0;
-            width: 20px;
-            height: 20px;
-            line-height: 1;
-        `;
-
+        // Close button (integrated into header actions)
+        const closeButton = document.createElement('sl-icon-button');
+        closeButton.name = 'x-lg';
+        closeButton.label = 'Close';
+        closeButton.className = 'header-close-btn';
         closeButton.addEventListener('click', () => {
             this._hidePanel();
         });
+        headerActions.appendChild(closeButton);
+
+        header.appendChild(headerActions);
+
+        // Add drag functionality to the header
+        this._setupPanelDrag(header);
+
+        // Create layers container
+        this._layersContainer = document.createElement('div');
+        this._layersContainer.className = 'feature-control-layers map-feature-panel-layers';
 
         // Assemble panel
-        content.appendChild(title);
-        content.appendChild(actionsSection);
+        content.appendChild(header);
         content.appendChild(this._layersContainer);
-        content.appendChild(footer);
-        this._panel.appendChild(closeButton);
+
+        // Create Footer (Selection Summary)
+        this._footer = document.createElement('div');
+        this._footer.className = 'map-feature-footer';
+
+        // Selection Text
+        this._selectionText = document.createElement('span');
+        this._selectionText.className = 'map-feature-footer-text';
+        this._footer.appendChild(this._selectionText);
+
+        // Footer Clear Button
+        const footerClearBtn = document.createElement('button');
+        footerClearBtn.textContent = 'Clear Selection';
+        footerClearBtn.className = 'map-feature-footer-btn';
+        footerClearBtn.addEventListener('mouseenter', () => {
+            footerClearBtn.style.background = '#e0f2fe';
+        });
+        footerClearBtn.addEventListener('mouseleave', () => {
+            footerClearBtn.style.background = 'transparent';
+        });
+        footerClearBtn.addEventListener('click', () => {
+            this._clearAllSelections();
+        });
+        this._footer.appendChild(footerClearBtn);
+
+        content.appendChild(this._footer);
+
         this._panel.appendChild(content);
 
         // Close panel when clicking outside (but not on map features)
         // Use a timeout to avoid immediate hiding due to event bubbling
         setTimeout(() => {
             document.addEventListener('click', (e) => {
-                // Don't close panel if clicking on the panel itself, control button, or map canvas
-                if (!e.target.closest('.map-feature-panel, .mapboxgl-ctrl-icon, .mapboxgl-canvas-container')) {
+                // Don't close panel if clicking on the panel itself, control button, map canvas, or layer drawer
+                if (!e.target.closest('.map-feature-panel, .mapboxgl-ctrl-icon, .mapboxgl-canvas-container, #map-controls-drawer')) {
                     this._hidePanel();
                 }
             });
@@ -600,148 +623,153 @@ export class MapFeatureControl {
     }
 
     /**
-     * Create actions section with drawer toggle, inspect mode, and clear selection
+     * Create Layer Atlas button (left side of header)
      */
-    _createMainDetailsActions() {
-        const actionsSection = document.createElement('div');
-        actionsSection.className = 'map-layers-actions';
-        actionsSection.style.cssText = `
-            padding: 4px 4px;
-            background: rgba(0, 0, 0, 0.02);
-            border-bottom: 1px solid rgba(0, 0, 0, 0.08);
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            flex-wrap: wrap;
+    _createLayerAtlasButton() {
+        const layerAtlasBtn = document.createElement('button');
+        layerAtlasBtn.className = 'layer-atlas-btn primary-action-btn';
+
+        // Get current atlas name
+        const currentAtlas = window.layerRegistry?._currentAtlas || 'index';
+        const atlasMetadata = window.layerRegistry?.getAtlasMetadata(currentAtlas);
+        const atlasName = atlasMetadata?.name || 'Browse Maps';
+
+        layerAtlasBtn.innerHTML = `
+            <sl-icon name="globe" style="font-size: 14px; margin-right: 6px;"></sl-icon>
+            <span>${atlasName}</span>
         `;
 
-        // Create add layer button
-        this._addLayerBtn = document.createElement('sl-button');
-        this._addLayerBtn.size = 'small';
-        this._addLayerBtn.variant = 'default';
-        this._addLayerBtn.style.cssText = `
-            --sl-color-primary-600: #059669;
-            --sl-color-primary-500: #10b981;
-            font-size: 11px;
-            font-weight: 500;
-        `;
-
-        const addIcon = document.createElement('sl-icon');
-        addIcon.name = 'search';
-        addIcon.setAttribute('slot', 'prefix');
-        addIcon.style.fontSize = '12px';
-
-        this._addLayerBtn.appendChild(addIcon);
-        this._addLayerBtn.appendChild(document.createTextNode('Find Layers'));
-
-        // Add click handler to open layer drawer
-        this._addLayerBtn.addEventListener('click', (e) => {
+        layerAtlasBtn.addEventListener('click', () => {
             this._openLayerDrawer();
         });
 
-        // Create "New Data Source" button
-        this._newDataSourceBtn = document.createElement('sl-button');
-        this._newDataSourceBtn.size = 'small';
-        this._newDataSourceBtn.variant = 'default';
-        this._newDataSourceBtn.style.cssText = `
-            --sl-color-primary-600: #3b82f6;
-            --sl-color-primary-500: #3b82f6;
-            font-size: 11px;
-            font-weight: 500;
-        `;
+        return layerAtlasBtn;
+    }
 
-        const newDataSourceIcon = document.createElement('sl-icon');
-        newDataSourceIcon.name = 'plus-square';
-        newDataSourceIcon.setAttribute('slot', 'prefix');
-        newDataSourceIcon.style.fontSize = '12px';
+    /**
+     * Create header actions (New Data Source, Settings) - Layer Atlas is now separate
+     */
+    _createHeaderActions() {
+        const actions = [];
 
-        this._newDataSourceBtn.appendChild(newDataSourceIcon);
-        this._newDataSourceBtn.appendChild(document.createTextNode('New Data Source'));
+        // 1. New Data Source Button (Icon only)
+        const newDataSourceBtn = document.createElement('sl-icon-button');
+        newDataSourceBtn.name = 'plus-square';
+        newDataSourceBtn.label = 'New Data Source';
+        newDataSourceBtn.className = 'header-icon-btn';
+        // Add tooltip
+        const newSourceTooltip = document.createElement('sl-tooltip');
+        newSourceTooltip.content = 'New Data Source';
+        newSourceTooltip.appendChild(newDataSourceBtn);
 
-        // Add click handler to open layer creator dialog
-        this._newDataSourceBtn.addEventListener('click', (e) => {
+        newDataSourceBtn.addEventListener('click', (e) => {
             e.preventDefault();
             e.stopPropagation();
             openLayerCreatorDialog();
         });
+        actions.push(newSourceTooltip);
 
-        // Create inspect mode toggle switch - hide on touch devices
-        const isTouchDevice = this._isMobileScreen();
+        // 3. Settings Menu (Popover)
+        const settingsBtn = document.createElement('sl-icon-button');
+        settingsBtn.name = 'gear';
+        settingsBtn.label = 'Settings';
+        settingsBtn.className = 'header-icon-btn';
 
-        const inspectIcon = document.createElement('sl-icon');
-        inspectIcon.name = 'chat-square';
-        inspectIcon.style.fontSize = '12px';
+        // Create settings popover content
+        const settingsPopover = document.createElement('sl-dropdown');
+        settingsPopover.distance = 5;
+        settingsPopover.placement = 'bottom-end';
 
-        // Create label for the inspect switch with icon
-        const inspectSwitchLabel = document.createElement('label');
-        inspectSwitchLabel.style.cssText = `
-            font-size: 12px;
-            color: #6b7280;
-            font-weight: 500;
-            cursor: pointer;
-            user-select: none;
-            display: flex;
-            align-items: center;
-            gap: 4px;
-        `;
+        // Trigger
+        const trigger = document.createElement('div');
+        trigger.setAttribute('slot', 'trigger');
+        trigger.appendChild(settingsBtn);
+        settingsPopover.appendChild(trigger);
 
-        inspectSwitchLabel.appendChild(inspectIcon);
-        inspectSwitchLabel.appendChild(document.createTextNode('Tooltips'));
+        // Menu
+        const menu = document.createElement('sl-menu');
 
-        this._inspectSwitch = document.createElement('sl-switch');
-        this._inspectSwitch.appendChild(inspectSwitchLabel);
-        this._inspectSwitch.size = 'small';
-        this._inspectSwitch.checked = this.options.inspectMode;
-        this._inspectSwitch.style.cssText = `
-            --sl-color-primary-600: #f59e0b;
-            --sl-color-primary-500: #f59e0b;
-            ${isTouchDevice ? 'display: none;' : ''}
-        `;
+        // Tooltip Toggle Item
+        const tooltipItem = document.createElement('sl-menu-item');
+        tooltipItem.value = 'tooltips';
 
-        // Add click handler to toggle inspect mode
-        this._inspectSwitch.addEventListener('sl-change', (e) => {
+        // Create switch for menu item
+        const tooltipSwitch = document.createElement('sl-switch');
+        tooltipSwitch.checked = this.options.inspectMode;
+        tooltipSwitch.size = 'small';
+        tooltipSwitch.style.pointerEvents = 'none'; // Let menu item handle click
+
+        const tooltipLabel = document.createElement('span');
+        tooltipLabel.textContent = 'Show Tooltips';
+        tooltipLabel.style.marginLeft = '8px';
+
+        tooltipItem.appendChild(tooltipSwitch);
+        tooltipItem.appendChild(tooltipLabel);
+
+        // Handle toggle
+        tooltipItem.addEventListener('click', (e) => {
+            // Prevent menu from closing immediately if desired, or let it close
+            e.stopPropagation(); // Keep menu open
+            tooltipSwitch.checked = !tooltipSwitch.checked;
+            this._inspectSwitch.checked = tooltipSwitch.checked; // Sync with original switch
             this._toggleInspectMode();
         });
 
-        // Create clear selection button
-        this._clearSelectionBtn = document.createElement('sl-button');
-        this._clearSelectionBtn.size = 'small';
-        this._clearSelectionBtn.variant = 'text';
-        this._clearSelectionBtn.style.cssText = `
-            --sl-color-danger-600: #ef4444;
-            --sl-color-danger-500: #ef4444;
-            color: #ef4444;
-            font-size: 11px;
-            display: none;
-        `;
-
-        const clearIcon = document.createElement('sl-icon');
-        clearIcon.name = 'x-circle';
-        clearIcon.setAttribute('slot', 'prefix');
-        clearIcon.style.fontSize = '12px';
-
-        this._clearSelectionBtn.appendChild(clearIcon);
-        this._clearSelectionBtn.appendChild(document.createTextNode('Clear Selection'));
-
-        // Add click handler to clear all selections
-        this._clearSelectionBtn.addEventListener('click', (e) => {
-            e.preventDefault();
-            e.stopPropagation();
-            this._clearAllSelections();
+        // Sync switch state when menu opens
+        settingsPopover.addEventListener('sl-show', () => {
+            tooltipSwitch.checked = this._inspectModeEnabled;
         });
 
-        // Add all controls to the actions section (buttons row)
-        actionsSection.appendChild(this._addLayerBtn);
-        actionsSection.appendChild(this._newDataSourceBtn);
+        menu.appendChild(tooltipItem);
 
-        // Add separator after layer buttons
-        const separator0 = document.createElement('div');
-        separator0.style.cssText = 'width: 1px; height: 16px; background: rgba(0,0,0,0.1); margin: 0 4px;';
-        actionsSection.appendChild(separator0);
+        // Layer Options Toggle Item
+        const layerOptionsItem = document.createElement('sl-menu-item');
+        layerOptionsItem.value = 'layer-options';
 
-        actionsSection.appendChild(this._clearSelectionBtn);
+        // Create switch for menu item
+        const layerOptionsSwitch = document.createElement('sl-switch');
+        layerOptionsSwitch.checked = this.options.showLayerOptions;
+        layerOptionsSwitch.size = 'small';
+        layerOptionsSwitch.style.pointerEvents = 'none'; // Let menu item handle click
 
-        return actionsSection;
+        const layerOptionsLabel = document.createElement('span');
+        layerOptionsLabel.textContent = 'Show Advanced Options';
+        layerOptionsLabel.style.marginLeft = '8px';
+
+        layerOptionsItem.appendChild(layerOptionsSwitch);
+        layerOptionsItem.appendChild(layerOptionsLabel);
+
+        // Handle toggle
+        layerOptionsItem.addEventListener('click', (e) => {
+            e.stopPropagation(); // Keep menu open
+            layerOptionsSwitch.checked = !layerOptionsSwitch.checked;
+            this.options.showLayerOptions = layerOptionsSwitch.checked;
+            this._toggleLayerOptions();
+        });
+
+        // Sync switch state when menu opens
+        settingsPopover.addEventListener('sl-show', () => {
+            layerOptionsSwitch.checked = this.options.showLayerOptions;
+        });
+
+        menu.appendChild(layerOptionsItem);
+        settingsPopover.appendChild(menu);
+
+        // Store reference to update later
+        this._settingsPopover = settingsPopover;
+
+        actions.push(settingsPopover);
+
+        // 4. Clear Selection (Moved to footer)
+        // this._clearSelectionBtn removed from header actions
+
+
+        // Re-initialize inspect switch for internal state logic (hidden)
+        this._inspectSwitch = document.createElement('sl-switch');
+        this._inspectSwitch.checked = this.options.inspectMode;
+        this._inspectSwitch.style.display = 'none';
+
+        return actions;
     }
 
     /**
@@ -757,7 +785,7 @@ export class MapFeatureControl {
     _setupDrawerStateTracking() {
         // Listen to drawer state changes from the centralized manager
         this._drawerStateListener = (event) => {
-            const {isOpen, eventType} = event.detail;
+            const { isOpen, eventType } = event.detail;
             // No longer need to update switch state since we use an action button
         };
 
@@ -791,6 +819,21 @@ export class MapFeatureControl {
     }
 
     /**
+     * Toggle layer options (settings icon and Paint tab visibility)
+     */
+    _toggleLayerOptions() {
+        // Update visibility of all layer settings buttons
+        const settingsBtns = this._layersContainer.querySelectorAll('.layer-settings-btn');
+        settingsBtns.forEach(btn => {
+            btn.style.display = this.options.showLayerOptions ? '' : 'none';
+        });
+
+        // Re-render all layers to update tab visibility
+        this._scheduleRender();
+    }
+
+
+    /**
      * Clear all selections across all layers
      */
     _clearAllSelections() {
@@ -807,40 +850,98 @@ export class MapFeatureControl {
     }
 
     /**
-     * Update clear selection button visibility based on whether any layers have selections
+     * Update footer visibility and text based on selections
      */
-    _updateClearSelectionButtonVisibility() {
-        if (!this._clearSelectionBtn) return;
+    _updateSelectionFooter() {
+        if (!this._footer) return;
 
-        // Check if any layer elements have the 'has-selection' class
-        const hasSelections = this._layersContainer.querySelector('.has-selection') !== null;
+        // Count selections
+        let featureCount = 0;
+        let layerCount = 0;
 
-        if (hasSelections) {
-            this._clearSelectionBtn.style.display = 'inline-flex';
+        // Iterate through layer items to find selections
+        const layerItems = this._layersContainer.querySelectorAll('.layer-card');
+        layerItems.forEach(item => {
+            if (item.classList.contains('has-selection')) {
+                layerCount++;
+                // In a real implementation, we'd need a way to count features per layer.
+                // For now, we'll assume 1 feature per selected layer unless we can query the details.
+                // If the details panel is populated, we might count rows, but 'has-selection' is a good proxy for "at least one".
+                // Let's try to be more specific if possible, but 'has-selection' is what we have easily.
+                // Actually, let's look for selected rows if they exist
+                const selectedRows = item.querySelectorAll('tr.selected-row');
+                if (selectedRows.length > 0) {
+                    featureCount += selectedRows.length;
+                } else {
+                    // Fallback if rows aren't marked with a specific class or if it's just the layer marked
+                    featureCount++;
+                }
+            }
+        });
+
+        if (layerCount > 0) {
+            this._selectionText.textContent = `${featureCount} feature${featureCount !== 1 ? 's' : ''} selected across ${layerCount} layer${layerCount !== 1 ? 's' : ''}`;
+
+            // Show footer
+            this._footer.style.display = 'flex';
+            // Force reflow to ensure transition works
+            void this._footer.offsetWidth;
+            this._footer.style.opacity = '1';
+
+            // Clear existing timeout
+            if (this._footerTimeout) {
+                clearTimeout(this._footerTimeout);
+            }
+
+            // Set new timeout to fade out
+            this._footerTimeout = setTimeout(() => {
+                this._footer.style.opacity = '0';
+                // Wait for transition to finish before hiding
+                setTimeout(() => {
+                    // Only hide if opacity is still 0 (in case it was re-shown)
+                    if (this._footer.style.opacity === '0') {
+                        this._footer.style.display = 'none';
+                    }
+                }, 500);
+            }, 5000);
+
         } else {
-            this._clearSelectionBtn.style.display = 'none';
+            this._footer.style.display = 'none';
+            this._footer.style.opacity = '0';
+            if (this._footerTimeout) {
+                clearTimeout(this._footerTimeout);
+            }
         }
     }
+
+    /**
+     * Update clear selection button visibility - Redirects to new footer method
+     */
+    _updateClearSelectionButtonVisibility() {
+        this._updateSelectionFooter();
+    }
+
+
 
     /**
      * Handle state changes from the state manager
      */
     _handleStateChange(detail) {
-        const {eventType, data} = detail;
+        const { eventType, data } = detail;
 
         // Optimize rendering based on event type
         switch (eventType) {
             case 'feature-hover':
                 this._handleFeatureHover(data);
                 // Update layer visual state for hover
-                this._updateLayerVisualState(data.layerId, {hasHover: true});
+                this._updateLayerVisualState(data.layerId, { hasHover: true });
                 break;
             case 'features-batch-hover':
                 // Handle batch hover events (PERFORMANCE OPTIMIZED)
                 this._handleBatchFeatureHover(data);
                 // Update layer visual state for all affected layers
                 data.affectedLayers.forEach(layerId => {
-                    this._updateLayerVisualState(layerId, {hasHover: true});
+                    this._updateLayerVisualState(layerId, { hasHover: true });
                 });
                 break;
             case 'features-hover-cleared':
@@ -859,7 +960,7 @@ export class MapFeatureControl {
                 this._renderLayer(data.layerId);
                 this._expandLayerForFeatureSelection(data.layerId);
                 // Update layer visual state for selection
-                this._updateLayerVisualState(data.layerId, {hasSelection: true});
+                this._updateLayerVisualState(data.layerId, { hasSelection: true });
                 break;
             case 'feature-click-multiple':
                 // Handle multiple feature selections from overlapping click
@@ -872,7 +973,7 @@ export class MapFeatureControl {
                     this._renderLayer(layerId);
                     this._expandLayerForFeatureSelection(layerId);
                     // Update layer visual state for selection
-                    this._updateLayerVisualState(layerId, {hasSelection: true});
+                    this._updateLayerVisualState(layerId, { hasSelection: true });
                 });
                 break;
             case 'selections-cleared':
@@ -880,7 +981,7 @@ export class MapFeatureControl {
                 // Update visual states for all layers that had selections cleared
                 const clearedLayerIds = [...new Set(data.clearedFeatures.map(item => item.layerId))];
                 clearedLayerIds.forEach(layerId => {
-                    this._updateLayerVisualState(layerId, {hasSelection: false});
+                    this._updateLayerVisualState(layerId, { hasSelection: false });
                 });
                 break;
             case 'feature-close':
@@ -910,6 +1011,9 @@ export class MapFeatureControl {
             case 'layer-registered':
                 // Re-render when layers are registered (turned on)
                 this._scheduleRender();
+
+                // Ensure panel is visible when a new layer is added
+                this._showPanel();
 
                 // Ensure URL is updated when layers are turned on
                 if (window.urlManager) {
@@ -945,14 +1049,21 @@ export class MapFeatureControl {
     _expandLayerForFeatureSelection(layerId) {
         const layerElement = this._layersContainer.querySelector(`[data-layer-id="${layerId}"]`);
         if (layerElement) {
-            // Expand the main layer details
-            layerElement.open = true;
-
-            // Find and expand the features details specifically
-            const featuresDetails = layerElement.querySelector('.features-details');
-            if (featuresDetails) {
-                featuresDetails.open = true;
+            // Expand the layer if it's collapsed
+            const isCollapsed = this._layerCollapseStates.get(layerId) || false;
+            if (isCollapsed) {
+                this._toggleLayerCollapse(layerId, layerElement);
             }
+
+            // Find the tab group
+            const tabGroup = layerElement.querySelector('sl-tab-group');
+            if (tabGroup) {
+                // Switch to features tab
+                tabGroup.show('features');
+            }
+
+            // Scroll the layer card into view if needed
+            layerElement.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
         }
 
         // Ensure the panel is visible when a feature is selected
@@ -1010,7 +1121,7 @@ export class MapFeatureControl {
         });
 
         // Always update both states to ensure correct visual state
-        this._updateLayerVisualState(layerId, {hasHover, hasSelection});
+        this._updateLayerVisualState(layerId, { hasHover, hasSelection });
     }
 
     /**
@@ -1207,7 +1318,7 @@ export class MapFeatureControl {
      * Update a single layer (preserves position, only updates content)
      */
     _updateSingleLayer(layerId, layerData) {
-        const {config, features} = layerData;
+        const { config, features } = layerData;
 
         // Find existing layer element or create new one
         let layerElement = this._layersContainer.querySelector(`[data-layer-id="${layerId}"]`);
@@ -1224,158 +1335,428 @@ export class MapFeatureControl {
         // Add to container if it's a new element, maintaining config order
         if (isNewElement) {
             this._insertLayerInOrder(layerElement, layerId);
+        } else {
+            // Existing element updated - trigger flash animation
+            layerElement.classList.remove('layer-flash');
+            // Force reflow
+            void layerElement.offsetWidth;
+            layerElement.classList.add('layer-flash');
+
+            // Remove class after animation
+            setTimeout(() => {
+                if (layerElement) {
+                    layerElement.classList.remove('layer-flash');
+                }
+            }, 500);
         }
     }
 
     /**
-     * Create a layer details element with nested structure
+     * Create a layer details element with custom card structure
      */
     _createLayerDetailsElement(layerId, config) {
-        const layerDetails = document.createElement('sl-details');
-        layerDetails.className = 'layer-details';
-        layerDetails.setAttribute('data-layer-id', layerId);
-        layerDetails.open = false; // Collapsed by default
+        const layerCard = document.createElement('div');
+        layerCard.className = 'layer-card';
+        layerCard.setAttribute('data-layer-id', layerId);
 
-        // Set custom styles for layer details
-        layerDetails.style.cssText = `
-            --sl-panel-background-color: #777;
-            --sl-panel-border-color: #333;
-            overflow: hidden;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-            border-bottom: 1px solid rgba(0, 0, 0, 0.2);
-            border-left: 6px solid #ababab;
-        `;
+        // Add hover effect
+        layerCard.addEventListener('mouseenter', () => {
+            layerCard.style.boxShadow = '0 4px 6px rgba(0,0,0,0.05)';
+        });
+        layerCard.addEventListener('mouseleave', () => {
+            layerCard.style.boxShadow = '0 1px 2px rgba(0,0,0,0.05)';
+        });
 
-        // Create custom summary with background image support
-        const summary = document.createElement('div');
-        summary.setAttribute('slot', 'summary');
-        summary.className = 'layer-summary';
+        // Set initial collapse state based on screen size
+        const isMobile = this._isMobileScreen();
+        if (!this._layerCollapseStates.has(layerId)) {
+            this._layerCollapseStates.set(layerId, isMobile);
+        }
+        const isCollapsed = this._layerCollapseStates.get(layerId);
 
-        let summaryStyle = `
-            font-size: 13px;
-            font-weight: 600;
-            color: #1f2937;
-            cursor: pointer;
-            position: relative;
-            min-height: 32px;
-            display: flex;
-            align-items: center;
-            background: transparent;
-        `;
+        // Create Card Header
+        const header = document.createElement('div');
+        header.className = 'layer-card-header';
 
-        summary.style.cssText = summaryStyle;
+        // Add hover effect to header
+        header.addEventListener('mouseenter', () => {
+            header.style.backgroundColor = '#374151';
+        });
+        header.addEventListener('mouseleave', () => {
+            header.style.backgroundColor = '#1f2937';
+        });
 
         // Add background image class if available
         if (config.headerImage) {
-            layerDetails.classList.add('has-header-image');
-            layerDetails.setAttribute('data-header-image', config.headerImage);
-            this._addHeaderImageCSS(layerId, config.headerImage);
+            layerCard.classList.add('has-header-image');
+            layerCard.setAttribute('data-header-image', config.headerImage);
+            header.style.backgroundImage = `linear-gradient(to right, rgba(0,0,0,0.6), rgba(0,0,0,0.4)), url('${config.headerImage}')`;
+            header.style.backgroundSize = 'cover';
+            header.style.backgroundPosition = 'center';
         }
 
-        // Create title text
-        const title = document.createElement('span');
-        title.textContent = config.title || config.id;
-        title.style.cssText = 'position: relative; z-index: 2; flex: 1;';
-        summary.appendChild(title);
+        // Collapse Indicator Icon
+        const collapseIcon = document.createElement('sl-icon');
+        collapseIcon.name = isCollapsed ? 'chevron-right' : 'chevron-down';
+        collapseIcon.className = 'collapse-indicator';
+        header.appendChild(collapseIcon);
 
-        layerDetails.appendChild(summary);
+        // Title
+        const title = document.createElement('div');
+        title.textContent = config.title || config.id;
+        title.className = 'layer-card-title';
+        header.appendChild(title);
+
+        // Actions Container (Opacity, Zoom, Remove)
+        const actionsContainer = this._createLayerActions(layerId, config);
+        header.appendChild(actionsContainer);
+
+        // Add click handler to header for collapse toggle
+        header.addEventListener('click', (e) => {
+            if (e.target.closest('.layer-actions')) {
+                return;
+            }
+            this._toggleLayerCollapse(layerId, layerCard);
+        });
+
+        layerCard.appendChild(header);
+
+        // Content Container (Tabs + Content)
+        const contentContainer = document.createElement('div');
+        contentContainer.className = 'layer-content';
+        contentContainer.style.display = isCollapsed ? 'none' : 'block';
+        layerCard.appendChild(contentContainer);
 
         // Add hover event handlers for layer isolation
-        this._addLayerIsolationHoverHandlers(layerDetails, layerId, config);
+        this._addLayerIsolationHoverHandlers(layerCard, layerId, config);
 
-        return layerDetails;
+        return layerCard;
     }
 
     /**
-     * Update layer content with action buttons and nested details
+     * Toggle layer collapse/expand state
+     */
+    _toggleLayerCollapse(layerId, layerCard) {
+        const currentState = this._layerCollapseStates.get(layerId) || false;
+        const newState = !currentState;
+        this._layerCollapseStates.set(layerId, newState);
+
+        const collapseIcon = layerCard.querySelector('.collapse-indicator');
+        const contentContainer = layerCard.querySelector('.layer-content');
+        const actionsContainer = layerCard.querySelector('.layer-actions');
+
+        if (collapseIcon) {
+            collapseIcon.name = newState ? 'chevron-right' : 'chevron-down';
+        }
+
+        if (contentContainer) {
+            contentContainer.style.display = newState ? 'none' : 'block';
+        }
+
+        if (actionsContainer) {
+            const opacityBtn = actionsContainer.querySelector('[aria-label="Opacity"]')?.closest('sl-dropdown');
+            const settingsBtn = actionsContainer.querySelector('[title="Layer Settings"]');
+
+            if (opacityBtn) {
+                opacityBtn.style.display = newState ? 'none' : '';
+            }
+            if (settingsBtn) {
+                // Settings button should be hidden if collapsed OR if showLayerOptions is disabled
+                settingsBtn.style.display = (newState || !this.options.showLayerOptions) ? 'none' : '';
+            }
+        }
+    }
+
+    /**
+     * Update layer content with tabs and flattened details
      */
     _updateLayerContent(layerElement, layerId, config, features) {
-        // Clear existing content except summary
-        const existingContent = layerElement.querySelector('.layer-content');
-        if (existingContent) {
-            existingContent.replaceChildren();
-        }
-
-        // Create main content container
-        const contentContainer = existingContent || document.createElement('div');
-        if (!existingContent) {
+        // Get content container
+        let contentContainer = layerElement.querySelector('.layer-content');
+        if (!contentContainer) {
+            contentContainer = document.createElement('div');
             contentContainer.className = 'layer-content';
-        }
-        contentContainer.style.cssText = `
-            background: transparent;
-        `;
-
-        // Create actions section
-        const actionsSection = document.createElement('div');
-        actionsSection.className = 'layer-actions-section';
-
-        // Create action buttons
-        const actionsContainer = this._createLayerActions(layerId, config);
-        actionsSection.appendChild(actionsContainer);
-        contentContainer.appendChild(actionsSection);
-
-        // Create nested details group container for Source, Legend, and Features
-        const detailsGroup = document.createElement('div');
-        detailsGroup.className = `details-group-${layerId}`;
-
-        // Create nested details for Source, Legend, and Features
-        const nestedDetails = this._createNestedDetails(layerId, config, features);
-        nestedDetails.forEach(detail => detailsGroup.appendChild(detail));
-
-        // Set up accordion behavior - only one detail open at a time
-        this._setupDetailsGroupAccordion(detailsGroup);
-
-        contentContainer.appendChild(detailsGroup);
-
-        // Only append if this is a new container
-        if (!existingContent) {
             layerElement.appendChild(contentContainer);
+        }
+
+        // Clear existing content
+        contentContainer.replaceChildren();
+
+        // Check content availability
+        const hasLegend = config.legend || config.legendImage;
+        const hasInfo = config.description || config.attribution;
+        // Check type OR if we actually have features (fallback for missing type)
+        const hasFeatures = (config.type === 'vector' || config.type === 'geojson' || (features && features.size > 0));
+        const hasSelectedFeatures = hasFeatures && features && Array.from(features.values()).some(f => f.isSelected);
+        // Check if layer has style properties that can be edited
+        this._ensureLayerStyleControl();
+        const mapboxAPI = this._getMapboxAPI();
+        let hasStyleControls = false;
+        if (this._layerStyleControl && mapboxAPI) {
+            const layerGroupIds = mapboxAPI.getLayerGroupIds(layerId, config);
+            hasStyleControls = layerGroupIds.length > 0;
+            console.log('[MapFeatureControl] Style check for', layerId, ':', {
+                hasStyleControl: !!this._layerStyleControl,
+                hasMapboxAPI: !!mapboxAPI,
+                layerGroupIds: layerGroupIds,
+                hasStyleControls: hasStyleControls,
+                showLayerOptions: this.options.showLayerOptions
+            });
+        }
+
+        // If no content at all, don't show tabs
+        if (!hasLegend && !hasInfo && !hasFeatures && !hasStyleControls) {
+            const emptyMsg = document.createElement('div');
+            emptyMsg.textContent = 'No details available';
+            emptyMsg.className = 'empty-state';
+            contentContainer.appendChild(emptyMsg);
+            return;
+        }
+
+        // Create Tab Group
+        // Define Tabs based on availability
+        const tabs = [];
+
+        if (hasInfo) {
+            tabs.push({ id: 'info', label: 'Info', icon: 'info-circle' });
+        }
+
+        if (hasLegend) {
+            tabs.push({ id: 'legend', label: 'Legend', icon: 'list-ul' });
+        }
+
+        // Only add Features tab if layer type supports it or we have features
+        if (hasFeatures) {
+            const selectedCount = hasSelectedFeatures ? Array.from(features.values()).filter(f => f.isSelected).length : 0;
+            tabs.push({
+                id: 'features',
+                label: `Features${selectedCount > 0 ? ' (' + selectedCount + ')' : ''}`,
+                icon: 'geo-alt'
+            });
+        }
+
+        // Add Style tab if layer has editable style properties AND showLayerOptions is enabled
+        if (hasStyleControls && this.options.showLayerOptions) {
+            tabs.push({ id: 'style', label: 'Paint', icon: 'palette' });
+            console.log('[MapFeatureControl] Added Paint tab for layer', layerId);
+        }
+
+        // Check if we have multiple tabs or just one
+        if (tabs.length === 1) {
+            // Single tab - Render content directly without tab headers
+            const tab = tabs[0];
+            const panel = document.createElement('div');
+            panel.className = 'single-tab-panel';
+
+            // Add content based on the single tab type
+            if (tab.id === 'info') {
+                panel.style.padding = '10px';
+                const infoContent = this._createSourceContent(layerId, config);
+                panel.appendChild(infoContent);
+            } else if (tab.id === 'legend') {
+                panel.style.padding = '10px';
+                const legendContent = this._createLegendContent(layerId, config);
+                panel.appendChild(legendContent);
+            } else if (tab.id === 'features') {
+                panel.style.padding = '0';
+                const featuresContent = this._createFeaturesContent(layerId, config, features);
+                panel.appendChild(featuresContent);
+            } else if (tab.id === 'style' && this.options.showLayerOptions) {
+                panel.style.padding = '0';
+                const styleContent = this._createStyleContent(layerId, config);
+                panel.appendChild(styleContent);
+            }
+
+            contentContainer.appendChild(panel);
+        } else if (tabs.length > 1) {
+            // Multiple tabs - Create Tab Group
+            const tabGroup = document.createElement('sl-tab-group');
+            tabGroup.classList.add('feature-tab-group');
+            tabGroup.style.cssText = `
+                --indicator-color: #3b82f6;
+                --track-color: #f3f4f6;
+            `;
+
+            // Inject styles into shadow DOM to fix scrolling issue
+            tabGroup.updateComplete.then(() => {
+                const sheet = new CSSStyleSheet();
+                sheet.replaceSync(`
+                    .tab-group__nav {
+                        overflow-x: visible !important;
+                    }
+                `);
+                tabGroup.shadowRoot.adoptedStyleSheets = [
+                    ...tabGroup.shadowRoot.adoptedStyleSheets,
+                    sheet
+                ];
+            });
+
+            // Create Tab Headers
+            tabs.forEach(tab => {
+                const slTab = document.createElement('sl-tab');
+                slTab.slot = 'nav';
+                slTab.panel = tab.id;
+
+                // Custom styling for tabs to make them compact
+                slTab.style.cssText = `
+                    padding: 0 8px;
+                    font-size: 10px;
+                    height: 24px;
+                    line-height: 24px;
+                    display: inline-flex;
+                    align-items: center;
+                `;
+
+                // Add icon
+                const icon = document.createElement('sl-icon');
+                icon.name = tab.icon;
+                icon.style.marginRight = '4px';
+                icon.style.fontSize = '10px';
+                slTab.appendChild(icon);
+
+                slTab.appendChild(document.createTextNode(tab.label));
+                tabGroup.appendChild(slTab);
+            });
+
+            // Create Tab Panels
+
+            // 1. Info Panel (Source)
+            if (hasInfo) {
+                const infoPanel = document.createElement('sl-tab-panel');
+                infoPanel.name = 'info';
+                infoPanel.style.cssText = '--padding: 10px;';
+
+                const infoContent = this._createSourceContent(layerId, config);
+                infoPanel.appendChild(infoContent);
+                tabGroup.appendChild(infoPanel);
+            }
+
+            // 2. Legend Panel
+            if (hasLegend) {
+                const legendPanel = document.createElement('sl-tab-panel');
+                legendPanel.name = 'legend';
+                legendPanel.style.cssText = '--padding: 10px;';
+
+                const legendContent = this._createLegendContent(layerId, config);
+                legendPanel.appendChild(legendContent);
+                tabGroup.appendChild(legendPanel);
+            }
+
+            // 3. Features Panel
+            if (hasFeatures) {
+                const featuresPanel = document.createElement('sl-tab-panel');
+                featuresPanel.name = 'features';
+                featuresPanel.style.cssText = '--padding: 0;'; // No padding for features list
+
+                const featuresContent = this._createFeaturesContent(layerId, config, features);
+                featuresPanel.appendChild(featuresContent);
+                tabGroup.appendChild(featuresPanel);
+            }
+
+            // 4. Style Panel
+            if (hasStyleControls && this.options.showLayerOptions) {
+                const stylePanel = document.createElement('sl-tab-panel');
+                stylePanel.name = 'style';
+                stylePanel.style.cssText = '--padding: 0;';
+
+                const styleContent = this._createStyleContent(layerId, config);
+                stylePanel.appendChild(styleContent);
+                tabGroup.appendChild(stylePanel);
+            }
+
+            // Append tab group to container FIRST (important for Shoelace initialization)
+            contentContainer.appendChild(tabGroup);
+
+            // THEN set active tab
+            // Priority: Features (if selected) -> Info -> Legend
+            requestAnimationFrame(() => {
+                if (hasSelectedFeatures && hasFeatures) {
+                    tabGroup.show('features');
+                } else if (hasInfo) {
+                    tabGroup.show('info');
+                } else if (hasLegend) {
+                    tabGroup.show('legend');
+                } else if (hasFeatures) {
+                    tabGroup.show('features');
+                }
+            });
         }
     }
 
     /**
-     * Create action controls for the layer
+     * Create action controls for the layer (Compact version for header)
      */
     _createLayerActions(layerId, config) {
         const actionsContainer = document.createElement('div');
         actionsContainer.className = 'layer-actions';
-        actionsContainer.style.cssText = `
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        `;
 
-        // Create opacity dropdown
-        const opacityDropdown = this._createOpacityDropdown(layerId, config);
-        actionsContainer.appendChild(opacityDropdown);
+        const isCollapsed = this._layerCollapseStates.get(layerId) || false;
 
-        // Create zoom button if layer has bbox
+        // Opacity Button (Popover)
+        const opacityBtn = document.createElement('sl-icon-button');
+        opacityBtn.name = 'lightbulb';
+        opacityBtn.style.fontSize = '14px';
+        opacityBtn.style.color = '#6b7280';
+        opacityBtn.setAttribute('title', 'Opacity');
+        opacityBtn.setAttribute('aria-label', 'Opacity');
+
+        // Create opacity popover
+        const opacityPopover = document.createElement('sl-dropdown');
+        opacityPopover.distance = 5;
+        opacityPopover.placement = 'bottom-end';
+        opacityPopover.style.display = isCollapsed ? 'none' : '';
+
+        const opacityTrigger = document.createElement('div');
+        opacityTrigger.setAttribute('slot', 'trigger');
+        opacityTrigger.appendChild(opacityBtn);
+        opacityPopover.appendChild(opacityTrigger);
+
+        const opacityPanel = document.createElement('div');
+        opacityPanel.className = 'opacity-panel';
+
+        // Reuse existing opacity slider logic but adapted for popover
+        const sliderContainer = this._createOpacityDropdown(layerId, config);
+        opacityPanel.appendChild(sliderContainer);
+
+        opacityPopover.appendChild(opacityPanel);
+        actionsContainer.appendChild(opacityPopover);
+
+        // Settings Button (if available)
+        const settingsBtn = document.createElement('sl-icon-button');
+        settingsBtn.name = 'gear';
+        settingsBtn.className = 'layer-settings-btn';
+        // Hide if collapsed OR if showLayerOptions is disabled
+        settingsBtn.style.display = (isCollapsed || !this.options.showLayerOptions) ? 'none' : '';
+        settingsBtn.setAttribute('title', 'Layer Settings');
+
+        settingsBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            this._openLayerSettings(layerId);
+        });
+
+        actionsContainer.appendChild(settingsBtn);
+
+        // Zoom Button
         if (config.bbox || config.metadata?.bbox) {
-            const zoomBtn = this._createZoomButton(layerId, config);
+            const zoomBtn = document.createElement('sl-icon-button');
+            zoomBtn.name = 'zoom-in';
+            zoomBtn.label = 'Zoom to layer';
+            zoomBtn.className = 'layer-zoom-btn';
+
+            zoomBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                this._zoomToLayerBounds(layerId, config);
+            });
+
             actionsContainer.appendChild(zoomBtn);
         }
 
-        // Create remove layer button
-        const removeBtn = document.createElement('span');
-        removeBtn.textContent = 'Remove';
-        removeBtn.style.cssText = `
-            color: red;
-            cursor: pointer;
-            font-size: 12px;
-            margin-right:5px;
-            text-decoration: none;
-        `;
+        // Remove Button
+        const removeBtn = document.createElement('sl-icon-button');
+        removeBtn.name = 'trash';
+        removeBtn.label = 'Remove layer';
+        removeBtn.className = 'layer-remove-btn';
 
-        // Add hover effect for underline
-        removeBtn.addEventListener('mouseenter', () => {
-            removeBtn.style.textDecoration = 'underline';
-        });
-
-        removeBtn.addEventListener('mouseleave', () => {
-            removeBtn.style.textDecoration = 'none';
-        });
-
-        // Add click handler for layer removal
         removeBtn.addEventListener('click', (e) => {
             e.stopPropagation();
             this._removeLayer(layerId);
@@ -1392,59 +1773,25 @@ export class MapFeatureControl {
     _createOpacityDropdown(layerId, config) {
         const container = document.createElement('div');
         container.setAttribute('data-layer-id', layerId);
-        container.style.cssText = `
-            flex: 1;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            padding: 0 4px;
-        `;
+        container.className = 'opacity-dropdown-container';
 
         // Create label with icon
         const label = document.createElement('div');
-        label.style.cssText = `
-            display: flex;
-            align-items: center;
-            gap: 4px;
-            color: #6b7280;
-            font-size: 10px;
-            white-space: nowrap;
-            cursor: pointer;
-            user-select: none;
-        `;
+        label.className = 'opacity-label';
 
         // Create icon container for layered effect
         const iconContainer = document.createElement('div');
-        iconContainer.style.cssText = `
-            position: relative;
-            width: 12px;
-            height: 12px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        `;
+        iconContainer.className = 'opacity-icon-container';
 
         // Base lightbulb icon
         const iconBase = document.createElement('sl-icon');
         iconBase.name = 'lightbulb';
-        iconBase.style.cssText = `
-            font-size: 12px;
-            position: absolute;
-            top: 0;
-            left: 0;
-        `;
+        iconBase.className = 'opacity-icon-base';
 
         // Dark overlay lightbulb icon (opacity will be inversely controlled)
         const iconOverlay = document.createElement('sl-icon');
         iconOverlay.name = 'lightbulb-fill';
-        iconOverlay.style.cssText = `
-            font-size: 12px;
-            color: #444;
-            position: absolute;
-            top: 0;
-            left: 0;
-            transition: opacity 0.15s ease;
-        `;
+        iconOverlay.className = 'opacity-icon-overlay';
 
         iconContainer.appendChild(iconBase);
         iconContainer.appendChild(iconOverlay);
@@ -1481,13 +1828,7 @@ export class MapFeatureControl {
         // Custom tooltip formatter to show percentage
         slider.tooltipFormatter = (value) => `${value}%`;
 
-        slider.style.cssText = `
-            flex: 1;
-            --track-height: 4px;
-            --thumb-size: 14px;
-            --track-color-active: #6b7280;
-            --track-color-inactive: #d1d5db;
-        `;
+        slider.className = 'opacity-slider';
 
         // Add click handler to label for opacity toggle
         label.addEventListener('click', () => {
@@ -1651,124 +1992,35 @@ export class MapFeatureControl {
     }
 
     /**
-     * Create nested details for Source, Legend, and Features
+     * Open layer settings modal
      */
-    _createNestedDetails(layerId, config, features) {
-        const details = [];
-
-        // Source Details
-        const sourceDetails = this._createSourceDetails(layerId, config);
-        if (sourceDetails) details.push(sourceDetails);
-
-        // Legend Details
-        const legendDetails = this._createLegendDetails(layerId, config);
-        if (legendDetails) details.push(legendDetails);
-
-        // Features Details (only for vector and geojson layers)
-        if (config.type === 'vector' || config.type === 'geojson') {
-            const featuresDetails = this._createFeaturesDetails(layerId, config, features);
-            if (featuresDetails) details.push(featuresDetails);
+    _openLayerSettings(layerId) {
+        const config = this._getLayerConfig(layerId);
+        if (config && this._layerSettingsModal) {
+            this._layerSettingsModal.show(config);
+        } else {
+            console.warn(`Cannot open settings for layer ${layerId}: config or modal not available`);
         }
-
-        return details;
     }
 
-    /**
-     * Set up accordion behavior for details group - only one detail open at a time
-     */
-    _setupDetailsGroupAccordion(detailsGroup) {
-        // Listen for sl-show events on any details within this group
-        detailsGroup.addEventListener('sl-show', (event) => {
-            // Only handle direct child sl-details elements
-            if (event.target.localName === 'sl-details' && event.target.parentElement === detailsGroup) {
-                // Close all other details in this group
-                const allDetails = detailsGroup.querySelectorAll('sl-details');
-                allDetails.forEach(detail => {
-                    if (detail !== event.target) {
-                        detail.open = false;
-                    }
-                });
-            }
-        });
-    }
+
 
     /**
-     * Add custom CSS for header background images
+     * Create Source content for Info tab
      */
-    _addHeaderImageCSS(layerId, imageUrl) {
-        // Create or get existing style element for header images
-        let styleElement = document.getElementById('map-feature-control-header-images');
-        if (!styleElement) {
-            styleElement = document.createElement('style');
-            styleElement.id = 'map-feature-control-header-images';
-            document.head.appendChild(styleElement);
-        }
-
-        // Add CSS rule for this specific layer - target the summary div directly
-        const cssRule = `
-.layer-details[data-layer-id="${layerId}"] .layer-summary {
-    background-image: linear-gradient(to right, rgba(255,255,255,0.9), rgba(255,255,255,0.5)), url('${imageUrl}') !important;
-    background-size: cover;
-    background-position: center;
-    background-repeat: no-repeat;
-    padding: 8px 12px !important;
-    width: 100% !important;
-    box-sizing: border-box !important;
-}`;
-
-        // Append the rule to the style element
-        styleElement.textContent += cssRule;
-    }
-
-    /**
-     * Create Source details component
-     */
-    _createSourceDetails(layerId, config) {
+    _createSourceContent(layerId, config) {
         const hasContent = config.description || config.attribution;
         if (!hasContent) return null;
 
-        const sourceDetails = document.createElement('sl-details');
-        sourceDetails.className = 'source-details';
-        sourceDetails.open = false; // Collapsed by default
-
-        sourceDetails.style.cssText = `
-            font-size: 11px;
-        `;
-
-        // Create summary with first line preview
-        const summary = document.createElement('div');
-        summary.setAttribute('slot', 'summary');
-        summary.className = 'source-summary';
-        summary.style.cssText = `
-            padding: 6px 0;
-            font-size: 11px;
-            color: #374151;
-        `;
-
-        // Get first line of content for preview
-        let firstLine = 'Source';
-        if (config.description) {
-            // Strip HTML and get first line
-            const textContent = config.description.replace(/<[^>]*>/g, '').trim();
-            firstLine = textContent.split('\n')[0].substring(0, 50);
-            if (textContent.length > 50) firstLine += '...';
-        } else if (config.attribution) {
-            const textContent = config.attribution.replace(/<[^>]*>/g, '').trim();
-            firstLine = textContent.split('\n')[0].substring(0, 50);
-            if (textContent.length > 50) firstLine += '...';
-        }
-
-        summary.textContent = firstLine;
-        sourceDetails.appendChild(summary);
-
-        // Create content
+        // Create content container
         const content = document.createElement('div');
+        content.className = 'source-content';
         content.style.cssText = `
-            padding: 8px 0;
+            padding: 0;
             background: transparent;
             font-size: 11px;
             line-height: 1.4;
-            color: #6b7280;
+            color: #1f2937; /* Darker text for better visibility */
         `;
 
         if (config.description) {
@@ -1781,47 +2033,25 @@ export class MapFeatureControl {
         if (config.attribution) {
             const attrDiv = document.createElement('div');
             attrDiv.innerHTML = config.attribution;
-            attrDiv.style.cssText = 'font-style: italic; color: #bbb;';
+            attrDiv.style.cssText = 'font-style: italic; color: #4b5563; margin-top: 4px;';
             content.appendChild(attrDiv);
         }
 
-        sourceDetails.appendChild(content);
-        return sourceDetails;
+        return content;
     }
 
     /**
-     * Create Legend details component
+     * Create Legend content for Legend tab
      */
-    _createLegendDetails(layerId, config) {
+    _createLegendContent(layerId, config) {
         const hasLegend = config.legend || config.legendImage;
         if (!hasLegend) return null;
 
-        const legendDetails = document.createElement('sl-details');
-        legendDetails.className = 'legend-details';
-        legendDetails.open = false; // Collapsed by default
-
-        legendDetails.style.cssText = `
-            margin-bottom: 2px;
-            font-size: 11px;
-        `;
-
-        // Create summary
-        const summary = document.createElement('div');
-        summary.setAttribute('slot', 'summary');
-        summary.className = 'legend-summary';
-        summary.style.cssText = `
-            padding: 6px 0;
-            font-size: 11px;
-            font-weight: 600;
-            color: #374151;
-        `;
-        summary.textContent = 'Legend';
-        legendDetails.appendChild(summary);
-
-        // Create content
+        // Create content container
         const content = document.createElement('div');
+        content.className = 'legend-content';
         content.style.cssText = `
-            padding: 8px 0;
+            padding: 0;
             background: transparent;
         `;
 
@@ -1844,51 +2074,41 @@ export class MapFeatureControl {
         } else if (config.legend) {
             const legendDiv = document.createElement('div');
             legendDiv.innerHTML = config.legend;
-            legendDiv.style.cssText = 'font-size: 10px; color: #ddd;';
+            legendDiv.style.cssText = 'font-size: 10px; color: #374151;';
             content.appendChild(legendDiv);
         }
 
-        legendDetails.appendChild(content);
-        return legendDetails;
+        return content;
     }
 
     /**
-     * Create Features details component
+     * Create Style content for Style tab
      */
-    _createFeaturesDetails(layerId, config, features) {
-        const featuresDetails = document.createElement('sl-details');
-        featuresDetails.className = 'features-details';
-        featuresDetails.setAttribute('data-layer-features', layerId);
-        featuresDetails.id = `features-container-${layerId}`;
-        featuresDetails.open = false; // Collapsed by default
+    _createStyleContent(layerId, config) {
+        if (!this._layerStyleControl) {
+            const emptyDiv = document.createElement('div');
+            emptyDiv.className = 'empty-state';
+            emptyDiv.textContent = 'Style editor not available';
+            return emptyDiv;
+        }
 
-        featuresDetails.style.cssText = `
-            margin-bottom: 2px;
-            font-size: 11px;
-        `;
+        return this._layerStyleControl.renderStyleEditor(layerId, config);
+    }
 
-        // Create summary with feature count
-        const summary = document.createElement('div');
-        summary.setAttribute('slot', 'summary');
-        summary.className = 'features-summary';
-        summary.style.cssText = `
-            padding: 6px 0;
-            font-size: 11px;
-            color: #374151;
-        `;
-
-        // Count selected features
-        const selectedCount = Array.from(features.values()).filter(f => f.isSelected).length;
-        summary.textContent = selectedCount > 0 ? `Features (${selectedCount})` : 'Features';
-        featuresDetails.appendChild(summary);
-
+    /**
+     * Create Features content for Features tab
+     */
+    _createFeaturesContent(layerId, config, features) {
         // Create content container for features
         const content = document.createElement('div');
         content.className = 'features-content';
+        content.id = `features-container-${layerId}`;
+        content.setAttribute('data-layer-features', layerId);
         content.style.cssText = `
-                overflow-y: auto;
+            overflow-y: auto;
             background: transparent;
             padding: 4px 0;
+            max-height: 300px; /* Limit height for features list */
         `;
 
         // Only show selected features
@@ -1907,19 +2127,12 @@ export class MapFeatureControl {
         } else {
             // Show empty state
             const emptyDiv = document.createElement('div');
-            emptyDiv.style.cssText = `
-                padding: 12px;
-                text-align: center;
-                color: #999;
-                font-size: 10px;
-                font-style: italic;
-            `;
-            emptyDiv.textContent = 'No features selected';
+            emptyDiv.className = 'empty-state';
+            emptyDiv.textContent = 'No features selected. Click on map features to inspect them.';
             content.appendChild(emptyDiv);
         }
 
-        featuresDetails.appendChild(content);
-        return featuresDetails;
+        return content;
     }
 
     /**
@@ -1979,22 +2192,22 @@ export class MapFeatureControl {
         const featureElement = document.createElement('div');
         const featureId = this._getFeatureId(featureState.feature);
 
-        featureElement.className = 'feature-control-feature selected';
+        featureElement.className = 'feature-control-feature selected feature-element-details';
         featureElement.setAttribute('data-feature-id', featureId);
         featureElement.setAttribute('data-layer-id', layerId);
 
         // Add standardized ID for direct targeting: inspector-{layerId}-{featureId}
         featureElement.id = `inspector-${layerId}-${featureId}`;
 
-        // Selected feature styling for the details structure
+        // Selected feature styling for the details structure (Light Theme)
         featureElement.style.cssText = `
-            border-bottom: 1px solid #555;
+            border: 1px solid #e5e7eb;
             font-size: 11px;
-            background: #3a3a3a;
+            background: #f9fafb;
             cursor: pointer;
             padding: 0;
-            margin-bottom: 4px;
-            border-radius: 4px;
+            margin-bottom: 8px;
+            border-radius: 6px;
             overflow: hidden;
         `;
 
@@ -2020,19 +2233,26 @@ export class MapFeatureControl {
         tableContent.style.cssText = 'overflow-y: auto;';
 
         // Build the properties table with intelligent formatting (reuse existing logic)
-        const table = document.createElement('table');
-        table.className = 'feature-inspector-properties-table';
+        let table = document.createElement('table');
+        table.className = 'feature-inspector-properties-table values-refreshing'; // Start with values hidden
         table.id = `properties-table-${layerId}-${featureId}`;
         table.style.cssText = `
             width: 100%;
             border-collapse: collapse;
-            margin-bottom: 6px;
+            margin-bottom: 0;
             font-family: inherit;
-            background-color: #2a2a2a;
-            border-radius: 4px;
+            background-color: white;
+            border-radius: 0;
             overflow: hidden;
-            font-size: 10px;
+            font-size: 11px;
         `;
+
+        // Remove the refreshing class after a short delay to reveal values
+        setTimeout(() => {
+            if (table) {
+                table.classList.remove('values-refreshing');
+            }
+        }, 150);
 
         const properties = featureState.feature.properties || {};
         const inspect = layerConfig.inspect || {};
@@ -2075,74 +2295,79 @@ export class MapFeatureControl {
             }
         });
 
-        // 3. Add remaining fields for completeness
-        Object.entries(properties).forEach(([key, value]) => {
-            // Skip if already added as label or priority field
-            if (key === labelField || priorityFields.includes(key)) {
-                return;
-            }
+        // 3. Add remaining fields (only if inspect.fields is not defined)
+        const hasConfiguredFields = priorityFields.length > 0;
 
-            // Skip empty values and internal/system fields
-            if (value === undefined || value === null || value === '') {
-                return;
-            }
+        if (!hasConfiguredFields) {
+            Object.entries(properties).forEach(([key, value]) => {
+                // Skip if already added as label or priority field
+                if (key === labelField || priorityFields.includes(key)) {
+                    return;
+                }
 
-            // Skip common internal/system fields that aren't useful to display
-            const systemFields = ['id', 'fid', '_id', 'objectid', 'gid', 'osm_id', 'way_id'];
-            if (systemFields.includes(key.toLowerCase())) {
-                return;
-            }
+                // Skip empty values and internal/system fields
+                if (value === undefined || value === null || value === '') {
+                    return;
+                }
 
-            organizedFields.push({
-                key: key,
-                value: value,
-                isOther: true,
-                displayName: key
+                // Skip common internal/system fields that aren't useful to display
+                const systemFields = ['id', 'fid', '_id', 'objectid', 'gid', 'osm_id', 'way_id'];
+                if (systemFields.includes(key.toLowerCase())) {
+                    return;
+                }
+
+                organizedFields.push({
+                    key: key,
+                    value: value,
+                    isOther: true,
+                    displayName: key
+                });
             });
-        });
+        }
 
         // Render the organized fields with compact styling
         organizedFields.forEach(field => {
             const row = document.createElement('tr');
 
-            // Set row background with darker theme for nested view
-            let rowBackgroundColor = '#2a2a2a';
+            // Set row background with light theme
+            let rowBackgroundColor = 'white';
             if (field.isLabel) {
-                rowBackgroundColor = '#333';
+                rowBackgroundColor = '#f3f4f6';
             } else if (field.isPriority) {
-                rowBackgroundColor = '#2d2d2d';
+                rowBackgroundColor = '#f9fafb';
             }
 
             row.style.cssText = `
-                border-bottom: 1px solid #444;
+                border-bottom: 1px solid #f3f4f6;
                 background-color: ${rowBackgroundColor};
                 transition: background-color 0.1s ease;
             `;
 
             const keyCell = document.createElement('td');
             keyCell.style.cssText = `
-                padding: 4px 6px;
-                font-weight: 500;
-                color: ${field.isLabel ? '#fff' : field.isPriority ? '#ddd' : '#bbb'};
-                width: 40%;
+                padding: 6px 8px;
+                font-weight: 600;
+                color: ${field.isLabel ? '#111827' : field.isPriority ? '#374151' : '#6b7280'};
+                width: 35%;
                 vertical-align: top;
-                line-height: 1.2;
-                font-size: 9px;
+                line-height: 1.4;
+                font-size: 11px;
+                border-right: 1px solid #f3f4f6;
             `;
             keyCell.textContent = field.displayName;
 
             const valueCell = document.createElement('td');
             valueCell.style.cssText = `
-                padding: 4px 6px;
+                padding: 6px 8px;
                 word-break: break-word;
-                font-size: 9px;
-                font-weight: ${field.isLabel ? '500' : '400'};
-                color: ${field.isLabel ? '#fff' : '#ccc'};
-                line-height: 1.2;
+                font-size: 11px;
+                font-weight: ${field.isLabel ? '600' : '400'};
+                color: ${field.isLabel ? '#111827' : '#4b5563'};
+                line-height: 1.4;
                 vertical-align: top;
             `;
-            // Make URLs clickable (dark theme for nested details view)
-            const urlContainer = this._makeUrlsClickable(field.value, true);
+            // Make URLs clickable (light theme for nested details view)
+            const urlContainer = this._makeUrlsClickable(field.value, false);
             valueCell.appendChild(urlContainer);
 
             row.appendChild(keyCell);
@@ -2151,6 +2376,154 @@ export class MapFeatureControl {
         });
 
         tableContent.appendChild(table);
+
+        // Add "View Raw" button if fields are configured
+        if (hasConfiguredFields) {
+            const viewRawButton = document.createElement('button');
+            viewRawButton.textContent = 'View Raw';
+            viewRawButton.className = 'view-raw-button';
+            viewRawButton.style.cssText = `
+                margin-top: 4px;
+                margin-bottom: 4px;
+                margin-left: 8px;
+                padding: 2px 6px;
+                font-size: 10px;
+                border: 1px solid #d1d5db;
+                background-color: #f9fafb;
+                color: #374151;
+                border-radius: 4px;
+                cursor: pointer;
+                transition: all 0.15s ease;
+                font-weight: 500;
+            `;
+
+            viewRawButton.addEventListener('mouseenter', () => {
+                viewRawButton.style.backgroundColor = '#f3f4f6';
+                viewRawButton.style.borderColor = '#9ca3af';
+            });
+
+            viewRawButton.addEventListener('mouseleave', () => {
+                viewRawButton.style.backgroundColor = '#f9fafb';
+                viewRawButton.style.borderColor = '#d1d5db';
+            });
+
+            let showingRaw = false;
+            viewRawButton.addEventListener('click', () => {
+                if (!showingRaw) {
+                    // Replace table with raw properties
+                    const rawTable = document.createElement('table');
+                    rawTable.className = 'feature-inspector-properties-table';
+                    rawTable.id = `properties-table-${layerId}-${featureId}`;
+                    rawTable.style.cssText = table.style.cssText;
+
+                    Object.entries(properties).forEach(([key, value]) => {
+                        if (value === undefined || value === null || value === '') return;
+
+                        const row = document.createElement('tr');
+                        row.style.cssText = `
+                            border-bottom: 1px solid #f3f4f6;
+                            background-color: white;
+                            transition: background-color 0.1s ease;
+                        `;
+
+                        const keyCell = document.createElement('td');
+                        keyCell.style.cssText = `
+                            padding: 6px 8px;
+                            font-weight: 600;
+                            color: #6b7280;
+                            width: 35%;
+                            vertical-align: top;
+                            line-height: 1.4;
+                            font-size: 11px;
+                            border-right: 1px solid #f3f4f6;
+                        `;
+                        keyCell.textContent = key;
+
+                        const valueCell = document.createElement('td');
+                        valueCell.style.cssText = `
+                            padding: 6px 8px;
+                            word-break: break-word;
+                            font-size: 11px;
+                            font-weight: 400;
+                            color: #4b5563;
+                            line-height: 1.4;
+                            vertical-align: top;
+                        `;
+                        const urlContainer = this._makeUrlsClickable(value, false);
+                        valueCell.appendChild(urlContainer);
+
+                        row.appendChild(keyCell);
+                        row.appendChild(valueCell);
+                        rawTable.appendChild(row);
+                    });
+
+                    table.replaceWith(rawTable);
+                    table = rawTable;
+                    viewRawButton.textContent = 'View Formatted';
+                    showingRaw = true;
+                } else {
+                    // Replace with filtered table
+                    const filteredTable = document.createElement('table');
+                    filteredTable.className = 'feature-inspector-properties-table';
+                    filteredTable.id = `properties-table-${layerId}-${featureId}`;
+                    filteredTable.style.cssText = table.style.cssText;
+
+                    organizedFields.forEach(field => {
+                        const row = document.createElement('tr');
+                        let rowBackgroundColor = 'white';
+                        if (field.isLabel) {
+                            rowBackgroundColor = '#f3f4f6';
+                        } else if (field.isPriority) {
+                            rowBackgroundColor = '#f9fafb';
+                        }
+
+                        row.style.cssText = `
+                            border-bottom: 1px solid #f3f4f6;
+                            background-color: ${rowBackgroundColor};
+                            transition: background-color 0.1s ease;
+                        `;
+
+                        const keyCell = document.createElement('td');
+                        keyCell.style.cssText = `
+                            padding: 6px 8px;
+                            font-weight: 600;
+                            color: ${field.isLabel ? '#111827' : field.isPriority ? '#374151' : '#6b7280'};
+                            width: 35%;
+                            vertical-align: top;
+                            line-height: 1.4;
+                            font-size: 11px;
+                            border-right: 1px solid #f3f4f6;
+                        `;
+                        keyCell.textContent = field.displayName;
+
+                        const valueCell = document.createElement('td');
+                        valueCell.style.cssText = `
+                            padding: 6px 8px;
+                            word-break: break-word;
+                            font-size: 11px;
+                            font-weight: ${field.isLabel ? '600' : '400'};
+                            color: ${field.isLabel ? '#111827' : '#4b5563'};
+                            line-height: 1.4;
+                            vertical-align: top;
+                        `;
+                        const urlContainer = this._makeUrlsClickable(field.value, false);
+                        valueCell.appendChild(urlContainer);
+
+                        row.appendChild(keyCell);
+                        row.appendChild(valueCell);
+                        filteredTable.appendChild(row);
+                    });
+
+                    table.replaceWith(filteredTable);
+                    table = filteredTable;
+                    viewRawButton.textContent = 'View Raw';
+                    showingRaw = false;
+                }
+            });
+
+            tableContent.appendChild(viewRawButton);
+        }
+
         content.appendChild(tableContent);
 
         // Add source layer links content if applicable (simplified for nested view)
@@ -2193,12 +2566,13 @@ export class MapFeatureControl {
         const additionalInfoContainer = document.createElement('div');
         additionalInfoContainer.className = 'feature-inspector-additional-info';
         additionalInfoContainer.style.cssText = `
-            margin-top: 8px;
-            padding: 6px;
-            border-top: 1px solid #444;
-            background-color: #333;
-            border-radius: 0 0 4px 4px;
-            font-size: 9px;
+            margin-top: 0;
+            padding: 8px;
+            border-top: 1px solid #e5e7eb;
+            background-color: #f9fafb;
+            color: #1f2937;
+            border-radius: 0;
+            font-size: 11px;
         `;
 
         // Process each applicable link (simplified rendering for nested view)
@@ -2225,7 +2599,7 @@ export class MapFeatureControl {
                         // Add separator between multiple links
                         if (index > 0) {
                             const separator = document.createElement('div');
-                            separator.style.cssText = 'border-top: 1px solid #444; margin: 4px 0; padding-top: 4px;';
+                            separator.style.cssText = 'border-top: 1px solid #e5e7eb; margin: 6px 0; padding-top: 6px;';
                             additionalInfoContainer.appendChild(separator);
                         }
 
@@ -2253,67 +2627,19 @@ export class MapFeatureControl {
         const actionContainer = document.createElement('div');
         actionContainer.className = 'feature-actions';
         actionContainer.style.cssText = `
-            padding: 8px 6px;
-            border-top: 1px solid #444;
-            background-color: #2d2d2d;
+            padding: 8px 10px;
+            border-top: 1px solid #e5e7eb;
+            background-color: #f9fafb;
             display: flex;
             gap: 8px;
-            font-size: 10px;
-            border-radius: 0 0 4px 4px;
+            font-size: 11px;
+            border-radius: 0 0 6px 6px;
             min-width: 0;
             flex-wrap: wrap;
         `;
 
-        // Add settings button - always visible
-        const settingsButton = document.createElement('button');
-        settingsButton.className = 'feature-action-button';
-        settingsButton.setAttribute('aria-label', 'Settings');
-        settingsButton.setAttribute('title', 'Settings');
-        settingsButton.style.cssText = `
-            display: flex;
-            align-items: center;
-            gap: 4px;
-            background: none;
-            border: none;
-            color: #bbb;
-            cursor: pointer;
-            padding: 4px 6px;
-            border-radius: 3px;
-            font-size: 10px;
-            transition: all 0.2s ease;
-            white-space: nowrap;
-            min-width: auto;
-            flex: 1 1 auto;
-        `;
-
-        settingsButton.innerHTML = `
-            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                <path d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                <path d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-            </svg>
-            <span>Settings</span>
-        `;
-
-        // Add hover effects
-        settingsButton.addEventListener('mouseenter', () => {
-            settingsButton.style.backgroundColor = '#444';
-            settingsButton.style.color = '#fff';
-        });
-
-        settingsButton.addEventListener('mouseleave', () => {
-            settingsButton.style.backgroundColor = 'transparent';
-            settingsButton.style.color = '#bbb';
-        });
-
-        // Add click handler for settings button
-        settingsButton.addEventListener('click', () => {
-            this._showLayerSettings(layerConfig);
-        });
-
-        actionContainer.appendChild(settingsButton);
-
-        // Add export KML button
-        if (this._map) {
+        // Export Button (moved settings to layer header)
+        if (layerConfig.type === 'vector' || layerConfig.type === 'geojson') {
             const exportButton = document.createElement('button');
             exportButton.className = 'feature-action-button';
             exportButton.setAttribute('aria-label', 'Export');
@@ -2323,39 +2649,41 @@ export class MapFeatureControl {
                 align-items: center;
                 gap: 4px;
                 background: none;
-                border: none;
-                color: #bbb;
+                border: 1px solid #d1d5db;
+                color: #4b5563;
                 cursor: pointer;
-                padding: 4px 6px;
-                border-radius: 3px;
-                font-size: 10px;
+                padding: 4px 8px;
+                border-radius: 4px;
+                font-size: 11px;
                 transition: all 0.2s ease;
                 white-space: nowrap;
                 min-width: auto;
                 flex: 1 1 auto;
+                justify-content: center;
             `;
 
             exportButton.innerHTML = `
-                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                    <path d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                </svg>
-                <span>Export KML</span>
+                <sl-icon name="download" style="font-size: 12px;"></sl-icon>
+                <span>Export</span>
             `;
 
             // Add hover effects
             exportButton.addEventListener('mouseenter', () => {
-                exportButton.style.backgroundColor = '#444';
-                exportButton.style.color = '#fff';
+                exportButton.style.backgroundColor = '#f3f4f6';
+                exportButton.style.color = '#111827';
+                exportButton.style.borderColor = '#9ca3af';
             });
 
             exportButton.addEventListener('mouseleave', () => {
                 exportButton.style.backgroundColor = 'transparent';
-                exportButton.style.color = '#bbb';
+                exportButton.style.color = '#4b5563';
+                exportButton.style.borderColor = '#d1d5db';
             });
 
             // Add click handler for export button
-            exportButton.addEventListener('click', () => {
-                this._exportFeatureAsKML(feature, layerConfig);
+            exportButton.addEventListener('click', (e) => {
+                e.stopPropagation();
+                this._exportFeature(featureState.feature, layerId);
             });
 
             actionContainer.appendChild(exportButton);
@@ -2367,9 +2695,10 @@ export class MapFeatureControl {
     /**
      * Export feature as KML file
      */
-    _exportFeatureAsKML(feature, layerConfig) {
+    _exportFeature(feature, layerId) {
         try {
             // Generate meaningful filename from feature properties
+            const layerConfig = this._getLayerConfig(layerId);
             const fieldValues = layerConfig.inspect?.fields
                 ? layerConfig.inspect.fields
                     .map(field => feature.properties[field])
@@ -2389,9 +2718,9 @@ export class MapFeatureControl {
                 return;
             }
 
-            const kmlContent = convertToKML(feature, {title, description});
+            const kmlContent = convertToKML(feature, { title, description });
 
-            const blob = new Blob([kmlContent], {type: 'application/vnd.google-earth.kml+xml'});
+            const blob = new Blob([kmlContent], { type: 'application/vnd.google-earth.kml+xml' });
             const url = URL.createObjectURL(blob);
 
             // Check if we're on iOS/iPadOS
@@ -3178,7 +3507,7 @@ export class MapFeatureControl {
         tableContent.style.cssText = 'padding: 12px; max-height: 250px; overflow-y: auto;';
 
         // Build the properties table with intelligent formatting
-        const table = document.createElement('table');
+        let table = document.createElement('table');
         table.className = 'feature-inspector-properties-table';
         table.id = `properties-table-${layerId}-${featureId}`;
         table.style.cssText = `
@@ -3233,32 +3562,36 @@ export class MapFeatureControl {
             }
         });
 
-        // 3. Add remaining fields (for layers without inspect, show all non-empty properties)
-        Object.entries(properties).forEach(([key, value]) => {
-            // Skip if already added as label or priority field
-            if (key === labelField || priorityFields.includes(key)) {
-                return;
-            }
+        // 3. Add remaining fields (only if inspect.fields is not defined)
+        const hasConfiguredFields = priorityFields.length > 0;
 
-            // For layers without inspect properties, be more inclusive
-            // Skip empty values and internal/system fields
-            if (value === undefined || value === null || value === '') {
-                return;
-            }
+        if (!hasConfiguredFields) {
+            Object.entries(properties).forEach(([key, value]) => {
+                // Skip if already added as label or priority field
+                if (key === labelField || priorityFields.includes(key)) {
+                    return;
+                }
 
-            // Skip common internal/system fields that aren't useful to display
-            const systemFields = ['id', 'fid', '_id', 'objectid', 'gid', 'osm_id', 'way_id'];
-            if (systemFields.includes(key.toLowerCase())) {
-                return;
-            }
+                // For layers without inspect properties, be more inclusive
+                // Skip empty values and internal/system fields
+                if (value === undefined || value === null || value === '') {
+                    return;
+                }
 
-            organizedFields.push({
-                key: key,
-                value: value,
-                isOther: true,
-                displayName: key
+                // Skip common internal/system fields that aren't useful to display
+                const systemFields = ['id', 'fid', '_id', 'objectid', 'gid', 'osm_id', 'way_id'];
+                if (systemFields.includes(key.toLowerCase())) {
+                    return;
+                }
+
+                organizedFields.push({
+                    key: key,
+                    value: value,
+                    isOther: true,
+                    displayName: key
+                });
             });
-        });
+        }
 
         // For layers without inspect properties, show at least some basic info if no fields were found
         if (organizedFields.length === 0 && !layerConfig.inspect) {
@@ -3361,6 +3694,178 @@ export class MapFeatureControl {
 
         tableContent.appendChild(table);
 
+        // Add "View Raw" button if fields are configured
+        if (hasConfiguredFields) {
+            const viewRawButton = document.createElement('button');
+            viewRawButton.textContent = 'View Raw';
+            viewRawButton.className = 'view-raw-button';
+            viewRawButton.style.cssText = `
+                margin-top: 8px;
+                padding: 4px 12px;
+                font-size: 10px;
+                border: 1px solid #d1d5db;
+                background-color: #f9fafb;
+                color: #374151;
+                border-radius: 4px;
+                cursor: pointer;
+                transition: all 0.15s ease;
+                font-weight: 500;
+            `;
+
+            viewRawButton.addEventListener('mouseenter', () => {
+                viewRawButton.style.backgroundColor = '#f3f4f6';
+                viewRawButton.style.borderColor = '#9ca3af';
+            });
+
+            viewRawButton.addEventListener('mouseleave', () => {
+                viewRawButton.style.backgroundColor = '#f9fafb';
+                viewRawButton.style.borderColor = '#d1d5db';
+            });
+
+            let showingRaw = false;
+            viewRawButton.addEventListener('click', () => {
+                if (!showingRaw) {
+                    // Replace table with raw properties
+                    const rawTable = document.createElement('table');
+                    rawTable.className = 'feature-inspector-properties-table';
+                    rawTable.id = `properties-table-${layerId}-${featureId}`;
+                    rawTable.style.cssText = table.style.cssText;
+
+                    Object.entries(properties).forEach(([key, value]) => {
+                        if (value === undefined || value === null || value === '') return;
+
+                        const row = document.createElement('tr');
+                        row.style.cssText = `
+                            border-bottom: 1px solid #e5e7eb;
+                            background-color: #ffffff;
+                            transition: background-color 0.1s ease;
+                        `;
+
+                        row.addEventListener('mouseenter', () => {
+                            row.style.backgroundColor = '#f9fafb';
+                        });
+
+                        row.addEventListener('mouseleave', () => {
+                            row.style.backgroundColor = '#ffffff';
+                        });
+
+                        const keyCell = document.createElement('td');
+                        keyCell.style.cssText = `
+                            padding: 6px 8px;
+                            font-weight: 600;
+                            color: #6b7280;
+                            width: 40%;
+                            vertical-align: top;
+                            line-height: 1.3;
+                            font-size: 10px;
+                        `;
+                        keyCell.textContent = key;
+
+                        const valueCell = document.createElement('td');
+                        valueCell.style.cssText = `
+                            padding: 6px 8px;
+                            word-break: break-word;
+                            font-size: 10px;
+                            font-weight: 400;
+                            color: #374151;
+                            line-height: 1.3;
+                            vertical-align: top;
+                        `;
+                        const urlContainer = this._makeUrlsClickable(value, false);
+                        valueCell.appendChild(urlContainer);
+
+                        row.appendChild(keyCell);
+                        row.appendChild(valueCell);
+                        rawTable.appendChild(row);
+                    });
+
+                    table.replaceWith(rawTable);
+                    table = rawTable;
+                    viewRawButton.textContent = 'View Formatted';
+                    showingRaw = true;
+                } else {
+                    // Replace with filtered table
+                    const filteredTable = document.createElement('table');
+                    filteredTable.className = 'feature-inspector-properties-table';
+                    filteredTable.id = `properties-table-${layerId}-${featureId}`;
+                    filteredTable.style.cssText = table.style.cssText;
+
+                    organizedFields.forEach(field => {
+                        const row = document.createElement('tr');
+                        let rowBackgroundColor = '#ffffff';
+                        if (field.isLabel) {
+                            rowBackgroundColor = '#f8fafc';
+                        } else if (field.isPriority) {
+                            rowBackgroundColor = '#f9fafb';
+                        }
+
+                        row.style.cssText = `
+                            border-bottom: 1px solid #e5e7eb;
+                            background-color: ${rowBackgroundColor};
+                            transition: background-color 0.1s ease;
+                        `;
+
+                        row.addEventListener('mouseenter', () => {
+                            if (field.isLabel) {
+                                row.style.backgroundColor = '#f1f5f9';
+                            } else if (field.isPriority) {
+                                row.style.backgroundColor = '#f3f4f6';
+                            } else {
+                                row.style.backgroundColor = '#f9fafb';
+                            }
+                        });
+
+                        row.addEventListener('mouseleave', () => {
+                            row.style.backgroundColor = rowBackgroundColor;
+                        });
+
+                        const keyCell = document.createElement('td');
+                        keyCell.style.cssText = `
+                            padding: 6px 8px;
+                            font-weight: 600;
+                            color: ${field.isLabel ? '#1f2937' : field.isPriority ? '#374151' : '#6b7280'};
+                            width: 40%;
+                            vertical-align: top;
+                            line-height: 1.3;
+                            font-size: ${field.isLabel ? '11px' : '10px'};
+                        `;
+
+                        if (field.displayName !== field.key) {
+                            keyCell.textContent = field.displayName;
+                            keyCell.title = `Original field: ${field.key}`;
+                            keyCell.style.cursor = 'help';
+                        } else {
+                            keyCell.textContent = field.displayName;
+                        }
+
+                        const valueCell = document.createElement('td');
+                        valueCell.style.cssText = `
+                            padding: 6px 8px;
+                            word-break: break-word;
+                            font-size: ${field.isLabel ? '12px' : '10px'};
+                            font-weight: ${field.isLabel ? '600' : '400'};
+                            color: ${field.isLabel ? '#1f2937' : '#374151'};
+                            line-height: 1.3;
+                            vertical-align: top;
+                        `;
+                        const urlContainer = this._makeUrlsClickable(field.value, false);
+                        valueCell.appendChild(urlContainer);
+
+                        row.appendChild(keyCell);
+                        row.appendChild(valueCell);
+                        filteredTable.appendChild(row);
+                    });
+
+                    table.replaceWith(filteredTable);
+                    table = filteredTable;
+                    viewRawButton.textContent = 'View Raw';
+                    showingRaw = false;
+                }
+            });
+
+            tableContent.appendChild(viewRawButton);
+        }
+
         content.appendChild(tableContent);
 
         // Add source layer links content if applicable
@@ -3404,6 +3909,7 @@ export class MapFeatureControl {
             padding: 12px;
             border-top: 1px solid #e5e7eb;
             background-color: #f9fafb;
+            color: #1f2937;
             border-radius: 0 0 4px 4px;
         `;
 
@@ -3459,7 +3965,7 @@ export class MapFeatureControl {
         const y = Math.log(Math.tan((90 + lngLat.lat) * Math.PI / 360)) / (Math.PI / 180);
         const mercatorY = y * 20037508.34 / 180;
 
-        return {x, y: mercatorY};
+        return { x, y: mercatorY };
     }
 
 
@@ -3549,7 +4055,15 @@ export class MapFeatureControl {
     _removeLayerElement(layerId) {
         const existing = this._layersContainer.querySelector(`[data-layer-id="${layerId}"]`);
         if (existing) {
-            existing.remove();
+            // Add slide-out animation class
+            existing.classList.add('layer-slide-out');
+
+            // Wait for animation to complete before removing
+            setTimeout(() => {
+                if (existing && existing.parentNode) {
+                    existing.remove();
+                }
+            }, 400); // Match CSS animation duration
         }
 
         // Clean up header image CSS for this layer
@@ -4003,7 +4517,7 @@ export class MapFeatureControl {
 
         // Clean up drag listeners
         if (this._dragListeners) {
-            const {dragHandle, dragStart, dragEnd, drag} = this._dragListeners;
+            const { dragHandle, dragStart, dragEnd, drag } = this._dragListeners;
             dragHandle.removeEventListener("mousedown", dragStart);
             dragHandle.removeEventListener("touchstart", dragStart);
             document.removeEventListener("mouseup", dragEnd);
@@ -4035,7 +4549,7 @@ export class MapFeatureControl {
      * Handle feature hover - create popup at mouse location
      */
     _handleFeatureHover(data) {
-        const {featureId, layerId, lngLat, feature} = data;
+        const { featureId, layerId, lngLat, feature } = data;
 
         // Skip if inspect mode is disabled
         if (!this._inspectModeEnabled || !this.options.showHoverPopups) return;
@@ -4051,7 +4565,7 @@ export class MapFeatureControl {
      * Handle batch feature hover (PERFORMANCE OPTIMIZED)
      */
     _handleBatchFeatureHover(data) {
-        const {hoveredFeatures, lngLat, affectedLayers} = data;
+        const { hoveredFeatures, lngLat, affectedLayers } = data;
 
         // Skip if inspect mode is disabled
         if (!this._inspectModeEnabled || !this.options.showHoverPopups) return;
@@ -4211,7 +4725,7 @@ export class MapFeatureControl {
 
         // Render each feature with layer context
         hoveredFeatures.forEach((item, index) => {
-            const {featureState, layerConfig, layerId} = item;
+            const { featureState, layerConfig, layerId } = item;
             const feature = featureState.feature;
 
             // Add separator between features
@@ -4350,7 +4864,7 @@ export class MapFeatureControl {
 
         // Convert batch data to format expected by popup creation
         const featuresByLayer = new Map();
-        hoveredFeatures.forEach(({featureId, layerId, feature}) => {
+        hoveredFeatures.forEach(({ featureId, layerId, feature }) => {
             const layerConfig = this._stateManager.getLayerConfig(layerId);
             // Include all interactive layers (geojson, vector, csv), not just those with inspect
             if (layerConfig && (layerConfig.inspect ||
@@ -4822,7 +5336,7 @@ export class MapFeatureControl {
                         const registryConfig = window.layerRegistry.getLayer(layerId);
                         if (registryConfig && registryConfig.tags) {
                             // Merge registry config tags into the layer config
-                            layerConfig = {...layerConfig, tags: registryConfig.tags};
+                            layerConfig = { ...layerConfig, tags: registryConfig.tags };
                         }
                     }
 
@@ -4857,7 +5371,7 @@ export class MapFeatureControl {
                                 // Try prefixed ID first
                                 if (window.layerRegistry.getLayer) {
                                     fullLayerConfig = window.layerRegistry.getLayer(prefixedId) ||
-                                                     window.layerRegistry.getLayer(layerId);
+                                        window.layerRegistry.getLayer(layerId);
                                 }
 
                                 // Fallback to original layer config if registry lookup fails
@@ -4902,25 +5416,27 @@ export class MapFeatureControl {
 
     /**
      * Apply opacity effect to layer details UI elements when a layer is isolated
-     * Sets opacity to 0.5 for all layer details except the hovered one
+     * Sets opacity to 0.3 and grayscale for all layer details except the hovered one
      */
     _applyLayerDetailsOpacityEffect(hoveredLayerId) {
         if (!this._layersContainer) return;
 
-        // Get all layer details elements
-        const layerDetailsElements = this._layersContainer.querySelectorAll('.layer-details');
+        // Get all layer card elements
+        const layerDetailsElements = this._layersContainer.querySelectorAll('.layer-card');
 
         layerDetailsElements.forEach(element => {
             const elementLayerId = element.getAttribute('data-layer-id');
 
             if (elementLayerId !== hoveredLayerId) {
-                // Set opacity to 0.5 for non-hovered layers with smooth transition
-                element.style.transition = 'opacity 0.2s ease-in-out';
-                element.style.opacity = '0.5';
+                // Set opacity to 0.3 and grayscale for non-hovered layers with smooth transition
+                element.style.transition = 'opacity 0.2s ease-in-out, filter 0.2s ease-in-out';
+                element.style.opacity = '0.3';
+                element.style.filter = 'grayscale(100%)';
             } else {
-                // Ensure hovered layer stays fully opaque
-                element.style.transition = 'opacity 0.2s ease-in-out';
+                // Ensure hovered layer stays fully opaque and colored
+                element.style.transition = 'opacity 0.2s ease-in-out, filter 0.2s ease-in-out';
                 element.style.opacity = '1';
+                element.style.filter = 'none';
             }
         });
 
@@ -4932,13 +5448,14 @@ export class MapFeatureControl {
     _restoreLayerDetailsOpacity() {
         if (!this._layersContainer) return;
 
-        // Get all layer details elements
-        const layerDetailsElements = this._layersContainer.querySelectorAll('.layer-details');
+        // Get all layer card elements
+        const layerDetailsElements = this._layersContainer.querySelectorAll('.layer-card');
 
         layerDetailsElements.forEach(element => {
-            // Restore full opacity with smooth transition
-            element.style.transition = 'opacity 0.2s ease-in-out';
+            // Restore full opacity and color with smooth transition
+            element.style.transition = 'opacity 0.2s ease-in-out, filter 0.2s ease-in-out';
             element.style.opacity = '1';
+            element.style.filter = 'none';
         });
 
     }

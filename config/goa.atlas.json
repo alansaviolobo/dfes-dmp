@@ -1,5 +1,5 @@
 {
-  "name": "Development map layer configuration defined by amche-goa community",
+  "name": "Goa",
   "areaOfInterest": "Goa, India",
   "version": "0.1.0",
   "url": "https://github.com/publicmap/amche-goa/blob/main/config/goa.atlas.json",
@@ -11,6 +11,42 @@
     ],
     "zoom": 11.4
   },
+  "geojson": {
+    "type": "FeatureCollection",
+    "features": [
+      {
+        "type": "Feature",
+        "properties": {},
+        "geometry": {
+          "coordinates": [
+            [
+              [
+                73.60909843765532,
+                15.83078184315373
+              ],
+              [
+                73.60909843765532,
+                14.884455164549962
+              ],
+              [
+                74.37035790884673,
+                14.884455164549962
+              ],
+              [
+                74.37035790884673,
+                15.83078184315373
+              ],
+              [
+                73.60909843765532,
+                15.83078184315373
+              ]
+            ]
+          ],
+          "type": "Polygon"
+        }
+      }
+    ]
+  },
   "layers": [
     {
       "title": "Live Fire Trucks",
@@ -18,7 +54,7 @@
       "headerImage": "assets/map-layers/goa/map-layer-fire-trucks.png",
       "type": "geojson",
       "id": "firetrucks",
-      "url": "https://raw.githubusercontent.com/publicmap/goa-fire-trucks-geojson/refs/heads/main/data/goa-fire-trucks.geojson",
+      "url": "https://raw.githubusercontent.com/publicmap/goa-fire-trucks-geojson/refs/heads/data/data/goa-fire-trucks.geojson",
       "refresh": 30000,
       "attribution": "<a href='https://dfes.goa.gov.in/dashboard/'>Directorate of Fire & Emergency Services, Govt. of Goa</a>",
       "style": {
@@ -635,11 +671,13 @@
         "label": "plot",
         "fields": [
           "villagenam",
-          "talname"
+          "talname",
+          "shape_area"
         ],
         "fieldTitles": [
           "Village",
-          "Taluk"
+          "Taluk",
+          "Shape Area (sqm)"
         ],
         "customHtml": "<a href='https://bhunaksha.goa.gov.in/bhunaksha/' target='_blank'>Bhunaksha Goa</a> | <a href='https://goaonline.gov.in/Appln/Uil/DeptServices?__DocId=REV&__ServiceId=REV31' target='_blank'>View RoR</a> | <a href='https://davepaiva.github.io/goa-cadastral-duckdb-demo/' target='_blank'>Search</a>"
       }
@@ -1612,7 +1650,6 @@
         ]
       }
     },
- 
     {
       "title": "Bhutani Project Site Plan With Contours",
       "description": "For proposed project in Survey No. 257/1 in Sancoale, Mormugao, Goa.\r\n\r\nObtained via RTI",
@@ -1625,8 +1662,12 @@
         "raster-opacity": 1,
         "raster-color": [
           "interpolate",
-          ["linear"],
-          ["raster-value"],
+          [
+            "linear"
+          ],
+          [
+            "raster-value"
+          ],
           0,
           "black",
           0.9,
@@ -1652,14 +1693,18 @@
         "raster-opacity": 1,
         "raster-color": [
           "interpolate",
-          ["linear"],
-          ["raster-value"],
+          [
+            "linear"
+          ],
+          [
+            "raster-value"
+          ],
           0,
           "red",
           0.8,
           "red",
           1,
-         "rgba(255, 255, 255,0)"
+          "rgba(255, 255, 255,0)"
         ]
       },
       "attribution": "<a href='https://mapwarper.net/maps/99229' target='_blank'>MapWarper</a>",
@@ -1781,12 +1826,12 @@
       "attribution": "<a href='https://commons.wikimedia.org/wiki/File:Goa_Bus_Network_Map_2025.png'>CC-BY Wikipedia/user:Planemad</a>, CC-by <a href='https://ktclgoa.com/gtfs/'>Kadamba Transport Corporation Limited GTFS updated Jan 2025</a>"
     },
     {
-      "title": "Proposed Goa Tiger Reserve Plan",
-      "description": "Plan for proposed Tiger Reserve of Goa showing core and buffer areas including details of houses within the reserve.Obtained <a href='https://archive.org/details/tiger-reserve-pil/Tiger%20Reserve%20Area%20Map%20-%202/'>via RTI by Goa Foundation for the Tiger Reserve Petition</a>.",
+      "title": "Proposed Tiger Reserve for Goa",
+      "description": "Proposed Tiger Reserve Plan showing the location of all habitats, all weather roads, large habitations excluded from the proposed tiger reserve and household particulars inside & outside the proposed proposed Tiger Reserve",
       "source": "",
       "dateDepicted": "",
       "type": "tms",
-      "id": "tiger-reserve-plan",
+      "id": "proposed-tiger-reserve",
       "url": "https://mapwarper.net/maps/tile/98284/{z}/{x}/{y}.png",
       "style": {
         "raster-opacity": [
@@ -1805,9 +1850,9 @@
           0.3
         ]
       },
-      "attribution": "<a href='https://archive.org/details/tiger-reserve-pil/Tiger%20Reserve%20Area%20Map%20-%202/'>Tiger Reserve Area Map</a> via <a href='https://mapwarper.net/maps/98284' target='_blank'>MapWarper</a>",
-      "headerImage": "https://mapwarper.net/uploads/98284/thumb/TRP_2-Model.png",
-      "bbox": "73.9630142,14.8899052,74.3794893,15.7320923",
+      "attribution": "<a href='https://mapwarper.net/maps/95676' target='_blank'>MapWarper</a>",
+      "headerImage": "https://mapwarper.net/uploads/95676/thumb/Proposed_TR_Map__1_.png",
+      "bbox": "73.9288025,15.2009539,74.4074284,15.7801554",
       "initiallyChecked": false
     },
     {

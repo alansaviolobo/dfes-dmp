@@ -219,7 +219,7 @@ button.large {
 }
 
 /* Update the margin between controls */
-.mapboxgl-ctrl.opacity-control + .mapboxgl-ctrl.opacity-control {
+.mapboxgl-ctrl.opacity-control+.mapboxgl-ctrl.opacity-control {
     margin-top: 1px;
     /* Reduce gap between controls */
     border-top: 1px solid #e5e5e5;
@@ -238,8 +238,10 @@ button.large {
 /* Add these styles to fix mobile viewport height including iOS Safari */
 html,
 body {
-    height: 100vh; /* Fallback for older browsers */
-    height: 100dvh; /* Dynamic viewport height for iOS Safari */
+    height: 100vh;
+    /* Fallback for older browsers */
+    height: 100dvh;
+    /* Dynamic viewport height for iOS Safari */
     margin: 0;
     padding: 0;
     overflow: hidden;
@@ -249,12 +251,14 @@ body {
 
 /* Full viewport height class for iOS Safari compatibility */
 .full-viewport-height {
-    height: 100vh; /* Fallback for older browsers */
+    height: 100vh;
+    /* Fallback for older browsers */
 }
 
 @supports (height: 100dvh) {
     .full-viewport-height {
-        height: 100dvh; /* Dynamic viewport height for iOS Safari */
+        height: 100dvh;
+        /* Dynamic viewport height for iOS Safari */
     }
 }
 
@@ -544,18 +548,21 @@ header h1 {
 
 /* Feature control visual feedback styles */
 .layer-details.has-hover {
-    border-left-color: #fbbf24 !important; /* Yellow border for hover */
+    border-left-color: #fbbf24 !important;
+    /* Yellow border for hover */
     border-left-width: 4px !important;
 }
 
 .layer-details.has-selection {
-    border-left-color: #ef4444 !important; /* Red border for selection - sticky until cleared */
+    border-left-color: #ef4444 !important;
+    /* Red border for selection - sticky until cleared */
     border-left-width: 4px !important;
 }
 
 /* Selection takes priority over hover - red stays when selected */
 .layer-details.has-hover.has-selection {
-    border-left-color: #ef4444 !important; /* Red border takes priority */
+    border-left-color: #ef4444 !important;
+    /* Red border takes priority */
     border-left-width: 4px !important;
 }
 
@@ -617,7 +624,8 @@ header h1 {
 .legend-container {
     border-top: 1px solid rgba(0, 0, 0, 0.1);
     padding-top: 1rem;
-    max-height: 300px; /* Limit maximum height */
+    max-height: 300px;
+    /* Limit maximum height */
     overflow: hidden;
     transition: max-height 0.3s ease;
 }
@@ -645,8 +653,10 @@ header h1 {
 /* Style the legend content wrapper */
 .legend-content {
     overflow-y: auto;
-    max-height: 250px; /* Limit scrollable area height */
-    margin-right: -8px; /* Compensate for scrollbar */
+    max-height: 250px;
+    /* Limit scrollable area height */
+    margin-right: -8px;
+    /* Compensate for scrollbar */
     padding-right: 8px;
     scrollbar-width: thin;
     scrollbar-color: rgba(0, 0, 0, 0.2) transparent;
@@ -763,7 +773,8 @@ sl-drawer {
 
 sl-drawer::part(overlay) {
     background: none;
-    pointer-events: none; /* Prevent overlay from capturing clicks */
+    pointer-events: none;
+    /* Prevent overlay from capturing clicks */
 }
 
 sl-drawer::part(panel) {
@@ -872,9 +883,12 @@ sl-details.map-controls-group::part(summary-icon) {
 
 /* Add styles to ensure proper spacing and scrolling for fog settings */
 .fog-settings-content {
-    max-height: 70vh; /* Limit maximum height */
-    overflow-y: auto; /* Enable vertical scrolling if needed */
-    padding-right: 8px; /* Add some padding for the scrollbar */
+    max-height: 70vh;
+    /* Limit maximum height */
+    overflow-y: auto;
+    /* Enable vertical scrolling if needed */
+    padding-right: 8px;
+    /* Add some padding for the scrollbar */
 }
 
 /* Add smooth scrolling for a better user experience */
@@ -903,9 +917,12 @@ sl-details.map-controls-group::part(summary-icon) {
 
 /* Style the terrain control container */
 .terrain-control-container {
-    max-height: 400px; /* Set a maximum height */
-    overflow-y: auto; /* Enable vertical scrolling */
-    padding-right: 12px; /* Add padding for scrollbar */
+    max-height: 400px;
+    /* Set a maximum height */
+    overflow-y: auto;
+    /* Enable vertical scrolling */
+    padding-right: 12px;
+    /* Add padding for scrollbar */
 }
 
 /* Style the terrain settings sections */
@@ -1046,12 +1063,12 @@ a:hover {
 }
 
 /* Ensure the overlay control stays at the top */
-.layer-control > .overlay-control {
+.layer-control>.overlay-control {
     flex-shrink: 0;
 }
 
 /* Update the container for the rest of the controls */
-.layer-control > div:not(.overlay-control) {
+.layer-control>div:not(.overlay-control) {
     flex-grow: 1;
     overflow-y: auto;
 }
@@ -1218,11 +1235,11 @@ sl-drawer sl-details::part(content) {
     box-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
 }
 
-input:checked + .toggle-slider {
+input:checked+.toggle-slider {
     background-color: #F96302;
 }
 
-input:checked + .toggle-slider:before {
+input:checked+.toggle-slider:before {
     transform: translateX(16px);
 }
 
@@ -1231,16 +1248,18 @@ input:checked + .toggle-slider:before {
     0% {
         box-shadow: 0 0 0 0 rgba(249, 99, 2, 0.7);
     }
+
     70% {
         box-shadow: 0 0 0 6px rgba(249, 99, 2, 0);
     }
+
     100% {
         box-shadow: 0 0 0 0 rgba(249, 99, 2, 0);
     }
 }
 
 /* Animate the toggle button with pulse effect */
-input:checked + .toggle-slider:before {
+input:checked+.toggle-slider:before {
     animation: togglePulse 0.5s 1;
 }
 
@@ -1255,7 +1274,7 @@ input:checked + .toggle-slider:before {
     width: 12px;
 }
 
-.layer-controls input:checked + .toggle-slider:before {
+.layer-controls input:checked+.toggle-slider:before {
     transform: translateX(14px);
 }
 
@@ -1272,12 +1291,12 @@ input:checked + .toggle-slider:before {
     width: 12px;
 }
 
-.layer-controls input:checked + .toggle-slider {
+.layer-controls input:checked+.toggle-slider {
     background-color: #F96302;
     border-color: #D85600;
 }
 
-.layer-controls input:checked + .toggle-slider:before {
+.layer-controls input:checked+.toggle-slider:before {
     transform: translateX(14px);
 }
 
@@ -1481,7 +1500,8 @@ input:checked + .toggle-slider:before {
     border: 1px solid #e5e5e5;
     box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
     overflow-y: auto;
-    max-height: calc(100vh - 300px); /* Allow scrolling for many items */
+    max-height: calc(100vh - 300px);
+    /* Allow scrolling for many items */
     scrollbar-width: thin;
     scrollbar-color: rgba(0, 0, 0, 0.2) transparent;
 }
@@ -1705,8 +1725,10 @@ sl-divider {
 
 /* Dark theme styling for navigation dropdown menu */
 sl-dropdown::part(panel) {
-    background: #1f2937; /* Same as bg-gray-800 */
-    border: 1px solid #374151; /* Gray-700 */
+    background: #1f2937;
+    /* Same as bg-gray-800 */
+    border: 1px solid #374151;
+    /* Gray-700 */
     box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
     border-radius: 8px;
     overflow: hidden;
@@ -1717,19 +1739,22 @@ sl-menu {
 }
 
 sl-menu-item::part(base) {
-    color: #f9fafb; /* Light gray text */
+    color: #f9fafb;
+    /* Light gray text */
     background: transparent;
     padding: 0.75rem 1rem;
     transition: all 0.2s ease;
 }
 
 sl-menu-item:hover::part(base) {
-    background-color: #374151; /* Gray-700 on hover */
+    background-color: #374151;
+    /* Gray-700 on hover */
     color: #ffffff;
 }
 
 sl-menu-item.nav-active::part(base) {
-    color: #F96302; /* Orange for active item */
+    color: #F96302;
+    /* Orange for active item */
     background-color: rgba(249, 99, 2, 0.1);
 }
 
@@ -1739,34 +1764,41 @@ sl-menu-item.nav-active:hover::part(base) {
 
 /* Dark theme for menu label */
 sl-menu-label {
-    background: #111827; /* Darker background for header */
+    background: #111827;
+    /* Darker background for header */
     border-bottom: 1px solid #374151;
 }
 
 sl-menu-label a {
-    color: #F96302; /* Orange color for site title */
+    color: #F96302;
+    /* Orange color for site title */
 }
 
 sl-menu-label a:hover {
-    color: #ff7c33; /* Lighter orange on hover */
+    color: #ff7c33;
+    /* Lighter orange on hover */
 }
 
 /* Dark theme for dividers */
 sl-divider {
-    --color: #374151; /* Gray-700 for dividers */
+    --color: #374151;
+    /* Gray-700 for dividers */
 }
 
 /* Menu icon styling in dark theme */
 sl-menu-item svg {
-    color: #9ca3af; /* Gray-400 for icons */
+    color: #9ca3af;
+    /* Gray-400 for icons */
 }
 
 sl-menu-item:hover svg {
-    color: #ffffff; /* White icons on hover */
+    color: #ffffff;
+    /* White icons on hover */
 }
 
 sl-menu-item.nav-active svg {
-    color: #F96302; /* Orange icons for active items */
+    color: #F96302;
+    /* Orange icons for active items */
 }
 
 /* Config submenu styles */
@@ -1834,12 +1866,10 @@ sl-menu-item.config-layer-item.has-background-image::part(base)::before {
     left: 0;
     right: 0;
     bottom: 0;
-    background: linear-gradient(
-            135deg,
+    background: linear-gradient(135deg,
             rgba(0, 0, 0, 0.6) 0%,
             rgba(0, 0, 0, 0.3) 50%,
-            rgba(0, 0, 0, 0.7) 100%
-    );
+            rgba(0, 0, 0, 0.7) 100%);
     z-index: 1;
 }
 
@@ -1859,12 +1889,10 @@ sl-menu-item.config-layer-item.has-background-image:hover::part(base) {
 }
 
 sl-menu-item.config-layer-item.has-background-image:hover::part(base)::before {
-    background: linear-gradient(
-            135deg,
+    background: linear-gradient(135deg,
             rgba(0, 0, 0, 0.4) 0%,
             rgba(0, 0, 0, 0.2) 50%,
-            rgba(0, 0, 0, 0.5) 100%
-    );
+            rgba(0, 0, 0, 0.5) 100%);
 }
 
 /* Fallback styling for items without background images */
@@ -2033,9 +2061,12 @@ sl-menu {
 }
 
 @keyframes pulse {
-    0%, 100% {
+
+    0%,
+    100% {
         opacity: 1;
     }
+
     50% {
         opacity: 0.7;
     }
@@ -2068,6 +2099,7 @@ sl-menu {
         transform: translateX(100%);
         opacity: 0;
     }
+
     to {
         transform: translateX(0);
         opacity: 1;
@@ -2084,10 +2116,12 @@ sl-menu {
         transform: scale(1);
         opacity: 1;
     }
+
     50% {
         transform: scale(1.1);
         opacity: 0.7;
     }
+
     100% {
         transform: scale(1);
         opacity: 1;
@@ -2208,6 +2242,7 @@ sl-menu {
     0% {
         transform: translateX(-100%);
     }
+
     100% {
         transform: translateX(100%);
     }
@@ -2307,9 +2342,12 @@ sl-menu {
 }
 
 @keyframes route-glow {
-    0%, 100% {
+
+    0%,
+    100% {
         box-shadow: 0 0 12px rgba(251, 191, 36, 0.5);
     }
+
     50% {
         box-shadow: 0 0 20px rgba(251, 191, 36, 0.8);
     }
@@ -2381,6 +2419,7 @@ sl-menu {
     0% {
         transform: translateX(-100%);
     }
+
     100% {
         transform: translateX(100%);
     }
@@ -2903,18 +2942,26 @@ sl-dialog sl-details[open]::part(header) {
 }
 
 /* Ensure text content in dialogs is readable with high contrast */
-sl-dialog p, sl-dialog div, sl-dialog span {
+sl-dialog p,
+sl-dialog div,
+sl-dialog span {
     color: #f9fafb;
 }
 
 /* Make headings more white for better contrast */
-sl-dialog h1, sl-dialog h2, sl-dialog h3, sl-dialog h4, sl-dialog h5, sl-dialog h6 {
+sl-dialog h1,
+sl-dialog h2,
+sl-dialog h3,
+sl-dialog h4,
+sl-dialog h5,
+sl-dialog h6 {
     color: #ffffff !important;
     font-weight: 600;
 }
 
 /* Ensure strong/bold text is also highly visible */
-sl-dialog strong, sl-dialog b {
+sl-dialog strong,
+sl-dialog b {
     color: #ffffff;
     font-weight: 700;
 }
@@ -3197,12 +3244,14 @@ Styles moved from the Intro Content
     border: 1px solid #4b5563;
     border-color: hsl(0, 0%, 51%);
     color: #f9fafb;
-    background-color: #6b7280; /* Bright grey background */
+    background-color: #6b7280;
+    /* Bright grey background */
 }
 
 .intro-modal sl-button[id*="close-modal-btn"]:hover::part(base) {
     border-color: #60a5fa;
-    background-color: #9ca3af; /* Brighter grey on hover */
+    background-color: #9ca3af;
+    /* Brighter grey on hover */
     border-color: hsl(0, 0%, 51%);
     transform: translateY(-1px);
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
@@ -3225,25 +3274,29 @@ Styles moved from the Intro Content
     border: 1px solid #4b5563;
     border-color: hsl(0, 0%, 51%);
     color: #f9fafb;
-    background-color: #6b7280; /* Bright grey background */
+    background-color: #6b7280;
+    /* Bright grey background */
 }
 
 .auto-close-button:hover::part(base) {
     border-color: #60a5fa;
-    background-color: #9ca3af; /* Brighter grey on hover */
+    background-color: #9ca3af;
+    /* Brighter grey on hover */
     border-color: hsl(0, 0%, 51%);
     transform: translateY(-1px);
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
 }
 
 .auto-close-button.draining::part(base) {
-    background-color: #9ca3af; /* Bright grey when draining */
+    background-color: #9ca3af;
+    /* Bright grey when draining */
     border-color: hsl(0, 0%, 51%);
     color: #ffffff;
 }
 
 .auto-close-button.draining:hover::part(base) {
-    background-color: #d1d5db; /* Even brighter grey on hover when draining */
+    background-color: #d1d5db;
+    /* Even brighter grey on hover when draining */
     border-color: hwb(0 74% 26%);
     transform: translateY(-1px);
     box-shadow: 0 2px 4px rgba(156, 163, 175, 0.4);
@@ -3608,4 +3661,552 @@ Styles moved from layer-settings.js
     border-radius: 0.25rem;
     font-size: 0.875rem;
     font-family: ui-monospace, SFMono-Regular, "SF Mono", Consolas, "Liberation Mono", Menlo, monospace;
+}
+
+/* ========================================
+   Map Feature Control Styles
+   ======================================== */
+
+/* Main Panel */
+.map-feature-panel {
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    width: 350px;
+    max-width: 85vw;
+    max-height: calc(100vh - 120px);
+    min-width: 200px;
+    border-radius: 4px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    z-index: 1000;
+    display: flex;
+    flex-direction: column;
+    font-size: 12px;
+    overflow: hidden;
+    resize: both;
+}
+
+.map-feature-panel-content {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    min-height: 0;
+    overflow: hidden;
+}
+
+/* Panel Header */
+.map-feature-panel-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: #1f2937;
+    flex-shrink: 0;
+    cursor: move;
+    gap: 8px;
+    margin-bottom: 5px;
+    padding: 8px;
+}
+
+
+.map-feature-panel-header-left {
+    flex: 0;
+    display: flex;
+    align-items: center;
+}
+
+.map-feature-panel-header-actions {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    flex-shrink: 0;
+}
+
+/* Layers Container */
+.map-feature-panel-layers {
+    flex: 1;
+    overflow-y: auto;
+    background: transparent;
+    padding: 0;
+    min-height: 0;
+}
+
+/* Panel Footer */
+.map-feature-footer {
+    display: none;
+    align-items: center;
+    justify-content: space-between;
+    padding: 8px 12px;
+    background: #f0f9ff;
+    border-top: 1px solid #bae6fd;
+    flex-shrink: 0;
+    transition: opacity 0.5s ease;
+    opacity: 0;
+}
+
+.map-feature-footer-text {
+    font-size: 12px;
+    color: #0369a1;
+    font-weight: 500;
+}
+
+.map-feature-footer-btn {
+    background: transparent;
+    border: 1px solid #0ea5e9;
+    color: #0284c7;
+    border-radius: 4px;
+    padding: 2px 8px;
+    font-size: 11px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.map-feature-footer-btn:hover {
+    background: #e0f2fe;
+}
+
+/* Control Button */
+.map-feature-control-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    font-size: 12px;
+    font-weight: bold;
+    color: #666;
+}
+
+.map-feature-control-btn sl-icon {
+    font-size: 18px;
+    color: inherit;
+}
+
+.map-feature-control-btn:hover {
+    background-color: #f0f0f0;
+}
+
+.map-feature-control-btn:not(:hover) {
+    background-color: #ffffff;
+}
+
+/* Header Actions - Primary Action Buttons (shared styling) */
+.primary-action-btn,
+.layer-atlas-btn,
+.atlas-selector-btn {
+    display: flex;
+    align-items: center;
+    background-color: transparent;
+    color: #eee;
+    border: 1px solid #eee;
+    border-radius: 4px;
+    padding: 4px 10px;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+    justify-content: left;
+}
+
+.layer-atlas-btn {
+    flex: 1;
+    min-width: 0;
+}
+
+.layer-atlas-btn span {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    flex: 1;
+}
+
+.layer-atlas-btn sl-icon {
+    flex-shrink: 0;
+}
+
+.atlas-selector-btn {
+    height: 32px;
+    min-width: 0;
+    width: 100%;
+}
+
+.atlas-selector-btn span {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    flex: 1;
+}
+
+.atlas-selector-btn sl-icon {
+    flex-shrink: 0;
+}
+
+.primary-action-btn:hover,
+.layer-atlas-btn:hover,
+.atlas-selector-btn:hover {
+    background-color: #ffffff1a;
+    color: orange;
+    border: 1px solid orange;
+    transform: translateY(-1px);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+.primary-action-btn sl-icon,
+.layer-atlas-btn sl-icon,
+.atlas-selector-btn sl-icon {
+    font-size: 14px;
+    margin-right: 6px;
+}
+
+.header-icon-btn {
+    font-size: 16px;
+    color: #d1d5db;
+}
+
+.header-close-btn {
+    font-size: 14px;
+    color: #d1d5db;
+}
+
+/* Atlas View Location Button */
+.atlas-view-location-btn {
+    display: flex;
+    align-items: center;
+    background-color: transparent;
+    color: #9ca3af;
+    border: 1px solid #4b5563;
+    border-radius: 4px;
+    padding: 2px 8px;
+    font-size: 11px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
+    white-space: nowrap;
+}
+
+.atlas-view-location-btn:hover {
+    background-color: #374151;
+    color: #60a5fa;
+    border-color: #60a5fa;
+}
+
+.atlas-view-location-btn sl-icon {
+    flex-shrink: 0;
+}
+
+
+/* Layer Cards */
+.layer-card {
+    background: white;
+    border: 1px solid #797979;
+    border-radius: 6px;
+    overflow: hidden;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+    transition: box-shadow 0.2s ease;
+}
+
+.layer-card:hover {
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+}
+
+/* Layer Card Header */
+.layer-card-header {
+    padding: 5px 5px;
+    background: #1f2937;
+    border-bottom: 1px solid #374151;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    cursor: pointer;
+    user-select: none;
+    transition: background-color 0.15s ease;
+}
+
+.layer-card-header:hover {
+    background-color: #374151;
+}
+
+.layer-card-header.has-header-image {
+    background-size: cover;
+    background-position: center;
+}
+
+.layer-card .collapse-indicator {
+    font-size: 14px;
+    color: #d1d5db;
+    transition: transform 0.2s ease;
+    margin-right: 6px;
+    flex-shrink: 0;
+}
+
+.layer-card-title {
+    font-size: 13px;
+    color: #ffffff;
+    flex: 1;
+    line-height: 1.3;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+/* Layer Content */
+.layer-content {
+    display: block;
+    transition: all 0.2s ease;
+}
+
+.layer-content.collapsed {
+    display: none;
+}
+
+/* Layer Actions */
+.layer-actions {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+/* Opacity Controls */
+.opacity-dropdown-container {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 0 4px;
+}
+
+.opacity-label {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    color: #6b7280;
+    font-size: 10px;
+    white-space: nowrap;
+    cursor: pointer;
+    user-select: none;
+}
+
+.opacity-icon-container {
+    position: relative;
+    width: 12px;
+    height: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.opacity-icon-base {
+    font-size: 12px;
+    position: absolute;
+    top: 0;
+    left: 0;
+}
+
+.opacity-icon-overlay {
+    font-size: 12px;
+    color: #444;
+    position: absolute;
+    top: 0;
+    left: 0;
+    transition: opacity 0.15s ease;
+}
+
+.opacity-slider {
+    flex: 1;
+    --track-height: 4px;
+    --thumb-size: 14px;
+    --track-color-active: #6b7280;
+    --track-color-inactive: #d1d5db;
+}
+
+.opacity-panel {
+    padding: 12px;
+    background: white;
+    border-radius: 4px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+    width: 200px;
+    border: 1px solid #e5e7eb;
+}
+
+/* Tab Styling */
+.feature-tab-group {
+    --indicator-color: #3b82f6;
+    --track-color: #f3f4f6;
+}
+
+.feature-tab-compact {
+    padding: 0 8px;
+    font-size: 10px;
+    height: 24px;
+    line-height: 24px;
+    display: inline-flex;
+    align-items: center;
+}
+
+.feature-tab-compact sl-icon {
+    margin-right: 4px;
+    font-size: 10px;
+}
+
+.single-tab-panel {
+    padding: 10px;
+}
+
+/* Actions Container */
+.layer-actions-container {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+/* Zoom Button */
+.layer-zoom-btn {
+    font-size: 14px;
+    color: #3b82f6;
+}
+
+/* Remove Button */
+.layer-remove-btn {
+    font-size: 14px;
+    color: #ef4444;
+}
+
+/* Settings Button */
+.layer-settings-btn {
+    font-size: 14px;
+    color: #6b7280;
+}
+
+.layer-settings-btn::part(base) {
+    background: transparent;
+    border: none;
+    color: #6b7280;
+}
+
+.layer-settings-btn::part(base):hover {
+    background: rgba(0, 0, 0, 0.05);
+}
+
+/* Feature Element */
+.feature-element {
+    padding: 8px 12px;
+    border-bottom: 1px solid #f3f4f6;
+    cursor: pointer;
+    transition: background-color 0.15s ease;
+}
+
+.feature-element:hover {
+    background-color: #f9fafb;
+}
+
+.feature-element:last-child {
+    border-bottom: none;
+}
+
+/* Feature Table */
+.feature-table-content {
+    overflow-y: auto;
+}
+
+.feature-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 11px;
+}
+
+.feature-table th {
+    background: #f9fafb;
+    padding: 6px 8px;
+    text-align: left;
+    font-weight: 600;
+    color: #374151;
+    border-bottom: 1px solid #e5e7eb;
+    position: sticky;
+    top: 0;
+    z-index: 1;
+}
+
+.feature-table td {
+    padding: 6px 8px;
+    border-bottom: 1px solid #f3f4f6;
+    color: #1f2937;
+    word-break: break-word;
+}
+
+.feature-table tr:hover {
+    background-color: #f9fafb;
+}
+
+.feature-table tr.selected-row {
+    background-color: #eff6ff;
+}
+
+.feature-table tr.selected-row:hover {
+    background-color: #dbeafe;
+}
+
+/* Info Content */
+.info-description {
+    margin-bottom: 8px;
+}
+
+.info-attribution {
+    font-style: italic;
+    color: #4b5563;
+    margin-top: 4px;
+}
+
+/* Legend Content */
+.legend-image {
+    max-width: 100%;
+    height: auto;
+    display: block;
+    border-radius: 4px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.legend-text {
+    font-size: 10px;
+    color: #374151;
+}
+
+/* Empty States */
+.empty-state {
+    padding: 20px;
+    text-align: center;
+    color: #9ca3af;
+    font-size: 11px;
+    font-style: italic;
+}
+
+/* Feature Links */
+.feature-link {
+    display: block;
+    padding: 8px 12px;
+    color: #3b82f6;
+    text-decoration: none;
+    border-bottom: 1px solid #f3f4f6;
+    transition: background-color 0.15s ease;
+    font-size: 11px;
+}
+
+.feature-link:hover {
+    background-color: #f0f9ff;
+    color: #2563eb;
+}
+
+.feature-link:last-child {
+    border-bottom: none;
+}
+
+/* Settings Popover */
+.settings-popover-menu {
+    min-width: 180px;
+}
+
+/* Inspect Switch */
+.inspect-switch-hidden {
+    display: none;
 }

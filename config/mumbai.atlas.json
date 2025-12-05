@@ -1,4 +1,7 @@
 {
+  "name": "Mumbai",
+  "areaOfInterest": "Mumbai, India",
+  "version": "0.1.0",
   "color": "#4f46e5",
   "map": {
     "center": [
