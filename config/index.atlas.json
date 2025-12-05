@@ -2,6 +2,7 @@
   "name": "Amche Goa",
   "description": "Explore land zoning and management maps of Goa",
   "areaOfInterest": "Goa, India",
+  "description": "Featured maps of Goa by the <a href='https://amche.in'>Amche Atlas</a> community",
   "tags": [
     "historic",
     "india",
@@ -24,6 +25,42 @@
       15.47
     ],
     "zoom": 11.4
+  },
+  "geojson": {
+    "type": "FeatureCollection",
+    "features": [
+      {
+        "type": "Feature",
+        "properties": {},
+        "geometry": {
+          "coordinates": [
+            [
+              [
+                73.60909843765532,
+                15.83078184315373
+              ],
+              [
+                73.60909843765532,
+                14.884455164549962
+              ],
+              [
+                74.37035790884673,
+                14.884455164549962
+              ],
+              [
+                74.37035790884673,
+                15.83078184315373
+              ],
+              [
+                73.60909843765532,
+                15.83078184315373
+              ]
+            ]
+          ],
+          "type": "Polygon"
+        }
+      }
+    ]
   },
   "ui": {
     "title": "Maps नकासो",
