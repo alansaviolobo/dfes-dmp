@@ -647,12 +647,29 @@ export class MapFeatureControl {
     }
 
     /**
-     * Create header actions (Settings) - Layer Atlas and New Data Source moved elsewhere
+     * Create header actions (New Data Source, Settings) - Layer Atlas is now separate
      */
     _createHeaderActions() {
         const actions = [];
 
-        // Settings Menu (Popover)
+        // 1. New Data Source Button (Icon only)
+        const newDataSourceBtn = document.createElement('sl-icon-button');
+        newDataSourceBtn.name = 'plus-square';
+        newDataSourceBtn.label = 'New Data Source';
+        newDataSourceBtn.className = 'header-icon-btn';
+        // Add tooltip
+        const newSourceTooltip = document.createElement('sl-tooltip');
+        newSourceTooltip.content = 'New Data Source';
+        newSourceTooltip.appendChild(newDataSourceBtn);
+
+        newDataSourceBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            openLayerCreatorDialog();
+        });
+        actions.push(newSourceTooltip);
+
+        // 3. Settings Menu (Popover)
         const settingsBtn = document.createElement('sl-icon-button');
         settingsBtn.name = 'gear';
         settingsBtn.label = 'Settings';
@@ -1431,6 +1448,7 @@ export class MapFeatureControl {
         if (collapseIcon) {
             collapseIcon.name = newState ? 'chevron-right' : 'chevron-down';
         }
+    }
 
         if (contentContainer) {
             contentContainer.style.display = newState ? 'none' : 'block';
@@ -1679,6 +1697,7 @@ export class MapFeatureControl {
         const opacityBtn = document.createElement('sl-icon-button');
         opacityBtn.name = 'lightbulb';
         opacityBtn.style.fontSize = '14px';
+        opacityBtn.style.color = '#6b7280';
         opacityBtn.setAttribute('title', 'Opacity');
         opacityBtn.setAttribute('aria-label', 'Opacity');
 
