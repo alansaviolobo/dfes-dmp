@@ -40,7 +40,7 @@
                 Atlas</a>
         </div>
         <div class="flex gap-4 items-center">
-            <sl-dropdown>
+            <sl-dropdown id="nav-dropdown">
                 <sl-button slot="trigger" variant="text" size="small"
                     class="nav-dropdown-trigger interactive-nav-button" title="Navigation menu">
                     <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20" aria-hidden="true">
@@ -50,12 +50,12 @@
                     </svg>
                 </sl-button>
                 <sl-menu>
-                    <sl-menu-item href="/">
+                    <sl-menu-item value="/">
                         <sl-icon slot="prefix" name="house-fill"></sl-icon>
                         Home
                     </sl-menu-item>
                     <sl-divider></sl-divider>
-                    <sl-menu-item href="https://github.com/publicmap/amche-goa" target="_blank">
+                    <sl-menu-item value="https://github.com/publicmap/amche-goa" data-target="_blank">
                         <svg slot="prefix" class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
                             <path fill-rule="evenodd"
                                 d="M12.316 3.051a1 1 0 01.633 1.265l-4 12a1 1 0 11-1.898-.632l4-12a1 1 0 011.265-.633zM5.707 6.293a1 1 0 010 1.414L3.414 10l2.293 2.293a1 1 0 11-1.414 1.414l-3-3a1 1 0 010-1.414l3-3a1 1 0 011.414 0zm8.586 0a1 1 0 011.414 0l3 3a1 1 0 010 1.414l-3 3a1 1 0 11-1.414-1.414L16.586 10l-2.293-2.293a1 1 0 010-1.414z"
@@ -63,7 +63,7 @@
                         </svg>
                         Source
                     </sl-menu-item>
-                    <sl-menu-item href="https://forms.gle/8J4HTJMUM1thWpGK9" target="_blank">
+                    <sl-menu-item value="https://forms.gle/8J4HTJMUM1thWpGK9" data-target="_blank">
                         <svg slot="prefix" class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
                             <path fill-rule="evenodd"
                                 d="M18 5v8a2 2 0 01-2 2h-5l-5 4v-4H4a2 2 0 01-2-2V5a2 2 0 012-2h12a2 2 0 012 2zM7 8H5v2h2V8zm2 0h2v2H9V8zm6 0h-2v2h2V8z"
@@ -73,6 +73,20 @@
                     </sl-menu-item>
                 </sl-menu>
             </sl-dropdown>
+            <script>
+                document.getElementById('nav-dropdown').addEventListener('sl-select', event => {
+                    const item = event.detail.item;
+                    const url = item.value;
+                    const target = item.dataset.target;
+                    if (url) {
+                        if (target === '_blank') {
+                            window.open(url, '_blank');
+                        } else {
+                            window.location.href = url;
+                        }
+                    }
+                });
+            </script>
         </div>
     </header>
 
@@ -81,30 +95,38 @@
             <h1 class="text-3xl font-bold text-gray-900 mb-6">Privacy Policy</h1>
 
             <div class="bg-white rounded-lg shadow-sm p-6 mb-6">
-                <p class="text-sm text-gray-600 mb-6">Last updated: December 2025</p>
+                <p class="text-sm text-gray-600 mb-6"><a
+                        href="https://github.com/publicmap/amche-atlas/commits/main/privacy.html">Last updated: December
+                        2025</a></p>
 
                 <section class="mb-8">
                     <h2 class="text-2xl font-semibold text-gray-900 mb-4">
-                        <a href="amche.in">Amche Atlas</a>
+                        <a href="amche.in">Amche Atlas</a> & <a href="amche.in">amche.in</a>
                     </h2>
                     <p class="text-gray-700 leading-relaxed mb-3">
                         <span class="font-semibold">Amche Atlas</span> is a free viewer for public maps. Anyone can
                         use it to explore public maps and data at no cost.
-
-                        The <a href="https://github.com/publicmap/amche-goa" target="_blank"
-                            class="text-blue-600 hover:text-blue-800 underline">source code</a> is largely written by <a
-                            href="https://claude.ai" target="_blank"
-                            class="text-blue-600 hover:text-blue-800 underline">Claude</a> guided by <a
-                            href="https://github.com/publicmap/amche-atlas/issues" target="_blank"
-                            class="text-blue-600 hover:text-blue-800 underline">humans in Goa</a>.
                     </p>
-                    <p class="text-gray-700 leading-relaxed">
-                        The application is hosted for free by <a href="pages.github.com" target="_blank"
-                            class="text-blue-600 hover:text-blue-800 underline">Github</a> and can be accessed at <a
-                            href="amche.in" target="_blank"
+                    <p class="text-gray-700 leading-relaxed mb-3">
+                        The web application is hosted for free by <a href="pages.github.com" target="_blank"
+                            class="text-blue-600 hover:text-blue-800 underline">Github</a> and can be accessed at the
+                        url <a href="amche.in" target="_blank"
                             class="text-gray-900 hover:text-gray-600 underline font-semibold">amche.in</a> using any
                         desktop or mobile
-                        web browser.
+                        web browser. No other backend is used.
+                    </p>
+                    <p class="text-gray-700 leading-relaxed">
+                        The <a href="https://github.com/publicmap/amche-atlas?tab=readme-ov-file#amche-atlas"
+                            target="_blank" class="text-blue-600 hover:text-blue-800 underline">amche-atlas</a> source
+                        code is free to copy and reuse <a
+                            href="https://github.com/publicmap/amche-atlas?tab=Unlicense-1-ov-file" target="_blank"
+                            class="text-blue-600 hover:text-blue-800 underline">without
+                            restriction</a>.
+                        The project is managed by volunteers in Goa, with code mostly written by <a
+                            href="https://en.wikipedia.org/wiki/Claude_(language_model)" target="_blank"
+                            class="text-blue-600 hover:text-blue-800 underline">Claude</a> and further
+                        shaped by <a href="https://github.com/publicmap/amche-atlas/issues" target="_blank"
+                            class="text-blue-600 hover:text-blue-800 underline">human feedback</a>.
                     </p>
                 </section>
 
@@ -114,10 +136,11 @@
                     <div class="mb-6">
                         <h3 class="text-xl font-medium text-gray-800 mb-3">Feedback Form</h3>
                         <p class="text-gray-700 leading-relaxed">
-                            Our feedback form requires Google Sign in to view the form. See<a
+                            Our feedback form requires Google Sign in to view the form. See <a
                                 href="https://policies.google.com/privacy" target="_blank"
                                 class="text-blue-600 hover:text-blue-800 underline">Google privacy policy</a>. Contact
-                            information is only
+                            information is only used for the purpose of following up on feedback/concerns: receiving
+                            clarifications, and/or communicating steps taken in addressing feedback, if applicable.
                         </p>
                     </div>
 
