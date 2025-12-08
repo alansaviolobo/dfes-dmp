@@ -422,10 +422,7 @@ export class MapFeatureControl {
             .layer-flash {
                 animation: layer-flash 0.5s ease-in-out;
             }
-            .values-refreshing td {
-                color: transparent !important;
-                transition: color 0.2s ease;
-            }
+
         `;
         document.head.appendChild(style);
     }
@@ -2208,6 +2205,7 @@ export class MapFeatureControl {
             margin-bottom: 8px;
             border-radius: 6px;
             overflow: hidden;
+            color: black;
         `;
 
         // Render detailed content for selected features
@@ -2233,7 +2231,7 @@ export class MapFeatureControl {
 
         // Build the properties table with intelligent formatting (reuse existing logic)
         let table = document.createElement('table');
-        table.className = 'feature-inspector-properties-table values-refreshing'; // Start with values hidden
+        table.className = 'feature-inspector-properties-table';
         table.id = `properties-table-${layerId}-${featureId}`;
         table.style.cssText = `
             width: 100%;
@@ -2245,13 +2243,6 @@ export class MapFeatureControl {
             overflow: hidden;
             font-size: 11px;
         `;
-
-        // Remove the refreshing class after a short delay to reveal values
-        setTimeout(() => {
-            if (table) {
-                table.classList.remove('values-refreshing');
-            }
-        }, 150);
 
         const properties = featureState.feature.properties || {};
         const inspect = layerConfig.inspect || {};
