@@ -2,8 +2,8 @@
  * MapboxAPI - Abstracts Mapbox GL JS operations for layer management
  * Handles rendering, updating, and removing different layer types on a Mapbox map
  */
-import {getInsertPosition, logLayerStack} from './layer-order-manager.js';
-import {parseCSV, rowsToGeoJSON, gstableToArray} from './map-utils.js';
+import { getInsertPosition, logLayerStack } from './layer-order-manager.js';
+import { parseCSV, rowsToGeoJSON, gstableToArray } from './map-utils.js';
 
 export class MapboxAPI {
     constructor(map, atlasConfig = {}) {
@@ -30,7 +30,7 @@ export class MapboxAPI {
     _setupTimeChangeListener() {
         // Listen for time change events from TimeControl
         const timeChangeHandler = (event) => {
-            const {selectedDate, isoString, urlFormat} = event.detail;
+            const { selectedDate, isoString, urlFormat } = event.detail;
             this._updateTimeBasedLayers(urlFormat);
         };
 
@@ -49,7 +49,7 @@ export class MapboxAPI {
     _updateTimeBasedLayers(timeString) {
 
         this._timeBasedLayers.forEach((layerInfo, groupId) => {
-            const {config, visible} = layerInfo;
+            const { config, visible } = layerInfo;
 
             if (!visible) {
                 return;
@@ -299,11 +299,11 @@ export class MapboxAPI {
      */
     async createLayerGroup(groupId, config, options = {}) {
         try {
-            const {visible = false, currentGroup = null} = options;
+            const { visible = false, currentGroup = null } = options;
 
             // Register time-based layers
             if (config.urlTimeParam) {
-                this._timeBasedLayers.set(groupId, {config, visible});
+                this._timeBasedLayers.set(groupId, { config, visible });
             }
 
             switch (config.type) {
@@ -532,7 +532,7 @@ export class MapboxAPI {
             }
 
             if (config.inspect?.id) {
-                sourceConfig.promoteId = {[config.sourceLayer]: config.inspect.id};
+                sourceConfig.promoteId = { [config.sourceLayer]: config.inspect.id };
             }
 
             // Add attribution if available
@@ -1184,11 +1184,11 @@ export class MapboxAPI {
         if (data.type === 'FeatureCollection') {
             return data;
         } else if (data.type === 'Feature') {
-            return {type: 'FeatureCollection', features: [data]};
+            return { type: 'FeatureCollection', features: [data] };
         } else if (data.type && data.coordinates) {
             return {
                 type: 'FeatureCollection',
-                features: [{type: 'Feature', geometry: data, properties: {}}]
+                features: [{ type: 'Feature', geometry: data, properties: {} }]
             };
         }
         throw new Error('Invalid GeoJSON data format');
@@ -1369,7 +1369,7 @@ export class MapboxAPI {
                 this._map.addSource(sourceId, {
                     type: 'geojson',
                     data: geojson,
-                    ...(config.attribution && {attribution: config.attribution})
+                    ...(config.attribution && { attribution: config.attribution })
                 });
 
                 const layerConfig = this._createLayerConfig({
@@ -1589,7 +1589,7 @@ export class MapboxAPI {
                         [bounds[2], bounds[1]], // bottom-right
                         [bounds[0], bounds[1]]  // bottom-left
                     ],
-                    ...(config.attribution && {attribution: config.attribution})
+                    ...(config.attribution && { attribution: config.attribution })
                 });
 
                 const layerConfig = this._createLayerConfig({
@@ -1719,7 +1719,7 @@ export class MapboxAPI {
     _applyStyleProperties(layerId, style) {
         const existingLayer = this._map.getLayer(layerId);
         const layerType = existingLayer.type;
-        const {paint, layout} = this._categorizeStyleProperties(style, layerType);
+        const { paint, layout } = this._categorizeStyleProperties(style, layerType);
 
         Object.entries(paint).forEach(([property, value]) => {
             try {
@@ -1806,6 +1806,16 @@ export class MapboxAPI {
      */
     getLayerGroupIds(groupId, config) {
         switch (config.type) {
+            case 'style':
+                if (config.layers) {
+                    const styleLayers = this._map.getStyle().layers;
+                    return config.layers.flatMap(layer => {
+                        return styleLayers
+                            .filter(styleLayer => styleLayer['source-layer'] === layer.sourceLayer)
+                            .map(styleLayer => styleLayer.id);
+                    });
+                }
+                return [];
             case 'vector':
                 return [
                     `vector-layer-${groupId}`,
@@ -1829,7 +1839,7 @@ export class MapboxAPI {
                 return [`markers-${groupId}-circles`].filter(id => this._map.getLayer(id));
             case 'img':
             case 'raster-style-layer':
-                return [config.styleLayer || groupId].filter(id => this._map.getLayer(id));
+                return [config.styleLayer || groupId];
             default:
                 return [];
         }
@@ -1854,7 +1864,7 @@ export class MapboxAPI {
      */
     _categorizeStyleProperties(style, layerType) {
         if (!style || typeof style !== 'object') {
-            return {paint: {}, layout: {}};
+            return { paint: {}, layout: {} };
         }
 
         const paint = {};
@@ -1901,7 +1911,7 @@ export class MapboxAPI {
             }
         });
 
-        return {paint, layout};
+        return { paint, layout };
     }
 
     /**
@@ -2011,7 +2021,7 @@ export class MapboxAPI {
         // Intelligently merge user styles with defaults (preserving feature-state logic)
         const mergedStyles = this._intelligentStyleMerge(config.style || {}, defaultStyles);
 
-        const {paint, layout} = this._categorizeStyleProperties(mergedStyles, layerType);
+        const { paint, layout } = this._categorizeStyleProperties(mergedStyles, layerType);
 
         const layerConfig = {
             id: config.id,

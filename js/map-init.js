@@ -703,6 +703,12 @@ async function initializeMap() {
         // Reference: https://docs.mapbox.com/style-spec/reference/slots/
         _initializeSlotLayers(map);
 
+        // Initialize geolocation (will be connected to URL manager later)
+        const geolocationManager = new GeolocationManager(map);
+
+        // Make geolocation manager globally accessible
+        window.geolocationManager = geolocationManager;
+
         // Add 3D terrain control (will be initialized after URL manager is ready)
         const terrain3DControl = new Terrain3DControl();
         map.addControl(terrain3DControl, 'top-right');
@@ -742,12 +748,6 @@ async function initializeMap() {
         map.on('dragend', () => {
             canvas.style.cursor = 'grab';
         });
-
-        // Initialize geolocation (will be connected to URL manager later)
-        const geolocationManager = new GeolocationManager(map);
-
-        // Make geolocation manager globally accessible
-        window.geolocationManager = geolocationManager;
 
         // Add view control
         map.addControl(new ViewControl(), 'top-right');

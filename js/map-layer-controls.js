@@ -1137,6 +1137,26 @@ export class MapLayerControl {
     _registerLayerWithStateManager(layerConfig) {
         if (!this._stateManager) return;
 
+        // Register layer attribution if available
+        // We do this BEFORE potentially skipping style layers for state management
+        if (layerConfig.attribution && window.attributionControl) {
+            if (layerConfig.type === 'style' || layerConfig.type === 'raster-style-layer') {
+                // For style layers, we need to register attribution for all actual map layers
+                // This ensures attribution shows up even if the config ID doesn't match the style ID
+                if (this._mapboxAPI) {
+                    const layerIds = this._mapboxAPI.getLayerGroupIds(layerConfig.id, layerConfig);
+                    console.log(`[Attribution Debug] Layer ${layerConfig.id} (${layerConfig.type}) resolved to IDs:`, layerIds);
+                    layerIds.forEach(id => {
+                        console.log(`[Attribution Debug] Registering attribution for ${id}: ${layerConfig.attribution}`);
+                        window.attributionControl.addLayerAttribution(id, layerConfig.attribution);
+                    });
+                }
+            } else {
+                // Standard registration for other layer types
+                window.attributionControl.addLayerAttribution(layerConfig.id, layerConfig.attribution);
+            }
+        }
+
         // Skip style layers as they don't have their own sources/features
         if (layerConfig.type === 'style') {
             return;
@@ -1150,11 +1170,6 @@ export class MapLayerControl {
 
         // Register the layer - MapFeatureStateManager will handle raster vs vector distinction
         this._stateManager.registerLayer(layerConfig);
-
-        // Register layer attribution if available
-        if (layerConfig.attribution && window.attributionControl) {
-            window.attributionControl.addLayerAttribution(layerConfig.id, layerConfig.attribution);
-        }
     }
 
     /**
@@ -1167,7 +1182,18 @@ export class MapLayerControl {
 
         // Remove layer attribution
         if (window.attributionControl) {
-            window.attributionControl.removeLayerAttribution(layerId);
+            // Check if we need to remove attribution for multiple layer IDs (style layers)
+            // We need to look up the group from state to know the type
+            const group = this._state.groups.find(g => g.id === layerId);
+
+            if (group && (group.type === 'style' || group.type === 'raster-style-layer') && this._mapboxAPI) {
+                const layerIds = this._mapboxAPI.getLayerGroupIds(layerId, group);
+                layerIds.forEach(id => {
+                    window.attributionControl.removeLayerAttribution(id);
+                });
+            } else {
+                window.attributionControl.removeLayerAttribution(layerId);
+            }
         }
     }
 
