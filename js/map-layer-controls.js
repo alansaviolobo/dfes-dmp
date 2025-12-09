@@ -1226,7 +1226,6 @@ export class MapLayerControl {
             editModeToggle.addEventListener('click', () => {
                 this._editMode = !this._editMode;
                 editModeToggle.classList.toggle('active');
-                editModeToggle.style.backgroundColor = this._editMode ? '#006dff' : '';
             });
         }
     }
@@ -1327,8 +1326,8 @@ export class MapLayerControl {
         }
 
         toast.textContent = message;
-        toast.style.backgroundColor = type === 'success' ? '#4CAF50' :
-            type === 'error' ? '#f44336' : '#2196F3';
+        toast.classList.remove('success', 'error', 'info');
+        toast.classList.add(type);
 
         requestAnimationFrame(() => {
             toast.classList.add('show');
@@ -1347,7 +1346,7 @@ export class MapLayerControl {
         const qrCode = document.createElement('img');
         qrCode.src = qrCodeUrl;
         qrCode.alt = 'QR Code';
-        qrCode.style.cssText = 'width: 30px; height: 30px; cursor: pointer;';
+        qrCode.className = 'qr-share-icon';
 
         const originalContent = shareButton.innerHTML;
         shareButton.innerHTML = '';
@@ -1371,20 +1370,12 @@ export class MapLayerControl {
      */
     _showFullScreenQR(qrCodeUrl) {
         const overlay = document.createElement('div');
-        overlay.style.cssText = `
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background-color: rgba(0, 0, 0, 0.9); display: flex;
-            justify-content: center; align-items: center; z-index: 9999;
-            cursor: pointer; padding: 10px;
-        `;
+        overlay.className = 'qr-fullscreen-overlay';
 
         const largeQRCode = document.createElement('img');
         largeQRCode.src = qrCodeUrl;
         largeQRCode.alt = 'QR Code';
-        largeQRCode.style.cssText = `
-            width: auto; height: auto; max-width: min(500px, 90vw);
-            max-height: 90vh; object-fit: contain;
-        `;
+        largeQRCode.className = 'qr-fullscreen-image';
 
         overlay.addEventListener('click', () => document.body.removeChild(overlay));
         overlay.appendChild(largeQRCode);
@@ -1584,21 +1575,6 @@ export class MapLayerControl {
         const menu = document.createElement('sl-menu');
         menu.style.minWidth = '200px';
 
-        // Add "All Atlases" option
-        const allOption = document.createElement('sl-menu-item');
-        allOption.value = '';
-        allOption.innerHTML = `
-            <sl-icon slot="prefix" name="globe"></sl-icon>
-            <span>All Atlases</span>
-        `;
-        allOption.addEventListener('click', () => {
-            this._selectedAtlasFilter = null;
-            this._updateAtlasButtonText();
-            this._applyAllFilters();
-            dropdown.hide();
-        });
-        menu.appendChild(allOption);
-
         // Add divider
         const divider = document.createElement('sl-divider');
         menu.appendChild(divider);
@@ -1621,7 +1597,7 @@ export class MapLayerControl {
             // Add a colored badge using the atlas color
             if (metadata.color) {
                 option.innerHTML = `
-                    <span style="width: 12px; height: 12px; border-radius: 50%; background-color: ${metadata.color}; display: inline-block;" slot="prefix"></span>
+                    <span class="atlas-color-badge" style="background-color: ${metadata.color};" slot="prefix"></span>
                     <span>${metadata.name || atlasId}</span>
                 `;
             } else {
@@ -1808,7 +1784,7 @@ export class MapLayerControl {
         const $leftSection = $('<div>', {
             class: 'flex items-center gap-2',
             html: `
-                <span style="width: 12px; height: 12px; border-radius: 50%; background-color: ${atlasColor}; display: inline-block;"></span>
+                <span class="atlas-color-badge" style="background-color: ${atlasColor};"></span>
                 <span>Layers from ${atlasName}:</span>
             `
         });

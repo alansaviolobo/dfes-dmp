@@ -219,6 +219,16 @@
       "initiallyChecked": true
     },
     {
+      "title": "Outline Development Plan 2011",
+      "description": "Outline Development Plan 2011 prepared by the <a href='https://tcp.goa.gov.in/'>Goa Town & Country Planning Department</a>",
+      "headerImage": "assets/map-layers/goa/map-layer-rdp.png",
+      "legendImage": "assets/map-layers/goa/legend-rdp.jpg",
+      "type": "tms",
+      "id": "2011-outline-plan",
+      "url": "https://mapwarper.net/mosaics/tile/2151/{z}/{x}/{y}.png",
+      "attribution": "<a href='https://tcp.goa.gov.in/'>Outline Development Plan 2011, TCP Goa</a>. Georeferenced using <a href='https://mapwarper.net/layers/2151#Show_tab'>Mapwarper</a>"
+    },
+    {
       "title": "Taluka Land Use Plans 2021",
       "description": "Taluka level regional plans",
       "dateDepicted": "",
