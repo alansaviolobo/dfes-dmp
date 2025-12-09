@@ -126,18 +126,35 @@ export class ShareLink {
      * Get the current shareable URL
      */
     getCurrentURL() {
+        let urlToShare;
+
         // If URL manager is available, use it for the most current URL
         if (this.useURLManager && window.urlManager) {
-            return window.urlManager.getShareableURL();
+            urlToShare = window.urlManager.getShareableURL();
+        } else if (this.cachedURL) {
+            // Fall back to cached URL
+            urlToShare = this.cachedURL;
+        } else {
+            // Original behavior
+            urlToShare = typeof this.url === 'function' ? this.url() : this.url;
         }
 
-        // Fall back to cached URL or original URL
-        if (this.cachedURL) {
-            return this.cachedURL;
+        // Ensure proper encoding for the layers parameter
+        try {
+            const urlObj = new URL(urlToShare);
+            const layers = urlObj.searchParams.get('layers');
+
+            if (layers) {
+                // Re-setting the parameter via URLSearchParams will properly encode it
+                // (e.g., { becomes %7B, etc.)
+                urlObj.searchParams.set('layers', layers);
+                return urlObj.toString();
+            }
+        } catch (e) {
+            console.warn('Error encoding share URL:', e);
         }
 
-        // Original behavior
-        return typeof this.url === 'function' ? this.url() : this.url;
+        return urlToShare;
     }
 
     /**
