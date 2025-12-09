@@ -281,10 +281,10 @@ body {
 }
 
 .mapboxgl-ctrl.mapboxgl-ctrl-attrib {
-    background-color: #ffffffb5;
+    background-color: #ffffffe1;
     margin: 0 0 0 120px;
-    font-size: 12px;
-    padding: 6px;
+    font-size: 10px;
+    padding: 3px;
     line-height: 1.2;
 }
 
@@ -1021,7 +1021,7 @@ sl-details.map-controls-group::part(summary-icon) {
 }
 
 a:not(header a) {
-    color: #003CA2 !important;
+    color: #628cd4;
     text-decoration: none;
 }
 

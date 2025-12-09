@@ -215,7 +215,7 @@
       "type": "tms",
       "id": "2021-regional-plan",
       "url": "https://mapwarper.net/mosaics/tile/2054/{z}/{x}/{y}.png",
-      "attribution": "<a href='https://tcp.goa.gov.in/'>Regional Development Plan for Goa 2021, Goa Town & Country Planning Department</a>. Georeferenced using <a href='https://mapwarper.net/layers/2054#Show_tab'>Mapwarper</a>",
+      "attribution": "<a href='https://tcp.goa.gov.in/'>Regional Development Plan for Goa 2021, TCP Goa</a>. Georeferenced using <a href='https://mapwarper.net/layers/2054#Show_tab'>Mapwarper</a>",
       "initiallyChecked": true
     },
     {

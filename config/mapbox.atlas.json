@@ -31,7 +31,7 @@
       "description": "Detailed street level map data layers sourced from <a href='https://www.openstreetmap.org/#map=11/15.4054/73.9280' target='_blank'>OpenStreetMap contributors</a> and other data sources via <a href='https://docs.mapbox.com/data/tilesets/reference/mapbox-streets-v8/' target='_blank'>Mapbox Streets</a> vector tiles.",
       "type": "style",
       "headerImage": "assets/map-layers/mapbox/map-layer-mapbox-streets.png",
-      "attribution": "<a href='https://www.openstreetmap.org/#map=16/15.49493/73.82864'>© OpenStreetMap contributors</a>",
+      "attribution": "<a href='https://www.mapbox.com/about/maps' rel='noopener nofollow'>© Mapbox</a> <a href='https://www.openstreetmap.org/#map=16/15.49493/73.82864'>© OpenStreetMap contributors</a>",
       "layers": [
         {
           "title": "Places Labels",
