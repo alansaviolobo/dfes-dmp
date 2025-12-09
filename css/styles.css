@@ -1023,7 +1023,6 @@ sl-details.map-controls-group::part(summary-icon) {
 a:not(header a) {
     color: #003CA2 !important;
     text-decoration: none;
-    font-weight: bold;
 }
 
 a:hover {
