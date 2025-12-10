@@ -240,34 +240,6 @@
       }
     },
     {
-      "title": "SOI Contours (10m)",
-      "description": "10m interval contour lines derived from Survey Of India 1:50K",
-      "headerImage": "assets/map-layers/map-layer-cartodem-contours.png",
-      "type": "vector",
-      "id": "soi-contours",
-      "url": "https://indianopenmaps.fly.dev/dem/contours/raw/soi/{z}/{x}/{y}.pbf",
-      "sourceLayer": "contour",
-      "minzoom": 6,
-      "maxzoom": 14,
-      "attribution": "<a href='https://indiamaps.gov.in/elevation'>Survey Of India 1:50K</a> - Collected by <a href='https://github.com/ramSeraph/indian_land_features/releases/tag/cartodem-30m-v3r1'>Datameet Community</a>",
-      "initiallyChecked": false,
-      "style": {
-        "line-color": "brown",
-        "line-width": 2
-      },
-      "inspect": {
-        "id": "gid",
-        "title": "Name",
-        "label": "mon_name",
-        "fields": [
-          "ele_m"
-        ],
-        "fieldTitles": [
-          "Ele M"
-        ]
-      }
-    },
-    {
       "title": "CartoDEM Contours (10m)",
       "description": "10m interval contour lines derived from ISRO CartoDEM v3r1",
       "headerImage": "assets/map-layers/map-layer-cartodem-contours.png",
@@ -1390,6 +1362,23 @@
           "District",
           "Flag",
           "Gid"
+        ]
+      }
+    },
+    {
+      "title": "Aerodrome 10km Buffer Regulatory Zone",
+      "type": "geojson",
+      "id": "aerodrome-10km-buffer",
+      "url": "https://gist.githubusercontent.com/planemad/7485c3cf2cffa12b9a906520601e32f6/raw/1271e3d60930ee2d639d4540a3f337836c384de3/india-aerodrome-10km-buffer.geojson",
+      "initiallyChecked": false,
+      "inspect": {
+        "id": "osm_id",
+        "title": "Name",
+        "label": "name",
+        "fields": [
+          "iata",
+          "icao",
+          "aerodrome"
         ]
       }
     },
