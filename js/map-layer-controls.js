@@ -1138,9 +1138,7 @@ export class MapLayerControl {
                 // This ensures attribution shows up even if the config ID doesn't match the style ID
                 if (this._mapboxAPI) {
                     const layerIds = this._mapboxAPI.getLayerGroupIds(layerConfig.id, layerConfig);
-                    console.log(`[Attribution Debug] Layer ${layerConfig.id} (${layerConfig.type}) resolved to IDs:`, layerIds);
                     layerIds.forEach(id => {
-                        console.log(`[Attribution Debug] Registering attribution for ${id}: ${layerConfig.attribution}`);
                         window.attributionControl.addLayerAttribution(id, layerConfig.attribution);
                     });
                 }
