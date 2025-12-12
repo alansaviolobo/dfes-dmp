@@ -5,6 +5,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Real-time Noise Map</title>
+    <script>
+        window.amche = {};
+        window.amche.MAPBOXGL_ACCESS_TOKEN = 'pk.eyJ1IjoicGxhbmVtYWQiLCJhIjoiY2l3ZmNjNXVzMDAzZzJ0cDV6b2lkOG9odSJ9.eep6sUoBS0eMN4thZUWpyQ';
+    </script>
 
     <link href='https://api.mapbox.com/mapbox-gl-js/v3.6.0/mapbox-gl.css' rel='stylesheet' />
     <script src="https://cdn.tailwindcss.com"></script>
@@ -14,15 +18,18 @@
                 transform: scale(1);
                 opacity: 1;
             }
+
             70% {
                 transform: scale(3);
                 opacity: 0;
             }
+
             100% {
                 transform: scale(1);
                 opacity: 0;
             }
         }
+
         .mapboxgl-user-location-dot {
             width: 15px;
             height: 15px;
@@ -30,6 +37,7 @@
             background-color: #007cbf;
             box-shadow: 0 0 2px rgba(0, 0, 0, 0.25);
         }
+
         .mapboxgl-user-location-dot::before {
             content: '';
             width: 15px;
@@ -40,6 +48,7 @@
             opacity: 0.1;
             animation: pulse 2s infinite;
         }
+
         .mapboxgl-user-location-dot::after {
             content: '';
             display: block;
@@ -60,7 +69,8 @@
 <body class="bg-gray-100">
     <div id="map-overlay" class="absolute top-0 left-0 right-0 z-10">
         <div id="export-panel" class="bg-black bg-opacity-70 p-2 flex justify-center">
-            <button id="exportBtn" class="bg-yellow-500 hover:bg-yellow-700 text-white font-bold py-2 px-4 rounded">Download CSV</button>
+            <button id="exportBtn"
+                class="bg-yellow-500 hover:bg-yellow-700 text-white font-bold py-2 px-4 rounded">Download CSV</button>
         </div>
         <div id="info-panel" class="bg-black bg-opacity-70 text-white p-4">
             <div class="flex flex-col items-center mb-4">
@@ -87,9 +97,12 @@
             </div>
         </div>
         <div id="control-panel" class="bg-black bg-opacity-70 p-2 flex justify-center">
-            <button id="pauseBtn" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded mr-2">Pause</button>
-            <button id="resumeBtn" class="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded mr-2" disabled>Resume</button>
-            <button id="resetBtn" class="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded">Reset</button>
+            <button id="pauseBtn"
+                class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded mr-2">Pause</button>
+            <button id="resumeBtn" class="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded mr-2"
+                disabled>Resume</button>
+            <button id="resetBtn"
+                class="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded">Reset</button>
         </div>
     </div>
     <div id='map' class="absolute top-40 bottom-0 w-full"></div>
@@ -99,20 +112,20 @@
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
     <script src="script.js"></script>
     <script>
-        document.getElementById('exportBtn').addEventListener('click', function() {
+        document.getElementById('exportBtn').addEventListener('click', function () {
             console.log("Export button clicked");
-            
+
             if (map && map.getSource('noise')) {
                 let geoJsonData = map.getSource('noise')._data;
                 console.log("GeoJSON data:", geoJsonData);
-                
+
                 if (geoJsonData && geoJsonData.features && geoJsonData.features.length > 0) {
                     const csvRows = [
                         ['Latitude', 'Longitude', 'Decibels', 'Accuracy', 'Timestamp'].join(',')
                     ];
 
                     // Sort features by timestamp in descending order
-                    const sortedFeatures = [...geoJsonData.features].sort((a, b) => 
+                    const sortedFeatures = [...geoJsonData.features].sort((a, b) =>
                         b.properties.timestamp - a.properties.timestamp
                     );
 
@@ -128,8 +141,8 @@
                     });
 
                     const csvContent = csvRows.join('\n');
-                    const dataBlob = new Blob([csvContent], {type: 'text/csv'});
-                    
+                    const dataBlob = new Blob([csvContent], { type: 'text/csv' });
+
                     const url = URL.createObjectURL(dataBlob);
                     const link = document.createElement("a");
                     link.setAttribute("href", url);
