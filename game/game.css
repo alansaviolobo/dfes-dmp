@@ -109,3 +109,98 @@
     /* Base class for animations if needed, though included in classes above */
     animation-fill-mode: both;
 }
+
+/* Start Screen Overlay */
+#start-screen {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.85);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    z-index: 300;
+    color: white;
+    font-family: 'Courier New', monospace;
+    text-align: center;
+}
+
+#start-screen h1 {
+    font-size: 3rem;
+    margin-bottom: 0.5rem;
+    color: #fbbf24;
+    text-shadow: 4px 4px 0px #b45309;
+}
+
+#start-screen p {
+    font-size: 1.5rem;
+    margin-bottom: 2rem;
+    color: #e5e7eb;
+}
+
+#start-btn {
+    padding: 15px 40px;
+    font-size: 1.5rem;
+    font-family: 'Courier New', monospace;
+    font-weight: bold;
+    color: #1f2937;
+    background-color: #fbbf24;
+    border: 4px solid #b45309;
+    cursor: pointer;
+    box-shadow: 0 6px 0 #b45309;
+    transition: all 0.1s;
+}
+
+#start-btn:active {
+    transform: translateY(4px);
+    box-shadow: 0 2px 0 #b45309;
+}
+
+/* Score Message Overlay */
+#score-message {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: rgba(31, 41, 55, 0.95);
+    padding: 30px;
+    border: 4px solid #fbbf24;
+    border-radius: 10px;
+    color: white;
+    font-family: 'Courier New', monospace;
+    z-index: 250;
+    display: none;
+    min-width: 300px;
+    box-shadow: 0 0 20px rgba(0, 0, 0, 0.8);
+}
+
+#score-message h2 {
+    text-align: center;
+    color: #fbbf24;
+    margin-top: 0;
+    margin-bottom: 20px;
+    font-size: 2rem;
+    text-transform: uppercase;
+    text-shadow: 2px 2px 0 #b45309;
+}
+
+.score-row {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 15px;
+    font-size: 1.2rem;
+}
+
+.score-total {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 20px;
+    padding-top: 20px;
+    border-top: 2px dashed #4b5563;
+    font-size: 1.5rem;
+    font-weight: bold;
+    color: #fbbf24;
+}

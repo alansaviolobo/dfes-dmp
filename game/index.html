@@ -41,9 +41,9 @@
 
         #win-message {
             position: absolute;
-            top: 50%;
+            bottom: 20px;
             left: 50%;
-            transform: translate(-50%, -50%);
+            transform: translateX(-50%);
             background: rgba(255, 255, 255, 0.95);
             padding: 20px 40px;
             border-radius: 12px;
@@ -67,7 +67,7 @@
             font-size: 16px;
         }
 
-        button {
+        #next-level-btn {
             padding: 12px 32px;
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: white;
@@ -84,17 +84,17 @@
             overflow: hidden;
         }
 
-        button:hover {
+        #next-level-btn:hover {
             transform: translateY(-2px);
             box-shadow: 0 6px 20px rgba(102, 126, 234, 0.6);
         }
 
-        button:active {
+        #next-level-btn:active {
             transform: translateY(0);
             box-shadow: 0 2px 10px rgba(102, 126, 234, 0.4);
         }
 
-        button::before {
+        #next-level-btn::before {
             content: '';
             position: absolute;
             top: 0;
@@ -105,7 +105,7 @@
             transition: left 0.5s;
         }
 
-        button:hover::before {
+        #next-level-btn:hover::before {
             left: 100%;
         }
 
@@ -132,9 +132,13 @@
             position: absolute;
             top: -5px;
             left: 20px;
+            right: 20px;
+            /* Full width minus padding */
             z-index: 100;
             display: flex;
             align-items: center;
+            justify-content: space-between;
+            /* Push items to edges */
             gap: 1rem;
         }
 
@@ -154,6 +158,15 @@
         .game-header .text-gray-500 {
             color: #9ca3af;
         }
+
+        #score-display {
+            font-family: 'Courier New', monospace;
+            font-weight: bold;
+            color: #fbbf24;
+            /* Amber-400 */
+            text-shadow: 2px 2px 0px #000;
+            font-size: 1.25rem;
+        }
     </style>
 </head>
 
@@ -164,16 +177,35 @@
     <div id="game-container">
         <div class="game-header">
             <a href="/">Amche<span class="text-gray-500">.in</span> Atlas</a>
+            <div id="score-display">Score: 0</div>
         </div>
         <div id="background-map"></div>
         <div id="fifteen"></div>
     </div>
 
-    <div id="win-message">
-        <h2>Level Complete!</h2>
-        <p>Proceeding to next level...</p>
-        <button id="next-level-btn">Next Level</button>
+    <div id="start-screen">
+        <h1>Map Puzzle</h1>
+        <p>Tap tile to move</p>
+        <button id="start-btn">Start Game</button>
     </div>
+
+    <div id="score-message">
+        <h2>Level Complete!</h2>
+        <div class="score-row">
+            <span>Time Score:</span>
+            <span id="score-time">0</span>
+        </div>
+        <div class="score-row">
+            <span>Difficulty Bonus:</span>
+            <span id="score-bonus">0</span>
+        </div>
+        <div class="score-total">
+            <span>Total Score:</span>
+            <span id="score-total">0</span>
+        </div>
+        <button id="next-level-btn" style="display:none; margin-top: 20px; width: 100%;">Next Level</button>
+    </div>
+
 
     <script src="script.js"></script>
 </body>

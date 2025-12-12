@@ -24,7 +24,14 @@ const gameState = {
     isAnimating: false,
     imageUrl: '',
     bgMap: null,
-    isWon: false // Track win state
+    nextImage: null, // Store preloaded image object
+    isWon: false, // Track win state
+
+    // Scoring
+    score: 0,
+    pendingLevelScore: 0, // Store score for current level until 'next level' clicked
+    startTime: 0,
+    levelStartTime: 0
 };
 
 let interactionTimeout;
@@ -32,17 +39,33 @@ let interactionTimeout;
 const dom = {
     container: document.getElementById('fifteen'),
     gameWrapper: document.getElementById('game-container'),
-    winMsg: document.getElementById('win-message'),
-    nextBtn: document.getElementById('next-level-btn')
+    nextBtn: document.getElementById('next-level-btn'),
+    startScreen: document.getElementById('start-screen'),
+    startBtn: document.getElementById('start-btn'),
+    scoreDisplay: document.getElementById('score-display'),
+    scoreMsg: document.getElementById('score-message'),
+    scoreTime: document.getElementById('score-time'),
+    scoreBonus: document.getElementById('score-bonus'),
+    scoreTotal: document.getElementById('score-total')
 };
 
 function initGame() {
     dom.nextBtn.addEventListener('click', nextLevel);
+    dom.startBtn.addEventListener('click', startGame);
     parseHash(); // Parse URL hash for initial state
+
+    dom.startScreen.style.display = 'flex';
+    dom.scoreMsg.style.display = 'none';
+    dom.nextBtn.style.display = 'none';
+    updateScoreDisplay();
+
+    // Start preloading immediately
+    preloadFirstLevel();
+}
+
+function startGame() {
+    dom.startScreen.style.display = 'none';
     startLevel();
-    // Setup map interactions once map is ready - handled in updateBackgroundMap or check every time?
-    // We can just call it safely, but bgMap might be null.
-    // We will call it inside updateBackgroundMap or when map loads.
 }
 
 function parseHash() {
@@ -84,10 +107,13 @@ function parseHash() {
 
 function startLevel() {
     updateProcessionUI();
-    dom.winMsg.style.display = 'none';
+    dom.scoreMsg.style.display = 'none';
+    dom.nextBtn.style.display = 'none'; // Ensure button is hidden
     dom.container.style.pointerEvents = 'auto'; // Re-enable game interaction
     gameState.isWon = false;
     clearTimeout(interactionTimeout);
+
+    gameState.levelStartTime = Date.now();
 
     // Reset Map View
     const bgContainer = document.getElementById('background-map');
@@ -123,33 +149,10 @@ function startLevel() {
     }
 
     // Calculate dimensions based on viewport
-    // use full available height/width minus some padding
-    const padding = 40;
-    const maxWidth = window.innerWidth - padding;
-    const maxHeight = window.innerHeight - padding;
-
-    // Determine image dimensions
-    // The static API has limits (usually 1280x1280 for free tier standard, can go higher).
-    // Let's stick to viewport size or max 1024 to be safe and sharp.
-    let width = Math.min(maxWidth, 1024);
-    let height = Math.min(maxHeight, 1024);
-
-    // Maintain aspect ratio if we want, or just fill screen?
-    // User asked "make the initial dimension to have full height".
-    // So height is priority.
-    height = Math.min(maxHeight, 1280); // API max height
-    // Width can be proportional or defined. Let's make it fit ratio.
-    // Standard phone/desktop ratio.
-    // Let's just use the computed available space.
-    width = Math.min(window.innerWidth - padding, 1280);
-    height = Math.min(window.innerHeight - padding, 1280);
+    const { width, height } = getViewportDimensions();
 
     // Generate Static Map URL
-    // https://api.mapbox.com/styles/v1/{username}/{style_id}/static/{lon},{lat},{zoom},{bearing},{pitch}/{width}x{height}{@2x}
-    // Note: Mapbox Static API limits pitch to 0-60 degrees
-    const retina = window.devicePixelRatio > 1 ? '@2x' : '';
-    const clampedPitch = Math.max(0, Math.min(60, gameState.pitch)); // Clamp to 0-60
-    const url = `https://api.mapbox.com/styles/v1/${STATIC_STYLE_ID}/static/${gameState.center[0]},${gameState.center[1]},${gameState.zoom},${gameState.bearing},${clampedPitch}/${Math.floor(width)}x${Math.floor(height)}${retina}?access_token=${MAPBOX_ACCESS_TOKEN}&logo=false&attribution=false`;
+    const url = getMapUrl(gameState.center, gameState.zoom, gameState.bearing, gameState.pitch, width, height);
 
     console.log('Static image URL:', url);
 
@@ -158,13 +161,31 @@ function startLevel() {
     // Update Background Map
     updateBackgroundMap(width, height);
 
-    // Preload image
-    const img = new Image();
-    img.onload = () => {
-        setupGrid(width, height);
-        preloadNextLevel(); // Prefetch next level
-    };
-    img.src = url;
+    // Preload image - optimized to use cached object even if pending
+    if (gameState.nextImage && gameState.nextImage.src === url) {
+        console.log('Using preloaded image object');
+        const img = gameState.nextImage;
+        if (img.complete) {
+            setupGrid(width, height);
+            gameState.nextImage = null;
+            preloadNextLevel();
+        } else {
+            console.log('Image pending, waiting for onload...');
+            img.onload = () => {
+                setupGrid(width, height);
+                gameState.nextImage = null;
+                preloadNextLevel();
+            };
+        }
+    } else {
+        console.log('No preloaded image, fetching new...');
+        const img = new Image();
+        img.onload = () => {
+            setupGrid(width, height);
+            preloadNextLevel(); // Prefetch next level
+        };
+        img.src = url;
+    }
 }
 
 function updateBackgroundMap(width, height) {
@@ -186,9 +207,7 @@ function updateBackgroundMap(width, height) {
             attributionControl: false
         });
 
-        gameState.bgMap.on('load', () => {
-            setupMapInteractions();
-        });
+        // Map loaded - interactions will be enabled after win
     } else {
         // Update View
         gameState.bgMap.resize();
@@ -448,6 +467,21 @@ function onWin() {
 
     dom.container.appendChild(tile);
 
+    // Calculate Scores
+    const now = Date.now();
+    const elapsedSec = Math.floor((now - gameState.levelStartTime) / 1000);
+    const timeScore = Math.max((gameState.level * 60) - elapsedSec, 1);
+    const difficultyBonus = gameState.level * 100;
+    const levelTotal = timeScore + difficultyBonus;
+
+    gameState.pendingLevelScore = levelTotal;
+    const currentTotalForDisplay = gameState.score + levelTotal; // Predicted total for overlay
+
+    // updateScoreDisplay(); // Don't update header yet
+
+    // Prefetch Next Level immediately
+    preloadNextLevel();
+
     // 2. Play victory sound
     try {
         const audio = new Audio('https://assets.mixkit.co/active_storage/sfx/2000/2000-preview.mp3'); // Quick placeholder
@@ -473,17 +507,10 @@ function onWin() {
             bgContainer.style.pointerEvents = 'auto'; // ENABLE interactions on container
             console.log('onWin: Set bgContainer opacity=1, pointer-events=auto');
 
-            // Animate Map
+            // Enable map interactions without animations
             if (gameState.bgMap) {
-                gameState.bgMap.flyTo({
-                    bearing: 45,
-                    pitch: 60,
-                    duration: 2000,
-                    essential: true
-                });
-
                 // Enable interactions
-                gameState.bgMap.interactive = true; // Use this or specific handlers
+                gameState.bgMap.interactive = true;
                 gameState.bgMap.scrollZoom.enable();
                 gameState.bgMap.boxZoom.enable();
                 gameState.bgMap.dragRotate.enable();
@@ -493,58 +520,107 @@ function onWin() {
                 gameState.bgMap.touchZoomRotate.enable();
 
                 // Allow interactions - bring map to front
-                gameState.bgMap.getCanvas().style.zIndex = '20';
+                const canvas = gameState.bgMap.getCanvas();
+                canvas.style.zIndex = '20';
+                canvas.style.cursor = 'grab';
+
+                // Add grab/grabbing cursor behavior
+                gameState.bgMap.on('mousedown', () => {
+                    canvas.style.cursor = 'grabbing';
+                });
+
+                gameState.bgMap.on('mouseup', () => {
+                    canvas.style.cursor = 'grab';
+                });
+
+                gameState.bgMap.on('dragend', () => {
+                    canvas.style.cursor = 'grab';
+                });
+
                 dom.container.style.zIndex = '0';
                 dom.container.style.pointerEvents = 'none';
                 console.log('onWin: Map interactions enabled - canvas z-index=20, fifteen z-index=0, fifteen pointer-events=none');
                 console.log('onWin: Map interactive state:', gameState.bgMap.interactive);
-
-                // After the initial flyTo animation completes, start the long Goa flyover
-                // Goa bbox approximately: SW [73.67, 14.89], NE [74.34, 15.80]
-                setTimeout(() => {
-                    console.log('onWin: Starting Goa flyover animation (60s)');
-                    gameState.bgMap.fitBounds(
-                        [[73.67, 14.89], [74.34, 15.80]], // Goa bounding box
-                        {
-                            bearing: 0,
-                            pitch: 0,
-                            duration: 60000, // 60 seconds
-                            essential: true,
-                            padding: 50
-                        }
-                    );
-                }, 2500); // Start after initial flyTo + small buffer
             }
 
-            // 5. Show Win Popup
-            dom.winMsg.style.display = 'block';
+            // 5. Show Score Popup then Win Popup
+            // Pass the PREDICTED total to the overlay animation
+            showScore(timeScore, difficultyBonus, gameState.score + gameState.pendingLevelScore);
 
         }, 750); // Duration match bounceOut roughly
     }, 1000); // Wait for bounce to finish
 }
 
+function showScore(timeVal, bonusVal, totalVal) {
+    dom.scoreMsg.style.display = 'block';
+
+    // Animate numbers
+    animateValue(dom.scoreTime, 0, timeVal, 2000);
+    animateValue(dom.scoreBonus, 0, bonusVal, 2000);
+    animateValue(dom.scoreTotal, totalVal - (timeVal + bonusVal), totalVal, 2000);
+
+    setTimeout(() => {
+        // Show proceed button
+        dom.nextBtn.style.display = 'block';
+    }, 2500); // 2s animation + 0.5s pause
+}
+
+function animateValue(obj, start, end, duration) {
+    let startTimestamp = null;
+    const step = (timestamp) => {
+        if (!startTimestamp) startTimestamp = timestamp;
+        const progress = Math.min((timestamp - startTimestamp) / duration, 1);
+        obj.innerHTML = Math.floor(progress * (end - start) + start);
+        if (progress < 1) {
+            window.requestAnimationFrame(step);
+        }
+    };
+    window.requestAnimationFrame(step);
+}
+
+function updateScoreDisplay() {
+    if (dom.scoreDisplay) {
+        dom.scoreDisplay.textContent = `Score: ${gameState.score}`;
+    }
+}
+
 function nextLevel() {
+    // Apply Pending Score with Animation
+    const oldScore = gameState.score;
+    gameState.score += gameState.pendingLevelScore;
+    gameState.pendingLevelScore = 0;
+
+    // Animate Header Score
+    animateScoreDisplay(oldScore, gameState.score, 2000);
+
     // Apply progression rules
     gameState.level++;
     gameState.zoom += 1;
     gameState.difficulty += 10;
 
     // Increase grid size alternatively expanding grid height and width by 1 count
-    // 1x1 -> 2x1 -> 2x2 -> 3x2 -> 3x3
-    // Start: [1,1]
-    // Lvl 1 (Start) -> Win -> Lvl 2
-    // Rules:
-    // If width == height, increase width? Or height?
-    // "alternatively expanding grid height and width"
-    // 1x1 -> 2x1 (Width++?) -> 2x2 (Height++) -> 3x2 (Width++) -> 3x3 (Height++)
+    // Responsive logic based on screen orientation:
+    // - Small/Portrait screens (mobile): prioritize height expansion (1x1 -> 1x2 -> 2x2 -> 2x3 -> 3x3)
+    // - Wide/Landscape screens (desktop): prioritize width expansion (1x1 -> 2x1 -> 2x2 -> 3x2 -> 3x3)
 
-    // Let's implement this logic:
+    const isSmallScreen = window.innerWidth < window.innerHeight || window.innerWidth < 768;
+
     if (gameState.grid[0] === gameState.grid[1]) {
-        // Square: Increase Width
-        gameState.grid[0]++;
+        // Square grid: expand based on screen orientation
+        if (isSmallScreen) {
+            // Small screen: Increase Height first
+            gameState.grid[1]++;
+        } else {
+            // Wide screen: Increase Width first
+            gameState.grid[0]++;
+        }
     } else {
-        // Rectangle: Increase Height (to make square)
-        gameState.grid[1]++;
+        // Rectangle: Make it square by increasing the smaller dimension
+        if (gameState.grid[0] < gameState.grid[1]) {
+            gameState.grid[0]++;
+        } else {
+            gameState.grid[1]++;
+        }
     }
 
     startLevel();
@@ -558,59 +634,98 @@ function preloadNextLevel() {
     const nextZoom = gameState.zoom + 1;
     let nextGrid = [...gameState.grid];
 
+    const isSmallScreen = window.innerWidth < window.innerHeight || window.innerWidth < 768;
+
     if (nextGrid[0] === nextGrid[1]) {
-        nextGrid[0]++;
+        if (isSmallScreen) {
+            nextGrid[1]++;
+        } else {
+            nextGrid[0]++;
+        }
     } else {
-        nextGrid[1]++;
+        if (nextGrid[0] < nextGrid[1]) {
+            nextGrid[0]++;
+        } else {
+            nextGrid[1]++;
+        }
     }
 
     // Calculate dimensions same as startLevel()
-    const padding = 40;
-    const maxWidth = window.innerWidth - padding;
-    const maxHeight = window.innerHeight - padding;
-    let width = Math.min(maxWidth, 1280);
-    let height = Math.min(maxHeight, 1280);
+    const { width, height } = getViewportDimensions();
 
     // Construct URL
-    const retina = window.devicePixelRatio > 1 ? '@2x' : '';
-    const url = `https://api.mapbox.com/styles/v1/${STATIC_STYLE_ID}/static/${gameState.center[0]},${gameState.center[1]},${nextZoom},0,0/${Math.floor(width)}x${Math.floor(height)}${retina}?access_token=${MAPBOX_ACCESS_TOKEN}&logo=false&attribution=false`;
+    // Use NEXT zoom, but CURRENT bearing and pitch because nextLevel() does not change them
+    const url = getMapUrl(gameState.center, nextZoom, gameState.bearing, gameState.pitch, width, height);
 
     // Prefetch
     const img = new Image();
     img.src = url;
-    // No need to do anything on load, browser cache handles it.
+    gameState.nextImage = img; // Store for next level immediate use
+
     console.log('Prefetching next level:', url);
 }
 
 // Start
 initGame();
 
-// Interaction Logic for Win State
-function setupMapInteractions() {
-    if (!gameState.bgMap) return;
-
-    const events = ['mousedown', 'touchstart', 'wheel', 'dragstart', 'moveend'];
-    events.forEach(event => {
-        gameState.bgMap.on(event, () => {
-            if (dom.winMsg.style.display === 'block') {
-                dom.winMsg.style.display = 'none';
-            }
-            resetInteractionTimer();
-        });
-    });
-}
-
-function resetInteractionTimer() {
-    clearTimeout(interactionTimeout);
-    interactionTimeout = setTimeout(() => {
-        // Only show if we are still in win state (check if tiles are gone/hidden?)
-        // We can check if the next button is visible or if we haven't started a new level yet.
-        // Or check a state flag.
-        if (gameState.isWon) {
-            dom.winMsg.style.display = 'block';
-        }
-    }, 5000);
-}
+// Interaction Logic for Win State - removed to keep win message always visible
 
 // ... existing code ...
 
+function preloadFirstLevel() {
+    const { width, height } = getViewportDimensions();
+    const url = getMapUrl(gameState.center, gameState.zoom, gameState.bearing, gameState.pitch, width, height);
+
+    // We can prefetch it as a nextImage, OR just let the browser cache handle it.
+    // If we set it as nextImage, initGame might need to handle it.
+    // Actually, startLevel calls updateBackgroundMap -> getMapUrl
+    // It also tries to use nextImage.
+
+    const img = new Image();
+    img.src = url;
+    gameState.nextImage = img;
+    console.log('Preloading first level:', url);
+}
+
+function getViewportDimensions() {
+    const padding = 40;
+
+    // Priority: maximize height, then width, limit to 1280
+    const w = Math.min(window.innerWidth - padding, 1280);
+    const h = Math.min(window.innerHeight - padding, 1280);
+
+    return { width: Math.floor(w), height: Math.floor(h) };
+}
+
+function getMapUrl(center, zoom, bearing, pitch, width, height) {
+    const retina = window.devicePixelRatio > 1 ? '@2x' : '';
+    const clampedPitch = Math.max(0, Math.min(60, pitch));
+    return `https://api.mapbox.com/styles/v1/${STATIC_STYLE_ID}/static/${center[0]},${center[1]},${zoom},${bearing},${clampedPitch}/${width}x${height}${retina}?access_token=${MAPBOX_ACCESS_TOKEN}&logo=false&attribution=false`;
+}
+
+function animateScoreDisplay(start, end, duration) {
+    if (!dom.scoreDisplay) return;
+
+    // Mechanical counter sound effect
+    const tickSound = new Audio('https://assets.mixkit.co/active_storage/sfx/2571/2571-preview.mp3');
+    tickSound.volume = 0.3;
+    tickSound.loop = true;
+    tickSound.play().catch(e => console.log('Tick sound failed', e));
+
+    let startTimestamp = null;
+    const step = (timestamp) => {
+        if (!startTimestamp) startTimestamp = timestamp;
+        const progress = Math.min((timestamp - startTimestamp) / duration, 1);
+        const current = Math.floor(progress * (end - start) + start);
+        dom.scoreDisplay.textContent = `Score: ${current}`;
+
+        if (progress < 1) {
+            window.requestAnimationFrame(step);
+        } else {
+            // Stop sound when animation finishes
+            tickSound.pause();
+            tickSound.currentTime = 0;
+        }
+    };
+    window.requestAnimationFrame(step);
+}
