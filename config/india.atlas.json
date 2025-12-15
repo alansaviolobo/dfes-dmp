@@ -1667,7 +1667,7 @@
     },
     {
       "title": "SISDP 2016-2023 1:10k Landcover",
-      "description": "Space based Information Support for Decentralized Planning (SISDP) Phase 2 10k Land Usage Land Cover data. Check the <a href='https://bhuvanpanchayat.nrsc.gov.in/SISDP/BP-lrdpwrdpmanual.pdf'>SISDP technical manual</a> for background about the project and <a href='https://bhuvanpanchayat.nrsc.gov.in/SISDP/BP-lrdpwrdpmanual.pdf'>Bhuvan Panchayat Portal User Manual</a> for more details.",
+      "description": "Space based Information Support for Decentralized Planning (SISDP) Phase 2 10k Land Usage Land Cover data. Check the <a href='https://bhuvanpanchayat.nrsc.gov.in/SISDP/BP-lrdpwrdpmanual.pdf'>SISDP technical manual</a> for background about the project and <a href='https://github.com/ramSeraph/indian_land_features/releases/download/landuse/key_to_levels.csv'>Key to landuse codes</a>.",
       "headerImage": "assets/map-layers/india/map-layer-landcover.png",
       "type": "vector",
       "id": "landcover-2023-sisdp",
