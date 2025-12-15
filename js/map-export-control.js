@@ -313,26 +313,57 @@ export class MapExportControl {
         const heightMm = parseFloat(this._heightInput.input.value);
         const dpi = this._dpi;
 
-        // Calculate Target Pixels
-        const targetWidth = Math.round((widthMm * dpi) / 25.4);
-        const targetHeight = Math.round((heightMm * dpi) / 25.4);
+        // Footer configuration
+        const footerHeightMm = 15;
+        const marginMm = 5;
 
-        // Get Bounds from Frame (Geographic)
+        // Calculate Target Pixels for Map (excluding footer)
+        const mapHeightMm = heightMm - footerHeightMm;
+        const targetWidth = Math.round((widthMm * dpi) / 25.4);
+        const targetHeight = Math.round((mapHeightMm * dpi) / 25.4);
+
+        // Get Bounds from Frame (Geographic) using the *full* frame aspect ratio?
+        // Actually, if we resize the map to be shorter, we might distort the view if we just use the bounds directly 
+        // without adjusting aspect ratio. 
+        // The Frame currently represents the *Page* dimensions (usually). 
+        // If the user selected A4, the Frame is A4. 
+        // If we want a footer, the Map part is A4 minus footer.
+        // We should probably just crop the map to the target aspect ratio (mapHeight/width).
         const bounds = this._frame.getBounds();
 
         // Save current map state
         const originalStyle = this._map.getContainer().style.cssText;
         const originalCenter = this._map.getCenter();
         const originalZoom = this._map.getZoom();
+        const originalPixelRatio = window.devicePixelRatio;
 
         // 1. Hide Controls & Frame
         this._frame.hide();
-        // Hide other controls might be good too, but `preserveDrawingBuffer` usually captures webgl canvas only?
-        // map.getCanvas() is what we capture. Controls are DOM elements.
 
-        // 2. Resize Map Container (Hidden/Background or just manipulate current?)
-        // Manipulating current is easiest but visible.
+        // 2. Resize Map Container
         const container = this._map.getContainer();
+
+        // Get Data for Footer
+        // URL
+        let shareUrl = window.location.href;
+        if (window.urlManager) {
+            shareUrl = window.urlManager.getShareableURL();
+        }
+
+        // Attribution
+        let attributionText = '';
+        const attribCtrl = this._map._controls.find(c => c._container && c._container.classList.contains('mapboxgl-ctrl-attrib'));
+        if (attribCtrl) {
+            attributionText = attribCtrl._container.textContent;
+        }
+
+        // Generate QR
+        let qrDataUrl = null;
+        try {
+            qrDataUrl = await this._getQRCodeDataUrl(shareUrl);
+        } catch (e) {
+            console.warn('Failed to generate QR for PDF', e);
+        }
 
         return new Promise((resolve, reject) => {
 
@@ -348,7 +379,45 @@ export class MapExportControl {
                         format: [widthMm, heightMm]
                     });
 
-                    doc.addImage(imgData, 'PNG', 0, 0, widthMm, heightMm);
+                    // Draw Map
+                    doc.addImage(imgData, 'PNG', 0, 0, widthMm, mapHeightMm);
+
+                    // Draw Footer Background
+                    doc.setFillColor(0, 0, 0); // Black
+                    doc.rect(0, mapHeightMm, widthMm, footerHeightMm, 'F');
+
+                    // Draw QR Code
+                    if (qrDataUrl) {
+                        const qrSize = footerHeightMm - 2; // 1mm padding
+                        doc.addImage(qrDataUrl, 'PNG', marginMm, mapHeightMm + 1, qrSize, qrSize);
+
+                        // Link URL
+                        doc.setTextColor(255, 255, 255);
+                        doc.setFontSize(8);
+                        doc.text('Generated from:', marginMm + qrSize + 3, mapHeightMm + 5);
+                        doc.setFontSize(6);
+
+                        const splitUrl = doc.splitTextToSize(shareUrl, widthMm / 3);
+                        doc.text(splitUrl, marginMm + qrSize + 3, mapHeightMm + 8);
+                    }
+
+                    // Draw Attribution
+                    if (attributionText) {
+                        doc.setTextColor(255, 255, 255);
+                        doc.setFontSize(6);
+                        // Right aligned
+                        const attribX = widthMm - marginMm;
+                        const attribY = mapHeightMm + (footerHeightMm / 2);
+
+                        // We need to parse HTML from attribution if it contains links (it usually does)
+                        // jsPDF doesn't render HTML easily with .text(). 
+                        // Stripping tags for now as requested "text".
+                        // attribCtrl.innerText usually gives visible text.
+                        const cleanAttrib = attributionText.replace(/\|/g, '   '); // Replace pipes with spaces
+
+                        doc.text(cleanAttrib, attribX, attribY, { align: 'right', baseline: 'middle', maxWidth: widthMm / 2 });
+                    }
+
                     doc.save('map-export.pdf');
                     resolve();
                 } catch (e) {
@@ -356,14 +425,14 @@ export class MapExportControl {
                 }
             };
 
-            // Set new size
+            // Set new size - MATCHING MAP AREA ONLY
             Object.assign(container.style, {
                 width: targetWidth + 'px',
                 height: targetHeight + 'px',
-                position: 'fixed', // Keep it in flow or fixed? Fixed top-left ensures it doesn't break layout too much
+                position: 'fixed',
                 top: '0',
                 left: '0',
-                zIndex: '-9999' // Hide behind everything
+                zIndex: '-9999'
             });
 
             this._map.resize();
@@ -377,12 +446,106 @@ export class MapExportControl {
                 // Restore
                 container.style.cssText = originalStyle;
                 this._map.resize();
-                // Restore View (FitBounds changed it)
+                // Restore View 
                 this._map.jumpTo({ center: originalCenter, zoom: originalZoom });
 
                 // Show Frame
+                // Show Frame
                 this._frame.show();
             });
+        });
+    }
+    async _getQRCodeDataUrl(text) {
+        return new Promise(async (resolve, reject) => {
+            console.log('Generating QR for:', text);
+
+            try {
+                // Ensure component is defined
+                await customElements.whenDefined('sl-qr-code');
+
+                const qr = document.createElement('sl-qr-code');
+                qr.value = text;
+                qr.size = 128;
+                qr.style.position = 'fixed';
+                qr.style.top = '-9999px';
+                qr.style.left = '-9999px'; // Ensure it's off-screen
+                document.body.appendChild(qr);
+
+                // Wait for the component to render its initial state
+                if (qr.updateComplete) {
+                    await qr.updateComplete;
+                }
+
+                // Additional small polling to ensure internal elements (Shadow DOM) are ready
+                // sometimes updateComplete is for the property update, but internal rendering might tick once more
+                let attempts = 0;
+                const maxAttempts = 50; // 5 seconds
+
+                const checkRender = () => {
+                    const shadow = qr.shadowRoot;
+                    if (shadow) {
+                        const svg = shadow.querySelector('svg');
+                        const canvas = shadow.querySelector('canvas'); // Check for canvas just in case
+
+                        if (svg || canvas) {
+                            console.log('QR Element found (SVG/Canvas)');
+
+                            // Let it breathe a frame to ensure painting
+                            requestAnimationFrame(() => {
+                                try {
+                                    const outCanvas = document.createElement('canvas');
+                                    outCanvas.width = 128;
+                                    outCanvas.height = 128;
+                                    const ctx = outCanvas.getContext('2d');
+                                    ctx.fillStyle = 'white';
+                                    ctx.fillRect(0, 0, 128, 128); // White background
+
+                                    if (svg) {
+                                        const svgData = new XMLSerializer().serializeToString(svg);
+                                        const img = new Image();
+                                        img.onload = () => {
+                                            ctx.drawImage(img, 0, 0);
+                                            const dataUrl = outCanvas.toDataURL('image/png');
+                                            document.body.removeChild(qr);
+                                            resolve(dataUrl);
+                                        };
+                                        img.onerror = (e) => {
+                                            console.error('QR IDL Load Error', e);
+                                            document.body.removeChild(qr);
+                                            reject(e);
+                                        };
+                                        img.src = 'data:image/svg+xml;base64,' + btoa(svgData);
+                                    } else if (canvas) {
+                                        ctx.drawImage(canvas, 0, 0);
+                                        const dataUrl = outCanvas.toDataURL('image/png');
+                                        document.body.removeChild(qr);
+                                        resolve(dataUrl);
+                                    }
+                                } catch (err) {
+                                    console.error('QR Serialization Error', err);
+                                    document.body.removeChild(qr);
+                                    reject(err);
+                                }
+                            });
+                            return;
+                        }
+                    }
+
+                    if (attempts++ < maxAttempts) {
+                        setTimeout(checkRender, 100);
+                    } else {
+                        document.body.removeChild(qr);
+                        reject(new Error('QR Code render timed out (no SVG/Canvas found)'));
+                    }
+                };
+
+                // Trigger polling
+                checkRender();
+
+            } catch (e) {
+                console.error('QR Setup Error:', e);
+                reject(e);
+            }
         });
     }
 }
