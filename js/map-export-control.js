@@ -322,19 +322,21 @@ export class MapExportControl {
         const targetWidth = Math.round((widthMm * dpi) / 25.4);
         const targetHeight = Math.round((mapHeightMm * dpi) / 25.4);
 
-        // Get Bounds from Frame (Geographic) using the *full* frame aspect ratio?
-        // Actually, if we resize the map to be shorter, we might distort the view if we just use the bounds directly 
-        // without adjusting aspect ratio. 
-        // The Frame currently represents the *Page* dimensions (usually). 
-        // If the user selected A4, the Frame is A4. 
-        // If we want a footer, the Map part is A4 minus footer.
-        // We should probably just crop the map to the target aspect ratio (mapHeight/width).
-        const bounds = this._frame.getBounds();
+        // Capture Frame State for manual calculation (before hiding/resizing)
+        const frameRect = this._frame._el.getBoundingClientRect();
+        const mapRect = this._map.getContainer().getBoundingClientRect();
+
+        // Calculate desired center (geographic) based on frame center
+        const frameCenterX = (frameRect.left + frameRect.width / 2) - mapRect.left;
+        const frameCenterY = (frameRect.top + frameRect.height / 2) - mapRect.top;
+        const targetCenter = this._map.unproject([frameCenterX, frameCenterY]);
 
         // Save current map state
         const originalStyle = this._map.getContainer().style.cssText;
         const originalCenter = this._map.getCenter();
         const originalZoom = this._map.getZoom();
+        const originalBearing = this._map.getBearing();
+        const originalPitch = this._map.getPitch();
         const originalPixelRatio = window.devicePixelRatio;
 
         // 1. Hide Controls & Frame
@@ -437,8 +439,18 @@ export class MapExportControl {
 
             this._map.resize();
 
-            // Fit bounds to the frame area
-            this._map.fitBounds(bounds, { animate: false, padding: 0 });
+            // Calculate new zoom level to scale frame content to target width
+            const scaleFactor = targetWidth / frameRect.width;
+            const newZoom = originalZoom + Math.log2(scaleFactor);
+
+            // Apply view explicitly
+            this._map.jumpTo({
+                center: targetCenter,
+                zoom: newZoom,
+                bearing: originalBearing,
+                pitch: originalPitch,
+                animate: false
+            });
 
             this._map.once('idle', () => {
                 capture();
@@ -447,7 +459,12 @@ export class MapExportControl {
                 container.style.cssText = originalStyle;
                 this._map.resize();
                 // Restore View 
-                this._map.jumpTo({ center: originalCenter, zoom: originalZoom });
+                this._map.jumpTo({
+                    center: originalCenter,
+                    zoom: originalZoom,
+                    bearing: originalBearing,
+                    pitch: originalPitch
+                });
 
                 // Show Frame
                 // Show Frame
