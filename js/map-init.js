@@ -9,6 +9,7 @@ import { MapFeatureControl } from './map-feature-control.js';
 import { GeolocationManager } from './geolocation-manager.js';
 import { MapAttributionControl } from './map-attribution-control.js';
 import { MapFeatureStateManager } from './map-feature-state-manager.js';
+import { MapExportControl } from './map-export-control.js';
 
 // Layer registry is now imported from layer-registry.js
 // Make it available globally for backwards compatibility
@@ -619,7 +620,11 @@ const defaultMapOptions = {
     center: [73.9414, 15.4121],
     zoom: 9.99,
     hash: true,
-    attributionControl: false
+    center: [73.9414, 15.4121],
+    zoom: 9.99,
+    hash: true,
+    attributionControl: false,
+    preserveDrawingBuffer: true
 };
 
 /**
@@ -797,6 +802,11 @@ async function initializeMap() {
 
         // Connect geolocation manager to URL manager
         geolocationManager.urlManager = urlManager;
+
+        // Add Export Control
+        const exportControl = new MapExportControl();
+        map.addControl(exportControl, 'bottom-right');
+        window.exportControl = exportControl;
 
         // Apply URL parameters (including geolocate parameter)
         // Skip URL parameter application if state was restored from localStorage

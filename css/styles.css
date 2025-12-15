@@ -220,7 +220,7 @@ button.large {
 
 /* Update the margin between controls */
 .mapboxgl-ctrl.opacity-control+.mapboxgl-ctrl.opacity-control {
-    margin-top: 1px;
+    margin-top: 10px;
     /* Reduce gap between controls */
     border-top: 1px solid #e5e5e5;
     /* Add separator */
@@ -4626,4 +4626,83 @@ sl-tab:hover::part(base) {
     height: 12px;
     border-radius: 50%;
     display: inline-block;
+}
+
+/* Map Export Control Styles */
+.map-export-frame {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    border: 2px dashed #fff;
+    box-shadow: 0 0 5px rgba(0, 0, 0, 0.5), 0 0 0 9999px rgba(0, 0, 0, 0.4);
+    z-index: 9999;
+    pointer-events: auto;
+    cursor: move;
+    display: none;
+    background: transparent;
+}
+
+.map-export-frame.active {
+    display: block;
+}
+
+.export-handle {
+    width: 12px;
+    height: 12px;
+    background: white;
+    border: 1px solid #333;
+    position: absolute;
+    z-index: 10000;
+}
+
+.export-handle.nw {
+    top: -6px;
+    left: -6px;
+    cursor: nw-resize;
+}
+
+.export-handle.ne {
+    top: -6px;
+    right: -6px;
+    cursor: ne-resize;
+}
+
+.export-handle.sw {
+    bottom: -6px;
+    left: -6px;
+    cursor: sw-resize;
+}
+
+.export-handle.se {
+    bottom: -6px;
+    right: -6px;
+    cursor: se-resize;
+}
+/* Export Panel */
+.export-panel {
+    position: absolute;
+    bottom: 40px;
+    right: 0;
+    background: white;
+    padding: 15px;
+    border-radius: 4px;
+    box-shadow: 0 0 10px rgba(0,0,0,0.2);
+    width: 300px;
+    z-index: 1000;
+    font-family: 'Open Sans', sans-serif;
+    color: #333;
+}
+
+.export-panel.hidden {
+    display: none;
+}
+
+/* Ensure controls inside aren't too cramped */
+.export-panel select, 
+.export-panel input[type="number"] {
+    background: #fff;
+    border: 1px solid #ccc;
+    border-radius: 3px;
+    padding: 4px;
 }

@@ -50,6 +50,7 @@
   },
   "homepage": "https://amche.in",
   "dependencies": {
+    "jspdf": "^3.0.4",
     "webpack": "^5.103.0"
   }
 }
