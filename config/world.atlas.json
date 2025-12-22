@@ -40,6 +40,31 @@
       }
     },
     {
+      "title": "IQAir AQI PM2.5",
+      "description": "AQI PM2.5 from IQAir",
+      "attribution": "<a href='https://www.iqair.com/in-en/world-air-quality'>IQAir</a>",
+      "type": "tms",
+      "id": "iqair-pm2.5",
+      "url": "https://osm.airvisual.net/cog/pm25/tiles/{z}/{x}/{y}.png",
+      "style": {
+        "raster-opacity": [
+          "interpolate",
+          [
+            "linear"
+          ],
+          [
+            "zoom"
+          ],
+          6,
+          0.95,
+          18,
+          0.8,
+          19,
+          0.3
+        ]
+      }
+    },
+    {
       "id": "2016-open-buildings",
       "url": "https://earthengine.googleapis.com/v1/projects/earthengine-legacy/maps/f5a6d9be6b633730e82ec8d15e0086c1-78d86fb6f5d7c260f64e95bad95f81ac/tiles/{z}/{x}/{y}",
       "type": "tms",
