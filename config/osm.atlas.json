@@ -29,6 +29,44 @@
       }
     },
     {
+      "id": "airport",
+      "title": "Airports",
+      "description": "Airport locations from the OpenStreetMap project. See <a href='https://wiki.openstreetmap.org/wiki/Tag:aeroway%3Daerodrome'>OSM Wiki</a> for details.",
+      "type": "vector",
+      "url": "https://tiles.openstreetmap.us/vector/openmaptiles/{z}/{x}/{y}.mvt",
+      "sourceLayer": "aerodrome_label",
+      "maxzoom": 14,
+      "attribution": "<a href='https://www.openstreetmap.org/#map=16/15.49493/73.82864'>© OpenStreetMap contributors</a> via <a href='https://tiles.openstreetmap.us/vector/openmaptiles/#map=12/40.781/-73.965'>OSM US OpenMapTiles</a>",
+      "style": {
+        "circle-radius": [
+          "match",
+          [
+            "get",
+            "kind"
+          ],
+          [
+            "station","aerodrome"
+          ],
+          8,
+          [
+            "bus_station","ferry_terminal"
+          ],
+          5,
+          [
+            "bus_stop"
+          ],
+          3,
+          2
+        ],
+        "circle-color": "#4c7fff",
+        "circle-stroke-width": 1,
+        "circle-stroke-color": "#ffffff"
+      },
+      "inspect": {
+        "id": "name"
+      }
+    },
+    {
       "id": "public-transport",
       "title": "Public Transport",
       "description": "Public transport POIs from the OpenStreetMap project. See <a href='https://wiki.openstreetmap.org/wiki/Public_transport'>OSM Public Transport Wiki</a> for details.",
@@ -38,10 +76,32 @@
       "maxzoom": 15,
       "attribution": "<a href='https://www.openstreetmap.org/#map=16/15.49493/73.82864'>© OpenStreetMap contributors</a> via <a href='https://shortbread-tiles.org/schema/1.0/#features-19'>Shortbread vector tiles</a>",
       "style": {
-        "circle-radius": 10,
+        "circle-radius": [
+          "match",
+          [
+            "get",
+            "kind"
+          ],
+          [
+            "station","aerodrome"
+          ],
+          8,
+          [
+            "bus_station","ferry_terminal"
+          ],
+          5,
+          [
+            "bus_stop"
+          ],
+          3,
+          2
+        ],
         "circle-color": "#4c7fff",
-        "circle-stroke-width": 1.5,
+        "circle-stroke-width": 1,
         "circle-stroke-color": "#ffffff"
+      },
+      "inspect": {
+        "id": "name"
       }
     },
     {
@@ -65,10 +125,6 @@
             "restaurant"
           ],
           "brown",
-          [
-            "subway"
-          ],
-          "blue",
           "green"
         ],
         "circle-stroke-width": 1,
@@ -381,6 +437,68 @@
         "fieldTitles": [
           "Surface"
         ]
+      }
+    },
+    {
+      "id": "boundaries",
+      "title": "Boundaries",
+      "description": "Boundaries from the OpenStreetMap project. See <a href='https://wiki.openstreetmap.org/wiki/Tag:boundary%3Dadministrative'>OSM Wiki</a> for details.",
+      "type": "vector",
+      "url": "https://tiles.openstreetmap.us/vector/openmaptiles/{z}/{x}/{y}.mvt",
+      "sourceLayer": "boundary",
+      "maxzoom": 13,
+      "attribution": "<a href='https://www.openstreetmap.org/#map=16/15.49493/73.82864'>© OpenStreetMap contributors</a> via <a href='https://tiles.openstreetmap.us/vector/openmaptiles/#map=12/40.781/-73.965'>OSM US OpenMapTiles</a>",
+      "style": {
+        "line-color": "black",
+        "line-width": [
+          "match",
+          [
+            "get",
+            "admin_level"
+          ],
+          2,
+          2,
+          4,
+          1.5,
+          5,
+          1,
+          0.5
+        ]
+      },
+      "inspect": {
+        "id": "name"
+      }
+    },
+
+    {
+      "id": "historic-boundaries",
+      "title": "Historic Boundaries",
+      "description": "Boundaries from the OpenHistoricalMap project. See <a href='https://wiki.openstreetmap.org/wiki/Tag:boundary%3Dadministrative'>OSM Wiki</a> for details.",
+      "type": "vector",
+      "url": "https://vtiles.openhistoricalmap.org/maps/ohm_admin/{z}/{x}/{y}.pbf",
+      "sourceLayer": "boundaries",
+      "maxzoom": 15,
+      "attribution": "<a href='https://www.openhistoricalmap.org/#map=5/51.97/2.90&layers=O&date=1925-12-23&daterange=1825-01-01,2025-12-31'>OpenHistoricalMap</a> via <a href='https://tiles.openstreetmap.us/vector/openmaptiles/#map=12/40.781/-73.965'>OSM US OpenMapTiles</a>",
+      "style": {
+        "fill-color": "rgba(255, 255, 255, 0.001)",
+        "line-color": "black",
+        "line-width": [
+          "match",
+          [
+            "get",
+            "admin_level"
+          ],
+          2,
+          2,
+          4,
+          1.5,
+          5,
+          1,
+          0.5
+        ]
+      },
+      "inspect": {
+        "id": "area_km2"
       }
     },
     {

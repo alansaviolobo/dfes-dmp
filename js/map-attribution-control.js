@@ -30,6 +30,9 @@ export class MapAttributionControl {
         this._map.on('layer.add', this._updateAttribution);
         this._map.on('layer.remove', this._updateAttribution);
 
+        // Listen for map movement to update dynamic location params in attribution URLs
+        this._map.on('moveend', this._updateAttribution);
+
         // Set up initial attribution
         this._updateAttribution();
         return this._container;
@@ -41,6 +44,7 @@ export class MapAttributionControl {
         this._map.off('data', this._handleSourceChange);
         this._map.off('layer.add', this._updateAttribution);
         this._map.off('layer.remove', this._updateAttribution);
+        this._map.off('moveend', this._updateAttribution);
         this._map = null;
         this._container.parentNode.removeChild(this._container);
         this._container = null;
@@ -70,6 +74,66 @@ export class MapAttributionControl {
     removeLayerAttribution(layerId) {
         this._layerAttributions.delete(layerId);
         this._updateAttribution();
+    }
+
+    /**
+     * Replace hash location parameters in URLs with current map view
+     * Supports formats:
+     * - #map=zoom/lat/lng (e.g., #map=16/15.49493/73.82864)
+     * - #zoom/lat/lng (e.g., #11.25/15.3962/73.8595)
+     */
+    _replaceLocationHash(url) {
+        if (!url || !this._map) {
+            return url;
+        }
+
+        try {
+            const center = this._map.getCenter();
+            const zoom = this._map.getZoom();
+            const lat = center.lat.toFixed(5);
+            const lng = center.lng.toFixed(5);
+            const zoomRounded = zoom.toFixed(2);
+
+            // Try to parse as absolute URL first
+            try {
+                const urlObj = new URL(url, window.location.href);
+                const hash = urlObj.hash;
+
+                if (hash) {
+                    // Format 1: #map=zoom/lat/lng
+                    const mapFormatMatch = hash.match(/^#map=([\d.]+)\/([\d.-]+)\/([\d.-]+)$/);
+                    if (mapFormatMatch) {
+                        urlObj.hash = `#map=${zoomRounded}/${lat}/${lng}`;
+                        return urlObj.toString();
+                    }
+
+                    // Format 2: #zoom/lat/lng
+                    const directFormatMatch = hash.match(/^#([\d.]+)\/([\d.-]+)\/([\d.-]+)$/);
+                    if (directFormatMatch) {
+                        urlObj.hash = `#${zoomRounded}/${lat}/${lng}`;
+                        return urlObj.toString();
+                    }
+                }
+            } catch (urlError) {
+                // If URL parsing fails, fall through to regex replacement
+            }
+
+            // Fallback: regex replacement for relative URLs or malformed URLs
+            // Format 1: #map=zoom/lat/lng
+            if (url.includes('#map=')) {
+                url = url.replace(/#map=([\d.]+)\/([\d.-]+)\/([\d.-]+)/g, `#map=${zoomRounded}/${lat}/${lng}`);
+            } else {
+                // Format 2: #zoom/lat/lng
+                // Match hash pattern: # followed by numbers, slash, numbers, slash, numbers
+                // Ensure it's at the end of URL or followed by non-slash character (like ?, &, #, or end)
+                url = url.replace(/#([\d.]+)\/([\d.-]+)\/([\d.-]+)(?![\/])/g, `#${zoomRounded}/${lat}/${lng}`);
+            }
+        } catch (error) {
+            // If all parsing fails, return original URL
+            console.debug('[MapAttributionControl] Could not parse URL for location replacement:', url, error);
+        }
+
+        return url;
     }
 
     /**
@@ -178,6 +242,12 @@ export class MapAttributionControl {
                 if (tempDiv.querySelectorAll('a').length > 0) {
                     // Process each link separately to avoid duplicates
                     tempDiv.querySelectorAll('a').forEach(link => {
+                        // Replace location hash parameters with current map view
+                        const originalHref = link.getAttribute('href');
+                        if (originalHref) {
+                            const updatedHref = this._replaceLocationHash(originalHref);
+                            link.setAttribute('href', updatedHref);
+                        }
                         link.setAttribute('target', '_blank');
                         link.setAttribute('rel', 'noopener noreferrer');
                         processed.add(link.outerHTML);
