@@ -29,6 +29,56 @@
       }
     },
     {
+      "id": "public-transport",
+      "title": "Public Transport",
+      "description": "Public transport POIs from the OpenStreetMap project. See <a href='https://wiki.openstreetmap.org/wiki/Public_transport'>OSM Public Transport Wiki</a> for details.",
+      "type": "vector",
+      "url": "https://vector.openstreetmap.org/shortbread_v1/{z}/{x}/{y}.mvt",
+      "sourceLayer": "public_transport",
+      "maxzoom": 15,
+      "attribution": "<a href='https://www.openstreetmap.org/#map=16/15.49493/73.82864'>© OpenStreetMap contributors</a> via <a href='https://shortbread-tiles.org/schema/1.0/#features-19'>Shortbread vector tiles</a>",
+      "style": {
+        "circle-radius": 10,
+        "circle-color": "#4c7fff",
+        "circle-stroke-width": 1.5,
+        "circle-stroke-color": "#ffffff"
+      }
+    },
+    {
+      "id": "pois",
+      "title": "Points of Interest",
+      "description": "POIs from the OpenStreetMap project. See <a href='https://wiki.openstreetmap.org/wiki/Points_of_interest'>OSM Wiki</a> for details.",
+      "type": "vector",
+      "url": "https://vector.openstreetmap.org/shortbread_v1/{z}/{x}/{y}.mvt",
+      "sourceLayer": "pois",
+      "maxzoom": 15,
+      "attribution": "<a href='https://www.openstreetmap.org/#map=16/15.49493/73.82864'>© OpenStreetMap contributors</a> via <a href='https://shortbread-tiles.org/schema/1.0/'>Shortbread vector tiles</a>",
+      "style": {
+        "circle-radius": 4,
+        "circle-color": [
+          "match",
+          [
+            "get",
+            "amenity"
+          ],
+          [
+            "restaurant"
+          ],
+          "brown",
+          [
+            "subway"
+          ],
+          "blue",
+          "green"
+        ],
+        "circle-stroke-width": 1,
+        "circle-stroke-color": "#ffffff"
+      },
+      "inspect": {
+        "id": "name"
+      }
+    },
+    {
       "title": "Railways",
       "description": "Railway network data from the OpenStreetMap project. See <a href='https://wiki.openstreetmap.org/wiki/India/Tags/Highway'>OpenStreetMap India Wiki</a> for details.",
       "headerImage": "assets/map-layers/osm/map-layer-osm-railways.png",
