@@ -1056,9 +1056,7 @@ export class MapFeatureControl {
         }
 
         // Close the layer list drawer to prevent it from obscuring feature details
-        if (this.drawerStateManager && this.drawerStateManager.isOpen()) {
-            this.drawerStateManager.close();
-        }
+        this.drawerStateManager.close();
     }
 
     /**

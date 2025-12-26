@@ -621,13 +621,11 @@ export class MapInitializer {
                     // Prevent default behavior (e.g., quick search in browsers)
                     event.preventDefault();
 
-                    const drawerStateManager = new DrawerStateManager();
                     // Special case: if focused on the layer search input, blur it and toggle
                     if (activeElement && activeElement.id === 'layer-search-input') {
                         // Blur the search input and toggle the drawer
                         activeElement.blur();
                     }
-                    drawerStateManager.toggle();
                 }
             });
 
