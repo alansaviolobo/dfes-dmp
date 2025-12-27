@@ -13,7 +13,7 @@
 import { DrawerStateManager } from './drawer-state-manager.js';
 import { GeoUtils } from './map-utils.js';
 import { LayerSettingsModal } from './layer-settings-modal.js';
-import { LayerCreatorUI } from './layer-creator-ui.js';
+import { ModalLayerCreator } from './modal-layer-creator.js';
 import { LayerStyleControl } from './layer-style-control.js';
 
 export class MapFeatureControl {
@@ -653,7 +653,7 @@ export class MapFeatureControl {
         newDataSourceBtn.addEventListener('click', (e) => {
             e.preventDefault();
             e.stopPropagation();
-            LayerCreatorUI.openLayerCreatorDialog();
+            ModalLayerCreator.openLayerCreatorDialog();
         });
         actions.push(newSourceTooltip);
 

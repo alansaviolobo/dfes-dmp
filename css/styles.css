@@ -3804,9 +3804,6 @@ Styles moved from the Intro Content
     color: #ffffff;
 }
 
-/*
-Styles moved from layer-creator-ui.js
- */
 .layer-creator-modal::part(panel) {
     max-width: 95vw;
     max-height: 95vh;

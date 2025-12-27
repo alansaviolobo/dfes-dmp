@@ -7,7 +7,7 @@
 import { LayerSettingsModal } from './layer-settings-modal.js';
 import { MapboxAPI } from './mapbox-api.js';
 import { DataUtils } from './map-utils.js';
-import { LayerCreatorUI } from './layer-creator-ui.js';
+import { ModalLayerCreator } from './modal-layer-creator.js';
 
 export class MapLayerControl {
     constructor(options) {
@@ -1469,7 +1469,7 @@ export class MapLayerControl {
             // Initialize New Layer button
             if (newLayerBtn) {
                 newLayerBtn.addEventListener('click', () => {
-                    LayerCreatorUI.openLayerCreatorDialog();
+                    ModalLayerCreator.openLayerCreatorDialog();
                 });
             }
 
