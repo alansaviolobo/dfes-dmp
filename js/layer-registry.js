@@ -4,7 +4,7 @@ export class LayerRegistry {
         this._libraryLayers = new Map(); // library layer presets
         this._atlasLayers = new Map(); // atlasId -> array of layer configs
         this._atlasMetadata = new Map(); // atlasId -> atlas metadata (color, name, etc.)
-        this._currentAtlas = 'index'; // default atlas
+        this._currentAtlas = 'dfes-dmp'; // default atlas
         this._initialized = false;
     }
 
