@@ -24,7 +24,7 @@ export class MapFeatureControl {
             maxWidth: '350px',
             minWidth: '250px',
             showHoverPopups: true, // New option to control hover popups
-            inspectMode: false, // Inspect mode disabled by default
+            inspectMode: true, // Inspect mode disabled by default
             showLayerOptions: false, // Layer options (settings icon & Paint tab) disabled by default
         };
 
