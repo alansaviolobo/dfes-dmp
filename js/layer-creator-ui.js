@@ -169,13 +169,25 @@ export class LayerConfigGenerator {
 
             const formatAttribution = (metadata) => {
                 if (!metadata) return undefined;
-                const sourceUrl = metadata.source;
+                const source = metadata.source;
                 const originalUrl = metadata.originalUrl;
                 let attribution = '';
-                if (sourceUrl && sourceUrl.includes('commons.wikimedia.org/wiki/File:')) {
-                    const fileName = sourceUrl.split('/').pop();
-                    attribution += formatWikiLink(sourceUrl, fileName);
+                
+                // Use source if it exists
+                if (source) {
+                    if (source.includes('commons.wikimedia.org/wiki/File:')) {
+                        // Format wikimedia commons URLs as links
+                        const fileName = source.split('/').pop();
+                        attribution += formatWikiLink(source, fileName);
+                    } else if (source.startsWith('http://') || source.startsWith('https://')) {
+                        // Format other URLs as links
+                        attribution += `<a href='${source}' target='_blank'>${source}</a>`;
+                    } else {
+                        // Plain text source
+                        attribution += source;
+                    }
                 }
+                
                 if (originalUrl) {
                     attribution += attribution ? ' via ' : '';
                     attribution += `<a href='${originalUrl}' target='_blank'>MapWarper</a>`;
@@ -186,8 +198,7 @@ export class LayerConfigGenerator {
             config = {
                 title: metadata ? cleanTitle(metadata.title) : 'Raster Layer',
                 description: metadata ? formatDescription(metadata.description) : undefined,
-                source: metadata ? formatWikiLink(metadata.source) : undefined,
-                dateDepicted: metadata ? metadata.dateDepicted : undefined,
+                date: metadata ? metadata.date : undefined,
                 type: 'tms',
                 id: metadata ? `mapwarper-${metadata.mapId}` : 'raster-' + Math.random().toString(36).slice(2, 8),
                 url,
@@ -270,7 +281,7 @@ export class LayerConfigGenerator {
                                     description: mapData.description || '',
                                     source: mapData.source_uri || '',
                                     attribution: mapData.attribution || '',
-                                    dateDepicted: mapData.date_depicted || '',
+                                    date: mapData.date_depicted || '',
                                     thumbnail: links.thumb ? `${baseUrl}${links.thumb}` : null,
                                     baseUrl: baseUrl,
                                     mapId: mapId,
