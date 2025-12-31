@@ -2076,7 +2076,7 @@
       "description": "Hand drawn map of Quitla village in Aldona Panchayat surveyed by Henrique T.A.S Fernandes between 1960-1970.",
       "date": "1970",
       "type": "tms",
-      "id": "mapwarper-89528",
+      "id": "1970-henrique-quitla",
       "url": "https://mapwarper.net/maps/tile/89528/{z}/{x}/{y}.png",
       "style": {
         "raster-opacity": [
