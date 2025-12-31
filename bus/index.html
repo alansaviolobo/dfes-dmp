@@ -568,11 +568,11 @@
 
     <!-- ShareLink plugin initialization -->
     <script type="module">
-        import { ShareLink } from '../js/share-link.js';
+        import { ButtonShareLink } from '../js/button-share-link.js';
 
         // Initialize ShareLink plugin when DOM is ready
         document.addEventListener('DOMContentLoaded', () => {
-            const shareLink = new ShareLink({
+            const shareLink = new ButtonShareLink({
                 containerId: 'share-button-container',
                 url: () => window.location.href, // Dynamic URL function
                 buttonText: 'Share',
