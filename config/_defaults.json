@@ -29,8 +29,7 @@
             "rgba(255, 255, 0, 0.5)",
             "white"
           ],
-          "fill-opacity": 
-          [
+          "fill-opacity": [
             "interpolate",
             [
               "linear"
@@ -167,7 +166,9 @@
           "line-opacity": 1
         },
         "text": {
-          "text-font": ["Open Sans Bold"],
+          "text-font": [
+            "Open Sans Bold"
+          ],
           "text-field": [
             "get",
             "name"
@@ -309,15 +310,13 @@
             "zoom"
           ],
           6,
-          0.9,
-          16,
-          0.8,
-          17,
-          0.5,
+          0.95,
+          14,
+          0.7,
           18,
-          0.1
+          0.05
         ]
-              }
       }
+    }
   }
 }
