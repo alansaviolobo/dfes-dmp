@@ -25,14 +25,9 @@
       "initiallyChecked": true,
       "url": "https://raw.githubusercontent.com/alansaviolobo/google-sheets-to-json-converter/refs/heads/data/data/Ambulances.min.geojson",
       "style": {
-        "text-color": "white",
-        "text-halo-color": "#0084f7",
-        "text-halo-width": 2,
-        "text-size": 12,
-        "line-color": "#0084f7",
-        "line-width": 2,
-        "fill-color": "#0084f7",
-        "fill-opacity": 0.01
+        "circle-color": "#B71C1C",
+        "circle-stroke-width": 1.5,
+        "circle-stroke-color": "#000000"
       },
       "inspect": {
         "id": "name",
@@ -61,50 +56,9 @@
       "initiallyChecked": true,
       "url": "https://raw.githubusercontent.com/alansaviolobo/google-sheets-to-json-converter/refs/heads/data/data/Apada-Mitras.min.geojson",
       "style": {
-        "text-color": "white",
-        "text-halo-color": "#0084f7",
-        "text-halo-width": 2,
-        "text-size": 12,
-        "line-color": "#0084f7",
-        "line-width": 2,
-        "fill-color": "#0084f7",
-        "fill-opacity": 0.01
-      },
-      "inspect": {
-        "id": "name",
-        "title": "name",
-        "label": "name",
-        "fields": [
-          "name",
-          "hospital",
-          "contact"
-        ],
-        "fieldTitles": [
-          "name",
-          "hospital",
-          "contact"
-        ]
-      }
-    },
-    {
-      "id": "apada-sakhis",
-      "title": "Apada Sakhis",
-      "description": "Apada Sakhis",
-      "attribution": "",
-      "headerImage": "assets/map-layers/dfes-dmp/all-image-sprite.png",
-      "headerPosition": "0 0",
-      "type": "geojson",
-      "initiallyChecked": true,
-      "url": "https://raw.githubusercontent.com/alansaviolobo/google-sheets-to-json-converter/refs/heads/data/data/Apada-Sakhis.min.geojson",
-      "style": {
-        "text-color": "white",
-        "text-halo-color": "#0084f7",
-        "text-halo-width": 2,
-        "text-size": 12,
-        "line-color": "#0084f7",
-        "line-width": 2,
-        "fill-color": "#0084f7",
-        "fill-opacity": 0.01
+        "circle-color": "#1B5E20",
+        "circle-stroke-width": 1.5,
+        "circle-stroke-color": "#000000"
       },
       "inspect": {
         "id": "name",
@@ -133,14 +87,9 @@
       "initiallyChecked": true,
       "url": "https://raw.githubusercontent.com/alansaviolobo/google-sheets-to-json-converter/refs/heads/data/data/Civil-Supplies-Godowns.min.geojson",
       "style": {
-        "text-color": "white",
-        "text-halo-color": "#0084f7",
-        "text-halo-width": 2,
-        "text-size": 12,
-        "line-color": "#0084f7",
-        "line-width": 2,
-        "fill-color": "#0084f7",
-        "fill-opacity": 0.1
+        "circle-color": "#4E342E",
+        "circle-stroke-width": 1.5,
+        "circle-stroke-color": "#000000"
       },
       "inspect": {
         "id": "Name",
@@ -167,16 +116,11 @@
       "headerPosition": "0 -100px",
       "type": "geojson",
       "initiallyChecked": true,
-      "url": "https://gist.githubusercontent.com/alansaviolobo/7d045e0b6c6c53b14892b2f9591b5757/raw/29088daa72be07e6e59a732b542cd4a2a367c42c/cyclone_shelters.geojson",
+      "url": "https://raw.githubusercontent.com/alansaviolobo/google-sheets-to-json-converter/refs/heads/data/data/Cyclone-Shelters.min.geojson",
       "style": {
-        "text-color": "white",
-        "text-halo-color": "#0084f7",
-        "text-halo-width": 2,
-        "text-size": 12,
-        "line-color": "#0084f7",
-        "line-width": 2,
-        "fill-color": "#0084f7",
-        "fill-opacity": 0.1
+        "circle-color": "#4527A0",
+        "circle-stroke-width": 1.5,
+        "circle-stroke-color": "#000000"
       },
       "inspect": {
         "id": "id",
@@ -203,14 +147,9 @@
       "initiallyChecked": true,
       "url": "https://raw.githubusercontent.com/alansaviolobo/google-sheets-to-json-converter/refs/heads/data/data/Dam-Levels.min.geojson",
       "style": {
-        "text-color": "white",
-        "text-halo-color": "#0084f7",
-        "text-halo-width": 2,
-        "text-size": 12,
-        "line-color": "#0084f7",
-        "line-width": 2,
-        "fill-color": "#0084f7",
-        "fill-opacity": 0.01
+        "circle-color": "#0D47A1",
+        "circle-stroke-width": 1.5,
+        "circle-stroke-color": "#000000"
       },
       "inspect": {
         "id": "id",
@@ -256,7 +195,7 @@
           "black"
         ],
         "circle-stroke-width": 2,
-        "circle-stroke-color": "#ffffff",
+        "circle-stroke-color": "#000000",
         "text-font": [
           "Open Sans Regular"
         ],
@@ -309,9 +248,9 @@
       "initiallyChecked": true,
       "url": "https://raw.githubusercontent.com/alansaviolobo/google-sheets-to-json-converter/refs/heads/data/data/Fire-Stations.min.geojson",
       "style": {
-        "circle-color": "#4c7fff",
+        "circle-color": "#C62828",
         "circle-stroke-width": 1.5,
-        "circle-stroke-color": "#ffffff"
+        "circle-stroke-color": "#000000"
       },
       "inspect": {
         "id": "id",
@@ -340,7 +279,7 @@
         "text-halo-color": "#0084f7",
         "text-halo-width": 2,
         "text-size": 12,
-        "line-color": "#0084f7",
+        "line-color": "#EF6C00",
         "line-width": 2,
         "fill-color": "#0084f7",
         "fill-opacity": 0.01
@@ -370,14 +309,9 @@
       "initiallyChecked": true,
       "url": "https://raw.githubusercontent.com/alansaviolobo/google-sheets-to-json-converter/refs/heads/data/data/Heavy-Machinery.min.geojson",
       "style": {
-        "text-color": "white",
-        "text-halo-color": "#0084f7",
-        "text-halo-width": 2,
-        "text-size": 12,
-        "line-color": "#0084f7",
-        "line-width": 2,
-        "fill-color": "#0084f7",
-        "fill-opacity": 0.01
+        "circle-color": "#3E2723",
+        "circle-stroke-width": 1.5,
+        "circle-stroke-color": "#000000"
       },
       "inspect": {
         "id": "id",
@@ -406,14 +340,9 @@
       "initiallyChecked": true,
       "url": "https://raw.githubusercontent.com/alansaviolobo/google-sheets-to-json-converter/refs/heads/data/data/Hospitals.min.geojson",
       "style": {
-        "text-color": "white",
-        "text-halo-color": "#0084f7",
-        "text-halo-width": 2,
-        "text-size": 12,
-        "line-color": "#0084f7",
-        "line-width": 2,
-        "fill-color": "#0084f7",
-        "fill-opacity": 0.01
+        "circle-color": "#1B5E20",
+        "circle-stroke-width": 1.5,
+        "circle-stroke-color": "#000000"
       },
       "inspect": {
         "id": "name",
@@ -440,14 +369,9 @@
       "initiallyChecked": true,
       "url": "https://raw.githubusercontent.com/alansaviolobo/google-sheets-to-json-converter/refs/heads/data/data/MHA-Units.min.geojson",
       "style": {
-        "text-color": "white",
-        "text-halo-color": "#0084f7",
-        "text-halo-width": 2,
-        "text-size": 12,
-        "line-color": "#0084f7",
-        "line-width": 2,
-        "fill-color": "#0084f7",
-        "fill-opacity": 0.1
+        "circle-color": "#8E0000",
+        "circle-stroke-width": 1.5,
+        "circle-stroke-color": "#000000"
       },
       "inspect": {
         "id": "name",
@@ -472,14 +396,9 @@
       "initiallyChecked": true,
       "url": "https://raw.githubusercontent.com/alansaviolobo/google-sheets-to-json-converter/refs/heads/data/data/Mutual-Aid-Agencies.min.geojson",
       "style": {
-        "text-color": "white",
-        "text-halo-color": "#0084f7",
-        "text-halo-width": 2,
-        "text-size": 12,
-        "line-color": "#0084f7",
-        "line-width": 2,
-        "fill-color": "#0084f7",
-        "fill-opacity": 0.1
+        "circle-color": "#263238",
+        "circle-stroke-width": 1.5,
+        "circle-stroke-color": "#000000"
       },
       "inspect": {
         "id": "name",
@@ -504,9 +423,9 @@
       "initiallyChecked": true,
       "url": "https://raw.githubusercontent.com/alansaviolobo/google-sheets-to-json-converter/refs/heads/data/data/Police-Stations.min.geojson",
       "style": {
-        "circle-color": "#4c7fff",
+        "circle-color": "#0D1B4C",
         "circle-stroke-width": 1.5,
-        "circle-stroke-color": "#ffffff"
+        "circle-stroke-color": "#000000"
       },
       "inspect": {
         "id": "name",
@@ -531,16 +450,11 @@
       "headerPosition": "0 -650px",
       "type": "geojson",
       "initiallyChecked": true,
-      "url": "https://gist.githubusercontent.com/alansaviolobo/83a4067c36e906ba2a3287830d6245f3/raw/67c3be304f8a6f2f0f27c6201aa7001ee22e8071/river_gauges.geojson",
+      "url": "https://raw.githubusercontent.com/alansaviolobo/google-sheets-to-json-converter/refs/heads/data/data/River-Gauges.min.geojson",
       "style": {
-        "text-color": "white",
-        "text-halo-color": "#0084f7",
-        "text-halo-width": 2,
-        "text-size": 12,
-        "line-color": "#0084f7",
-        "line-width": 2,
-        "fill-color": "#0084f7",
-        "fill-opacity": 0.1
+        "circle-color": "#01579B",
+        "circle-stroke-width": 1.5,
+        "circle-stroke-color": "#000000"
       },
       "inspect": {
         "id": "id",
@@ -567,9 +481,9 @@
       "initiallyChecked": true,
       "url": "https://raw.githubusercontent.com/alansaviolobo/google-sheets-to-json-converter/refs/heads/data/data/Schools.min.geojson",
       "style": {
-        "circle-color": "#000000",
+        "circle-color": "#F9A825",
         "circle-stroke-width": 1.5,
-        "circle-stroke-color": "#4E342E"
+        "circle-stroke-color": "#000000"
       },
       "inspect": {
         "id": "Name",
@@ -596,9 +510,9 @@
       "initiallyChecked": true,
       "url": "https://raw.githubusercontent.com/alansaviolobo/google-sheets-to-json-converter/refs/heads/data/data/Tree-Cutters.min.geojson",
       "style": {
-        "circle-color": "#000000",
+        "circle-color": "#4E342E",
         "circle-stroke-width": 1.5,
-        "circle-stroke-color": "#4E342E"
+        "circle-stroke-color": "#000000"
       },
       "inspect": {
         "id": "Name",
@@ -627,9 +541,9 @@
       "initiallyChecked": true,
       "url": "https://raw.githubusercontent.com/alansaviolobo/google-sheets-to-json-converter/refs/heads/data/data/Water-Resources.min.geojson",
       "style": {
-        "circle-color": "#000000",
+        "circle-color": "#00838F",
         "circle-stroke-width": 1.5,
-        "circle-stroke-color": "#00838F"
+        "circle-stroke-color": "#000000"
       },
       "inspect": {
         "id": "location",
@@ -660,14 +574,9 @@
         "circle-color": "#FF0000"
       },
       "style": {
-        "text-color": "white",
-        "text-halo-color": "#0084f7",
-        "text-halo-width": 2,
-        "text-size": 12,
-        "line-color": "#0084f7",
-        "line-width": 2,
-        "fill-color": "#0084f7",
-        "fill-opacity": 0.1
+        "circle-color": "#00695C",
+        "circle-stroke-width": 1.5,
+        "circle-stroke-color": "#000000"
       },
       "inspect": {
         "id": "location",
