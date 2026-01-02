@@ -17,220 +17,206 @@
     {
       "id": "ambulances",
       "title": "Ambulances",
-      "description": "Ambulances",
-      "attribution": "",
+      "description": "Emergency medical transport and on-site life support resources",
+      "attribution": "<a href='https://dhs.goa.gov.in'>Directorate of Health Services, Goa.</a>",
       "headerImage": "assets/map-layers/dfes-dmp/all-image-sprite.png",
       "headerPosition": "0 0",
       "type": "geojson",
       "initiallyChecked": true,
       "url": "https://raw.githubusercontent.com/alansaviolobo/google-sheets-to-json-converter/refs/heads/data/data/Ambulances.min.geojson",
       "style": {
-        "text-color": "white",
-        "text-halo-color": "#0084f7",
-        "text-halo-width": 2,
-        "text-size": 12,
-        "line-color": "#0084f7",
-        "line-width": 2,
-        "fill-color": "#0084f7",
-        "fill-opacity": 0.01
+        "circle-color": "#B71C1C",
+        "circle-radius": 6,
+        "circle-stroke-width": 1.5,
+        "circle-stroke-color": "#000000"
       },
       "inspect": {
-        "id": "name",
-        "title": "name",
-        "label": "name",
+        "id": "Vehicle_No",
+        "title": "Vehicle No",
+        "label": "Vehicle_No",
         "fields": [
-          "name",
-          "hospital",
-          "contact"
+          "Hospital",
+          "Contact"
         ],
         "fieldTitles": [
-          "name",
-          "hospital",
-          "contact"
+          "Hospital",
+          "Contact"
         ]
       }
     },
     {
       "id": "apada-mitras",
       "title": "Apada Mitras",
-      "description": "Apada Mitras",
-      "attribution": "",
+      "description": "Community-based disaster response volunteers",
+      "attribution": "<a href='https://dfes.goa.gov.in'>Directorate of Fire & Emergency Services, Goa.</a>",
       "headerImage": "assets/map-layers/dfes-dmp/all-image-sprite.png",
       "headerPosition": "0 0",
       "type": "geojson",
       "initiallyChecked": true,
       "url": "https://raw.githubusercontent.com/alansaviolobo/google-sheets-to-json-converter/refs/heads/data/data/Apada-Mitras.min.geojson",
+      "clustered": true,
+      "clusterRadius": 100,
       "style": {
-        "text-color": "white",
-        "text-halo-color": "#0084f7",
-        "text-halo-width": 2,
-        "text-size": 12,
-        "line-color": "#0084f7",
-        "line-width": 2,
-        "fill-color": "#0084f7",
-        "fill-opacity": 0.01
+        "circle-color": "#1B5E20",
+        "circle-radius": 6,
+        "circle-stroke-width": 1.5,
+        "circle-stroke-color": "#000000"
       },
       "inspect": {
-        "id": "name",
-        "title": "name",
-        "label": "name",
+        "id": "Name",
+        "title": "Name",
+        "label": "Name",
         "fields": [
-          "name",
-          "hospital",
-          "contact"
+          "Name",
+          "Mobile",
+          "Mobile_2"
         ],
         "fieldTitles": [
-          "name",
-          "hospital",
-          "contact"
-        ]
-      }
-    },
-    {
-      "id": "apada-sakhis",
-      "title": "Apada Sakhis",
-      "description": "Apada Sakhis",
-      "attribution": "",
-      "headerImage": "assets/map-layers/dfes-dmp/all-image-sprite.png",
-      "headerPosition": "0 0",
-      "type": "geojson",
-      "initiallyChecked": true,
-      "url": "https://raw.githubusercontent.com/alansaviolobo/google-sheets-to-json-converter/refs/heads/data/data/Apada-Sakhis.min.geojson",
-      "style": {
-        "text-color": "white",
-        "text-halo-color": "#0084f7",
-        "text-halo-width": 2,
-        "text-size": 12,
-        "line-color": "#0084f7",
-        "line-width": 2,
-        "fill-color": "#0084f7",
-        "fill-opacity": 0.01
-      },
-      "inspect": {
-        "id": "name",
-        "title": "name",
-        "label": "name",
-        "fields": [
-          "name",
-          "hospital",
-          "contact"
-        ],
-        "fieldTitles": [
-          "name",
-          "hospital",
-          "contact"
+          "Name",
+          "Mobile",
+          "Mobile_2"
         ]
       }
     },
     {
       "id": "civil-supplies-godowns",
       "title": "Civil Supplies Godowns",
-      "description": "Location of Civil Supplies Godowns",
-      "attribution": "",
+      "description": "Emergency food and essential commodity storage facilities",
+      "attribution": "<a href='https://goacivilsupplies.gov.in'>Department of Civil Supplies & Consumer Affairs, Goa</a>",
       "headerImage": "assets/map-layers/dfes-dmp/all-image-sprite.png",
       "headerPosition": "0 -50px",
       "type": "geojson",
       "initiallyChecked": true,
       "url": "https://raw.githubusercontent.com/alansaviolobo/google-sheets-to-json-converter/refs/heads/data/data/Civil-Supplies-Godowns.min.geojson",
       "style": {
-        "text-color": "white",
-        "text-halo-color": "#0084f7",
-        "text-halo-width": 2,
-        "text-size": 12,
-        "line-color": "#0084f7",
-        "line-width": 2,
-        "fill-color": "#0084f7",
-        "fill-opacity": 0.1
+        "circle-color": "#4E342E",
+        "circle-radius": 6,
+        "circle-stroke-width": 1.5,
+        "circle-stroke-color": "#000000"
       },
       "inspect": {
         "id": "Name",
         "title": "Name",
-        "label": "name",
+        "label": "Name",
         "fields": [
-          "name",
-          "address",
-          "Capacity"
+          "Name",
+          "Address",
+          "Capacity",
+          "Current Stock",
+          "Incharge",
+          "Mobile",
+          "Last Updated"
         ],
         "fieldTitles": [
-          "name",
-          "address",
-          "Capacity"
+          "Name",
+          "Address",
+          "Capacity",
+          "Current Stock",
+          "Incharge",
+          "Mobile",
+          "Last Updated"
         ]
       }
     },
     {
       "id": "cyclone-shelters",
       "title": "Cyclone Shelters",
-      "description": "Location of Cyclone Shelters",
-      "attribution": "",
+      "description": "Designated multi-purpose shelters built to withstand extreme weather and provide safe refuge during cyclones, floods, and storm surges.",
+      "attribution": "<a href='https://goawrd.gov.in'>Goa Water Resources Dept</a>",
       "headerImage": "assets/map-layers/dfes-dmp/all-image-sprite.png",
       "headerPosition": "0 -100px",
       "type": "geojson",
       "initiallyChecked": true,
-      "url": "https://gist.githubusercontent.com/alansaviolobo/7d045e0b6c6c53b14892b2f9591b5757/raw/29088daa72be07e6e59a732b542cd4a2a367c42c/cyclone_shelters.geojson",
+      "url": "https://raw.githubusercontent.com/alansaviolobo/google-sheets-to-json-converter/refs/heads/data/data/Cyclone-Shelters.min.geojson",
       "style": {
-        "text-color": "white",
-        "text-halo-color": "#0084f7",
-        "text-halo-width": 2,
-        "text-size": 12,
-        "line-color": "#0084f7",
-        "line-width": 2,
-        "fill-color": "#0084f7",
-        "fill-opacity": 0.1
+        "circle-color": "#4527A0",
+        "circle-radius": 6,
+        "circle-stroke-width": 1.5,
+        "circle-stroke-color": "#000000"
       },
       "inspect": {
-        "id": "id",
+        "id": "Name",
         "title": "Name",
-        "label": "name",
+        "label": "Name",
         "fields": [
-          "id",
-          "name"
+          "Name",
+          "Location",
+          "Capacity",
+          "Floors",
+          "Toilets Available",
+          "Drinking Water",
+          "Power Backup",
+          "Ramp for Disabled",
+          "Caretaker Name",
+          "Mobile",
+          "Last Updated"
         ],
         "fieldTitles": [
-          "Call Sign",
-          "Display Name"
+          "Name",
+          "Location",
+          "Capacity",
+          "Floors",
+          "Toilets Available",
+          "Drinking Water",
+          "Power Backup",
+          "Ramp for Disabled",
+          "Caretaker Name",
+          "Mobile",
+          "Last Updated"
         ]
       }
     },
     {
       "id": "dam-levels",
       "title": "Dam Levels",
-      "description": "Dam Levels",
-      "attribution": "",
+      "description": "Reservoir monitoring for flood forecasting and dam safety",
+      "attribution": "<a href='https://goawrd.gov.in'>Goa Water Resources Dept</a>",
       "headerImage": "assets/map-layers/dfes-dmp/all-image-sprite.png",
       "headerPosition": "0 -150px",
       "type": "geojson",
       "initiallyChecked": true,
       "url": "https://raw.githubusercontent.com/alansaviolobo/google-sheets-to-json-converter/refs/heads/data/data/Dam-Levels.min.geojson",
       "style": {
-        "text-color": "white",
-        "text-halo-color": "#0084f7",
-        "text-halo-width": 2,
-        "text-size": 12,
-        "line-color": "#0084f7",
-        "line-width": 2,
-        "fill-color": "#0084f7",
-        "fill-opacity": 0.01
+        "circle-color": "#0D47A1",
+        "circle-radius": 6,
+        "circle-stroke-width": 1.5,
+        "circle-stroke-color": "#000000"
       },
       "inspect": {
-        "id": "id",
-        "title": "name",
-        "label": "name",
+        "id": "Name",
+        "title": "Name",
+        "label": "Name",
         "fields": [
-          "name",
-          "id"
+          "Name",
+          "River",
+          "District",
+          "Catchment Area",
+          "Full level (m)",
+          "Current Level (m)",
+          "Percent_Full",
+          "Spillway Status",
+          "Alert Level",
+          "Last Updated"
         ],
         "fieldTitles": [
-          "name",
-          "id"
+          "Name",
+          "River",
+          "District",
+          "Catchment Area",
+          "Full level (m)",
+          "Current Level (m)",
+          "Percent_Full",
+          "Spillway Status",
+          "Alert Level",
+          "Last Updated"
         ]
       }
     },
     {
       "id": "fire-appliances",
       "title": "Fire Appliances",
-      "description": "Live locations of Fire Appliances.",
-      "attribution": "<a href='https://dfes.goa.gov.in/dashboard/'>Directorate of Fire & Emergency Services, Govt. of Goa</a>",
+      "description": "Fire-fighting and rescue vehicles with real-time availability status",
+      "attribution": "<a href='https://dfes.goa.gov.in'>Directorate of Fire & Emergency Services, Goa.</a>",
       "headerImage": "assets/map-layers/dfes-dmp/all-image-sprite.png",
       "headerPosition": "0 -200px",
       "type": "geojson",
@@ -238,7 +224,6 @@
       "initiallyChecked": true,
       "url": "https://raw.githubusercontent.com/publicmap/goa-fire-trucks-geojson/refs/heads/data/data/goa-fire-trucks.geojson",
       "style": {
-        "circle-radius": 6,
         "circle-color": [
           "match",
           [
@@ -255,45 +240,22 @@
           "grey",
           "black"
         ],
+        "circle-radius": 6,
         "circle-stroke-width": 2,
-        "circle-stroke-color": "#ffffff",
-        "text-font": [
-          "Open Sans Regular"
-        ],
-        "text-field": [
-          "step",
-          [
-            "zoom"
-          ],
-          "",
-          7,
-          [
-            "to-string",
-            [
-              "get",
-              "POI"
-            ]
-          ]
-        ]
+        "circle-stroke-color": "#000000"
       },
       "inspect": {
         "id": "Vehicle_No",
-        "title": "Current Location",
-        "label": "Location",
+        "title": "Vehicle_No",
+        "label": "Vehicle",
         "fields": [
-          "Status",
           "Vehicle_No",
           "Branch",
-          "POI",
-          "Speed",
           "Datetime"
         ],
         "fieldTitles": [
-          "Status",
           "Vehicle No",
           "Station",
-          "Location",
-          "Speed",
           "Last Updated"
         ]
       }
@@ -301,35 +263,48 @@
     {
       "id": "fire-stations",
       "title": "Fire Stations",
-      "description": "Location of Fire Stations",
-      "attribution": "<a href='https://dfes.goa.gov.in/dashboard/'>Directorate of Fire & Emergency Services, Govt. of Goa</a>",
+      "description": "Primary fire and rescue response facilities",
+      "attribution": "<a href='https://dfes.goa.gov.in'>Directorate of Fire & Emergency Services, Goa.</a>",
       "headerImage": "assets/map-layers/dfes-dmp/all-image-sprite.png",
       "headerPosition": "0 -250px",
       "type": "geojson",
       "initiallyChecked": true,
       "url": "https://raw.githubusercontent.com/alansaviolobo/google-sheets-to-json-converter/refs/heads/data/data/Fire-Stations.min.geojson",
       "style": {
-        "circle-color": "#4c7fff",
+        "circle-color": "#C62828",
+        "circle-radius": 6,
         "circle-stroke-width": 1.5,
-        "circle-stroke-color": "#ffffff"
+        "circle-stroke-color": "#000000"
       },
       "inspect": {
         "id": "id",
         "title": "Name",
         "label": "name",
         "fields": [
-          "name"
+          "Station",
+          "Name",
+          "Mobile",
+          "No. of Fire Appliances",
+          "Trained Personnel Count",
+          "Contact Number",
+          "Last Updated"
         ],
         "fieldTitles": [
-          "Name"
+          "Station",
+          "Name",
+          "Mobile",
+          "No. of Fire Appliances",
+          "Trained Personnel Count",
+          "Contact Number",
+          "Last Updated"
         ]
       }
     },
     {
       "id": "gas-pipelines",
       "title": "Gas Pipelines",
-      "description": "Gas Pipelines",
-      "attribution": "",
+      "description": "Critical energy infrastructure with potential hazard zones",
+      "attribution": "<a href='https://www.goanaturalgas.com'>Goa Natural Gas Private Limited</a>",
       "headerImage": "assets/map-layers/dfes-dmp/all-image-sprite.png",
       "headerPosition": "0 -300px",
       "type": "geojson",
@@ -340,7 +315,7 @@
         "text-halo-color": "#0084f7",
         "text-halo-width": 2,
         "text-size": 12,
-        "line-color": "#0084f7",
+        "line-color": "#EF6C00",
         "line-width": 2,
         "fill-color": "#0084f7",
         "fill-opacity": 0.01
@@ -360,111 +335,259 @@
       }
     },
     {
+      "id": "ham-radio-operators",
+      "title": "HAM Radio Operators",
+      "description": "Emergency radio communication support during network outages",
+      "attribution": "Amateur Radio Operators (Licensed – WPC, Govt. of India)",
+      "headerImage": "assets/map-layers/dfes-dmp/all-image-sprite.png",
+      "headerPosition": "0 -350px",
+      "type": "geojson",
+      "initiallyChecked": true,
+      "url": "https://raw.githubusercontent.com/alansaviolobo/google-sheets-to-json-converter/refs/heads/data/data/HAM-Radio-Operators.min.geojson",
+      "style": {
+        "circle-color": "#512DA8",
+        "circle-radius": 6,
+        "circle-stroke-width": 1.5,
+        "circle-stroke-color": "#000000"
+      },
+      "inspect": {
+        "id": "Name",
+        "title": "Name",
+        "label": "Name",
+        "fields": [
+          "Name",
+          "Call Sign",
+          "Address",
+          "Contact Number",
+          "HF",
+          "VHF Base Station",
+          "UHF Base Station",
+          "VHF/UHF Handy",
+          "Status"
+        ],
+        "fieldTitles": [
+          "Name",
+          "Call Sign",
+          "Address",
+          "Contact Number",
+          "HF",
+          "VHF Base Station",
+          "UHF Base Station",
+          "VHF/UHF Handy",
+          "Status"
+        ]
+      }
+    },
+    {
       "id": "heavy-machinery",
       "title": "Heavy Machinery",
-      "description": "Heavy Machinery",
-      "attribution": "",
+      "description": "Debris clearance and infrastructure restoration equipment",
+      "attribution": "Private Operators",
       "headerImage": "assets/map-layers/dfes-dmp/all-image-sprite.png",
       "headerPosition": "0 -350px",
       "type": "geojson",
       "initiallyChecked": true,
       "url": "https://raw.githubusercontent.com/alansaviolobo/google-sheets-to-json-converter/refs/heads/data/data/Heavy-Machinery.min.geojson",
+      "clustered": true,
+      "clusterRadius": 100,
       "style": {
-        "text-color": "white",
-        "text-halo-color": "#0084f7",
-        "text-halo-width": 2,
-        "text-size": 12,
-        "line-color": "#0084f7",
-        "line-width": 2,
-        "fill-color": "#0084f7",
-        "fill-opacity": 0.01
+        "circle-color": "#3E2723",
+        "circle-radius": 6,
+        "circle-stroke-width": 1.5,
+        "circle-stroke-color": "#000000"
       },
       "inspect": {
-        "id": "id",
-        "title": "name",
-        "label": "name",
+        "id": "Vehicle No",
+        "title": "Vehicle Type",
+        "label": "Vehicle Type",
         "fields": [
-          "name",
-          "id",
-          "owner"
+          "Vehicle Type",
+          "Vehicle No",
+          "Address",
+          "Capacity",
+          "Name",
+          "Mobile",
+          "Last Updated"
         ],
         "fieldTitles": [
           "Vehicle Type",
           "Vehicle No",
-          "Owner"
+          "Address",
+          "Capacity",
+          "Name",
+          "Mobile",
+          "Last Updated"
         ]
       }
     },
     {
       "id": "hospitals",
       "title": "Hospitals",
-      "description": "Hospitals",
-      "attribution": "",
+      "description": "Emergency and trauma healthcare facilities",
+      "attribution": "<a href='https://dhs.goa.gov.in'>Directorate of Health Services, Goa.</a>",
       "headerImage": "assets/map-layers/dfes-dmp/all-image-sprite.png",
       "headerPosition": "0 -400px",
       "type": "geojson",
       "initiallyChecked": true,
       "url": "https://raw.githubusercontent.com/alansaviolobo/google-sheets-to-json-converter/refs/heads/data/data/Hospitals.min.geojson",
       "style": {
-        "text-color": "white",
-        "text-halo-color": "#0084f7",
-        "text-halo-width": 2,
-        "text-size": 12,
-        "line-color": "#0084f7",
-        "line-width": 2,
-        "fill-color": "#0084f7",
-        "fill-opacity": 0.01
+        "circle-color": "#1B5E20",
+        "circle-radius": 6,
+        "circle-stroke-width": 1.5,
+        "circle-stroke-color": "#000000"
       },
       "inspect": {
         "id": "name",
         "title": "name",
         "label": "name",
         "fields": [
-          "name",
-          "beds"
+          "Name",
+          "Type",
+          "Total Beds",
+          "ICU Beds",
+          "Oxygen Beds",
+          "Ventilators",
+          "Trauma Care",
+          "Blood Bank",
+          "Ambulance Available",
+          "Medical Super Name",
+          "Phone_1",
+          "Last Updated"
         ],
         "fieldTitles": [
           "Name",
-          "Beds"
+          "Type",
+          "Total Beds",
+          "ICU Beds",
+          "Oxygen Beds",
+          "Ventilators",
+          "Trauma Care",
+          "Blood Bank",
+          "Ambulance Available",
+          "Medical Super Name",
+          "Phone_1",
+          "Last Updated"
+        ]
+      }
+    },
+    {
+      "id": "dfes-incidents",
+      "title": "Incidents",
+      "description": "Locations of reported fire incidents affecting structures, forests, industrial units, or vehicles.",
+      "attribution": "<a href='https://dfes.goa.gov.in'>Directorate of Fire & Emergency Services, Goa.</a>",
+      "headerImage": "assets/map-layers/dfes-dmp/all-image-sprite.png",
+      "headerPosition": "0 -500px",
+      "type": "geojson",
+      "initiallyChecked": true,
+      "url": "https://dfes.goa.gov.in/disaster-management/live-calls/geojson",
+      "style": {
+        "circle-color": "#8E0000",
+        "circle-radius": 6,
+        "circle-stroke-width": 1.5,
+        "circle-stroke-color": "#000000"
+      },
+      "inspect": {
+        "id": "name",
+        "title": "name",
+        "label": "name",
+        "fields": [
+          "date",
+          "outtime",
+          "intime",
+          "station",
+          "type",
+          "description",
+          "near",
+          "at",
+          "vehicle"
+        ],
+        "fieldTitles": [
+          "date",
+          "outtime",
+          "intime",
+          "station",
+          "type",
+          "description",
+          "near",
+          "at",
+          "vehicle"
+        ]
+      }
+    },
+    {
+      "id": "industrial-estate-plots",
+      "title": "Industrial Estate Plots",
+      "description": "Industrial Estate Plots",
+      "attribution": "<a href='https://idc.goa.gov.in/'>Goa Industrial Development Corporation</a>",
+      "headerImage": "assets/map-layers/dfes-dmp/all-image-sprite.png",
+      "headerPosition": "0 -500px",
+      "type": "geojson",
+      "initiallyChecked": false,
+      "url": "https://gist.githubusercontent.com/alansaviolobo/00e7f5bb8a513522ca3d2fb2fec9c662/raw/8529ac00b215712f3d0239f28052925282c5c1bd/industrial_estate_plots.geojson",
+      "style": {
+        "circle-color": "#8E0000",
+        "circle-radius": 6,
+        "circle-stroke-width": 1.5,
+        "circle-stroke-color": "#000000"
+      },
+      "inspect": {
+        "id": "ID",
+        "title": "Unit_Name",
+        "label": "Unit_Name",
+        "fields": [
+          "Unit_Name",
+          "Plot_Number",
+          "Phase",
+          "Village",
+        ],
+        "fieldTitles": [
+          "Unit Name",
+          "Plot_Number",
+          "Phase",
+          "Village",
         ]
       }
     },
     {
       "id": "mha-units",
       "title": "MHA Units",
-      "description": "Location of MHA Units",
-      "attribution": "",
+      "description": "High-risk industrial installations handling hazardous materials",
+      "attribution": "<a href='https://sdma.goa.gov.in/'>Goa State Disaster Management Authority</a>",
       "headerImage": "assets/map-layers/dfes-dmp/all-image-sprite.png",
       "headerPosition": "0 -500px",
       "type": "geojson",
       "initiallyChecked": true,
       "url": "https://raw.githubusercontent.com/alansaviolobo/google-sheets-to-json-converter/refs/heads/data/data/MHA-Units.min.geojson",
       "style": {
-        "text-color": "white",
-        "text-halo-color": "#0084f7",
-        "text-halo-width": 2,
-        "text-size": 12,
-        "line-color": "#0084f7",
-        "line-width": 2,
-        "fill-color": "#0084f7",
-        "fill-opacity": 0.1
+        "circle-color": "#8E0000",
+        "circle-radius": 6,
+        "circle-stroke-width": 1.5,
+        "circle-stroke-color": "#000000"
       },
       "inspect": {
         "id": "name",
         "title": "name",
         "label": "name",
         "fields": [
-          "name"
+          "Name",
+          "Address",
+          "Safety Officer",
+          "Mobile",
+          "Last Updated"
         ],
         "fieldTitles": [
-          "Name"
+          "Name",
+          "Address",
+          "Safety Officer",
+          "Mobile",
+          "Last Updated"
         ]
       }
     },
     {
       "id": "mutual-aid-agencies",
       "title": "Mutual Aid Agencies",
-      "description": "Location of Mutual Aid Agencies",
+      "description": "Supporting NGOs, industries, and partner agencies",
       "attribution": "",
       "headerImage": "assets/map-layers/dfes-dmp/all-image-sprite.png",
       "headerPosition": "0 -550px",
@@ -472,14 +595,10 @@
       "initiallyChecked": true,
       "url": "https://raw.githubusercontent.com/alansaviolobo/google-sheets-to-json-converter/refs/heads/data/data/Mutual-Aid-Agencies.min.geojson",
       "style": {
-        "text-color": "white",
-        "text-halo-color": "#0084f7",
-        "text-halo-width": 2,
-        "text-size": 12,
-        "line-color": "#0084f7",
-        "line-width": 2,
-        "fill-color": "#0084f7",
-        "fill-opacity": 0.1
+        "circle-color": "#263238",
+        "circle-radius": 6,
+        "circle-stroke-width": 1.5,
+        "circle-stroke-color": "#000000"
       },
       "inspect": {
         "id": "name",
@@ -496,17 +615,18 @@
     {
       "id": "police-stations",
       "title": "Police Stations",
-      "description": "Location of Police Stations",
-      "attribution": "",
+      "description": "Law enforcement, evacuation support, and traffic control units",
+      "attribution": "<a href='https://citizen.goapolice.gov.in'>Goa Police</a>",
       "headerImage": "assets/map-layers/dfes-dmp/all-image-sprite.png",
       "headerPosition": "0 -600px",
       "type": "geojson",
       "initiallyChecked": true,
       "url": "https://raw.githubusercontent.com/alansaviolobo/google-sheets-to-json-converter/refs/heads/data/data/Police-Stations.min.geojson",
       "style": {
-        "circle-color": "#4c7fff",
+        "circle-color": "#0D1B4C",
+        "circle-radius": 6,
         "circle-stroke-width": 1.5,
-        "circle-stroke-color": "#ffffff"
+        "circle-stroke-color": "#000000"
       },
       "inspect": {
         "id": "name",
@@ -525,51 +645,60 @@
     {
       "id": "river-flooding-gauges",
       "title": "River Flooding Gauges",
-      "description": "Location of River Flooding Gauges",
-      "attribution": "",
+      "description": "River water level monitoring and flood alerts",
+      "attribution": "<a href='https://goawrd.gov.in'>Goa Water Resources Dept</a>",
       "headerImage": "assets/map-layers/dfes-dmp/all-image-sprite.png",
       "headerPosition": "0 -650px",
       "type": "geojson",
       "initiallyChecked": true,
-      "url": "https://gist.githubusercontent.com/alansaviolobo/83a4067c36e906ba2a3287830d6245f3/raw/67c3be304f8a6f2f0f27c6201aa7001ee22e8071/river_gauges.geojson",
+      "url": "https://raw.githubusercontent.com/alansaviolobo/google-sheets-to-json-converter/refs/heads/data/data/River-Gauges.min.geojson",
       "style": {
-        "text-color": "white",
-        "text-halo-color": "#0084f7",
-        "text-halo-width": 2,
-        "text-size": 12,
-        "line-color": "#0084f7",
-        "line-width": 2,
-        "fill-color": "#0084f7",
-        "fill-opacity": 0.1
+        "circle-color": "#01579B",
+        "circle-radius": 6,
+        "circle-stroke-width": 1.5,
+        "circle-stroke-color": "#000000"
       },
       "inspect": {
-        "id": "id",
-        "title": "Name",
-        "label": "name",
+        "id": "Call Sign",
+        "title": "Display Name",
+        "label": "Display Name",
         "fields": [
-          "id",
-          "name"
+          "Display Name",
+          "Water Level",
+          "Warning Level",
+          "Danger Level",
+          "Highest Danger Level",
+          "Flood Alert Status",
+          "Date"
         ],
         "fieldTitles": [
-          "Call Sign",
-          "Display Name"
+          "Display Name",
+          "Water Level",
+          "Warning Level",
+          "Danger Level",
+          "Highest Danger Level",
+          "Flood Alert Status",
+          "Date"
         ]
       }
     },
     {
       "id": "schools",
       "title": "Schools",
-      "description": "Location of Schools",
-      "attribution": "",
+      "description": "Educational institutions used as temporary shelters or relief centres",
+      "attribution": "<a href='https://education.goa.gov.in'>Directorate of Education, Goa</a>",
       "headerImage": "assets/map-layers/dfes-dmp/all-image-sprite.png",
       "headerPosition": "0 -700px",
       "type": "geojson",
       "initiallyChecked": true,
       "url": "https://raw.githubusercontent.com/alansaviolobo/google-sheets-to-json-converter/refs/heads/data/data/Schools.min.geojson",
+      "clustered": true,
+      "clusterRadius": 100,
       "style": {
-        "circle-color": "#000000",
+        "circle-color": "#F9A825",
+        "circle-radius": 6,
         "circle-stroke-width": 1.5,
-        "circle-stroke-color": "#4E342E"
+        "circle-stroke-color": "#000000"
       },
       "inspect": {
         "id": "Name",
@@ -588,17 +717,18 @@
     {
       "id": "tree-cutters",
       "title": "Tree Cutters",
-      "description": "Tree Cutters",
-      "attribution": "",
+      "description": "Resources for clearing fallen or hazardous trees",
+      "attribution": "Forest Department / Local Bodies, Goa",
       "headerImage": "assets/map-layers/dfes-dmp/all-image-sprite.png",
       "headerPosition": "0 -800px",
       "type": "geojson",
       "initiallyChecked": true,
       "url": "https://raw.githubusercontent.com/alansaviolobo/google-sheets-to-json-converter/refs/heads/data/data/Tree-Cutters.min.geojson",
       "style": {
-        "circle-color": "#000000",
+        "circle-color": "#4E342E",
+        "circle-radius": 6,
         "circle-stroke-width": 1.5,
-        "circle-stroke-color": "#4E342E"
+        "circle-stroke-color": "#000000"
       },
       "inspect": {
         "id": "Name",
@@ -619,17 +749,19 @@
     {
       "id": "water-resources",
       "title": "Water Resources",
-      "description": "Location of Water Resources",
+      "description": "Surface and groundwater assets for drinking and emergency use",
       "attribution": "",
       "headerImage": "assets/map-layers/dfes-dmp/all-image-sprite.png",
       "headerPosition": "0 -900px",
       "type": "geojson",
       "initiallyChecked": true,
       "url": "https://raw.githubusercontent.com/alansaviolobo/google-sheets-to-json-converter/refs/heads/data/data/Water-Resources.min.geojson",
+      "clustered": true,
       "style": {
-        "circle-color": "#000000",
+        "circle-color": "#00838F",
+        "circle-radius": 6,
         "circle-stroke-width": 1.5,
-        "circle-stroke-color": "#00838F"
+        "circle-stroke-color": "#000000"
       },
       "inspect": {
         "id": "location",
@@ -648,26 +780,21 @@
     {
       "id": "capacity-building",
       "title": "Capacity Building",
-      "description": "Log of Capacity Building Programs",
-      "attribution": "",
+      "description": "Disaster preparedness training and awareness institutions",
+      "attribution": "<a href='https://dfes.goa.gov.in'>Directorate of Fire & Emergency Services, Goa.</a>",
       "headerImage": "assets/map-layers/dfes-dmp/all-image-sprite.png",
       "headerPosition": "0 -900px",
       "type": "geojson",
       "initiallyChecked": true,
       "url": "https://raw.githubusercontent.com/alansaviolobo/google-sheets-to-json-converter/refs/heads/data/data/Capacity-Building.min.geojson",
       "paint": {
-        "circle-radius": 10,
+        "circle-radius": 6,
         "circle-color": "#FF0000"
       },
       "style": {
-        "text-color": "white",
-        "text-halo-color": "#0084f7",
-        "text-halo-width": 2,
-        "text-size": 12,
-        "line-color": "#0084f7",
-        "line-width": 2,
-        "fill-color": "#0084f7",
-        "fill-opacity": 0.1
+        "circle-color": "#00695C",
+        "circle-stroke-width": 1.5,
+        "circle-stroke-color": "#000000"
       },
       "inspect": {
         "id": "location",
@@ -686,8 +813,8 @@
     {
       "id": "imd-alerts",
       "title": "IMD Alerts",
-      "description": "Weather Advisories from IMD",
-      "attribution": "",
+      "description": "Official weather forecasts, warnings, and advisories",
+      "attribution": "<a href='https://mausam.imd.gov.in'>India Meteorological Department, Goa</a>",
       "headerImage": "assets/map-layers/dfes-dmp/all-image-sprite.png",
       "headerPosition": "0 -900px",
       "type": "geojson",
@@ -722,15 +849,87 @@
       }
     },
     {
+      "id": "flood-plains",
+      "title": "Flood Plains",
+      "description": "Flood-prone zones and inundation risk areas",
+      "attribution": "<a href='https://www.czma.goa.gov.in'>Goa Coastal Zone Management Authority</a>",
+      "headerImage": "assets/map-layers/dfes-dmp/all-image-sprite.png",
+      "headerPosition": "0 -900px",
+      "type": "geojson",
+      "initiallyChecked": true,
+      "url": "https://gist.githubusercontent.com/alansaviolobo/833a6f738c71f324ff9daa230c096969/raw/146904687540de178dda3d1acb7b539cf5210c25/flood_plains.geojson",
+      "paint": {
+        "circle-radius": 10,
+        "circle-color": "#FF0000"
+      },
+      "style": {
+        "text-color": "white",
+        "text-halo-color": "#0084f7",
+        "text-halo-width": 2,
+        "text-size": 12,
+        "line-color": "#0084f7",
+        "line-width": 2,
+        "fill-color": "#0084f7",
+        "fill-opacity": 0.1
+      },
+      "inspect": {
+        "id": "location",
+        "title": "name",
+        "label": "name",
+        "fields": [
+          "name",
+          "location"
+        ],
+        "fieldTitles": [
+          "name",
+          "location"
+        ]
+      }
+    },
+    {
       "id": "village-panchayats",
       "title": "Village Panchayats",
-      "description": "Village Panchayat boundaries",
-      "attribution": "",
+      "description": "Local governance boundaries for relief coordination",
+      "attribution": "<a href='https://panchayatsgoa.gov.in'>Directorate of Panchayats, Goa</a>",
       "headerImage": "assets/map-layers/dfes-dmp/all-image-sprite.png",
       "headerPosition": "0 -850px",
       "type": "geojson",
       "initiallyChecked": true,
       "url": "https://gist.githubusercontent.com/alansaviolobo/7a324cc42b827e0eeb3a8c0f02b01918/raw/b54a0e5e4c82dbeace95403e73222033cbd1968a/village_panchayats.geojson",
+      "style": {
+        "text-color": "white",
+        "text-halo-color": "#0084f7",
+        "text-halo-width": 2,
+        "text-size": 12,
+        "line-color": "#33691E",
+        "line-width": 2,
+        "fill-color": "#7CB342",
+        "fill-opacity": 0.01
+      },
+      "inspect": {
+        "id": "id",
+        "title": "Village",
+        "label": "village",
+        "fields": [
+          "village",
+          "taluka"
+        ],
+        "fieldTitles": [
+          "Village",
+          "Taluka"
+        ]
+      }
+    },
+    {
+      "id": "district-comm-plan",
+      "title": "District Communication Plan",
+      "description": "Emergency communication protocols and contact hierarchies",
+      "attribution": "<a href='https://sdma.goa.gov.in/'>Goa State Disaster Management Authority</a>",
+      "headerImage": "assets/map-layers/dfes-dmp/all-image-sprite.png",
+      "headerPosition": "0 -850px",
+      "type": "geojson",
+      "initiallyChecked": true,
+      "url": "https://gist.githubusercontent.com/alansaviolobo/9c2c22f6f601df4bb1ac507c217c7462/raw/e005aa5a287f5e44eafcfbd4303b9318a58b0ec5/goa_district_communication_plan.geojson",
       "style": {
         "text-color": "white",
         "text-halo-color": "#0084f7",
@@ -820,6 +1019,17 @@
           ]
         ],
         "fill-opacity": 0.9
+      },
+      "inspect": {
+        "id": "STNAME",
+        "title": "STNAME",
+        "label": "STNAME",
+        "fields": [
+          "STNAME"
+        ],
+        "fieldTitles": [
+          "Name"
+        ]
       }
     },
     {
