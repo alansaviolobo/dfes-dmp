@@ -17,7 +17,7 @@
     {
       "id": "ambulances",
       "title": "Ambulances",
-      "description": "Ambulances",
+      "description": "Locations of government, private, and emergency medical ambulances available for rapid patient transport and on-site medical response during incidents.",
       "attribution": "",
       "headerImage": "assets/map-layers/dfes-dmp/all-image-sprite.png",
       "headerPosition": "0 0",
@@ -48,7 +48,7 @@
     {
       "id": "apada-mitras",
       "title": "Apada Mitras",
-      "description": "Apada Mitras",
+      "description": "Trained community disaster volunteers supporting early warning dissemination, evacuation assistance, first aid, and last-mile response at the local level.",
       "attribution": "",
       "headerImage": "assets/map-layers/dfes-dmp/all-image-sprite.png",
       "headerPosition": "0 0",
@@ -79,7 +79,7 @@
     {
       "id": "civil-supplies-godowns",
       "title": "Civil Supplies Godowns",
-      "description": "Location of Civil Supplies Godowns",
+      "description": "Warehouses storing essential commodities such as food grains, fuel, and relief materials for emergency distribution.",
       "attribution": "",
       "headerImage": "assets/map-layers/dfes-dmp/all-image-sprite.png",
       "headerPosition": "0 -50px",
@@ -110,8 +110,8 @@
     {
       "id": "cyclone-shelters",
       "title": "Cyclone Shelters",
-      "description": "Location of Cyclone Shelters",
-      "attribution": "",
+      "description": "Designated multi-purpose shelters built to withstand extreme weather and provide safe refuge during cyclones, floods, and storm surges.",
+      "attribution": "<a href='https://goawrd.gov.in'>Goa Water Resources Dept</a>",
       "headerImage": "assets/map-layers/dfes-dmp/all-image-sprite.png",
       "headerPosition": "0 -100px",
       "type": "geojson",
@@ -139,8 +139,8 @@
     {
       "id": "dam-levels",
       "title": "Dam Levels",
-      "description": "Dam Levels",
-      "attribution": "",
+      "description": "Real-time or periodic information on reservoir water levels and dam status to support flood forecasting.",
+      "attribution": "<a href='https://goawrd.gov.in'>Goa Water Resources Dept</a>",
       "headerImage": "assets/map-layers/dfes-dmp/all-image-sprite.png",
       "headerPosition": "0 -150px",
       "type": "geojson",
@@ -168,8 +168,8 @@
     {
       "id": "fire-appliances",
       "title": "Fire Appliances",
-      "description": "Live locations of Fire Appliances.",
-      "attribution": "<a href='https://dfes.goa.gov.in/dashboard/'>Directorate of Fire & Emergency Services, Govt. of Goa</a>",
+      "description": "Locations and availability of fire-fighting vehicles, rescue equipment, and specialised response appliances used during fire and rescue operations.",
+      "attribution": "<a href='https://dfes.goa.gov.in'>Directorate of Fire & Emergency Services, Govt. of Goa</a>",
       "headerImage": "assets/map-layers/dfes-dmp/all-image-sprite.png",
       "headerPosition": "0 -200px",
       "type": "geojson",
@@ -240,8 +240,8 @@
     {
       "id": "fire-stations",
       "title": "Fire Stations",
-      "description": "Location of Fire Stations",
-      "attribution": "<a href='https://dfes.goa.gov.in/dashboard/'>Directorate of Fire & Emergency Services, Govt. of Goa</a>",
+      "description": "Fire service facilities responsible for fire suppression, rescue operations, hazardous material response, and emergency coordination within their jurisdiction.",
+      "attribution": "<a href='https://dfes.goa.gov.in'>Directorate of Fire & Emergency Services, Govt. of Goa</a>",
       "headerImage": "assets/map-layers/dfes-dmp/all-image-sprite.png",
       "headerPosition": "0 -250px",
       "type": "geojson",
@@ -267,8 +267,8 @@
     {
       "id": "gas-pipelines",
       "title": "Gas Pipelines",
-      "description": "Gas Pipelines",
-      "attribution": "",
+      "description": "Routes of underground or surface gas pipelines posing potential risk during excavation, earthquakes, floods, or fire incidents.",
+      "attribution": "<a href='https://www.goanaturalgas.com'>Goa Natural Gas Private Limited</a>",
       "headerImage": "assets/map-layers/dfes-dmp/all-image-sprite.png",
       "headerPosition": "0 -300px",
       "type": "geojson",
@@ -301,7 +301,7 @@
     {
       "id": "heavy-machinery",
       "title": "Heavy Machinery",
-      "description": "Heavy Machinery",
+      "description": "Locations of excavators, cranes, loaders, and other heavy equipment used for debris removal, search and rescue, and infrastructure restoration.",
       "attribution": "",
       "headerImage": "assets/map-layers/dfes-dmp/all-image-sprite.png",
       "headerPosition": "0 -350px",
@@ -332,7 +332,7 @@
     {
       "id": "hospitals",
       "title": "Hospitals",
-      "description": "Hospitals",
+      "description": "Public and private healthcare facilities providing emergency medical care, trauma services, and inpatient treatment during disasters.",
       "attribution": "",
       "headerImage": "assets/map-layers/dfes-dmp/all-image-sprite.png",
       "headerPosition": "0 -400px",
@@ -361,7 +361,7 @@
     {
       "id": "mha-units",
       "title": "MHA Units",
-      "description": "Location of MHA Units",
+      "description": "",
       "attribution": "",
       "headerImage": "assets/map-layers/dfes-dmp/all-image-sprite.png",
       "headerPosition": "0 -500px",
@@ -388,7 +388,7 @@
     {
       "id": "mutual-aid-agencies",
       "title": "Mutual Aid Agencies",
-      "description": "Location of Mutual Aid Agencies",
+      "description": "Supporting agencies, NGOs, private sector entities, and neighbouring jurisdictions that provide additional manpower, equipment, or expertise during emergencies.",
       "attribution": "",
       "headerImage": "assets/map-layers/dfes-dmp/all-image-sprite.png",
       "headerPosition": "0 -550px",
@@ -415,7 +415,7 @@
     {
       "id": "police-stations",
       "title": "Police Stations",
-      "description": "Location of Police Stations",
+      "description": "Law enforcement facilities responsible for public safety, traffic control, evacuation support, law and order, and emergency coordination.",
       "attribution": "",
       "headerImage": "assets/map-layers/dfes-dmp/all-image-sprite.png",
       "headerPosition": "0 -600px",
@@ -444,7 +444,7 @@
     {
       "id": "river-flooding-gauges",
       "title": "River Flooding Gauges",
-      "description": "Location of River Flooding Gauges",
+      "description": "Monitoring stations providing river water level and discharge data for flood warning and hydrological analysis.",
       "attribution": "",
       "headerImage": "assets/map-layers/dfes-dmp/all-image-sprite.png",
       "headerPosition": "0 -650px",
@@ -473,7 +473,7 @@
     {
       "id": "schools",
       "title": "Schools",
-      "description": "Location of Schools",
+      "description": "Educational institutions that may function as temporary shelters, relief distribution centres, or community support locations during emergencies.",
       "attribution": "",
       "headerImage": "assets/map-layers/dfes-dmp/all-image-sprite.png",
       "headerPosition": "0 -700px",
@@ -502,7 +502,7 @@
     {
       "id": "tree-cutters",
       "title": "Tree Cutters",
-      "description": "Tree Cutters",
+      "description": "Registered personnel and equipment available for removal of fallen or hazardous trees obstructing roads, power lines, or critical infrastructure.",
       "attribution": "",
       "headerImage": "assets/map-layers/dfes-dmp/all-image-sprite.png",
       "headerPosition": "0 -800px",
@@ -533,7 +533,7 @@
     {
       "id": "water-resources",
       "title": "Water Resources",
-      "description": "Location of Water Resources",
+      "description": "Surface and groundwater assets including rivers, canals, reservoirs, and tanks important for drinking water supply, irrigation, and emergency usage.",
       "attribution": "",
       "headerImage": "assets/map-layers/dfes-dmp/all-image-sprite.png",
       "headerPosition": "0 -900px",
@@ -562,7 +562,7 @@
     {
       "id": "capacity-building",
       "title": "Capacity Building",
-      "description": "Log of Capacity Building Programs",
+      "description": "Institutions and facilities trained in disaster preparedness, response training, drills, and awareness programmes.",
       "attribution": "",
       "headerImage": "assets/map-layers/dfes-dmp/all-image-sprite.png",
       "headerPosition": "0 -900px",
@@ -595,7 +595,7 @@
     {
       "id": "imd-alerts",
       "title": "IMD Alerts",
-      "description": "Weather Advisories from IMD",
+      "description": "Access points and data feeds from the India Meteorological Department providing weather forecasts, warnings, and climatological data.",
       "attribution": "",
       "headerImage": "assets/map-layers/dfes-dmp/all-image-sprite.png",
       "headerPosition": "0 -900px",
@@ -631,9 +631,47 @@
       }
     },
     {
+      "id": "flood-plains",
+      "title": "Flood Plains",
+      "description": "Areas prone to inundation during high river discharge or extreme rainfall, critical for flood risk assessment.",
+      "attribution": "",
+      "headerImage": "assets/map-layers/dfes-dmp/all-image-sprite.png",
+      "headerPosition": "0 -900px",
+      "type": "geojson",
+      "initiallyChecked": true,
+      "url": "https://gist.githubusercontent.com/alansaviolobo/833a6f738c71f324ff9daa230c096969/raw/146904687540de178dda3d1acb7b539cf5210c25/flood_plains.geojson",
+      "paint": {
+        "circle-radius": 10,
+        "circle-color": "#FF0000"
+      },
+      "style": {
+        "text-color": "white",
+        "text-halo-color": "#0084f7",
+        "text-halo-width": 2,
+        "text-size": 12,
+        "line-color": "#0084f7",
+        "line-width": 2,
+        "fill-color": "#0084f7",
+        "fill-opacity": 0.1
+      },
+      "inspect": {
+        "id": "location",
+        "title": "name",
+        "label": "name",
+        "fields": [
+          "name",
+          "location"
+        ],
+        "fieldTitles": [
+          "name",
+          "location"
+        ]
+      }
+    },
+    {
       "id": "village-panchayats",
       "title": "Village Panchayats",
-      "description": "Village Panchayat boundaries",
+      "description": "Administrative boundaries of local self-government units used for governance, planning, relief coordination, and damage assessment.",
       "attribution": "",
       "headerImage": "assets/map-layers/dfes-dmp/all-image-sprite.png",
       "headerPosition": "0 -850px",
