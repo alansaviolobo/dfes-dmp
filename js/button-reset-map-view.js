@@ -30,11 +30,11 @@ export class ButtonResetMapView {
             }))
             .on('click', () => {
                 map.flyTo({
-                    zoom: 9,
-                    pitch: 28,
+                    zoom: 9.5,
+                    pitch: 0,
                     speed: 0.6,
                     curve: 1.42,
-                    center: [73.8274, 15.4406],
+                    center: [73.8274, 15.35],
                     bearing: 0,
                     duration: 4000,
                     essential: true
