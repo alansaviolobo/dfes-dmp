@@ -330,6 +330,37 @@
       }
     },
     {
+      "id": "ham-radio-operators",
+      "title": "HAM Radio Operators",
+      "description": "The geographic locations of licensed HAM (Amateur Radio) operators across Goa State available to support emergency and disaster communications when conventional communication networks (mobile, internet, landline) are disrupted or unavailable",
+      "attribution": "",
+      "headerImage": "assets/map-layers/dfes-dmp/all-image-sprite.png",
+      "headerPosition": "0 -350px",
+      "type": "geojson",
+      "initiallyChecked": true,
+      "url": "https://raw.githubusercontent.com/alansaviolobo/google-sheets-to-json-converter/refs/heads/data/data/Ham-Radio-Operators.min.geojson",
+      "style": {
+        "circle-color": "#512DA8",
+        "circle-stroke-width": 1.5,
+        "circle-stroke-color": "#000000"
+      },
+      "inspect": {
+        "id": "id",
+        "title": "name",
+        "label": "name",
+        "fields": [
+          "name",
+          "id",
+          "owner"
+        ],
+        "fieldTitles": [
+          "Vehicle Type",
+          "Vehicle No",
+          "Owner"
+        ]
+      }
+    },
+    {
       "id": "hospitals",
       "title": "Hospitals",
       "description": "Public and private healthcare facilities providing emergency medical care, trauma services, and inpatient treatment during disasters.",
@@ -678,6 +709,40 @@
       "type": "geojson",
       "initiallyChecked": true,
       "url": "https://gist.githubusercontent.com/alansaviolobo/7a324cc42b827e0eeb3a8c0f02b01918/raw/b54a0e5e4c82dbeace95403e73222033cbd1968a/village_panchayats.geojson",
+      "style": {
+        "text-color": "white",
+        "text-halo-color": "#0084f7",
+        "text-halo-width": 2,
+        "text-size": 12,
+        "line-color": "#33691E",
+        "line-width": 2,
+        "fill-color": "#7CB342",
+        "fill-opacity": 0.01
+      },
+      "inspect": {
+        "id": "id",
+        "title": "Village",
+        "label": "village",
+        "fields": [
+          "village",
+          "taluka"
+        ],
+        "fieldTitles": [
+          "Village",
+          "Taluka"
+        ]
+      }
+    },
+    {
+      "id": "district-comm-plan",
+      "title": "District Communication Plan",
+      "description": "Administrative boundaries of local self-government units used for governance, planning, relief coordination, and damage assessment.",
+      "attribution": "",
+      "headerImage": "assets/map-layers/dfes-dmp/all-image-sprite.png",
+      "headerPosition": "0 -850px",
+      "type": "geojson",
+      "initiallyChecked": true,
+      "url": "https://gist.githubusercontent.com/alansaviolobo/9c2c22f6f601df4bb1ac507c217c7462/raw/e005aa5a287f5e44eafcfbd4303b9318a58b0ec5/goa_district_communication_plan.geojson",
       "style": {
         "text-color": "white",
         "text-halo-color": "#0084f7",
