@@ -4,6 +4,7 @@
 // Import data models and utilities
 import { 
     TILESET_SCHEMA, 
+    VECTOR_TILE_SOURCE,
     AGENCY_STYLES, 
     TransitAgency, 
     BusRoute, 
@@ -21,13 +22,25 @@ class TransitExplorer {
         this.currentStop = null;
         this.refreshInterval = null;
         this.mapboxToken = window.amche.MAPBOXGL_ACCESS_TOKEN;
-        this.tilesets = {
-            routes: 'planemad.byjf1hw6',
-            stops: 'planemad.2e4x2hzw'
-        };
-        
+        // Vector tile source configuration
+        this.vectorTileSource = VECTOR_TILE_SOURCE;
+        this.sourceName = VECTOR_TILE_SOURCE.sourceName;
+        this.sourceLayer = VECTOR_TILE_SOURCE.sourceLayer;
+
         // Initialize URL manager for deep linking
         this.urlManager = null;
+
+        // Geolocate control reference
+        this.geolocateControl = null;
+
+        // Auto-select closest stop mode
+        this.autoSelectClosestStop = true;
+
+        // Flag to prevent concurrent stop selections
+        this.isSelectingStop = false;
+
+        // Track hovered feature for feature state management
+        this.hoveredStopId = null;
         
         // City configuration with bounds and display info
         this.cities = [
@@ -36,12 +49,31 @@ class TransitExplorer {
                 name: 'Mumbai',
                 bounds: [
                     [72.7746, 18.8900], // Southwest corner
-                    [72.9884, 19.2700]  // Northeast corner
+                    [73.1000, 19.4500]  // Northeast corner (expanded for Thane)
                 ],
                 center: [72.8777, 19.0760],
                 zoom: 11
+            },
+            {
+                id: 'thiruvananthapuram',
+                name: 'Thiruvananthapuram',
+                bounds: [
+                    [76.8000, 8.3500], // Southwest corner
+                    [77.0500, 8.6500]  // Northeast corner
+                ],
+                center: [76.9366, 8.5241],
+                zoom: 12
+            },
+            {
+                id: 'goa',
+                name: 'Goa',
+                bounds: [
+                    [73.6000, 14.8500], // Southwest corner
+                    [74.2500, 15.8000]  // Northeast corner
+                ],
+                center: [73.9000, 15.4000],
+                zoom: 10
             }
-            // Additional cities can be added here in the future
         ];
         
         this.currentCity = this.cities[0]; // Default to first city (Mumbai)
@@ -68,13 +100,27 @@ class TransitExplorer {
         const urlParams = this.parseURLParameters();
         const hasURLSelection = urlParams.route || urlParams.stop;
         
-        // Request location (but don't auto-find nearest stop if URL has selections)
-        await this.requestLocation(hasURLSelection);
-        
         // Apply URL parameters after everything is initialized
         setTimeout(() => {
             this.applyURLParametersOnLoad(hasURLSelection);
         }, 1000);
+        
+        // If no URL parameters, auto-trigger geolocate once map is loaded
+        if (!hasURLSelection) {
+            this.map.once('load', () => {
+                console.log('📍 No URL params detected, triggering geolocate...');
+                this.updateLocationStatus('Locating...', 'status-scheduled', false);
+                
+                // Small delay to ensure geolocate control is ready
+                setTimeout(() => {
+                    if (this.geolocateControl) {
+                        this.geolocateControl.trigger();
+                    }
+                }, 500);
+            });
+        } else {
+            this.updateLocationStatus('Loading from URL...', 'status-scheduled', false);
+        }
     }
 
     // City management methods
@@ -168,7 +214,11 @@ class TransitExplorer {
     async findNearestStopIfLocationAvailable() {
         if (this.userLocation) {
             console.log('📍 User location available, finding nearest stop...');
-            await this.findNearestStop();
+            // Use the unified findClosestStopToMapCenter since the map should already be
+            // centered on the user location after geolocate
+            if (this.autoSelectClosestStop) {
+                await this.findClosestStopToMapCenter();
+            }
         } else {
             console.log('📍 User location not available, showing fallback content');
             this.showLocationFallbackContent();
@@ -300,9 +350,7 @@ class TransitExplorer {
     async waitForMapReady() {
         return new Promise((resolve) => {
             const checkReady = () => {
-                if (this.map && 
-                    this.map.isSourceLoaded('mumbai-stops') && 
-                    this.map.isSourceLoaded('mumbai-routes')) {
+                if (this.map && this.map.isSourceLoaded(this.sourceName)) {
                     resolve();
                 } else {
                     setTimeout(checkReady, 500);
@@ -318,16 +366,12 @@ class TransitExplorer {
         
         try {
             let features = [];
+            const featureTypeFilter = type === 'route' ? 'route' : 'stop';
             
-            if (type === 'route') {
-                features = this.map.querySourceFeatures('mumbai-routes', {
-                    sourceLayer: 'mumbai-routes'
-                });
-            } else if (type === 'stop') {
-                features = this.map.querySourceFeatures('mumbai-stops', {
-                    sourceLayer: 'mumbai-stops'
-                });
-            }
+            features = this.map.querySourceFeatures(this.sourceName, {
+                sourceLayer: this.sourceLayer,
+                filter: ['==', ['get', 'feature_type'], featureTypeFilter]
+            });
             
             // Find feature whose name slugifies to the target slug
             for (const feature of features) {
@@ -359,8 +403,9 @@ class TransitExplorer {
     // Apply stop selection from URL parameter
     async applyStopFromURL(stopName) {
         try {
-            const stopFeatures = this.map.querySourceFeatures('mumbai-stops', {
-                sourceLayer: 'mumbai-stops'
+            const stopFeatures = this.map.querySourceFeatures(this.sourceName, {
+                sourceLayer: this.sourceLayer,
+                filter: ['==', ['get', 'feature_type'], 'stop']
             });
 
             const matchingStop = stopFeatures.find(feature => {
@@ -380,9 +425,11 @@ class TransitExplorer {
             if (matchingStop) {
                 this.handleStopClick(matchingStop, [matchingStop]);
                 
-                if (matchingStop.geometry && matchingStop.geometry.coordinates) {
+                // Use BusStop to get proper lat/lon from properties
+                const busStop = new BusStop(matchingStop);
+                if (busStop.lat && busStop.lon) {
                     this.map.flyTo({
-                        center: matchingStop.geometry.coordinates,
+                        center: [busStop.lon, busStop.lat],
                         zoom: Math.max(15, this.map.getZoom()),
                         duration: 2000
                     });
@@ -403,8 +450,9 @@ class TransitExplorer {
     // Apply route selection from URL parameter
     async applyRouteFromURL(routeName) {
         try {
-            const routeFeatures = this.map.querySourceFeatures('mumbai-routes', {
-                sourceLayer: 'mumbai-routes'
+            const routeFeatures = this.map.querySourceFeatures(this.sourceName, {
+                sourceLayer: this.sourceLayer,
+                filter: ['==', ['get', 'feature_type'], 'route']
             });
 
             let matchingRoute = routeFeatures.find(feature => {
@@ -497,25 +545,49 @@ class TransitExplorer {
 
         // Add navigation controls
         this.map.addControl(new mapboxgl.NavigationControl(), 'top-right');
+        
+        // Add geolocation control
+        this.geolocateControl = new mapboxgl.GeolocateControl({
+            positionOptions: {
+                enableHighAccuracy: true
+            },
+            trackUserLocation: true,
+            showUserHeading: true,
+            showAccuracyCircle: true
+        });
+        this.map.addControl(this.geolocateControl, 'top-right');
+        
+        // Handle geolocate events
+        this.geolocateControl.on('geolocate', (e) => {
+            console.log('📍 Geolocate event:', e.coords);
+            this.userLocation = {
+                lat: e.coords.latitude,
+                lng: e.coords.longitude
+            };
+            this.updateLocationStatus('Location found', 'status-live', false);
+            
+            // Note: findClosestStopToMapCenter will be called on moveend after the map 
+            // flies to user location. We don't call it here to avoid race conditions.
+            console.log('📍 Geolocate complete - waiting for map moveend to auto-select stop');
+        });
+        
+        this.geolocateControl.on('error', (e) => {
+            console.error('📍 Geolocate error:', e);
+            this.updateLocationStatus('Location error', 'status-scheduled', true);
+        });
     }
 
     addDataSources() {
         console.log('📊 Adding data sources...');
         
         try {
-            // Add Mumbai stops source
-            this.map.addSource('mumbai-stops', {
+            // Add combined transit data source (contains both routes and stops)
+            this.map.addSource(this.sourceName, {
                 type: 'vector',
-                url: `mapbox://${this.tilesets.stops}`
+                url: this.vectorTileSource.url,
+                promoteId: { '642d08ec9c71882f33e0': 'id' }
             });
-            console.log(`✅ Added mumbai-stops source: mapbox://${this.tilesets.stops}`);
-
-            // Add Mumbai routes source  
-            this.map.addSource('mumbai-routes', {
-                type: 'vector',
-                url: `mapbox://${this.tilesets.routes}`
-            });
-            console.log(`✅ Added mumbai-routes source: mapbox://${this.tilesets.routes}`);
+            console.log(`✅ Added ${this.sourceName} source: ${this.vectorTileSource.url}`);
             
         } catch (error) {
             console.error('❌ Error adding data sources:', error);
@@ -523,12 +595,15 @@ class TransitExplorer {
     }
 
     addLayers() {
-        // Add route lines
+        const sourceLayer = this.sourceLayer;
+        
+        // Add route lines (filter by feature_type = 'route')
         this.map.addLayer({
             id: 'routes',
             type: 'line',
-            source: 'mumbai-routes',
-            'source-layer': 'mumbai-routes',
+            source: this.sourceName,
+            'source-layer': sourceLayer,
+            filter: ['==', ['get', 'feature_type'], 'route'],
             layout: {
                 'line-join': 'round',
                 'line-cap': 'round'
@@ -536,20 +611,21 @@ class TransitExplorer {
             paint: {
                 'line-color': [
                     'case',
-                    // BEST Agency styling based on fare type
-                    ['==', ['get', 'agency_name'], 'BEST'],
-                    [
-                        'case',
-                        ['==', ['get', 'fare_type'], 'AC'], '#3b82f6',      // Blue for AC
-                        ['==', ['get', 'fare_type'], 'Regular'], '#ef4444', // Red for Regular
-                        '#10b981' // Default green for BEST
-                    ],
-                    // Other agencies or unknown - use live status (fix boolean conversion)
-                    [
-                        'case',
-                        ['==', ['to-string', ['get', 'is_live']], 'true'], '#22c55e', // Green for live routes
-                        '#3b82f6' // Blue for scheduled routes
-                    ]
+                    // Premium/Corporate routes
+                    ['==', ['get', 'fare_type'], 'Premium'], '#8b5cf6', // Purple for premium
+                    // AC routes
+                    ['any',
+                        ['==', ['get', 'fare_type'], 'AC'],
+                        ['==', ['get', 'ac_service'], true]
+                    ], '#3b82f6', // Blue for AC
+                    // Express routes
+                    ['==', ['get', 'fare_type'], 'Express'], '#f97316', // Orange for express
+                    // Regular routes
+                    ['==', ['get', 'fare_type'], 'Regular'], '#ef4444', // Red for Regular
+                    // Live tracking available
+                    ['==', ['to-string', ['get', 'is_live']], 'true'], '#22c55e', // Green for live
+                    // Default
+                    '#10b981' // Default green
                 ],
                 'line-width': [
                     'interpolate',
@@ -566,8 +642,12 @@ class TransitExplorer {
         this.map.addLayer({
             id: 'routes-highlight',
             type: 'line',
-            source: 'mumbai-routes',
-            'source-layer': 'mumbai-routes',
+            source: this.sourceName,
+            'source-layer': sourceLayer,
+            filter: ['all', 
+                ['==', ['get', 'feature_type'], 'route'],
+                ['==', ['get', 'route_id'], ''] // Initially filter out everything
+            ],
             layout: {
                 'line-join': 'round',
                 'line-cap': 'round'
@@ -583,28 +663,60 @@ class TransitExplorer {
                 ],
                 'line-opacity': 0.9,
                 'line-blur': 1
-            },
-            filter: ['==', 'route_id', ''] // Initially filter out everything
+            }
         });
 
-        // Add bus stops
+        // Add bus stops (filter by feature_type = 'stop')
         this.map.addLayer({
             id: 'stops',
             type: 'circle',
-            source: 'mumbai-stops',
-            'source-layer': 'mumbai-stops',
+            source: this.sourceName,
+            'source-layer': sourceLayer,
+            filter: ['==', ['get', 'feature_type'], 'stop'],
             paint: {
                 'circle-radius': [
                     'interpolate',
                     ['linear'],
                     ['zoom'],
-                    10, 1,
-                    16, 3
+                    10, [
+                        '+',
+                        2,
+                        [
+                            'case',
+                            ['boolean', ['feature-state', 'selected'], false], 6,
+                            ['boolean', ['feature-state', 'hover'], false], 3,
+                            0
+                        ]
+                    ],
+                    16, [
+                        '+',
+                        4,
+                        [
+                            'case',
+                            ['boolean', ['feature-state', 'selected'], false], 6,
+                            ['boolean', ['feature-state', 'hover'], false], 3,
+                            0
+                        ]
+                    ]
                 ],
-                'circle-color': '#f59e0b',
-                'circle-stroke-width': 1,
+                'circle-color': [
+                    'case',
+                    ['boolean', ['feature-state', 'selected'], false], '#22c55e',
+                    ['boolean', ['feature-state', 'hover'], false], '#22c55e',
+                    '#f59e0b'
+                ],
+                'circle-stroke-width': [
+                    'case',
+                    ['boolean', ['feature-state', 'selected'], false], 3,
+                    ['boolean', ['feature-state', 'hover'], false], 2,
+                    1
+                ],
                 'circle-stroke-color': '#ffffff',
-                'circle-opacity': 0.9
+                'circle-opacity': [
+                    'case',
+                    ['boolean', ['feature-state', 'selected'], false], 1,
+                    0.9
+                ]
             }
         });
 
@@ -612,8 +724,12 @@ class TransitExplorer {
         this.map.addLayer({
             id: 'stops-highlight',
             type: 'circle',
-            source: 'mumbai-stops',
-            'source-layer': 'mumbai-stops',
+            source: this.sourceName,
+            'source-layer': sourceLayer,
+            filter: ['all',
+                ['==', ['get', 'feature_type'], 'stop'],
+                ['==', ['get', 'id'], ''] // Initially filter out everything
+            ],
             paint: {
                 'circle-radius': [
                     'interpolate',
@@ -627,8 +743,34 @@ class TransitExplorer {
                 'circle-stroke-color': '#ffffff',
                 'circle-opacity': 0.8,
                 'circle-blur': 0.5
+            }
+        });
+
+        // Add debug label layer to show stop IDs and names
+        this.map.addLayer({
+            id: 'stops-debug-labels',
+            type: 'symbol',
+            source: this.sourceName,
+            'source-layer': sourceLayer,
+            filter: ['==', ['get', 'feature_type'], 'stop'],
+            layout: {
+                'text-field': [
+                    'concat',
+                    ['get', 'name'],
+                    '\n',
+                    'ID: ',
+                    ['get', 'id']
+                ],
+                'text-font': ['Open Sans Bold', 'Arial Unicode MS Bold'],
+                'text-size': 11,
+                'text-offset': [0, 2],
+                'text-anchor': 'top'
             },
-            filter: ['==', 'stop_id', ''] // Initially filter out everything
+            paint: {
+                'text-color': '#ffffff',
+                'text-halo-color': '#000000',
+                'text-halo-width': 2
+            }
         });
 
         // Add bus location layer for live tracking
@@ -769,54 +911,48 @@ class TransitExplorer {
             this.map.getCanvas().style.cursor = '';
         });
 
-        // Add route click interaction using standard Mapbox event handlers
+        // Add route click interaction using the helper to find nearest unique feature
         this.map.on('click', 'routes', (e) => {
-            console.log('🎯 Route click handler triggered', e.features[0]);
+            // Find the nearest unique route at the click point
+            const nearestRoute = this.findNearestFeatureAtPoint(e.point, e.lngLat, 'routes');
             
-            if (e.features && e.features.length > 0) {
-                const feature = e.features[0];
-                if (feature && feature.properties) {
-                    const routeId = feature.properties.route_id;
-                    const routeName = feature.properties.route_short_name || 
-                                    feature.properties.route_name;
-                    
-                    console.log(`🚌 Route clicked: ${routeName} (ID: ${routeId})`);
-                    console.log('📊 Feature properties:', feature.properties);
-                    
-                    // Clear previous selections
-                    this.clearAllSelections();
-                    
-                    // Highlight the route on map
-                    this.highlightRoute(routeId);
-                    
-                    // Highlight corresponding departure rows
-                    this.highlightDepartureRows(routeId, routeName);
-                } else {
-                    console.warn('⚠️ No feature or properties found in route click');
-                }
+            if (nearestRoute && nearestRoute.properties) {
+                const routeId = nearestRoute.properties.route_id;
+                const routeName = nearestRoute.properties.route_short_name || 
+                                nearestRoute.properties.route_name;
+                
+                console.log(`🚌 Route clicked: ${routeName} (ID: ${routeId})`);
+                console.log('📊 Feature properties:', nearestRoute.properties);
+                
+                // Clear previous selections
+                this.clearAllSelections();
+                
+                // Highlight the route on map
+                this.highlightRoute(routeId);
+                
+                // Highlight corresponding departure rows
+                this.highlightDepartureRows(routeId, routeName);
+            } else {
+                console.warn('⚠️ No route feature found at click point');
             }
         });
 
         // Add route hover interaction for temporary highlighting
         this.map.on('mouseenter', 'routes', (e) => {
-            console.log('🎯 Route hover handler triggered');
+            // Find the nearest unique route at the hover point
+            const nearestRoute = this.findNearestFeatureAtPoint(e.point, e.lngLat, 'routes');
             
-            if (e.features && e.features.length > 0) {
-                const feature = e.features[0];
-                if (feature && feature.properties) {
-                    const routeId = feature.properties.route_id;
-                    const routeName = feature.properties.route_short_name || 
-                                    feature.properties.route_name;
-                    
-                    // Only highlight if not already selected
-                    if (this.currentHighlightedRoute !== routeId) {
-                        console.log(`🎯 Hovering route: ${routeName} (ID: ${routeId})`);
-                        // Temporary highlight on hover
-                        this.highlightRoute(routeId, true);
-                        this.highlightDepartureRows(routeId, routeName, true);
-                    }
-                } else {
-                    console.warn('⚠️ No feature or properties found in route hover');
+            if (nearestRoute && nearestRoute.properties) {
+                const routeId = nearestRoute.properties.route_id;
+                const routeName = nearestRoute.properties.route_short_name || 
+                                nearestRoute.properties.route_name;
+                
+                // Only highlight if not already selected
+                if (this.currentHighlightedRoute !== routeId) {
+                    console.log(`🎯 Hovering route: ${routeName} (ID: ${routeId})`);
+                    // Temporary highlight on hover
+                    this.highlightRoute(routeId, true);
+                    this.highlightDepartureRows(routeId, routeName, true);
                 }
             }
         });
@@ -829,11 +965,10 @@ class TransitExplorer {
         // Add map background click to clear selections
         this.map.on('click', (e) => {
             // Check if we clicked on the map background (not on any layers)
-            const features = this.map.queryRenderedFeatures(e.point);
-            const routeFeatures = features.filter(f => f.layer.id === 'routes');
-            const stopFeatures = features.filter(f => f.layer.id === 'stops');
+            const nearestStop = this.findNearestFeatureAtPoint(e.point, e.lngLat, 'stops');
+            const nearestRoute = this.findNearestFeatureAtPoint(e.point, e.lngLat, 'routes');
             
-            if (routeFeatures.length === 0 && stopFeatures.length === 0) {
+            if (!nearestStop && !nearestRoute) {
                 this.clearAllSelections();
             }
         });
@@ -845,7 +980,11 @@ class TransitExplorer {
         if (!routeId) return;
 
         // Update the highlight layer filter to show only the selected route
-        this.map.setFilter('routes-highlight', ['==', 'route_id', routeId]);
+        this.map.setFilter('routes-highlight', [
+            'all',
+            ['==', ['get', 'feature_type'], 'route'],
+            ['==', ['get', 'route_id'], routeId]
+        ]);
         
         // Store current highlight for cleanup
         if (!isTemporary) {
@@ -865,12 +1004,15 @@ class TransitExplorer {
     }
 
     getRouteNameById(routeId) {
-        if (!this.map || !this.map.isSourceLoaded('mumbai-routes')) return null;
+        if (!this.map || !this.map.isSourceLoaded(this.sourceName)) return null;
         
         try {
-            const routeFeatures = this.map.querySourceFeatures('mumbai-routes', {
-                sourceLayer: 'mumbai-routes',
-                filter: ['==', 'route_id', routeId]
+            const routeFeatures = this.map.querySourceFeatures(this.sourceName, {
+                sourceLayer: this.sourceLayer,
+                filter: ['all', 
+                    ['==', ['get', 'feature_type'], 'route'],
+                    ['==', ['get', 'route_id'], routeId]
+                ]
             });
             
             if (routeFeatures.length > 0) {
@@ -885,12 +1027,15 @@ class TransitExplorer {
     }
 
     displayRouteInfo(routeId) {
-        if (!this.map || !this.map.isSourceLoaded('mumbai-routes')) return;
+        if (!this.map || !this.map.isSourceLoaded(this.sourceName)) return;
         
         try {
-            const routeFeatures = this.map.querySourceFeatures('mumbai-routes', {
-                sourceLayer: 'mumbai-routes',
-                filter: ['==', 'route_id', routeId]
+            const routeFeatures = this.map.querySourceFeatures(this.sourceName, {
+                sourceLayer: this.sourceLayer,
+                filter: ['all', 
+                    ['==', ['get', 'feature_type'], 'route'],
+                    ['==', ['get', 'route_id'], routeId]
+                ]
             });
             
             if (routeFeatures.length > 0) {
@@ -910,8 +1055,12 @@ class TransitExplorer {
     }
 
     clearRouteHighlight() {
-        // Hide the highlight layer
-        this.map.setFilter('routes-highlight', ['==', 'route_id', '']);
+        // Hide the highlight layer by setting an impossible filter
+        this.map.setFilter('routes-highlight', [
+            'all',
+            ['==', ['get', 'feature_type'], 'route'],
+            ['==', ['get', 'route_id'], '']
+        ]);
         this.currentHighlightedRoute = null;
     }
 
@@ -1277,6 +1426,21 @@ class TransitExplorer {
                 this.hideStopDropdown();
             }
         });
+        
+        // Auto-select closest stop checkbox
+        const autoSelectCheckbox = document.getElementById('auto-select-stop');
+        if (autoSelectCheckbox) {
+            this.autoSelectClosestStop = autoSelectCheckbox.checked;
+            autoSelectCheckbox.addEventListener('change', (e) => {
+                this.autoSelectClosestStop = e.target.checked;
+                console.log(`🎯 Auto-select closest stop: ${this.autoSelectClosestStop}`);
+                
+                // If enabled and map is loaded, find closest stop immediately
+                if (this.autoSelectClosestStop && this.map && this.map.isSourceLoaded(this.sourceName)) {
+                    this.findClosestStopToMapCenter();
+                }
+            });
+        }
     }
 
     setupStopSelector() {
@@ -1346,8 +1510,9 @@ class TransitExplorer {
             const bounds = this.map.getBounds();
             
             // Query all stop features from the map
-            const allStopFeatures = this.map.querySourceFeatures('mumbai-stops', {
-                sourceLayer: 'mumbai-stops'
+            const allStopFeatures = this.map.querySourceFeatures(this.sourceName, {
+                sourceLayer: this.sourceLayer,
+                filter: ['==', ['get', 'feature_type'], 'stop']
             });
             
             if (!allStopFeatures || allStopFeatures.length === 0) {
@@ -1356,12 +1521,13 @@ class TransitExplorer {
             }
             
             // Filter stops within map bounds and add distance info
+            // Use BusStop class to get proper lat/lon from properties (not geometry)
             const visibleStops = allStopFeatures
                 .filter(feature => {
-                    if (!feature.geometry || !feature.geometry.coordinates) return false;
-                    const [lng, lat] = feature.geometry.coordinates;
-                    return lng >= bounds.getWest() && lng <= bounds.getEast() &&
-                           lat >= bounds.getSouth() && lat <= bounds.getNorth();
+                    const busStop = new BusStop(feature);
+                    if (!busStop.lat || !busStop.lon) return false;
+                    return busStop.lon >= bounds.getWest() && busStop.lon <= bounds.getEast() &&
+                           busStop.lat >= bounds.getSouth() && busStop.lat <= bounds.getNorth();
                 })
                 .map(feature => {
                     const busStop = new BusStop(feature);
@@ -1831,12 +1997,9 @@ class TransitExplorer {
         return new Promise((resolve) => {
             const checkSources = () => {
                 try {
-                    const stopsExists = this.map.getSource('mumbai-stops');
-                    const routesExists = this.map.getSource('mumbai-routes');
+                    const sourceExists = this.map.getSource(this.sourceName);
                     
-                    if (stopsExists && routesExists &&
-                        this.map.isSourceLoaded('mumbai-stops') && 
-                        this.map.isSourceLoaded('mumbai-routes')) {
+                    if (sourceExists && this.map.isSourceLoaded(this.sourceName)) {
                         console.log('✅ Map sources loaded');
                         resolve();
                     } else {
@@ -1929,18 +2092,12 @@ class TransitExplorer {
         console.log('🔍 Debugging source status:');
         
         try {
-            const stopsSource = this.map.getSource('mumbai-stops');
-            const routesSource = this.map.getSource('mumbai-routes');
+            const transitSource = this.map.getSource(this.sourceName);
             
-            console.log('Mumbai stops source:', stopsSource ? 'EXISTS' : 'MISSING');
-            console.log('Mumbai routes source:', routesSource ? 'EXISTS' : 'MISSING');
+            console.log(`Transit source (${this.sourceName}):`, transitSource ? 'EXISTS' : 'MISSING');
             
-            if (stopsSource) {
-                console.log('Stops source loaded:', this.map.isSourceLoaded('mumbai-stops'));
-            }
-            
-            if (routesSource) {
-                console.log('Routes source loaded:', this.map.isSourceLoaded('mumbai-routes'));
+            if (transitSource) {
+                console.log('Transit source loaded:', this.map.isSourceLoaded(this.sourceName));
             }
             
             // Check if layers exist
@@ -1951,18 +2108,48 @@ class TransitExplorer {
             console.log('Routes layer:', routesLayer ? 'EXISTS' : 'MISSING');
             
             // Try to query a small sample only if source is loaded
-            if (stopsSource && this.map.isSourceLoaded('mumbai-stops')) {
-                const sample = this.map.querySourceFeatures('mumbai-stops', {
-                    sourceLayer: 'mumbai-stops'
+            if (transitSource && this.map.isSourceLoaded(this.sourceName)) {
+                const stopsSample = this.map.querySourceFeatures(this.sourceName, {
+                    sourceLayer: this.sourceLayer,
+                    filter: ['==', ['get', 'feature_type'], 'stop']
                 });
-                console.log(`Sample features from stops: ${sample.length}`);
+                console.log(`Sample stops from source: ${stopsSample.length}`);
                 
-                if (sample.length > 0) {
-                    console.log('Sample stop properties:', sample[0].properties);
-                    console.log('Sample stop geometry:', sample[0].geometry);
+                if (stopsSample.length > 0) {
+                    console.log('Sample stop properties:', stopsSample[0].properties);
+                    console.log('Sample stop geometry:', stopsSample[0].geometry);
+
+                    const idCounts = new Map();
+                    stopsSample.forEach(stop => {
+                        const id = stop.properties.id;
+                        idCounts.set(id, (idCounts.get(id) || 0) + 1);
+                    });
+
+                    const duplicateIds = Array.from(idCounts.entries())
+                        .filter(([id, count]) => count > 1);
+
+                    if (duplicateIds.length > 0) {
+                        console.error('🚨 DUPLICATE IDs FOUND:', duplicateIds);
+                        console.error('Example duplicates:', stopsSample
+                            .filter(s => s.properties.id === duplicateIds[0][0])
+                            .map(s => ({ id: s.properties.id, name: s.properties.name }))
+                        );
+                    } else {
+                        console.log('✅ All stop IDs are unique');
+                    }
+                }
+                
+                const routesSample = this.map.querySourceFeatures(this.sourceName, {
+                    sourceLayer: this.sourceLayer,
+                    filter: ['==', ['get', 'feature_type'], 'route']
+                });
+                console.log(`Sample routes from source: ${routesSample.length}`);
+                
+                if (routesSample.length > 0) {
+                    console.log('Sample route properties:', routesSample[0].properties);
                 }
             } else {
-                console.warn('⚠️ Stops source not available for querying');
+                console.warn('⚠️ Transit source not available for querying');
             }
             
         } catch (error) {
@@ -1997,13 +2184,13 @@ class TransitExplorer {
 
         try {
             // Ensure the map and sources are loaded
-            if (!this.map || !this.map.isSourceLoaded('mumbai-stops')) {
+            if (!this.map || !this.map.isSourceLoaded(this.sourceName)) {
                 console.log('⏳ Map source not loaded yet, waiting...');
                 
                 // Wait for source to load
                 await new Promise((resolve) => {
                     const checkSource = () => {
-                        if (this.map.isSourceLoaded('mumbai-stops')) {
+                        if (this.map.isSourceLoaded(this.sourceName)) {
                             resolve();
                         } else {
                             setTimeout(checkSource, 500);
@@ -2017,7 +2204,7 @@ class TransitExplorer {
             this.map.setCenter([this.userLocation.lng, this.userLocation.lat]);
             
             // Use a larger radius to query nearby stops
-            const pixelRadius = 500; // Larger radius to catch more stops
+            const pixelRadius = 5; // Larger radius to catch more stops
             const center = this.map.project([this.userLocation.lng, this.userLocation.lat]);
             
             // Query stops within the pixel radius
@@ -2034,8 +2221,9 @@ class TransitExplorer {
             if (!features || features.length === 0) {
                 console.log('🔍 No rendered features found, trying source features...');
                 
-                features = this.map.querySourceFeatures('mumbai-stops', {
-                    sourceLayer: 'mumbai-stops'
+                features = this.map.querySourceFeatures(this.sourceName, {
+                    sourceLayer: this.sourceLayer,
+                    filter: ['==', ['get', 'feature_type'], 'stop']
                 });
                 
                 console.log(`📊 Found ${features.length} total features from source`);
@@ -2043,11 +2231,11 @@ class TransitExplorer {
                 // Filter features to only those within a reasonable distance (5km)
                 if (features && features.length > 0) {
                     features = features.filter(feature => {
-                        if (feature.geometry && feature.geometry.coordinates) {
-                            const stopCoords = feature.geometry.coordinates;
+                        const busStop = new BusStop(feature);
+                        if (busStop.lat && busStop.lon) {
                             const distance = DataUtils.calculateDistance(
                                 this.userLocation.lat, this.userLocation.lng,
-                                stopCoords[1], stopCoords[0]
+                                busStop.lat, busStop.lon
                             );
                             return distance <= 5; // Within 5km
                         }
@@ -2056,32 +2244,36 @@ class TransitExplorer {
                 }
             }
 
-            console.log(`🚏 Found ${features ? features.length : 0} stop features to analyze`);
-
             if (!features || features.length === 0) {
                 console.log('❌ No stop features found');
                 this.showNoStopsMessage();
                 return;
             }
+            
+            // De-duplicate features by ID (vector tiles can contain duplicates)
+            const uniqueFeatures = this.deduplicateFeatures(features);
+            console.log(`🚏 Found ${uniqueFeatures.length} unique stop features to analyze`);
 
-            // Calculate distances and find nearest stop
+            // Calculate distances and find nearest stop using BusStop class
+            // which correctly extracts lat/lon from properties (not geometry)
             let nearestStop = null;
             let minDistance = Infinity;
             let debugStops = [];
 
-            features.forEach(feature => {
-                if (feature.geometry && feature.geometry.coordinates) {
-                    const stopCoords = feature.geometry.coordinates;
+            uniqueFeatures.forEach(feature => {
+                const busStop = new BusStop(feature);
+                if (busStop.lat && busStop.lon) {
                     const distance = DataUtils.calculateDistance(
                         this.userLocation.lat, this.userLocation.lng,
-                        stopCoords[1], stopCoords[0]
+                        busStop.lat, busStop.lon
                     );
                     
                     // Debug info
                     debugStops.push({
-                        name: feature.properties.name || feature.properties.stop_name || 'Unknown',
+                        name: busStop.name || 'Unknown',
                         distance: distance,
-                        coords: stopCoords
+                        lat: busStop.lat,
+                        lon: busStop.lon
                     });
 
                     if (distance < minDistance) {
@@ -2119,14 +2311,15 @@ class TransitExplorer {
 
         try {
             // Ensure the map and sources are loaded
-            if (!this.map || !this.map.isSourceLoaded('mumbai-stops')) {
+            if (!this.map || !this.map.isSourceLoaded(this.sourceName)) {
                 console.log('⏳ Map source not loaded yet, waiting...');
                 return;
             }
 
             // Query all source features
-            const features = this.map.querySourceFeatures('mumbai-stops', {
-                sourceLayer: 'mumbai-stops'
+            const features = this.map.querySourceFeatures(this.sourceName, {
+                sourceLayer: this.sourceLayer,
+                filter: ['==', ['get', 'feature_type'], 'stop']
             });
 
             if (!features || features.length === 0) {
@@ -2135,32 +2328,35 @@ class TransitExplorer {
             }
 
             // Calculate distances and find nearest stop (no distance limit)
+            // Use BusStop class which correctly extracts lat/lon from properties
             let nearestStop = null;
+            let nearestBusStop = null;
             let minDistance = Infinity;
 
             features.forEach(feature => {
-                if (feature.geometry && feature.geometry.coordinates) {
-                    const stopCoords = feature.geometry.coordinates;
+                const busStop = new BusStop(feature);
+                if (busStop.lat && busStop.lon) {
                     const distance = DataUtils.calculateDistance(
                         this.userLocation.lat, this.userLocation.lng,
-                        stopCoords[1], stopCoords[0]
+                        busStop.lat, busStop.lon
                     );
 
                     if (distance < minDistance) {
                         minDistance = distance;
                         nearestStop = feature;
+                        nearestBusStop = busStop;
                     }
                 }
             });
 
-            if (nearestStop) {
-                console.log(`🚏 Forced selection - nearest stop: ${nearestStop.properties.name || 'Unknown'} at ${(minDistance * 1000).toFixed(0)}m`);
+            if (nearestStop && nearestBusStop) {
+                console.log(`🚏 Forced selection - nearest stop: ${nearestBusStop.name || 'Unknown'} at ${(minDistance * 1000).toFixed(0)}m`);
                 this.selectStop(nearestStop);
                 this.highlightNearestStop(nearestStop);
                 
-                // Fly to the stop location
+                // Fly to the stop location using lat/lon from properties
                 this.map.flyTo({
-                    center: nearestStop.geometry.coordinates,
+                    center: [nearestBusStop.lon, nearestBusStop.lat],
                     zoom: 15,
                     duration: 2000
                 });
@@ -2180,10 +2376,13 @@ class TransitExplorer {
         // Clear any previous highlights and markers
         this.clearAllSelections();
         
-        // Highlight the selected stop using the layer system
+        // Create BusStop and set currentSelectedStop BEFORE highlightStop
+        // because highlightStop now uses currentSelectedStop for marker coordinates
         const busStop = new BusStop(stopFeature);
-        this.highlightStop(busStop.id);
         this.currentSelectedStop = busStop;
+        
+        // Highlight the selected stop using a marker (layer system has incorrect geometry)
+        this.highlightStop(busStop.id);
         
         this.displayStopInfo(stopFeature);
         this.loadDepartures(stopFeature);
@@ -2409,8 +2608,9 @@ class TransitExplorer {
         
         try {
             // Query all stop features from the map
-            const allStopFeatures = this.map.querySourceFeatures('mumbai-stops', {
-                sourceLayer: 'mumbai-stops'
+            const allStopFeatures = this.map.querySourceFeatures(this.sourceName, {
+                sourceLayer: this.sourceLayer,
+                filter: ['==', ['get', 'feature_type'], 'stop']
             });
             
             if (!allStopFeatures || allStopFeatures.length === 0) {
@@ -2564,27 +2764,75 @@ class TransitExplorer {
         this.updateLocationStatus('Nearest stop selected', 'status-live', false);
     }
 
+    /**
+     * Log all features from transit tileset at a given point
+     * Uses queryRenderedFeatures per https://docs.mapbox.com/mapbox-gl-js/example/queryrenderedfeatures/
+     */
+    logFeaturesAtPoint(point, lngLat) {
+        console.log(`\n🔍 === Features at click point [${lngLat.lng.toFixed(5)}, ${lngLat.lat.toFixed(5)}] ===`);
+        
+        // Query all features at the click point from our transit layers
+        const transitLayers = ['stops', 'routes', 'stops-highlight', 'routes-highlight'];
+        const allFeatures = this.map.queryRenderedFeatures(point, {
+            layers: transitLayers.filter(layer => this.map.getLayer(layer)) // Only query existing layers
+        });
+        
+        console.log(`📊 Total features found: ${allFeatures.length}`);
+        
+        // Group by layer and feature_type
+        const grouped = {};
+        allFeatures.forEach(feat => {
+            const layerId = feat.layer?.id || 'unknown';
+            const featureType = feat.properties?.feature_type || 'unknown';
+            const key = `${layerId} (${featureType})`;
+            
+            if (!grouped[key]) {
+                grouped[key] = [];
+            }
+            grouped[key].push(feat);
+        });
+        
+        // Log grouped features
+        Object.entries(grouped).forEach(([key, features]) => {
+            console.log(`\n📍 Layer: ${key} - ${features.length} feature(s)`);
+            features.forEach((feat, i) => {
+                const props = feat.properties || {};
+                const geomType = feat.geometry?.type || 'unknown';
+                const coordsPreview = feat.geometry?.coordinates 
+                    ? (Array.isArray(feat.geometry.coordinates[0]) 
+                        ? `${feat.geometry.coordinates.length} coords` 
+                        : JSON.stringify(feat.geometry.coordinates))
+                    : 'no coords';
+                
+                console.log(`   [${i}] ${props.name || props.route_name || 'Unnamed'}`);
+                console.log(`       ID: ${props.id || props.route_id || feat.id || 'no id'}`);
+                console.log(`       Geometry: ${geomType} (${coordsPreview})`);
+                console.log(`       Properties:`, props);
+            });
+        });
+        
+        console.log(`\n🔍 === End of features ===\n`);
+    }
+    
     setupMapInteractions() {
         console.log('🎯 Setting up unified map interactions...');
         
         // Unified map click handler to handle overlapping features
         this.map.on('click', (e) => {
-            // Query all features at the click point
-            const features = this.map.queryRenderedFeatures(e.point);
-            const stopFeatures = features.filter(f => f.layer.id === 'stops');
-            const routeFeatures = features.filter(f => f.layer.id === 'routes');
+            // Log all features from transit tileset at click point (for debugging)
+            this.logFeaturesAtPoint(e.point, e.lngLat);
             
-            console.log(`🎯 Map click - Found ${stopFeatures.length} stops, ${routeFeatures.length} routes`);
+            // Query features at the click point and find the nearest one
+            const nearestStop = this.findNearestFeatureAtPoint(e.point, e.lngLat, 'stops');
+            const nearestRoute = this.findNearestFeatureAtPoint(e.point, e.lngLat, 'routes');
+            
+            console.log(`🎯 Map click - Nearest stop: ${nearestStop ? 'found' : 'none'}, Nearest route: ${nearestRoute ? 'found' : 'none'}`);
             
             // Priority: stops first, then routes
-            if (stopFeatures.length > 0) {
-                // Handle stop selection (first stop if multiple)
-                const primaryStop = stopFeatures[0];
-                this.handleStopClick(primaryStop, stopFeatures);
-            } else if (routeFeatures.length > 0) {
-                // Handle route selection (first route if multiple)
-                const primaryRoute = routeFeatures[0];
-                this.handleRouteClick(primaryRoute);
+            if (nearestStop) {
+                this.handleStopClick(nearestStop, [nearestStop]);
+            } else if (nearestRoute) {
+                this.handleRouteClick(nearestRoute);
             } else {
                 // Clear selections if clicking on empty map
                 this.clearAllSelections();
@@ -2600,27 +2848,268 @@ class TransitExplorer {
             this.map.getCanvas().style.cursor = '';
         });
 
-        // Add stop hover interaction for temporary highlighting
+        // Add stop hover interaction using feature state
         this.map.on('mouseenter', 'stops', (e) => {
-            if (e.features && e.features.length > 0) {
-                const feature = e.features[0];
-                if (feature && feature.properties) {
-                    const busStop = new BusStop(feature);
-                    
-                    // Only highlight if not already selected
-                    if (!this.currentSelectedStop || this.currentSelectedStop.id !== busStop.id) {
-                        this.highlightStop(busStop.id, true);
+            this.map.getCanvas().style.cursor = 'pointer';
+
+            // Query features at the exact cursor point and find the nearest one
+            const nearestStop = this.findNearestFeatureAtPoint(e.point, e.lngLat, 'stops');
+
+            if (nearestStop && nearestStop.properties) {
+                // Debug: Log feature structure to understand ID situation
+                if (!this.hasLoggedFeatureStructure) {
+                    console.log('🔍 DEBUG - Feature structure:', {
+                        'feature.id': nearestStop.id,
+                        'feature.id type': typeof nearestStop.id,
+                        'feature.properties.id': nearestStop.properties.id,
+                        'feature.properties.stop_id': nearestStop.properties.stop_id,
+                        'all properties': nearestStop.properties
+                    });
+
+                    // Query all stops at this point to see if IDs are unique
+                    const allStopsHere = this.map.queryRenderedFeatures(e.point, { layers: ['stops'] });
+                    console.log(`🔍 DEBUG - ${allStopsHere.length} stops at this point:`,
+                        allStopsHere.map(f => ({
+                            id: f.id,
+                            propId: f.properties.id,
+                            name: f.properties.name
+                        }))
+                    );
+
+                    this.hasLoggedFeatureStructure = true;
+                }
+
+                // Feature state requires numeric ID at feature root level, not in properties
+                const stopId = nearestStop.id;
+                const stopPropertiesId = nearestStop.properties.id;
+
+                // Only set hover state if feature has a root-level ID
+                if (stopId !== undefined && stopId !== null &&
+                    stopId !== this.hoveredStopId &&
+                    (!this.currentSelectedStop || this.currentSelectedStop.id !== stopPropertiesId)) {
+
+                    try {
+                        // Clear previous hover state
+                        if (this.hoveredStopId !== null) {
+                            this.map.setFeatureState(
+                                {
+                                    source: this.sourceName,
+                                    sourceLayer: this.sourceLayer,
+                                    id: this.hoveredStopId
+                                },
+                                { hover: false }
+                            );
+                        }
+
+                        // Set new hover state
+                        this.hoveredStopId = stopId;
+                        this.map.setFeatureState(
+                            {
+                                source: this.sourceName,
+                                sourceLayer: this.sourceLayer,
+                                id: stopId
+                            },
+                            { hover: true }
+                        );
+
+                        console.log(`🎯 Hovering stop: ${stopPropertiesId} (feature ID: ${stopId})`);
+                    } catch (error) {
+                        console.warn('⚠️ Failed to set hover state:', error);
+                        this.hoveredStopId = null;
                     }
                 }
             }
         });
 
-        // Clear hover highlights when mouse leaves stops
+        // Clear hover state when mouse leaves stops layer
         this.map.on('mouseleave', 'stops', () => {
-            this.clearTemporaryStopHighlights();
+            this.map.getCanvas().style.cursor = '';
+
+            if (this.hoveredStopId !== null) {
+                try {
+                    this.map.setFeatureState(
+                        {
+                            source: this.sourceName,
+                            sourceLayer: this.sourceLayer,
+                            id: this.hoveredStopId
+                        },
+                        { hover: false }
+                    );
+                    console.log('🎯 Cleared stop hover state');
+                } catch (error) {
+                    console.warn('⚠️ Failed to clear hover state:', error);
+                } finally {
+                    this.hoveredStopId = null;
+                }
+            }
         });
 
         console.log('✅ Unified map interactions set up successfully');
+    }
+
+    /**
+     * Find the nearest unique feature at a given point
+     * Handles deduplication of features from multiple tiles
+     * @param {Object} point - Screen point {x, y}
+     * @param {Object} lngLat - Geographic coordinates {lng, lat}
+     * @param {string} layerId - Layer ID to query ('stops' or 'routes')
+     * @returns {Object|null} - The nearest unique feature or null
+     */
+    findNearestFeatureAtPoint(point, lngLat, layerId) {
+        // Query features at the exact point
+        const features = this.map.queryRenderedFeatures(point, { layers: [layerId] });
+        
+        if (!features || features.length === 0) {
+            return null;
+        }
+        
+        // Deduplicate features by their unique ID
+        const uniqueFeatures = this.deduplicateFeatures(features, layerId);
+        
+        if (uniqueFeatures.length === 0) {
+            return null;
+        }
+        
+        // If only one feature, return it directly
+        if (uniqueFeatures.length === 1) {
+            return uniqueFeatures[0];
+        }
+        
+        // Find the nearest feature to the click/hover point
+        return this.findNearestFeature(uniqueFeatures, lngLat);
+    }
+
+    /**
+     * Deduplicate features by their unique ID
+     * @param {Array} features - Array of map features
+     * @param {string} layerId - Optional layer ID ('stops' or 'routes') for specific ID field lookup
+     * @returns {Array} - Deduplicated features
+     */
+    deduplicateFeatures(features, layerId = null) {
+        const seen = new Map();
+
+        for (const feature of features) {
+            if (!feature.properties) continue;
+
+            let uniqueId;
+            if (layerId === 'stops') {
+                uniqueId = feature.properties.id || feature.properties.stop_id || feature.id;
+            } else if (layerId === 'routes') {
+                uniqueId = feature.properties.route_id || feature.properties.id || feature.id;
+            } else {
+                uniqueId = feature.properties.id ||
+                          feature.properties.stop_id ||
+                          feature.properties.route_id ||
+                          feature.id;
+            }
+
+            if (uniqueId && !seen.has(uniqueId)) {
+                seen.set(uniqueId, feature);
+            }
+        }
+
+        return Array.from(seen.values());
+    }
+
+    /**
+     * Find the nearest feature to a geographic point
+     * Uses simple Haversine distance calculation
+     * @param {Array} features - Array of map features
+     * @param {Object} lngLat - Geographic coordinates {lng, lat}
+     * @param {number} maxDistanceKm - Maximum distance in kilometers (default 0.5km)
+     * @returns {Object|null} - The nearest feature or null if too far
+     */
+    findNearestFeature(features, lngLat, maxDistanceKm = 0.5) {
+        let nearestFeature = null;
+        let minDistance = Infinity;
+
+        for (const feature of features) {
+            const coords = this.getFeatureCoordinates(feature);
+            if (!coords) continue;
+
+            const distance = this.calculateDistance(lngLat.lng, lngLat.lat, coords[0], coords[1]);
+
+            if (distance < minDistance && distance <= maxDistanceKm) {
+                minDistance = distance;
+                nearestFeature = feature;
+            }
+        }
+
+        if (nearestFeature) {
+            console.log(`📏 Nearest feature found at ${(minDistance * 1000).toFixed(0)}m from click`);
+        } else if (features.length > 0) {
+            console.log(`⚠️ No features within ${maxDistanceKm * 1000}m threshold`);
+        }
+
+        return nearestFeature;
+    }
+
+    /**
+     * Extract representative coordinates from a feature geometry
+     * @param {Object} feature - Map feature with geometry
+     * @returns {Array|null} - [lng, lat] coordinates or null
+     */
+    getFeatureCoordinates(feature) {
+        if (!feature.properties) {
+            return null;
+        }
+
+        const featureType = feature.properties.feature_type;
+
+        if (featureType === 'stop') {
+            const busStop = new BusStop(feature);
+            if (busStop.lon && busStop.lat) {
+                return [busStop.lon, busStop.lat];
+            }
+            return null;
+        }
+
+        if (!feature.geometry || !feature.geometry.coordinates) {
+            return null;
+        }
+
+        const coords = feature.geometry.coordinates;
+        const type = feature.geometry.type;
+
+        switch (type) {
+            case 'Point':
+                return coords;
+            case 'LineString':
+                if (coords.length > 0) {
+                    const midIndex = Math.floor(coords.length / 2);
+                    return coords[midIndex];
+                }
+                return null;
+            case 'MultiLineString':
+                if (coords.length > 0 && coords[0].length > 0) {
+                    const firstLine = coords[0];
+                    const midIndex = Math.floor(firstLine.length / 2);
+                    return firstLine[midIndex];
+                }
+                return null;
+            default:
+                return null;
+        }
+    }
+
+    /**
+     * Calculate distance between two points using Haversine formula
+     * @param {number} lon1 - Longitude of first point
+     * @param {number} lat1 - Latitude of first point
+     * @param {number} lon2 - Longitude of second point
+     * @param {number} lat2 - Latitude of second point
+     * @returns {number} - Distance in kilometers
+     */
+    calculateDistance(lon1, lat1, lon2, lat2) {
+        const R = 6371; // Earth's radius in km
+        const dLat = (lat2 - lat1) * Math.PI / 180;
+        const dLon = (lon2 - lon1) * Math.PI / 180;
+        const a = 
+            Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+            Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
+            Math.sin(dLon / 2) * Math.sin(dLon / 2);
+        const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+        return R * c;
     }
 
     setupMoveEndListener() {
@@ -2630,6 +3119,11 @@ class TransitExplorer {
             // Small delay to ensure rendering is complete
             setTimeout(() => {
                 this.queryVisibleTransitData();
+                
+                // Auto-select closest stop if enabled
+                if (this.autoSelectClosestStop) {
+                    this.findClosestStopToMapCenter();
+                }
             }, 100);
         });
     }
@@ -2647,16 +3141,106 @@ class TransitExplorer {
             console.error('❌ Error querying visible transit data:', error);
         }
     }
+    
+    /**
+     * Find and select the closest bus stop to the current map center
+     */
+    async findClosestStopToMapCenter() {
+        if (!this.map || !this.map.isSourceLoaded(this.sourceName)) {
+            console.log('⏳ Map source not loaded yet, skipping auto-select');
+            return;
+        }
+        
+        // Prevent concurrent selections
+        if (this.isSelectingStop) {
+            console.log('⏳ Stop selection already in progress, skipping');
+            return;
+        }
+        
+        this.isSelectingStop = true;
+        
+        try {
+            const center = this.map.getCenter();
+            
+            // Query stop features from the source
+            const rawFeatures = this.map.querySourceFeatures(this.sourceName, {
+                sourceLayer: this.sourceLayer,
+                filter: ['==', ['get', 'feature_type'], 'stop']
+            });
+            
+            if (!rawFeatures || rawFeatures.length === 0) {
+                console.log('❌ No stop features found for auto-select');
+                return;
+            }
+            
+            // De-duplicate features by ID (vector tiles can contain duplicates across tiles)
+            const uniqueFeatures = this.deduplicateFeatures(rawFeatures);
+            
+            // Find the closest stop to map center
+            let closestStop = null;
+            let minDistance = Infinity;
+            
+            uniqueFeatures.forEach(feature => {
+                const busStop = new BusStop(feature);
+                if (busStop.lat && busStop.lon) {
+                    const distance = DataUtils.calculateDistance(
+                        center.lat, center.lng,
+                        busStop.lat, busStop.lon
+                    );
+                    
+                    if (distance < minDistance) {
+                        minDistance = distance;
+                        closestStop = feature;
+                    }
+                }
+            });
+            
+            if (closestStop) {
+                const busStop = new BusStop(closestStop);
+                
+                // Only select if different from current stop (avoid redundant updates)
+                if (!this.currentStop || 
+                    this.currentStop.properties?.id !== closestStop.properties?.id) {
+                    console.log(`🎯 Auto-selecting closest stop: ${busStop.name} (ID: ${busStop.id}) at ${(minDistance * 1000).toFixed(0)}m from map center`);
+                    this.selectStop(closestStop);
+                } else {
+                    console.log(`🎯 Closest stop unchanged: ${busStop.name}`);
+                }
+            }
+        } catch (error) {
+            console.error('❌ Error in findClosestStopToMapCenter:', error);
+        } finally {
+            this.isSelectingStop = false;
+        }
+    }
 
     handleStopClick(primaryStopFeature, allStopFeatures) {
         console.log('🚏 Handling stop click with', allStopFeatures.length, 'stops at location');
-        
+
         const primaryBusStop = new BusStop(primaryStopFeature);
         console.log(`🚏 Primary stop: ${primaryBusStop.name} (ID: ${primaryBusStop.id})`);
-        
+
+        // Clear hover state before selecting
+        if (this.hoveredStopId !== null) {
+            try {
+                this.map.setFeatureState(
+                    {
+                        source: this.sourceName,
+                        sourceLayer: this.sourceLayer,
+                        id: this.hoveredStopId
+                    },
+                    { hover: false }
+                );
+            } catch (error) {
+                console.warn('⚠️ Failed to clear hover state on click:', error);
+            } finally {
+                this.hoveredStopId = null;
+            }
+        }
+
         // Clear previous selections
         this.clearAllSelections();
-        
+
         // Select the stop
         this.selectStop(primaryStopFeature);
     }
@@ -2690,48 +3274,87 @@ class TransitExplorer {
     highlightStop(stopId, isTemporary = false) {
         if (!stopId) return;
 
-        // Dynamically determine the correct field name for the filter
-        let fieldName = 'stop_id'; // default
-        
-        if (this.currentStop && this.currentStop.properties) {
-            // Determine which field name is actually used in the tileset
-            if (this.currentStop.properties.id !== undefined) {
-                fieldName = 'id';
-            } else if (this.currentStop.properties.stop_id !== undefined) {
-                fieldName = 'stop_id';
+        // Skip temporary highlights (hover is handled separately)
+        if (isTemporary) {
+            console.log(`🎯 Skipping temporary highlight for stop: ${stopId}`);
+            return;
+        }
+
+        console.log(`🎯 Highlighting stop: ${stopId}`);
+
+        // Clear previous selection state
+        if (this.currentHighlightedStop !== null) {
+            try {
+                this.map.setFeatureState(
+                    {
+                        source: this.sourceName,
+                        sourceLayer: this.sourceLayer,
+                        id: this.currentHighlightedStop
+                    },
+                    { selected: false }
+                );
+            } catch (error) {
+                console.warn('⚠️ Failed to clear previous selection state:', error);
             }
         }
 
-        console.log(`🎯 Using field '${fieldName}' for stop highlight filter`);
-
-        // Update the highlight layer filter to show only the selected stop
-        this.map.setFilter('stops-highlight', ['==', fieldName, stopId]);
-        
-        // Store current highlight for cleanup
-        if (!isTemporary) {
-            this.currentHighlightedStop = stopId;
-            this.currentHighlightedStopField = fieldName;
+        // Set new selection state
+        try {
+            this.map.setFeatureState(
+                {
+                    source: this.sourceName,
+                    sourceLayer: this.sourceLayer,
+                    id: stopId
+                },
+                { selected: true }
+            );
+            console.log(`🎯 Set selection state for stop: ${stopId}`);
+        } catch (error) {
+            console.warn('⚠️ Failed to set selection state:', error);
         }
-        
-        console.log(`🎯 Highlighting stop: ${stopId} using field: ${fieldName}`);
+
+        // Store current highlight for cleanup
+        this.currentHighlightedStop = stopId;
     }
 
+    
     clearStopHighlight() {
-        // Use the stored field name if available, otherwise detect it
-        let fieldName = this.currentHighlightedStopField || 'stop_id';
-        
-        // Hide the highlight layer by setting an impossible filter
-        this.map.setFilter('stops-highlight', ['==', fieldName, '']);
+        // Clear selection state
+        if (this.currentHighlightedStop !== null) {
+            try {
+                this.map.setFeatureState(
+                    {
+                        source: this.sourceName,
+                        sourceLayer: this.sourceLayer,
+                        id: this.currentHighlightedStop
+                    },
+                    { selected: false }
+                );
+                console.log('🎯 Cleared stop selection state');
+            } catch (error) {
+                console.warn('⚠️ Failed to clear selection state:', error);
+            }
+        }
         this.currentHighlightedStop = null;
-        this.currentHighlightedStopField = null;
     }
 
     clearTemporaryStopHighlights() {
-        // Only clear hover highlights, keep click selections
-        if (this.currentHighlightedStop) {
-            this.highlightStop(this.currentHighlightedStop);
-        } else {
-            this.clearStopHighlight();
+        // Clear feature state hover (kept for backward compatibility but now handled by mouseleave)
+        if (this.hoveredStopId !== null) {
+            try {
+                this.map.setFeatureState(
+                    {
+                        source: this.sourceName,
+                        sourceLayer: this.sourceLayer,
+                        id: this.hoveredStopId
+                    },
+                    { hover: false }
+                );
+            } catch (error) {
+                console.warn('⚠️ Failed to clear temporary hover:', error);
+            } finally {
+                this.hoveredStopId = null;
+            }
         }
     }
 
@@ -3275,18 +3898,18 @@ class TransitExplorer {
 
     // Add missing findRouteIdByName method
     async findRouteIdByName(routeName) {
-        if (!this.map || !this.map.getSource('mumbai-routes')) {
-            console.warn('Map or routes source not available');
+        if (!this.map || !this.map.getSource(this.sourceName)) {
+            console.warn('Map or transit source not available');
             return null;
         }
         
         try {
             // Wait for source to be loaded
-            if (!this.map.isSourceLoaded('mumbai-routes')) {
-                console.log('⏳ Waiting for routes source to load...');
+            if (!this.map.isSourceLoaded(this.sourceName)) {
+                console.log('⏳ Waiting for transit source to load...');
                 await new Promise(resolve => {
                     const checkSource = () => {
-                        if (this.map.isSourceLoaded('mumbai-routes')) {
+                        if (this.map.isSourceLoaded(this.sourceName)) {
                             resolve();
                         } else {
                             setTimeout(checkSource, 500);
@@ -3297,8 +3920,9 @@ class TransitExplorer {
             }
             
             // Query route features to find matching route
-            const routeFeatures = this.map.querySourceFeatures('mumbai-routes', {
-                sourceLayer: 'mumbai-routes'
+            const routeFeatures = this.map.querySourceFeatures(this.sourceName, {
+                sourceLayer: this.sourceLayer,
+                filter: ['==', ['get', 'feature_type'], 'route']
             });
             
             // Find route with matching name

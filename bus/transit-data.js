@@ -1,10 +1,19 @@
 // Transit Data Models and Configuration
 // Contains data schemas, styling configuration, and data model classes
 
+// Vector tile source configuration
+export const VECTOR_TILE_SOURCE = {
+    url: 'mapbox://planemad.np3cjv7ukkcy',
+    sourceName: 'transit-data',
+    sourceLayer: '642d08ec9c71882f33e0' // Layer name in the vector tiles
+};
+
 // Configuration for tileset schema mapping
 export const TILESET_SCHEMA = {
     routes: {
-        layer: 'mumbai-routes',
+        layer: 'transit-data', // Source name
+        sourceLayer: '642d08ec9c71882f33e0', // Source layer within the tiles
+        featureType: 'route', // feature_type property value
         fields: {
             id: 'route_id',
             shortName: 'route_short_name',
@@ -13,23 +22,47 @@ export const TILESET_SCHEMA = {
             color: 'route_color',
             textColor: 'route_text_color',
             isLive: 'is_live',
+            isPremium: 'is_premium',
             agency: 'agency_name',
             city: 'city_name',
-            routeType: 'route_type',
-            fareType: 'fare_type'
+            routeType: 'trip_type',
+            fareType: 'fare_type',
+            acService: 'ac_service',
+            direction: 'direction',
+            firstStopName: 'first_stop_name',
+            lastStopName: 'last_stop_name',
+            firstStopId: 'first_stop_id',
+            lastStopId: 'last_stop_id',
+            stopCount: 'stop_count',
+            stopIds: 'stop_ids',
+            stopTimetable: 'stop_timetable',
+            tripHeadway: 'trip_headway',
+            tripCount: 'trip_count',
+            morningTripCount: 'morning_trip_count',
+            afternoonTripCount: 'afternoon_trip_count',
+            eveningTripCount: 'evening_trip_count',
+            nightTripCount: 'night_trip_count',
+            reverseRouteId: 'reverse_route_id'
         }
     },
     stops: {
-        layer: 'mumbai-stops',
+        layer: 'transit-data', // Source name
+        sourceLayer: '642d08ec9c71882f33e0', // Source layer within the tiles
+        featureType: 'stop', // feature_type property value
         fields: {
-            id: ['id', 'stop_id'], // Try both field names
+            id: 'id',
             name: 'name',
             timetable: 'stop_timetable',
             routeList: 'route_name_list',
+            terminalRouteList: 'terminal_route_name_list',
             tripCount: 'trip_count',
+            terminalTripCount: 'terminal_trip_count',
             avgWaitTime: 'avg_wait_time',
+            minTripHeadway: 'min_trip_headway',
             description: 'stop_description',
             towardsStop: 'towards_stop',
+            startTime: 'start_time',
+            endTime: 'end_time'
         }
     }
 };
@@ -49,6 +82,61 @@ export const AGENCY_STYLES = {
                 text: '#ffffff', 
                 mapLine: '#ef4444'          // Red-500
             },
+            'Express': {
+                background: '#f97316',      // Orange-500
+                text: '#ffffff',
+                mapLine: '#f97316'          // Orange-500
+            },
+            'default': {
+                background: '#059669',      // Green-600
+                text: '#ffffff',
+                mapLine: '#10b981'          // Green-500
+            }
+        }
+    },
+    'CHALO BUS MUMBAI': {
+        name: 'Chalo Bus Mumbai',
+        colors: {
+            'Premium': {
+                background: '#8b5cf6',      // Purple-500
+                text: '#ffffff',
+                mapLine: '#8b5cf6'          // Purple-500
+            },
+            'AC': {
+                background: '#2563eb',      // Blue-600
+                text: '#ffffff',
+                mapLine: '#3b82f6'          // Blue-500
+            },
+            'Regular': {
+                background: '#dc2626',      // Red-600
+                text: '#ffffff', 
+                mapLine: '#ef4444'          // Red-500
+            },
+            'Express': {
+                background: '#f97316',      // Orange-500
+                text: '#ffffff',
+                mapLine: '#f97316'          // Orange-500
+            },
+            'default': {
+                background: '#059669',      // Green-600
+                text: '#ffffff',
+                mapLine: '#10b981'          // Green-500
+            }
+        }
+    },
+    'KSRTC': {
+        name: 'Kerala State Road Transport Corporation',
+        colors: {
+            'AC': {
+                background: '#2563eb',      // Blue-600
+                text: '#ffffff',
+                mapLine: '#3b82f6'          // Blue-500
+            },
+            'Regular': {
+                background: '#059669',      // Green-600
+                text: '#ffffff', 
+                mapLine: '#10b981'          // Green-500
+            },
             'default': {
                 background: '#059669',      // Green-600
                 text: '#ffffff',
@@ -59,6 +147,26 @@ export const AGENCY_STYLES = {
     'default': {
         name: 'Transit Agency',
         colors: {
+            'Premium': {
+                background: '#8b5cf6',      // Purple-500
+                text: '#ffffff',
+                mapLine: '#8b5cf6'          // Purple-500
+            },
+            'AC': {
+                background: '#2563eb',      // Blue-600
+                text: '#ffffff',
+                mapLine: '#3b82f6'          // Blue-500
+            },
+            'Regular': {
+                background: '#dc2626',      // Red-600
+                text: '#ffffff', 
+                mapLine: '#ef4444'          // Red-500
+            },
+            'Express': {
+                background: '#f97316',      // Orange-500
+                text: '#ffffff',
+                mapLine: '#f97316'          // Orange-500
+            },
             'default': {
                 background: '#059669',      // Green-600
                 text: '#ffffff',
@@ -212,8 +320,6 @@ export class BusStop {
         this.id = this.getProperty('id');
         this.name = this.getProperty('name');
         this.description = this.getProperty('description');
-        this.lat = this.getNumericProperty('lat');
-        this.lon = this.getNumericProperty('lon');
         this.timetable = this.getProperty('timetable');
         this.routeList = this.getProperty('routeList');
         this.tripCount = this.getNumericProperty('tripCount');
@@ -222,10 +328,62 @@ export class BusStop {
         this.stopUrl = this.getProperty('stopUrl');
         this.locationType = this.getProperty('locationType');
         
-        // Computed properties
-        this.coordinates = feature.geometry ? feature.geometry.coordinates : [this.lon, this.lat];
+        // Extract coordinates from geometry (preferred) or properties
+        const coords = this.extractCoordinates(feature.geometry);
+
+        if (coords) {
+            // Use geometry coordinates (correct Point geometry from Mapbox tileset)
+            this.lon = coords[0];
+            this.lat = coords[1];
+            this.coordinates = coords;
+        } else {
+            // Fallback to properties if geometry is not available
+            this.lon = this.getNumericProperty('lon');
+            this.lat = this.getNumericProperty('lat');
+            this.coordinates = this.lon && this.lat ? [this.lon, this.lat] : null;
+        }
+        
         this.routes = this.parseRouteList();
         this.hasLiveData = this.id && this.id.length > 0;
+    }
+    
+    // Extract a representative point from various geometry types
+    extractCoordinates(geometry) {
+        if (!geometry || !geometry.coordinates) return null;
+        
+        const coords = geometry.coordinates;
+        const type = geometry.type;
+        
+        switch (type) {
+            case 'Point':
+                // [lng, lat]
+                return coords;
+            case 'LineString':
+                // [[lng, lat], [lng, lat], ...] - return midpoint for better representation
+                if (coords.length > 0) {
+                    const midIndex = Math.floor(coords.length / 2);
+                    return coords[midIndex];
+                }
+                return null;
+            case 'MultiLineString':
+                // [[[lng, lat], ...], [[lng, lat], ...], ...] - return first point of first line
+                if (coords.length > 0 && coords[0].length > 0) {
+                    const firstLine = coords[0];
+                    const midIndex = Math.floor(firstLine.length / 2);
+                    return firstLine[midIndex];
+                }
+                return null;
+            default:
+                // Unknown type, try to extract first coordinate
+                if (Array.isArray(coords) && coords.length >= 2) {
+                    if (typeof coords[0] === 'number') {
+                        return coords; // Already [lng, lat]
+                    } else if (Array.isArray(coords[0])) {
+                        return coords[0]; // First point
+                    }
+                }
+                return null;
+        }
     }
     
     getProperty(schemaKey) {
