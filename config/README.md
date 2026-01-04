@@ -192,7 +192,14 @@ The map supports three different ways to load configurations via the URL paramet
   "id": "layer-name",
   "title": "Custom Title",           // Change display name
   "initiallyChecked": true,         // Turn on by default
-  "description": "Custom description"  // Change description
+  "description": "Custom description",  // Change description
+  "clusterSeparateBy": "category",      // if there are too many points and clustering is required
+  "clusterStyles": {
+    "A": { "color": "red" },
+    "B": { "color": "blue" }
+  },
+  ...
+}
 }
 ```
 
@@ -301,4 +308,4 @@ If you need to define completely custom layers (not in the preset library), you 
 - [JSON Validator](https://jsonlint.com) - Check your JSON syntax
 - [Mapbox Style Specification](https://docs.mapbox.com/style-spec/) - For advanced styling
 
-Need help? Open an issue on GitHub! 🙋‍♀️ 
+Need help? Open an issue on GitHub! 🙋‍♀️

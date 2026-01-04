@@ -1144,6 +1144,11 @@ export class MapboxAPI {
     async _createGeoJSONLayer(groupId, config, visible) {
         const sourceId = `geojson-${groupId}`;
 
+        // If explicitly requested to cluster by attribute, handle it separately
+        if (config.clusterSeparateBy) {
+            return this._createSegregatedGeoJSONLayer(groupId, config, visible);
+        }
+
         if (!this._map.getSource(sourceId) && visible) {
             let dataSource;
 
@@ -1160,6 +1165,13 @@ export class MapboxAPI {
                 type: 'geojson',
                 data: dataSource
             };
+
+            // Add clustering config if enabled
+            if (config.clustered) {
+                sourceConfig.cluster = true;
+                sourceConfig.clusterMaxZoom = config.clusterMaxZoom || 14;
+                sourceConfig.clusterRadius = config.clusterRadius || 50;
+            }
 
             if (config.inspect?.id) {
                 sourceConfig.promoteId = config.inspect.id;
@@ -1179,6 +1191,91 @@ export class MapboxAPI {
         return true;
     }
 
+    async _createSegregatedGeoJSONLayer(groupId, config, visible) {
+        // Fetch data first to process it
+        let geojson;
+        if (config.data) {
+            geojson = this._processGeoJSONData(config.data);
+        } else if (config.url) {
+            try {
+                const response = await fetch(config.url);
+                const data = await response.json();
+                geojson = this._processGeoJSONData(data);
+            } catch (error) {
+                console.error(`Error loading data for segregated layer ${groupId}:`, error);
+                return false;
+            }
+        } else {
+            return false;
+        }
+
+        // Store the sub-source IDs for management
+        if (!this._layerCache.has(groupId)) {
+            this._layerCache.set(groupId, { subSources: [] });
+        }
+        const cache = this._layerCache.get(groupId);
+
+        // Group features by attribute
+        const groups = {};
+        geojson.features.forEach(feature => {
+            const value = feature.properties[config.clusterSeparateBy] || 'other';
+            // Sanitize value for ID
+            const safeValue = String(value).replace(/[^a-zA-Z0-9-]/g, '_');
+
+            if (!groups[safeValue]) {
+                groups[safeValue] = {
+                    features: [],
+                    originalValue: value
+                };
+            }
+            groups[safeValue].features.push(feature);
+        });
+
+        // Create a source and layers for each group
+        Object.entries(groups).forEach(([safeValue, groupData]) => {
+            const subSourceId = `geojson-${groupId}-${safeValue}`;
+
+            if (!this._map.getSource(subSourceId) && visible) {
+                cache.subSources.push(subSourceId);
+
+                const sourceConfig = {
+                    type: 'geojson',
+                    data: {
+                        type: 'FeatureCollection',
+                        features: groupData.features
+                    },
+                    cluster: true,
+                    clusterMaxZoom: config.clusterMaxZoom || 14,
+                    clusterRadius: config.clusterRadius || 50
+                };
+
+                if (config.inspect?.id) {
+                    sourceConfig.promoteId = config.inspect.id;
+                }
+
+                if (config.attribution) {
+                    sourceConfig.attribution = config.attribution;
+                }
+
+                this._map.addSource(subSourceId, sourceConfig);
+
+                // Add layers for this sub-source
+                // Pass specific cluster color if defined in a map, otherwise generate one or use default
+                const subConfig = { ...config, clustered: true };
+
+                // If clusterStyles map is provided, check for specific style
+                if (config.clusterStyles && config.clusterStyles[groupData.originalValue]) {
+                    subConfig.clusterColor = config.clusterStyles[groupData.originalValue].color;
+                }
+                // Don't auto-generate colors, let _addGeoJSONLayers use default step unless overridden
+
+                this._addGeoJSONLayers(groupId, subConfig, subSourceId, visible, safeValue);
+            }
+        });
+
+        return true;
+    }
+
     _processGeoJSONData(data) {
         if (data.type === 'FeatureCollection') {
             return data;
@@ -1193,7 +1290,8 @@ export class MapboxAPI {
         throw new Error('Invalid GeoJSON data format');
     }
 
-    _addGeoJSONLayers(groupId, config, sourceId, visible) {
+    _addGeoJSONLayers(groupId, config, sourceId, visible, suffix = '') {
+        const idSuffix = suffix ? `-${suffix}` : '';
         // Get default styles for checking what layer types should be created
         const defaultStyles = this._defaultStyles.vector || {};
 
@@ -1222,18 +1320,22 @@ export class MapboxAPI {
         // Check if circle layer should be created (only if user explicitly defines circle properties)
         const hasCircleStyles = userHasCircleStyles;
 
+        // Common filter for non-clustered points if clustering is enabled
+        const unclusteredFilter = config.clustered ? ['!', ['has', 'point_count']] : null;
+
         // Add fill layer
         if (hasFillStyles) {
             // Filter style to only include fill-related properties
             const fillStyle = this._filterStyleForLayerType(config.style, 'fill');
 
             const fillLayerConfig = this._createLayerConfig({
-                id: `${sourceId}-fill`,
+                id: `${sourceId}-fill${idSuffix}`,
                 groupId: groupId,
                 type: 'fill',
                 source: sourceId,
                 style: fillStyle,
-                visible
+                visible,
+                ...(unclusteredFilter && { filter: unclusteredFilter })
             }, 'fill');
 
             this._addLayerWithSlot(fillLayerConfig, LayerOrderManager.getInsertPosition(this._map, 'vector', 'fill', config, this._orderedGroups));
@@ -1245,12 +1347,13 @@ export class MapboxAPI {
             const lineStyle = this._filterStyleForLayerType(config.style, 'line');
 
             const lineLayerConfig = this._createLayerConfig({
-                id: `${sourceId}-line`,
+                id: `${sourceId}-line${idSuffix}`,
                 groupId: groupId,
                 type: 'line',
                 source: sourceId,
                 style: lineStyle,
-                visible
+                visible,
+                ...(unclusteredFilter && { filter: unclusteredFilter })
             }, 'line');
 
             this._addLayerWithSlot(lineLayerConfig, LayerOrderManager.getInsertPosition(this._map, 'vector', 'line', config, this._orderedGroups));
@@ -1262,12 +1365,13 @@ export class MapboxAPI {
             const circleStyle = this._filterStyleForLayerType(config.style, 'circle');
 
             const circleLayerConfig = this._createLayerConfig({
-                id: `${sourceId}-circle`,
+                id: `${sourceId}-circle${idSuffix}`,
                 groupId: groupId,
                 type: 'circle',
                 source: sourceId,
                 style: circleStyle,
-                visible
+                visible,
+                ...(unclusteredFilter && { filter: unclusteredFilter })
             }, 'circle');
 
             this._addLayerWithSlot(circleLayerConfig, LayerOrderManager.getInsertPosition(this._map, 'vector', 'circle', config, this._orderedGroups));
@@ -1279,21 +1383,105 @@ export class MapboxAPI {
             const symbolStyle = this._filterStyleForLayerType(config.style, 'symbol');
 
             const textLayerConfig = this._createLayerConfig({
-                id: `${sourceId}-label`,
+                id: `${sourceId}-label${idSuffix}`,
                 groupId: groupId,
                 type: 'symbol',
                 source: sourceId,
                 style: symbolStyle,
-                visible
+                visible,
+                ...(unclusteredFilter && { filter: unclusteredFilter })
             }, 'symbol');
 
             this._addLayerWithSlot(textLayerConfig, LayerOrderManager.getInsertPosition(this._map, 'vector', 'symbol', config, this._orderedGroups));
         }
+
+        // Add cluster layers if enabled
+        if (config.clustered) {
+            // Cluster circles
+            const clusterLayerConfig = this._createLayerConfig({
+                id: `${sourceId}-clusters${idSuffix}`,
+                groupId: groupId,
+                type: 'circle',
+                source: sourceId,
+                filter: ['has', 'point_count'],
+                style: {
+                    'circle-color': config.clusterColor || [
+                        'step',
+                        ['get', 'point_count'],
+                        '#51bbd6',
+                        100,
+                        '#f1f075',
+                        750,
+                        '#f28cb1'
+                    ],
+                    'circle-radius': [
+                        'step',
+                        ['get', 'point_count'],
+                        20,
+                        100,
+                        30,
+                        750,
+                        40
+                    ]
+                },
+                visible
+            }, 'circle');
+
+            this._addLayerWithSlot(clusterLayerConfig, LayerOrderManager.getInsertPosition(this._map, 'vector', 'circle', config, this._orderedGroups));
+
+            // Cluster counts
+            const clusterCountLayerConfig = this._createLayerConfig({
+                id: `${sourceId}-cluster-count${idSuffix}`,
+                groupId: groupId,
+                type: 'symbol',
+                source: sourceId,
+                filter: ['has', 'point_count'],
+                style: {
+                    'text-field': '{point_count_abbreviated}',
+                    'text-font': ['DIN Offc Pro Medium', 'Arial Unicode MS Bold'],
+                    'text-size': 12
+                },
+                visible
+            }, 'symbol');
+
+            this._addLayerWithSlot(clusterCountLayerConfig, LayerOrderManager.getInsertPosition(this._map, 'vector', 'symbol', config, this._orderedGroups));
+        }
     }
 
     _updateGeoJSONLayerVisibility(groupId, config, visible) {
+        if (config.clusterSeparateBy) {
+            const cache = this._layerCache.get(groupId);
+            if (cache && cache.subSources) {
+                cache.subSources.forEach(sourceId => {
+                    const suffix = sourceId.replace(`geojson-${groupId}-`, '');
+
+                    const layers = [
+                        `${sourceId}-fill-${suffix}`,
+                        `${sourceId}-line-${suffix}`,
+                        `${sourceId}-label-${suffix}`,
+                        `${sourceId}-circle-${suffix}`,
+                        `${sourceId}-clusters-${suffix}`,
+                        `${sourceId}-cluster-count-${suffix}`
+                    ];
+                    layers.forEach(layerId => {
+                        if (this._map.getLayer(layerId)) {
+                            this._map.setLayoutProperty(layerId, 'visibility', visible ? 'visible' : 'none');
+                        }
+                    });
+                });
+            }
+            return true;
+        }
+
         const sourceId = `geojson-${groupId}`;
-        const layers = [`${sourceId}-fill`, `${sourceId}-line`, `${sourceId}-label`, `${sourceId}-circle`];
+        const layers = [
+            `${sourceId}-fill`,
+            `${sourceId}-line`,
+            `${sourceId}-label`,
+            `${sourceId}-circle`,
+            `${sourceId}-clusters`,
+            `${sourceId}-cluster-count`
+        ];
 
         layers.forEach(layerId => {
             if (this._map.getLayer(layerId)) {
@@ -1305,8 +1493,44 @@ export class MapboxAPI {
     }
 
     _removeGeoJSONLayer(groupId, config) {
+        if (config.clusterSeparateBy) {
+            const cache = this._layerCache.get(groupId);
+            if (cache && cache.subSources) {
+                cache.subSources.forEach(sourceId => {
+                    const suffix = sourceId.replace(`geojson-${groupId}-`, '');
+                    const layers = [
+                        `${sourceId}-fill-${suffix}`,
+                        `${sourceId}-line-${suffix}`,
+                        `${sourceId}-label-${suffix}`,
+                        `${sourceId}-circle-${suffix}`,
+                        `${sourceId}-clusters-${suffix}`,
+                        `${sourceId}-cluster-count-${suffix}`
+                    ];
+                    layers.forEach(layerId => {
+                        if (this._map.getLayer(layerId)) {
+                            this._map.removeLayer(layerId);
+                        }
+                    });
+                    if (this._map.getSource(sourceId)) {
+                        this._map.removeSource(sourceId);
+                    }
+                });
+
+                // Clear cache for this group
+                cache.subSources = [];
+            }
+            return true;
+        }
+
         const sourceId = `geojson-${groupId}`;
-        const layers = [`${sourceId}-fill`, `${sourceId}-line`, `${sourceId}-label`, `${sourceId}-circle`];
+        const layers = [
+            `${sourceId}-fill`,
+            `${sourceId}-line`,
+            `${sourceId}-label`,
+            `${sourceId}-circle`,
+            `${sourceId}-clusters`,
+            `${sourceId}-cluster-count`
+        ];
 
         layers.forEach(layerId => {
             if (this._map.getLayer(layerId)) {
@@ -1327,6 +1551,27 @@ export class MapboxAPI {
             ? opacity * config.opacity
             : opacity;
 
+        if (config.clusterSeparateBy) {
+            const cache = this._layerCache.get(groupId);
+            if (cache && cache.subSources) {
+                cache.subSources.forEach(sourceId => {
+                    const suffix = sourceId.replace(`geojson-${groupId}-`, '');
+                    // Helper to set opacity safely
+                    const setOp = (layer, prop, val) => {
+                        if (this._map.getLayer(layer)) this._map.setPaintProperty(layer, prop, val);
+                    };
+
+                    setOp(`${sourceId}-fill-${suffix}`, 'fill-opacity', finalOpacity * 0.5);
+                    setOp(`${sourceId}-line-${suffix}`, 'line-opacity', finalOpacity);
+                    setOp(`${sourceId}-label-${suffix}`, 'text-opacity', finalOpacity);
+                    setOp(`${sourceId}-circle-${suffix}`, 'circle-opacity', finalOpacity);
+                    setOp(`${sourceId}-clusters-${suffix}`, 'circle-opacity', finalOpacity);
+                    setOp(`${sourceId}-cluster-count-${suffix}`, 'text-opacity', finalOpacity);
+                });
+            }
+            return true;
+        }
+
         const sourceId = `geojson-${groupId}`;
 
         if (this._map.getLayer(`${sourceId}-fill`)) {
@@ -1340,6 +1585,12 @@ export class MapboxAPI {
         }
         if (this._map.getLayer(`${sourceId}-circle`)) {
             this._map.setPaintProperty(`${sourceId}-circle`, 'circle-opacity', finalOpacity);
+        }
+        if (this._map.getLayer(`${sourceId}-clusters`)) {
+            this._map.setPaintProperty(`${sourceId}-clusters`, 'circle-opacity', finalOpacity);
+        }
+        if (this._map.getLayer(`${sourceId}-cluster-count`)) {
+            this._map.setPaintProperty(`${sourceId}-cluster-count`, 'text-opacity', finalOpacity);
         }
 
         return true;
