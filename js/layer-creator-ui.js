@@ -68,11 +68,28 @@ export class LayerConfigGenerator {
     }
 
     /**
+     * Check if input is a Mapbox tileset ID (format: username.tilesetid)
+     * @param {string} input - Input string
+     * @returns {boolean} True if it's a Mapbox tileset ID
+     */
+    static isMapboxTilesetId(input) {
+        // Mapbox tileset IDs are in format: username.tilesetid (alphanumeric with dots)
+        // They should not contain slashes, protocols, or common URL patterns
+        if (!input || input.includes('/') || input.includes('://') || input.includes('{z}')) {
+            return false;
+        }
+        // Match pattern: word.alphanumeric (e.g., planemad.np3cjv7ukkcy)
+        return /^[a-zA-Z0-9_-]+\.[a-zA-Z0-9_-]+$/.test(input);
+    }
+
+    /**
      * Guesses the layer type from URL
      * @param {string} url - Data URL
      * @returns {string} Guessed type
      */
     static guessLayerType(url) {
+        if (this.isMapboxTilesetId(url)) return 'mapbox-tileset';
+        if (url.startsWith('mapbox://')) return 'mapbox-tileset';
         if (/\.geojson($|\?)/i.test(url)) return 'geojson';
         if (url.includes('{z}') && (url.includes('.pbf') || url.includes('.mvt') || url.includes('vector.openstreetmap.org') || url.includes('/vector/'))) return 'vector';
         if (url.includes('{z}') && (url.includes('.png') || url.includes('.jpg'))) return 'raster';
@@ -243,6 +260,36 @@ export class LayerConfigGenerator {
                     fieldTitles: ["ID", "Description", "Class", "Type"]
                 }
             };
+        } else if (type === 'mapbox-tileset') {
+            // Handle Mapbox tileset IDs (e.g., planemad.np3cjv7ukkcy)
+            const tilesetId = url.startsWith('mapbox://') ? url.replace('mapbox://', '') : url;
+            const mapboxUrl = `mapbox://${tilesetId}`;
+            
+            config = {
+                title: tilejson?.name || `Mapbox Tileset: ${tilesetId}`,
+                description: tilejson?.description || 'Mapbox vector tileset',
+                type: 'vector',
+                id: tilesetId.replace(/\./g, '-') + '-' + Math.random().toString(36).slice(2, 8),
+                url: mapboxUrl,
+                sourceLayer: tilejson?.vector_layers?.[0]?.id || tilesetId.split('.')[1] || 'default',
+                minzoom: tilejson?.minzoom || 0,
+                maxzoom: tilejson?.maxzoom || 22,
+                attribution: tilejson?.attribution || '© Mapbox',
+                initiallyChecked: false,
+                inspect: {
+                    id: tilejson?.vector_layers?.[0]?.fields?.id ? "id" : "gid",
+                    title: "Name",
+                    label: tilejson?.vector_layers?.[0]?.fields?.name ? "name" : "id",
+                    fields: tilejson?.vector_layers?.[0]?.fields ?
+                        Object.keys(tilejson.vector_layers[0].fields).slice(0, 6) :
+                        ["id", "name", "type", "class"],
+                    fieldTitles: tilejson?.vector_layers?.[0]?.fields ?
+                        Object.keys(tilejson.vector_layers[0].fields).slice(0, 6).map(field =>
+                            field.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())
+                        ) :
+                        ["ID", "Name", "Type", "Class"]
+                }
+            };
         } else {
             config = { url };
         }
@@ -258,6 +305,25 @@ export class LayerConfigGenerator {
         let actualUrl = url;
         let tilejson = null;
         let mapwarperMetadata = null;
+
+        // Handle Mapbox tileset IDs (e.g., planemad.np3cjv7ukkcy)
+        if (this.isMapboxTilesetId(url)) {
+            const tilesetId = url;
+            // Try to fetch TileJSON metadata from Mapbox API if access token is available
+            if (window.MAPBOX_ACCESS_TOKEN || window.mapboxgl?.accessToken) {
+                const accessToken = window.MAPBOX_ACCESS_TOKEN || window.mapboxgl.accessToken;
+                try {
+                    const tilejsonUrl = `https://api.mapbox.com/v4/${tilesetId}.json?access_token=${accessToken}`;
+                    const response = await fetch(tilejsonUrl);
+                    if (response.ok) {
+                        tilejson = await response.json();
+                    }
+                } catch (error) {
+                    console.warn('Failed to fetch Mapbox TileJSON:', error);
+                }
+            }
+            return this.makeLayerConfig(url, tilejson, null);
+        }
 
         if (url.includes('mapwarper.net/maps/') || url.includes('warper.wmflabs.org/maps/')) {
             try {
@@ -381,8 +447,9 @@ export class LayerCreatorUI {
                     <sl-icon slot="prefix" name="link"></sl-icon>
                 </sl-input>
                 <div id="layer-url-help" class="text-xs text-gray-300">
-                    Supported: Raster/Vector tile URLs, GeoJSON, Atlas JSON, MapWarper URLs.<br>
+                    Supported: Raster/Vector tile URLs, GeoJSON, Atlas JSON, MapWarper URLs, Mapbox tileset IDs.<br>
                     Examples:<br>
+                    <span class="block">Mapbox: <code>planemad.np3cjv7ukkcy</code> (tileset ID)</span>
                     <span class="block">Raster: <code>https://warper.wmflabs.org/maps/tile/4749/{z}/{x}/{y}.png</code></span>
                     <span class="block">MapWarper: <code>https://mapwarper.net/maps/95676#Export_tab</code></span>
                     <span class="block">MapWarper: <code>https://warper.wmflabs.org/maps/8940#Show_tab</code></span>

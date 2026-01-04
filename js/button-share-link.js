@@ -7,6 +7,8 @@ export class ButtonShareLink {
     constructor(options = {}) {
         this.url = options.url || window.location.href;
         this.buttonText = options.buttonText || 'Share';
+        this.buttonClasses = options.buttonClasses || '';
+        this.containerId = options.containerId || null;
         this.showToast = options.showToast !== false;
         this.qrCodeSize = options.qrCodeSize || 500;
         this.useURLManager = options.useURLManager !== false;
@@ -68,6 +70,40 @@ export class ButtonShareLink {
         this._map = null;
         this._container = null;
         this._button = null;
+    }
+
+    /**
+     * Render the share button into a container element (standalone mode, without Mapbox)
+     * Use this when you need the share button outside of a Mapbox control
+     */
+    render() {
+        if (!this.containerId) {
+            console.warn('ButtonShareLink: containerId is required for standalone render()');
+            return;
+        }
+
+        const container = document.getElementById(this.containerId);
+        if (!container) {
+            console.warn(`ButtonShareLink: Container element #${this.containerId} not found`);
+            return;
+        }
+
+        this._container = container;
+
+        this._button = document.createElement('button');
+        this._button.className = this.buttonClasses || 'share-button';
+        this._button.type = 'button';
+        this._button.setAttribute('aria-label', 'Share');
+        this._button.innerHTML = `
+            <svg class="w-4 h-4 inline-block mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="width: 16px; height: 16px;">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z" />
+            </svg>
+            ${this.buttonText}
+        `;
+
+        this._button.addEventListener('click', this._handleShareClick);
+        this._container.appendChild(this._button);
     }
 
     /**
