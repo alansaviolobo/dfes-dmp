@@ -4,10 +4,10 @@
  * This refactored version delegates all Mapbox-specific operations to the MapboxAPI class,
  * keeping this class focused on UI management and configuration handling.
  */
-import { LayerSettingsModal } from './layer-settings-modal.js';
-import { MapboxAPI } from './mapbox-api.js';
-import { DataUtils } from './map-utils.js';
-import { LayerCreatorUI } from './layer-creator-ui.js';
+import {LayerSettingsModal} from './layer-settings-modal.js';
+import {MapboxAPI} from './mapbox-api.js';
+import {DataUtils} from './map-utils.js';
+import {LayerCreatorUI} from './layer-creator-ui.js';
 
 export class MapLayerControl {
     constructor(options) {
@@ -23,28 +23,15 @@ export class MapLayerControl {
             this._config = {};
         }
 
-        this._domCache = {};
         this._instanceId = (MapLayerControl.instances || 0) + 1;
         MapLayerControl.instances = this._instanceId;
         this._initialized = false;
         this._sourceControls = [];
-        this._editMode = false;
 
-        // Cache for loaded legend images to avoid reloading
-        this._legendImageCache = new Map();
-
-        // Global click handler tracking
-        this._globalClickHandlerAdded = false;
-
-        // MapboxAPI instance will be initialized when map is available
-        this._mapboxAPI = null;
-
-        // Initialize default styles (will be populated by _loadDefaultStyles)
-        this._defaultStyles = {};
-
-        // Initialize UI components
-        this._initializeEditMode();
-        this._initializeShareLink();
+        this._legendImageCache = new Map();// Cache for loaded legend images to avoid reloading
+        this._globalClickHandlerAdded = false;// Global click handler tracking
+        this._mapboxAPI = null;// MapboxAPI instance will be initialized when map is available
+        this._defaultStyles = {};// Initialize default styles (will be populated by _loadDefaultStyles)
         this._layerSettingsModal = null;
         this._stateManager = null;
 
@@ -56,7 +43,7 @@ export class MapLayerControl {
      * Initialize the control with map and container
      */
     async renderToContainer(container, map) {
-        this._container = container;
+        this._container = $(container)[0];
         this._map = map;
 
         // Make sure default styles are loaded BEFORE creating MapboxAPI
@@ -79,21 +66,21 @@ export class MapLayerControl {
 
         // Initialize the control UI
         if (this._map.isStyleLoaded()) {
-            this._initializeControl($(container));
+            this._initializeControl(container);
             this._initializeFilterControls();
         } else {
             // Add a fallback timeout in case style.load event doesn't fire
             // This can happen when map.isStyleLoaded() returns false even though the style is loaded
             const fallbackTimeout = setTimeout(() => {
                 if (this._map.getStyle()) {
-                    this._initializeControl($(container));
+                    this._initializeControl(container);
                     this._initializeFilterControls();
                 }
             }, 1000);
 
             this._map.on('style.load', () => {
                 clearTimeout(fallbackTimeout);
-                this._initializeControl($(container));
+                this._initializeControl(container);
                 this._initializeFilterControls();
             });
         }
@@ -106,7 +93,7 @@ export class MapLayerControl {
      */
     async _loadDefaultStyles() {
         try {
-            const defaultsResponse = await fetch('/config/_defaults.json');
+            const defaultsResponse = await fetch(window.amche.LAYER_DEFAULTS);
             const configResponse = await fetch(window.amche.DEFAULT_ATLAS);
 
             if (!defaultsResponse.ok || !configResponse.ok) {
@@ -116,48 +103,14 @@ export class MapLayerControl {
             const defaults = await defaultsResponse.json();
             const config = await configResponse.json();
 
-            // Extract styles from defaults configuration
-            if (defaults.layer && defaults.layer.style) {
-                this._defaultStyles = defaults.layer.style || {};
-            } else if (defaults.style) {
-                this._defaultStyles = defaults.style || {};
-            } else if (defaults.styles) {
-                this._defaultStyles = defaults.styles || {};
-            } else {
-                console.warn('Could not find styles in defaults structure:', Object.keys(defaults));
-                this._defaultStyles = {};
-            }
-
-            // Ensure _defaultStyles is never null or undefined
-            if (!this._defaultStyles || typeof this._defaultStyles !== 'object') {
-                this._defaultStyles = {};
-            }
-
-            // Merge with config overrides
+            this._defaultStyles = defaults.layer.style || {};
             if (config.styles) {
-                const merged = DataUtils.deepMerge(config.styles, this._defaultStyles);
-                this._defaultStyles = merged || {};
+                this._defaultStyles = DataUtils.deepMerge(config.styles, this._defaultStyles) || {};
             }
 
         } catch (error) {
             console.error('Error loading default styles:', error);
-            this._defaultStyles = this._getFallbackStyles();
         }
-    }
-
-    /**
-     * Get fallback default styles if loading fails
-     */
-    _getFallbackStyles() {
-        return {
-            vector: {
-                fill: { 'fill-color': '#000000', 'fill-opacity': 0.5 },
-                line: { 'line-color': '#000000', 'line-width': 1 },
-                text: { 'text-color': '#000000', 'text-halo-width': 1 },
-                circle: { 'circle-radius': 5, 'circle-color': '#000000' }
-            },
-            raster: { 'raster-opacity': 1 }
-        };
     }
 
     /**
@@ -211,51 +164,17 @@ export class MapLayerControl {
         if (this._container) {
             this._container.innerHTML = '';
             this._sourceControls = [];
-            this._initializeControl($(this._container));
-        }
-    }
-
-    /**
-     * Load external configuration
-     */
-    async loadExternalConfig(url) {
-        try {
-            const response = await fetch(url);
-            const configText = await response.text();
-
-            let config;
-            let fullConfig;
-
-            // Handle JS or JSON format
-            if (configText.trim().startsWith('let') || configText.trim().startsWith('const')) {
-                const extractConfig = new Function(`
-                    ${configText}
-                    return layers;
-                `);
-                config = extractConfig();
-            } else {
-                fullConfig = JSON.parse(configText);
-                config = fullConfig.layers && Array.isArray(fullConfig.layers) ?
-                    fullConfig.layers : fullConfig;
-            }
-
-            this._updateState({ groups: config });
-
-        } catch (error) {
-            console.error('Error loading external config:', error);
-            alert('Failed to load external configuration. Please check the console for details.');
-            throw error;
+            this._initializeControl(this._container);
         }
     }
 
     /**
      * Initialize the main control UI
      */
-    _initializeControl($container) {
+    _initializeControl(container) {
         // Add current atlas layers
         this._state.groups.forEach((group, groupIndex) => {
-            const $groupHeader = this._createGroupHeader(group, groupIndex);
-            $container.append($groupHeader);
+            $(container).append(this._createGroupHeader(group, groupIndex));
         });
 
         // Initialize all layers explicitly after UI is set up
@@ -918,50 +837,6 @@ export class MapLayerControl {
     }
 
     /**
-     * Add terrain specific content
-     */
-
-    /**
-     * Create terrain controls (simplified version)
-     */
-    _createTerrainControls() {
-        const $controlsContainer = $('<div>', { class: 'terrain-controls' });
-
-        // Add exaggeration slider
-        const $exaggerationSlider = $('<input>', {
-            type: 'range',
-            min: '0',
-            max: '10',
-            step: '0.2',
-            value: '1.5',
-            class: 'w-full'
-        });
-
-        const $exaggerationValue = $('<span>', {
-            class: 'text-sm text-gray-600 ml-2',
-            text: '1.5x'
-        });
-
-        $exaggerationSlider.on('input', (e) => {
-            const value = parseFloat(e.target.value);
-            $exaggerationValue.text(`${value}x`);
-            if (this._map.getTerrain()) {
-                this._map.setTerrain({
-                    'source': 'mapbox-dem',
-                    'exaggeration': value
-                });
-            }
-        });
-
-        $controlsContainer.append(
-            $('<label>', { class: 'block text-sm text-gray-700 mb-1', text: 'Terrain Exaggeration' }),
-            $('<div>', { class: 'flex items-center' }).append($exaggerationSlider, $exaggerationValue)
-        );
-
-        return $controlsContainer;
-    }
-
-    /**
      * Load legend image on-demand when layer is enabled and expanded
      */
     _loadLegendImageIfNeeded(groupElement, legendImageUrl) {
@@ -1068,16 +943,6 @@ export class MapLayerControl {
         } catch (error) {
             console.error('Error flying to location:', error);
         }
-    }
-
-    /**
-     * Toggle control visibility
-     */
-    toggleControl() {
-        requestAnimationFrame(() => {
-            this._container.classList.toggle('collapsed');
-        });
-        this._toggleButton.classList.toggle('is-open');
     }
 
     /**
@@ -1194,103 +1059,6 @@ export class MapLayerControl {
     }
 
     /**
-     * Initialize edit mode
-     */
-    _initializeEditMode() {
-        const editModeToggle = document.getElementById('edit-mode-toggle');
-        if (editModeToggle) {
-            editModeToggle.addEventListener('click', () => {
-                this._editMode = !this._editMode;
-                editModeToggle.classList.toggle('active');
-            });
-        }
-    }
-
-    /**
-     * Initialize share link functionality
-     */
-    _initializeShareLink() {
-        const shareButton = document.getElementById('share-link');
-        if (!shareButton) return;
-
-        shareButton.addEventListener('click', () => {
-            // If URL manager is available, use it instead of our own logic
-            if (window.urlManager) {
-                // Let URL manager handle the URL update
-                window.urlManager.syncURL();
-
-                // Get the current URL from the URL manager
-                const currentUrl = window.urlManager.getCurrentURL();
-
-                navigator.clipboard.writeText(currentUrl).then(() => {
-                    this._showToast('Link copied to clipboard!');
-                    this._showQRCode(shareButton, currentUrl);
-                }).catch(err => {
-                    console.error('Failed to copy link:', err);
-                    this._showToast('Failed to copy link', 'error');
-                });
-            } else {
-                // Fallback to our own logic if URL manager is not available
-                const visibleLayers = this._getVisibleLayers();
-                const url = new URL(window.location.href);
-
-                if (visibleLayers.length > 0) {
-                    url.searchParams.set('layers', visibleLayers.join(','));
-                } else {
-                    url.searchParams.delete('layers');
-                }
-
-                const prettyUrl = decodeURIComponent(url.toString()).replace(/\+/g, ' ');
-                window.history.replaceState({}, '', prettyUrl);
-
-                navigator.clipboard.writeText(prettyUrl).then(() => {
-                    this._showToast('Link copied to clipboard!');
-                    this._showQRCode(shareButton, prettyUrl);
-                }).catch(err => {
-                    console.error('Failed to copy link:', err);
-                    this._showToast('Failed to copy link', 'error');
-                });
-            }
-        });
-    }
-
-    /**
-     * Get visible layers
-     */
-    _getVisibleLayers() {
-        const visibleLayers = [];
-
-        // Check all layer controls (including cross-atlas layers)
-        const allLayerControls = document.querySelectorAll('.group-header');
-
-        allLayerControls.forEach((groupHeader) => {
-            const toggleInput = groupHeader.querySelector('.toggle-switch input[type="checkbox"]');
-
-            if (toggleInput && toggleInput.checked) {
-                const layerId = groupHeader.getAttribute('data-layer-id');
-                if (layerId) {
-                    // Find the group in state
-                    const group = this._state.groups.find(g => g.id === layerId || g._prefixedId === layerId);
-
-                    if (group) {
-                        if (group.type === 'layer-group') {
-                            const radioGroup = groupHeader.querySelector('.radio-group');
-                            const selectedRadio = radioGroup?.querySelector('input[type="radio"]:checked');
-                            if (selectedRadio) {
-                                visibleLayers.push(selectedRadio.value);
-                            }
-                        } else {
-                            visibleLayers.push(group._originalJson || group.id);
-                        }
-                    }
-                }
-            }
-        });
-
-        return visibleLayers;
-    }
-
-    /**
      * Show toast notification
      */
     _showToast(message, type = 'success', duration = 3000) {
@@ -1312,50 +1080,6 @@ export class MapLayerControl {
                 setTimeout(() => toast.remove(), 300);
             }, duration);
         });
-    }
-
-    /**
-     * Show QR code for sharing
-     */
-    _showQRCode(shareButton, url) {
-        const qrCodeUrl = `https://api.qrserver.com/v1/create-qr-code/?size=500x500&data=${encodeURIComponent(url)}`;
-        const qrCode = document.createElement('img');
-        qrCode.src = qrCodeUrl;
-        qrCode.alt = 'QR Code';
-        qrCode.className = 'qr-share-icon';
-
-        const originalContent = shareButton.innerHTML;
-        shareButton.innerHTML = '';
-        shareButton.appendChild(qrCode);
-
-        qrCode.addEventListener('click', (e) => {
-            e.stopPropagation();
-            shareButton.innerHTML = originalContent;
-            this._showFullScreenQR(qrCodeUrl);
-        });
-
-        setTimeout(() => {
-            if (shareButton.contains(qrCode)) {
-                shareButton.innerHTML = originalContent;
-            }
-        }, 30000);
-    }
-
-    /**
-     * Show full screen QR code
-     */
-    _showFullScreenQR(qrCodeUrl) {
-        const overlay = document.createElement('div');
-        overlay.className = 'qr-fullscreen-overlay';
-
-        const largeQRCode = document.createElement('img');
-        largeQRCode.src = qrCodeUrl;
-        largeQRCode.alt = 'QR Code';
-        largeQRCode.className = 'qr-fullscreen-image';
-
-        overlay.addEventListener('click', () => document.body.removeChild(overlay));
-        overlay.appendChild(largeQRCode);
-        document.body.appendChild(overlay);
     }
 
     /**

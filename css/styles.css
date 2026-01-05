@@ -4593,11 +4593,6 @@ sl-tab:hover::part(base) {
     color: #0369a1 !important;
 }
 
-/* Refactored Dynamic Styles */
-#edit-mode-toggle.active {
-    background-color: #006dff;
-}
-
 .qr-share-icon {
     width: 30px;
     height: 30px;

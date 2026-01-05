@@ -1,18 +1,18 @@
-import { URLManager } from './url-manager.js';
-import { TimeControl } from './time-control.js';
-import { ButtonShareLink } from './button-share-link.js';
-import { MapLayerControl } from './map-layer-controls.js';
-import { StatePersistence } from './state-persistence.js';
-import { MapSearchControl } from './map-search-control.js';
-import { MapExportControl } from './map-export-control.js';
-import { Terrain3DControl } from './terrain-3d-control.js';
-import { MapFeatureControl } from './map-feature-control.js';
-import { ButtonResetMapView } from './button-reset-map-view.js';
-import { MapAttributionControl } from './map-attribution-control.js';
-import { ButtonExternalMapLinks } from './button-external-map-links.js';
-import { MapFeatureStateManager } from './map-feature-state-manager.js';
-import { ButtonGeolocationManager } from './button-geolocation-manager.js';
-import { DataUtils, MapUtils, URLUtils } from './map-utils.js';
+import {URLManager} from './url-manager.js';
+import {TimeControl} from './time-control.js';
+import {ButtonShareLink} from './button-share-link.js';
+import {MapLayerControl} from './map-layer-controls.js';
+import {StatePersistence} from './state-persistence.js';
+import {MapSearchControl} from './map-search-control.js';
+import {MapExportControl} from './map-export-control.js';
+import {Terrain3DControl} from './terrain-3d-control.js';
+import {MapFeatureControl} from './map-feature-control.js';
+import {ButtonResetMapView} from './button-reset-map-view.js';
+import {MapAttributionControl} from './map-attribution-control.js';
+import {ButtonExternalMapLinks} from './button-external-map-links.js';
+import {MapFeatureStateManager} from './map-feature-state-manager.js';
+import {ButtonGeolocationManager} from './button-geolocation-manager.js';
+import {DataUtils, MapUtils, URLUtils} from './map-utils.js';
 
 export class MapInitializer {
     // Function to load configuration
@@ -441,20 +441,14 @@ export class MapInitializer {
 
             // Enable debug logging temporarily to diagnose layer matching issues
             stateManager.setDebug(true);
-            // Initialize layer control
-            const layerControl = new MapLayerControl(layers);
-            const container = document.getElementById('layer-controls-container');
 
             // Hide loader and show controls
             document.getElementById('map-layer-filter').classList.remove('hidden');
-            container.classList.remove('hidden');
 
-            // Initialize layer control with state manager
-            layerControl.renderToContainer(container, map);
-            layerControl.setStateManager(stateManager);
-
-            // Make layer control globally accessible
-            window.layerControl = layerControl;
+            // Initialize layer control & Make it globally accessible
+            window.layerControl = new MapLayerControl(layers);
+            window.layerControl.renderToContainer('#layer-controls-container', map);
+            window.layerControl.setStateManager(stateManager);
 
             // Make components globally accessible
             window.stateManager = stateManager;
@@ -495,7 +489,7 @@ export class MapInitializer {
             const stateRestored = statePersistence.restoreStateOnLoad();
 
             // Initialize URL manager after layer control is ready
-            const urlManager = new URLManager(layerControl, map);
+            const urlManager = new URLManager(window.layerControl, map);
             urlManager.setupLayerControlEventListeners();
 
             // Make URL manager globally accessible
