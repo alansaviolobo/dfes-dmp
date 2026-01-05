@@ -182,6 +182,11 @@ export class ButtonExternalMapLinks {
                 category: 'global'
             },
             {
+                name: 'Sentinel-2 Search',
+                url: `https://sentinel.spatialty.io/#${zoom}/${lat}/${lng}`,
+                category: 'global'
+            },
+            {
                 name: 'Google Maps',
                 url: `https://www.google.com/maps/search/?api=1&query=${lat},${lng}`,
                 icon: 'https://upload.wikimedia.org/wikipedia/commons/a/aa/Google_Maps_icon_%282020%29.svg',
