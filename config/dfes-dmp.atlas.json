@@ -246,22 +246,16 @@
       },
       "inspect": {
         "id": "Vehicle_No",
-        "title": "Current Location",
-        "label": "Location",
+        "title": "Vehicle_No",
+        "label": "Vehicle",
         "fields": [
-          "Status",
           "Vehicle_No",
           "Branch",
-          "POI",
-          "Speed",
           "Datetime"
         ],
         "fieldTitles": [
-          "Status",
           "Vehicle No",
           "Station",
-          "Location",
-          "Speed",
           "Last Updated"
         ]
       }
@@ -287,10 +281,22 @@
         "title": "Name",
         "label": "name",
         "fields": [
-          "name"
+          "Station",
+          "Name",
+          "Mobile",
+          "No. of Fire Appliances",
+          "Trained Personnel Count",
+          "Contact Number",
+          "Last Updated"
         ],
         "fieldTitles": [
-          "Name"
+          "Station",
+          "Name",
+          "Mobile",
+          "No. of Fire Appliances",
+          "Trained Personnel Count",
+          "Contact Number",
+          "Last Updated"
         ]
       }
     },
@@ -345,18 +351,30 @@
         "circle-stroke-color": "#000000"
       },
       "inspect": {
-        "id": "id",
-        "title": "name",
-        "label": "name",
+        "id": "Name",
+        "title": "Name",
+        "label": "Name",
         "fields": [
-          "name",
-          "id",
-          "owner"
+          "Name",
+          "Call Sign",
+          "Address",
+          "Contact Number",
+          "HF",
+          "VHF Base Station",
+          "UHF Base Station",
+          "VHF/UHF Handy",
+          "Status"
         ],
         "fieldTitles": [
-          "Vehicle Type",
-          "Vehicle No",
-          "Owner"
+          "Name",
+          "Call Sign",
+          "Address",
+          "Contact Number",
+          "HF",
+          "VHF Base Station",
+          "UHF Base Station",
+          "VHF/UHF Handy",
+          "Status"
         ]
       }
     },
@@ -379,18 +397,26 @@
         "circle-stroke-color": "#000000"
       },
       "inspect": {
-        "id": "id",
-        "title": "name",
-        "label": "name",
+        "id": "Vehicle No",
+        "title": "Vehicle Type",
+        "label": "Vehicle Type",
         "fields": [
-          "name",
-          "id",
-          "owner"
+          "Vehicle Type",
+          "Vehicle No",
+          "Address",
+          "Capacity",
+          "Name",
+          "Mobile",
+          "Last Updated"
         ],
         "fieldTitles": [
           "Vehicle Type",
           "Vehicle No",
-          "Owner"
+          "Address",
+          "Capacity",
+          "Name",
+          "Mobile",
+          "Last Updated"
         ]
       }
     },
@@ -415,12 +441,32 @@
         "title": "name",
         "label": "name",
         "fields": [
-          "name",
-          "beds"
+          "Name",
+          "Type",
+          "Total Beds",
+          "ICU Beds",
+          "Oxygen Beds",
+          "Ventilators",
+          "Trauma Care",
+          "Blood Bank",
+          "Ambulance Available",
+          "Medical Super Name",
+          "Phone_1",
+          "Last Updated"
         ],
         "fieldTitles": [
           "Name",
-          "Beds"
+          "Type",
+          "Total Beds",
+          "ICU Beds",
+          "Oxygen Beds",
+          "Ventilators",
+          "Trauma Care",
+          "Blood Bank",
+          "Ambulance Available",
+          "Medical Super Name",
+          "Phone_1",
+          "Last Updated"
         ]
       }
     },
@@ -445,10 +491,26 @@
         "title": "name",
         "label": "name",
         "fields": [
-          "name"
+          "date",
+          "outtime",
+          "intime",
+          "station",
+          "type",
+          "description",
+          "near",
+          "at",
+          "vehicle"
         ],
         "fieldTitles": [
-          "Name"
+          "date",
+          "outtime",
+          "intime",
+          "station",
+          "type",
+          "description",
+          "near",
+          "at",
+          "vehicle"
         ]
       }
     },
@@ -473,10 +535,18 @@
         "title": "name",
         "label": "name",
         "fields": [
-          "name"
+          "Name",
+          "Address",
+          "Safety Officer",
+          "Mobile",
+          "Last Updated"
         ],
         "fieldTitles": [
-          "Name"
+          "Name",
+          "Address",
+          "Safety Officer",
+          "Mobile",
+          "Last Updated"
         ]
       }
     },
@@ -555,16 +625,26 @@
         "circle-stroke-color": "#000000"
       },
       "inspect": {
-        "id": "id",
-        "title": "Name",
-        "label": "name",
+        "id": "Call Sign",
+        "title": "Display Name",
+        "label": "Display Name",
         "fields": [
-          "id",
-          "name"
+          "Display Name",
+          "Water Level",
+          "Warning Level",
+          "Danger Level",
+          "Highest Danger Level",
+          "Flood Alert Status",
+          "Date"
         ],
         "fieldTitles": [
-          "Call Sign",
-          "Display Name"
+          "Display Name",
+          "Water Level",
+          "Warning Level",
+          "Danger Level",
+          "Highest Danger Level",
+          "Flood Alert Status",
+          "Date"
         ]
       }
     },
