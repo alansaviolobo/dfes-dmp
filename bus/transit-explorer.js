@@ -2,18 +2,23 @@
 // Handles geolocation, map initialization, stop finding, and departure boards
 
 // Import data models and utilities
-import { 
-    TILESET_SCHEMA, 
+import {
+    TILESET_SCHEMA,
     VECTOR_TILE_SOURCE,
-    AGENCY_STYLES, 
-    TransitAgency, 
-    BusRoute, 
-    BusStop, 
-    DataUtils 
+    AGENCY_STYLES,
+    TransitAgency,
+    BusRoute,
+    BusStop,
+    DataUtils
 } from './transit-data.js';
 
 // Import URL API for deep linking support
 import { URLManager } from '../js/url-manager.js';
+
+// Import controllers
+import { TransitMapController } from './transit-map-controller.js';
+import { TransitStopController } from './transit-stop-controller.js';
+import { TransitDepartureController } from './transit-departure-controller.js';
 
 class TransitExplorer {
     constructor() {
@@ -41,7 +46,11 @@ class TransitExplorer {
 
         // Track hovered feature for feature state management
         this.hoveredStopId = null;
-        
+
+        // Route list state management
+        this.visibleRoutes = [];
+        this.filteredRouteId = null;
+
         // City configuration with bounds and display info
         this.cities = [
             {
@@ -83,34 +92,89 @@ class TransitExplorer {
 
     async init() {
         console.log('🚌 Initializing Transit Explorer...');
-        
+
         // Render city buttons first
         this.renderCityButtons();
-        
-        // Initialize map first
-        this.initMap();
-        
+
+        // Initialize map controller with callbacks
+        this.mapController = new TransitMapController({
+            mapboxToken: this.mapboxToken,
+            container: 'map',
+            currentCity: this.currentCity,
+            sourceName: this.sourceName,
+            sourceLayer: this.sourceLayer,
+            vectorTileSource: this.vectorTileSource,
+            onStopClick: (stopFeature, allFeatures) => this.handleStopClick(stopFeature, allFeatures),
+            onRouteClick: (routeFeature) => this.handleRouteClick(routeFeature),
+            onMapBackgroundClick: () => this.clearAllSelections(),
+            onGeolocate: (e) => this.onLocationSuccess(e),
+            onGeolocateError: (e) => this.handleLocationError(e),
+            onMapLoaded: () => {
+                console.log('🗺️ Map loaded, initializing controllers...');
+                this.stopController = new TransitStopController(this.mapController, {
+                    sourceName: this.sourceName,
+                    sourceLayer: this.sourceLayer
+                });
+
+                this.departureController = new TransitDepartureController(
+                    this.mapController,
+                    this.stopController,
+                    {
+                        currentCity: this.currentCity,
+                        sourceName: this.sourceName,
+                        sourceLayer: this.sourceLayer,
+                        onRouteHighlight: (routeId, isTemp) => this.mapController.highlightRoute(routeId, isTemp),
+                        onRouteHighlightClear: () => this.mapController.clearRouteHighlight(),
+                        onStopHighlightClear: () => this.mapController.clearStopHighlight(),
+                        onRouteSelectionsClear: () => {},
+                        onBusLocationTrackingStop: () => this.departureController?.stopBusLocationTracking()
+                    }
+                );
+
+                window.transitDepartureController = this.departureController;
+
+                this.stopController.mapController.userLocation = this.userLocation;
+                this.stopController.mapController.clearAllSelections = () => this.clearAllSelections();
+                this.stopController.mapController.updateTransitURL = (opts) => this.updateTransitURL(opts);
+                this.stopController.mapController.loadDepartures = (stop) => this.departureController.loadDepartures(stop);
+                this.stopController.mapController.startAutoRefresh = () => this.departureController.startAutoRefresh();
+                this.stopController.mapController.displayInteractiveRoutes = (routes) => this.displayInteractiveRoutes(routes);
+                this.stopController.mapController.updateLocationStatus = (msg, cls, btn) => this.updateLocationStatus(msg, cls, btn);
+            },
+            onMoveEnd: () => {
+                this.queryVisibleTransitData();
+                if (this.stopController && this.autoSelectClosestStop) {
+                    this.stopController.findClosestStopToMapCenter();
+                }
+            }
+        });
+
+        // Initialize the map
+        this.mapController.initMap();
+        this.map = this.mapController.getMap();
+        this.geolocateControl = this.mapController.geolocateControl;
+
         // Set up event listeners
         this.setupEventListeners();
-        
+
         // Initialize URL manager after map is set up
         this.urlManager = new URLManager(null, this.map);
-        
+
         // Check if URL has parameters before requesting location
         const urlParams = this.parseURLParameters();
         const hasURLSelection = urlParams.route || urlParams.stop;
-        
+
         // Apply URL parameters after everything is initialized
         setTimeout(() => {
             this.applyURLParametersOnLoad(hasURLSelection);
         }, 1000);
-        
+
         // If no URL parameters, auto-trigger geolocate once map is loaded
         if (!hasURLSelection) {
             this.map.once('load', () => {
                 console.log('📍 No URL params detected, triggering geolocate...');
                 this.updateLocationStatus('Locating...', 'status-scheduled', false);
-                
+
                 // Small delay to ensure geolocate control is ready
                 setTimeout(() => {
                     if (this.geolocateControl) {
@@ -1201,6 +1265,186 @@ class TransitExplorer {
         });
     }
 
+    generateRouteListHTML(route) {
+        const props = route.properties;
+        const routeId = props.route_id || '';
+        const shortName = props.route_short_name || '';
+        const longName = props.route_name || 'Unnamed Route';
+        const isLive = props.is_live === 'true' || props.is_live === true;
+        const stopCount = props.stop_count || '';
+        const firstStop = props.first_stop_name || '';
+        const lastStop = props.last_stop_name || '';
+        const routeDesc = props.route_desc || '';
+
+        const agencyName = props.agency_name || 'BEST';
+        const fareType = props.fare_type || 'Regular';
+        const color = this.getRouteColor(agencyName, fareType);
+
+        return `
+            <div class="route-list-item" data-route-id="${routeId}">
+                <div class="flex items-center justify-between">
+                    <div class="flex items-center gap-2">
+                        ${shortName ? `
+                            <span class="px-2 py-1 rounded text-xs font-bold"
+                                  style="background-color: ${color}; color: white;">
+                                ${shortName}
+                            </span>
+                        ` : ''}
+                        <span class="text-white font-medium">${longName}</span>
+                    </div>
+                    <div class="text-xs text-gray-400 flex items-center gap-2">
+                        ${isLive ? '<span class="text-green-400">●</span>' : ''}
+                        ${stopCount ? `${stopCount} stops` : ''}
+                    </div>
+                </div>
+                ${firstStop && lastStop ? `
+                    <div class="text-xs text-gray-500 mt-1">
+                        ${firstStop} → ${lastStop}
+                    </div>
+                ` : ''}
+                ${routeDesc ? `
+                    <div class="text-xs text-gray-400 mt-1">${routeDesc}</div>
+                ` : ''}
+            </div>
+        `;
+    }
+
+    getRouteColor(agencyName, fareType) {
+        if (typeof AGENCY_STYLES !== 'undefined' && AGENCY_STYLES[agencyName]) {
+            const agencyColors = AGENCY_STYLES[agencyName].colors;
+            if (agencyColors[fareType]) {
+                return agencyColors[fareType].background;
+            }
+            if (agencyColors.default) {
+                return agencyColors.default.background;
+            }
+        }
+        return '#dc2626';
+    }
+
+    updateRouteCount() {
+        const count = this.visibleRoutes.length;
+        const countEl = document.getElementById('route-count');
+        if (countEl) {
+            if (count > 0) {
+                countEl.textContent = `(${count} route${count !== 1 ? 's' : ''})`;
+            } else {
+                countEl.textContent = '';
+            }
+        }
+    }
+
+    getRouteFeatureById(routeId) {
+        return this.visibleRoutes.find(
+            feature => feature.properties.route_id === routeId
+        );
+    }
+
+    updateRouteListSelection(routeId) {
+        document.querySelectorAll('.route-list-item').forEach(item => {
+            if (item.dataset.routeId === routeId) {
+                item.classList.add('selected');
+            } else {
+                item.classList.remove('selected');
+            }
+        });
+    }
+
+    filterRouteList(routeId) {
+        this.filteredRouteId = routeId;
+
+        const routeItems = document.querySelectorAll('.route-list-item');
+        routeItems.forEach(item => {
+            if (item.dataset.routeId === routeId) {
+                item.style.display = 'block';
+                item.classList.add('selected');
+            } else {
+                item.style.display = 'none';
+            }
+        });
+
+        const clearButton = document.getElementById('clear-route-filter');
+        if (clearButton) {
+            clearButton.classList.remove('hidden');
+        }
+
+        const countEl = document.getElementById('route-count');
+        if (countEl) {
+            countEl.textContent = '(Filtered to 1 route)';
+        }
+
+        console.log(`🔍 Filtered route list to: ${routeId}`);
+    }
+
+    clearRouteFilter() {
+        this.filteredRouteId = null;
+
+        const routeItems = document.querySelectorAll('.route-list-item');
+        routeItems.forEach(item => {
+            item.style.display = 'block';
+            item.classList.remove('selected');
+        });
+
+        const clearButton = document.getElementById('clear-route-filter');
+        if (clearButton) {
+            clearButton.classList.add('hidden');
+        }
+
+        this.updateRouteCount();
+
+        console.log('🔄 Cleared route filter');
+    }
+
+    setupRouteListInteractions() {
+        const routeItems = document.querySelectorAll('.route-list-item');
+
+        routeItems.forEach(item => {
+            const routeId = item.dataset.routeId;
+
+            item.addEventListener('click', () => {
+                console.log(`🚌 Route list item clicked: ${routeId}`);
+
+                this.clearDepartureHighlights();
+                document.querySelectorAll('.route-list-item').forEach(i =>
+                    i.classList.remove('selected')
+                );
+
+                item.classList.add('selected');
+
+                this.highlightRoute(routeId, false);
+
+                this.filterRouteList(routeId);
+
+                const routeFeature = this.getRouteFeatureById(routeId);
+                if (routeFeature) {
+                    this.handleRouteClick(routeFeature);
+                }
+            });
+
+            item.addEventListener('mouseenter', () => {
+                if (!item.classList.contains('selected')) {
+                    item.classList.add('hover-highlight');
+                    this.highlightRoute(routeId, true);
+                }
+            });
+
+            item.addEventListener('mouseleave', () => {
+                if (!item.classList.contains('selected')) {
+                    item.classList.remove('hover-highlight');
+
+                    if (this.currentHighlightedRoute &&
+                        this.currentHighlightedRoute !== routeId) {
+                        this.highlightRoute(this.currentHighlightedRoute, false);
+                    } else if (!this.currentHighlightedRoute) {
+                        this.clearRouteHighlight();
+                    }
+                }
+            });
+        });
+
+        console.log(`✅ Set up interactions for ${routeItems.length} route list items`);
+    }
+
     getDepartureDataFromTab(departureIndex, tabType) {
         // Parse the departure index to get the actual index
         let actualIndex;
@@ -1439,6 +1683,16 @@ class TransitExplorer {
                 if (this.autoSelectClosestStop && this.map && this.map.isSourceLoaded(this.sourceName)) {
                     this.findClosestStopToMapCenter();
                 }
+            });
+        }
+
+        // Clear route filter button
+        const clearFilterBtn = document.getElementById('clear-route-filter');
+        if (clearFilterBtn) {
+            clearFilterBtn.addEventListener('click', () => {
+                console.log('🔄 Clear route filter button clicked');
+                this.clearRouteFilter();
+                this.clearRouteHighlight();
             });
         }
     }
@@ -1718,6 +1972,7 @@ class TransitExplorer {
         console.log('🔄 Clearing all selections...');
         this.clearRouteHighlight();
         this.clearDepartureHighlights();
+        this.clearRouteFilter();
         this.clearStopHighlight();
         this.clearRouteSelections(); // Clear interactive route badge selections
         this.stopBusLocationTracking(); // Stop bus tracking
@@ -3130,13 +3385,87 @@ class TransitExplorer {
 
     queryVisibleTransitData() {
         try {
-            // Get current map bounds and zoom level for context
+            if (!this.map || !this.map.isSourceLoaded(this.sourceName)) {
+                console.log('⏳ Map source not loaded yet, skipping route query');
+                return;
+            }
+
             const bounds = this.map.getBounds();
             const zoom = this.map.getZoom();
             const center = this.map.getCenter();
-            
+
             console.log(`🗺️ Map moved to zoom ${zoom.toFixed(2)} at [${center.lng.toFixed(4)}, ${center.lat.toFixed(4)}]`);
-            
+
+            const rawRouteFeatures = this.map.querySourceFeatures(this.sourceName, {
+                sourceLayer: this.sourceLayer,
+                filter: ['==', ['get', 'feature_type'], 'route']
+            });
+
+            if (!rawRouteFeatures || rawRouteFeatures.length === 0) {
+                this.visibleRoutes = [];
+                document.getElementById('route-list').innerHTML = `
+                    <div class="text-center py-8 text-gray-400">
+                        No routes visible at this zoom level. Zoom in to see routes.
+                    </div>
+                `;
+                this.updateRouteCount();
+                return;
+            }
+
+            const routesMap = new Map();
+            rawRouteFeatures.forEach(feature => {
+                const routeId = feature.properties.route_id;
+                if (routeId && !routesMap.has(routeId)) {
+                    routesMap.set(routeId, feature);
+                }
+            });
+
+            let uniqueRoutes = Array.from(routesMap.values());
+
+            uniqueRoutes.sort((a, b) => {
+                const aName = a.properties.route_short_name || a.properties.route_name || '';
+                const bName = b.properties.route_short_name || b.properties.route_name || '';
+                return aName.localeCompare(bName, undefined, { numeric: true, sensitivity: 'base' });
+            });
+
+            const MAX_ROUTES_DISPLAYED = 100;
+            const totalCount = uniqueRoutes.length;
+            if (totalCount > MAX_ROUTES_DISPLAYED) {
+                uniqueRoutes = uniqueRoutes.slice(0, MAX_ROUTES_DISPLAYED);
+                console.warn(`⚠️ Displaying only ${MAX_ROUTES_DISPLAYED} of ${totalCount} routes`);
+            }
+
+            this.visibleRoutes = uniqueRoutes;
+
+            const fragment = document.createDocumentFragment();
+            const tempDiv = document.createElement('div');
+            uniqueRoutes.forEach(route => {
+                tempDiv.innerHTML = this.generateRouteListHTML(route);
+                fragment.appendChild(tempDiv.firstElementChild);
+            });
+
+            const routeListContainer = document.getElementById('route-list');
+            routeListContainer.innerHTML = '';
+            routeListContainer.appendChild(fragment);
+
+            this.updateRouteCount();
+
+            this.setupRouteListInteractions();
+
+            if (this.filteredRouteId) {
+                const stillVisible = uniqueRoutes.some(
+                    r => r.properties.route_id === this.filteredRouteId
+                );
+                if (stillVisible) {
+                    this.filterRouteList(this.filteredRouteId);
+                } else {
+                    console.log('🔄 Filtered route no longer visible, clearing filter');
+                    this.clearRouteFilter();
+                }
+            }
+
+            console.log(`✅ Populated route list with ${uniqueRoutes.length} unique routes`);
+
         } catch (error) {
             console.error('❌ Error querying visible transit data:', error);
         }
@@ -3260,7 +3589,10 @@ class TransitExplorer {
             
             // Highlight the route on map
             this.highlightRoute(routeId);
-            
+
+            // Filter route list to this route
+            this.filterRouteList(routeId);
+
             // Highlight corresponding departure rows
             this.highlightDepartureRows(routeId, routeName);
             
