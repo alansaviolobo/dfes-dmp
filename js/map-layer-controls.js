@@ -1148,6 +1148,13 @@ export class MapLayerControl {
             return;
         }
 
+        // Skip vector layers that explicitly disable interactivity via inspect: false or inspect: null
+        const isVectorLike = layerConfig.type === 'geojson' || layerConfig.type === 'vector' || layerConfig.type === 'csv';
+        const isExplicitlyDisabled = layerConfig.inspect === false || layerConfig.inspect === null;
+        if (isVectorLike && isExplicitlyDisabled) {
+            return;
+        }
+
         // Register the layer - MapFeatureStateManager will handle raster vs vector distinction
         this._stateManager.registerLayer(layerConfig);
     }

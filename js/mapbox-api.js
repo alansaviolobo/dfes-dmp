@@ -4,6 +4,7 @@
  */
 import { LayerOrderManager } from './layer-order-manager.js';
 import { DataUtils, GeoUtils } from './map-utils.js';
+import { KMLConverter } from './kml-converter.js';
 
 export class MapboxAPI {
     constructor(map, atlasConfig = {}) {
@@ -1155,7 +1156,16 @@ export class MapboxAPI {
             if (config.data) {
                 dataSource = this._processGeoJSONData(config.data);
             } else if (config.url) {
-                dataSource = config.url;
+                if (KMLConverter.isKmlUrl(config.url)) {
+                    try {
+                        dataSource = await KMLConverter.fetchAndConvert(config.url);
+                    } catch (error) {
+                        console.error(`Error converting KML for ${groupId}:`, error);
+                        return false;
+                    }
+                } else {
+                    dataSource = config.url;
+                }
             } else {
                 console.error('GeoJSON layer missing both data and URL:', groupId);
                 return false;
@@ -1198,9 +1208,13 @@ export class MapboxAPI {
             geojson = this._processGeoJSONData(config.data);
         } else if (config.url) {
             try {
-                const response = await fetch(config.url);
-                const data = await response.json();
-                geojson = this._processGeoJSONData(data);
+                if (KMLConverter.isKmlUrl(config.url)) {
+                    geojson = await KMLConverter.fetchAndConvert(config.url);
+                } else {
+                    const response = await fetch(config.url);
+                    const data = await response.json();
+                    geojson = this._processGeoJSONData(data);
+                }
             } catch (error) {
                 console.error(`Error loading data for segregated layer ${groupId}:`, error);
                 return false;
