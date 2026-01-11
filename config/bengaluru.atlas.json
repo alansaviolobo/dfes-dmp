@@ -1,0 +1,87 @@
+{
+  "version": "0.1.0",
+  "name": "Bengaluru",
+  "areaOfInterest": "Bengaluru, India",
+  "color": "#9133ea",
+  "map": {
+    "center": [
+      72.8,
+      18.93
+    ],
+    "zoom": 12.4
+  },
+  "geojson": {
+    "type": "FeatureCollection",
+    "features": [
+      {
+        "type": "Feature",
+        "properties": {},
+        "geometry": {
+          "coordinates": [
+            [
+              [
+                72.74978837175149,
+                19.0695385473867
+              ],
+              [
+                72.74978837175149,
+                18.888161923991106
+              ],
+              [
+                72.90789658098967,
+                18.888161923991106
+              ],
+              [
+                72.90789658098967,
+                19.0695385473867
+              ],
+              [
+                72.74978837175149,
+                19.0695385473867
+              ]
+            ]
+          ],
+          "type": "Polygon"
+        }
+      }
+    ]
+  },
+  "layers": [
+    {
+      "title": "GBA Delimitation Boundary 2025",
+      "description": "<a href='https://data.opencity.in/dataset/greater-bengaluru-authority-corporations-delimitation-2025/resource/010057fd-0ece-4354-b423-e804a1d8bf66'>Greater Bengaluru Authority  notification</a> of delimited of Bengaluru into 5 Corporations from 19.07.2025.",
+      "type": "geojson",
+      "id": "gba-zones",
+      "url": "https://gist.githubusercontent.com/planemad/2264d2ae80ed7d400af79628c7179263/raw/dd7547186b418c9e486b2a80109204b4ff00f77e/bengaluru-gba-zones-2025.kml",
+      "attribution": "Greater bengaluru Authority via <a href='https://data.opencity.in/dataset/greater-bengaluru-authority-corporations-delimitation-2025'>OpenCity.in</a>",
+      "style": {
+        "line-width": 5,
+        "text-field": ["concat",
+        [
+          "to-string",
+          [
+            "get",
+            "Corporatio"
+          ]
+        ],"\n",[
+          "to-string",
+          [
+            "get",
+            "Zone"
+          ]
+        ]]
+      },
+      "inspect": {
+        "id": "Corporatio"
+      }
+    },
+    {
+      "title": "Bangalore Survey Map (1940)",
+      "description": "Surveyed 1935-36",
+      "type": "tms",
+      "id": "1940-survey",
+      "url": "https://maps.blryesterday.com/1948/{z}/{x}/{y}.png",
+      "attribution": "Survey Of India via <a href='https://mod.org.in/'>MOD Foundation</a>"
+    }
+  ]
+}
