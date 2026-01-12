@@ -5,7 +5,7 @@ export class MapExportControl {
         this._exportPanel = null;
         this._selectedSize = 'A4';
         this._orientation = 'landscape';
-        this._format = 'pdf';
+        this._format = 'kml';
         this._rasterQuality = 'medium'; // 'medium' (JPEG) or 'high' (TIFF)
         this._dpi = 96;
         this._frame = null;
@@ -135,9 +135,9 @@ export class MapExportControl {
         const formatContainer = document.createElement('div');
         formatContainer.className = 'flex gap-4 mb-3';
         formatContainer.innerHTML = `
-            <label class="flex items-center gap-1 cursor-pointer"><input type="radio" name="export-format" value="pdf" checked> PDF</label>
+            <label class="flex items-center gap-1 cursor-pointer"><input type="radio" name="export-format" value="kml" checked> KML</label>
             <label class="flex items-center gap-1 cursor-pointer"><input type="radio" name="export-format" value="geojson"> GeoJSON</label>
-            <label class="flex items-center gap-1 cursor-pointer"><input type="radio" name="export-format" value="kml"> KML</label>
+            <label class="flex items-center gap-1 cursor-pointer"><input type="radio" name="export-format" value="pdf"> PDF</label>
         `;
         formatContainer.onchange = (e) => {
             this._format = e.target.value;
@@ -163,6 +163,7 @@ export class MapExportControl {
         selectedLabel.appendChild(selectedText);
         this._selectedFeaturesContainer.appendChild(selectedLabel);
         this._selectedFeaturesCheckbox = selectedCheckbox;
+        this._selectedFeaturesText = selectedText;
         this._exportPanel.appendChild(this._selectedFeaturesContainer);
         this._exportSelectedOnly = true;
 
@@ -334,6 +335,7 @@ export class MapExportControl {
 
         // Initial values
         this._onSizeChange('A4');
+        this._updatePanelVisibility();
     }
 
     _createLabel(text) {
@@ -546,6 +548,8 @@ export class MapExportControl {
     _updatePanelVisibility() {
         const isVectorFormat = this._format === 'geojson' || this._format === 'kml';
 
+        this._exportPanel.style.maxHeight = 'none';
+
         if (isVectorFormat) {
             if (this._pageSettingsDetails) {
                 this._pageSettingsDetails.style.display = 'none';
@@ -570,6 +574,12 @@ export class MapExportControl {
                 this._selectedFeaturesContainer.style.display = 'none';
             }
         }
+
+        requestAnimationFrame(() => {
+            requestAnimationFrame(() => {
+                this._updatePanelMaxHeight();
+            });
+        });
     }
 
     _updateSelectedFeaturesCheckbox() {
@@ -577,10 +587,23 @@ export class MapExportControl {
             return;
         }
 
-        const hasSelectedFeatures = this._hasSelectedFeatures();
+        const selectedFeatures = this._getSelectedFeatures();
+        const hasSelectedFeatures = selectedFeatures.length > 0;
+        const wasHidden = this._selectedFeaturesContainer.style.display === 'none';
 
         if (hasSelectedFeatures) {
             this._selectedFeaturesContainer.style.display = 'block';
+
+            if (wasHidden && this._selectedFeaturesCheckbox) {
+                this._selectedFeaturesCheckbox.checked = true;
+                this._exportSelectedOnly = true;
+            }
+
+            if (this._selectedFeaturesText) {
+                const count = selectedFeatures.length;
+                const plural = count !== 1 ? 's' : '';
+                this._selectedFeaturesText.innerHTML = `Export only <b>${count} selected</b> feature${plural}`;
+            }
         } else {
             this._selectedFeaturesContainer.style.display = 'none';
             if (this._selectedFeaturesCheckbox) {
