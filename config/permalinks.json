@@ -10,9 +10,9 @@
       }
     },
     "goa-land-atlas": {
-      "url": "https://amche.in/?layers=communidade-land,notified-wetlands,plot,open-buildings-2023,open-buildings,regional-plan,mapbox-satellite,3d-terrain#11.87/15.51624/73.8246",
-      "title": "Communidade owned lands of Goa",
-      "description": "Plots owned by the Communidade of Goa",
+      "url": "https://amche.in/?layers=goa-plots,goa-bhunaksha-communidade,world-2023-open-buildings,goa-2021-regional-plan,mapbox-streets,mapbox-satellite&terrain=1.5#11.87/15.51624/73.8246",
+      "title": "Land Information Atlas of Goa",
+      "description": "Plotwise land information of Goa using Dharani/Bhunaksha",
       "published": {
         "2025-06-12": "Community Sharing"
       }
