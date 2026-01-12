@@ -5,7 +5,11 @@ export class TransitLayerStyles {
             type: 'line',
             source: sourceName,
             'source-layer': sourceLayer,
-            filter: ['==', ['get', 'feature_type'], 'route'],
+            filter: [
+                'any',
+                ['==', ['get', 'feature_type'], 'route'],
+                ['==', ['get', 'type'], 'route']
+            ],
             layout: {
                 'line-join': 'round',
                 'line-cap': 'round'
@@ -42,7 +46,11 @@ export class TransitLayerStyles {
             source: sourceName,
             'source-layer': sourceLayer,
             filter: ['all',
-                ['==', ['get', 'feature_type'], 'route'],
+                [
+                    'any',
+                    ['==', ['get', 'feature_type'], 'route'],
+                    ['==', ['get', 'type'], 'route']
+                ],
                 ['==', ['get', 'route_id'], '']
             ],
             layout: {
@@ -70,7 +78,11 @@ export class TransitLayerStyles {
             type: 'circle',
             source: sourceName,
             'source-layer': sourceLayer,
-            filter: ['==', ['get', 'feature_type'], 'stop'],
+            filter: [
+                'any',
+                ['==', ['get', 'feature_type'], 'stop'],
+                ['==', ['get', 'type'], 'stop']
+            ],
             paint: {
                 'circle-radius': [
                     'interpolate',
@@ -126,7 +138,11 @@ export class TransitLayerStyles {
             source: sourceName,
             'source-layer': sourceLayer,
             filter: ['all',
-                ['==', ['get', 'feature_type'], 'stop'],
+                [
+                    'any',
+                    ['==', ['get', 'feature_type'], 'stop'],
+                    ['==', ['get', 'type'], 'stop']
+                ],
                 ['==', ['get', 'id'], '']
             ],
             paint: {
@@ -152,7 +168,11 @@ export class TransitLayerStyles {
             type: 'symbol',
             source: sourceName,
             'source-layer': sourceLayer,
-            filter: ['==', ['get', 'feature_type'], 'stop'],
+            filter: [
+                'any',
+                ['==', ['get', 'feature_type'], 'stop'],
+                ['==', ['get', 'type'], 'stop']
+            ],
             layout: {
                 'text-field': ['get', 'name'],
                 'text-font': ['Open Sans Bold', 'Arial Unicode MS Bold'],

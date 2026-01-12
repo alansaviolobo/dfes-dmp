@@ -81,7 +81,11 @@ export class TransitStopController {
 
             const allStopFeatures = this.map.querySourceFeatures(this.sourceName, {
                 sourceLayer: this.sourceLayer,
-                filter: ['==', ['get', 'feature_type'], 'stop']
+                filter: [
+                    'any',
+                    ['==', ['get', 'feature_type'], 'stop'],
+                    ['==', ['get', 'type'], 'stop']
+                ]
             });
 
             if (!allStopFeatures || allStopFeatures.length === 0) {
@@ -308,7 +312,11 @@ export class TransitStopController {
 
                 features = this.map.querySourceFeatures(this.sourceName, {
                     sourceLayer: this.sourceLayer,
-                    filter: ['==', ['get', 'feature_type'], 'stop']
+                    filter: [
+                    'any',
+                    ['==', ['get', 'feature_type'], 'stop'],
+                    ['==', ['get', 'type'], 'stop']
+                ]
                 });
 
                 console.log(`📊 Found ${features.length} total features from source`);
@@ -427,7 +435,11 @@ export class TransitStopController {
 
             const rawFeatures = this.map.querySourceFeatures(this.sourceName, {
                 sourceLayer: this.sourceLayer,
-                filter: ['==', ['get', 'feature_type'], 'stop']
+                filter: [
+                    'any',
+                    ['==', ['get', 'feature_type'], 'stop'],
+                    ['==', ['get', 'type'], 'stop']
+                ]
             });
 
             if (!rawFeatures || rawFeatures.length === 0) {
@@ -601,7 +613,11 @@ export class TransitStopController {
         try {
             const allStopFeatures = this.map.querySourceFeatures(this.sourceName, {
                 sourceLayer: this.sourceLayer,
-                filter: ['==', ['get', 'feature_type'], 'stop']
+                filter: [
+                    'any',
+                    ['==', ['get', 'feature_type'], 'stop'],
+                    ['==', ['get', 'type'], 'stop']
+                ]
             });
 
             if (!allStopFeatures || allStopFeatures.length === 0) {

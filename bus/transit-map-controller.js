@@ -80,7 +80,7 @@ export class TransitMapController {
             this.map.addSource(this.sourceName, {
                 type: 'vector',
                 url: this.vectorTileSource.url,
-                promoteId: { '642d08ec9c71882f33e0': 'id' }
+                promoteId: 'id'
             });
             console.log(`✅ Added ${this.sourceName} source: ${this.vectorTileSource.url}`);
         } catch (error) {

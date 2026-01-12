@@ -3,21 +3,21 @@
 
 // Vector tile source configuration
 export const VECTOR_TILE_SOURCE = {
-    url: 'mapbox://planemad.np3cjv7ukkcy',
+    url: 'mapbox://planemad.iw3kycq2pc42',
     sourceName: 'transit-data',
-    sourceLayer: '642d08ec9c71882f33e0' // Layer name in the vector tiles
+    sourceLayer: '97b9d98c23c4604f1dc8' // Layer name in the vector tiles
 };
 
 // Configuration for tileset schema mapping
 export const TILESET_SCHEMA = {
     routes: {
         layer: 'transit-data', // Source name
-        sourceLayer: '642d08ec9c71882f33e0', // Source layer within the tiles
+        sourceLayer: '97b9d98c23c4604f1dc8', // Source layer within the tiles
         featureType: 'route', // feature_type property value
         fields: {
-            id: 'route_id',
+            id: 'id',
             shortName: 'route_short_name',
-            longName: 'route_name',
+            longName: 'name', // Full display name with modifiers (RING, LTD, etc)
             description: 'route_desc',
             color: 'route_color',
             textColor: 'route_text_color',
@@ -29,25 +29,29 @@ export const TILESET_SCHEMA = {
             fareType: 'fare_type',
             acService: 'ac_service',
             direction: 'direction',
-            firstStopName: 'first_stop_name',
-            lastStopName: 'last_stop_name',
-            firstStopId: 'first_stop_id',
-            lastStopId: 'last_stop_id',
+            firstStopName: 'from', // Origin stop name
+            lastStopName: 'to', // Destination stop name
+            via: 'via', // Via stops/areas
             stopCount: 'stop_count',
-            stopIds: 'stop_ids',
             stopTimetable: 'stop_timetable',
             tripHeadway: 'trip_headway',
+            tripDuration: 'trip_duration', // Average trip duration HH:MM
             tripCount: 'trip_count',
+            morningTripHeadway: 'morning_trip_headway',
+            afternoonTripHeadway: 'afternoon_trip_headway',
+            eveningTripHeadway: 'evening_trip_headway',
+            nightTripHeadway: 'night_trip_headway',
             morningTripCount: 'morning_trip_count',
             afternoonTripCount: 'afternoon_trip_count',
             eveningTripCount: 'evening_trip_count',
             nightTripCount: 'night_trip_count',
-            reverseRouteId: 'reverse_route_id'
+            reverseRouteId: 'reverse_id',
+            openingHours: 'opening_hours' // Service hours in OSM format
         }
     },
     stops: {
         layer: 'transit-data', // Source name
-        sourceLayer: '642d08ec9c71882f33e0', // Source layer within the tiles
+        sourceLayer: '97b9d98c23c4604f1dc8', // Source layer within the tiles
         featureType: 'stop', // feature_type property value
         fields: {
             id: 'id',
@@ -61,8 +65,7 @@ export const TILESET_SCHEMA = {
             minTripHeadway: 'min_trip_headway',
             description: 'stop_description',
             towardsStop: 'towards_stop',
-            startTime: 'start_time',
-            endTime: 'end_time'
+            openingHours: 'opening_hours' // Service hours in OSM format
         }
     }
 };
@@ -249,10 +252,41 @@ export class BusRoute {
         this.color = this.getProperty('color');
         this.textColor = this.getProperty('textColor');
         this.isLive = this.getBooleanProperty('isLive');
+        this.isPremium = this.getBooleanProperty('isPremium');
         this.agency = this.getProperty('agency');
         this.city = this.getProperty('city');
         this.routeType = this.getProperty('routeType');
         this.fareType = this.getProperty('fareType');
+        this.acService = this.getBooleanProperty('acService');
+        this.direction = this.getProperty('direction');
+        
+        // Route endpoints
+        this.from = this.getProperty('firstStopName'); // Origin stop
+        this.to = this.getProperty('lastStopName'); // Destination stop
+        this.via = this.getProperty('via'); // Via stops/areas
+        
+        // Trip information
+        this.tripHeadway = this.getNumericProperty('tripHeadway');
+        this.tripDuration = this.getProperty('tripDuration');
+        this.tripCount = this.getNumericProperty('tripCount');
+        this.stopCount = this.getNumericProperty('stopCount');
+        
+        // Time-period specific headways
+        this.morningTripHeadway = this.getNumericProperty('morningTripHeadway');
+        this.afternoonTripHeadway = this.getNumericProperty('afternoonTripHeadway');
+        this.eveningTripHeadway = this.getNumericProperty('eveningTripHeadway');
+        this.nightTripHeadway = this.getNumericProperty('nightTripHeadway');
+        
+        // Time-period specific trip counts
+        this.morningTripCount = this.getNumericProperty('morningTripCount');
+        this.afternoonTripCount = this.getNumericProperty('afternoonTripCount');
+        this.eveningTripCount = this.getNumericProperty('eveningTripCount');
+        this.nightTripCount = this.getNumericProperty('nightTripCount');
+        
+        // Service information
+        this.openingHours = this.getProperty('openingHours');
+        this.reverseRouteId = this.getProperty('reverseRouteId');
+        this.stopTimetable = this.getProperty('stopTimetable');
         
         // Computed properties
         this.displayName = this.shortName || this.longName || this.id;
@@ -273,6 +307,11 @@ export class BusRoute {
         return value === true || value === 'true' || value === 1 || value === '1';
     }
     
+    getNumericProperty(schemaKey) {
+        const value = this.getProperty(schemaKey);
+        return value !== null && value !== undefined ? parseFloat(value) : null;
+    }
+    
     getDisplayInfo() {
         return {
             name: this.displayName,
@@ -281,7 +320,22 @@ export class BusRoute {
             agency: this.agency,
             city: this.city,
             serviceType: this.styling.serviceType,
-            styling: this.styling
+            styling: this.styling,
+            // Route endpoints
+            from: this.from,
+            to: this.to,
+            via: this.via,
+            direction: this.direction,
+            // Trip information
+            tripHeadway: this.tripHeadway,
+            tripDuration: this.tripDuration,
+            tripCount: this.tripCount,
+            stopCount: this.stopCount,
+            // Service hours
+            openingHours: this.openingHours,
+            // Flags
+            isAC: this.acService || this.fareType === 'AC',
+            isPremium: this.isPremium
         };
     }
     
@@ -322,11 +376,13 @@ export class BusStop {
         this.description = this.getProperty('description');
         this.timetable = this.getProperty('timetable');
         this.routeList = this.getProperty('routeList');
+        this.terminalRouteList = this.getProperty('terminalRouteList');
         this.tripCount = this.getNumericProperty('tripCount');
+        this.terminalTripCount = this.getNumericProperty('terminalTripCount');
         this.avgWaitTime = this.getNumericProperty('avgWaitTime');
-        this.zoneId = this.getProperty('zoneId');
-        this.stopUrl = this.getProperty('stopUrl');
-        this.locationType = this.getProperty('locationType');
+        this.minTripHeadway = this.getNumericProperty('minTripHeadway');
+        this.towardsStop = this.getProperty('towardsStop');
+        this.openingHours = this.getProperty('openingHours');
         
         // Extract coordinates from geometry (preferred) or properties
         const coords = this.extractCoordinates(feature.geometry);
@@ -439,20 +495,29 @@ export class BusStop {
         const routeMap = new Map();
         
         timetableData.forEach(routeInfo => {
-            if (routeInfo.route_short_name || routeInfo.route_name) {
-                const routeName = routeInfo.route_short_name || routeInfo.route_name;
-                
-                // Extract destination from various possible fields
-                const destination = this.extractDestination(routeInfo);
+            // Support both old schema (route_short_name/route_name) and new schema (route_short_name/name)
+            const routeName = routeInfo.route_short_name || routeInfo.name || routeInfo.route_name;
+            if (routeName) {
+                // Extract destination: new schema uses 'to', old uses various fields
+                const destination = routeInfo.to || this.extractDestination(routeInfo);
+                const isAC = routeInfo.ac_service === true || routeInfo.ac_service === 'true';
                 
                 routeMap.set(routeName, {
                     name: routeName,
+                    routeId: routeInfo.id,
+                    reverseRouteId: routeInfo.reverse_id,
                     agency: routeInfo.agency_name || 'BEST',
-                    fareType: this.detectFareType(routeName),
-                    isAC: this.isACRoute(routeName),
+                    fareType: isAC ? 'AC' : this.detectFareType(routeName),
+                    isAC: isAC || this.isACRoute(routeName),
+                    from: routeInfo.from,
                     destination: destination,
-                    // Include all timetable info for debugging
-                    timetableInfo: routeInfo
+                    tripHeadway: routeInfo.trip_headway,
+                    morningHeadway: routeInfo.morning_trip_headway,
+                    afternoonHeadway: routeInfo.afternoon_trip_headway,
+                    eveningHeadway: routeInfo.evening_trip_headway,
+                    nightHeadway: routeInfo.night_trip_headway,
+                    // Include timings for schedule display
+                    timings: routeInfo.timings || routeInfo.stop_times || []
                 });
             }
         });
@@ -551,48 +616,29 @@ export class BusStop {
     getDisplayInfo(userLocation = null) {
         const distance = userLocation ? this.getDistance(userLocation) : null;
         
-        // Debug: Log all available properties
-        console.log(`🔍 Stop ${this.name} - All properties:`, Object.keys(this.properties));
-        
         // Format towards_stop field for display
         let toDestinations = null;
         
-        // Debug: Check multiple possible field names for destinations
-        const possibleFields = ['towards_stop', 'destination', 'to', 'destinations', 'terminus', 'end_stops', 'last_stop'];
-        let towardsStop = null;
-        let foundField = null;
-        
-        for (const field of possibleFields) {
-            const value = this.getProperty(field);
-            if (value && typeof value === 'string' && value.trim()) {
-                towardsStop = value;
-                foundField = field;
-                break;
-            }
-        }
-        
-        console.log(`🔍 Stop ${this.name}: Found destination field "${foundField}" with value "${towardsStop}"`);
-        
-        // If no stop-level destination found, try extracting from route data
-        if (!towardsStop) {
-            const routesWithDestinations = this.getRoutesFromTimetable()
-                .map(route => route.destination)
-                .filter(dest => dest && dest !== 'Main Terminal') // Filter out fallback destinations
-                .slice(0, 3); // Limit to first 3 unique destinations
-            
-            if (routesWithDestinations.length > 0) {
-                toDestinations = [...new Set(routesWithDestinations)].join(', '); // Remove duplicates
-                console.log(`🔍 Stop ${this.name}: Using route destinations: ${toDestinations}`);
-            }
-        } else {
+        // Use the towardsStop field directly (now pre-populated in schema)
+        if (this.towardsStop && typeof this.towardsStop === 'string' && this.towardsStop.trim()) {
             // Split by semicolon and clean up each destination
-            const destinations = towardsStop.split(';')
+            const destinations = this.towardsStop.split(';')
                 .map(dest => dest.trim())
                 .filter(dest => dest.length > 0);
             
             if (destinations.length > 0) {
                 // Join with commas for natural formatting
                 toDestinations = destinations.join(', ');
+            }
+        } else {
+            // Fallback: try extracting from route timetable data
+            const routesWithDestinations = this.getRoutesFromTimetable()
+                .map(route => route.destination)
+                .filter(dest => dest && dest !== 'Main Terminal')
+                .slice(0, 3);
+            
+            if (routesWithDestinations.length > 0) {
+                toDestinations = [...new Set(routesWithDestinations)].join(', ');
             }
         }
         
@@ -604,10 +650,13 @@ export class BusStop {
             routes: this.routes.slice(0, 5), // Show first 5 routes
             moreRoutes: Math.max(0, this.routes.length - 5),
             tripCount: this.tripCount,
+            terminalTripCount: this.terminalTripCount,
             avgWaitTime: this.avgWaitTime,
+            minTripHeadway: this.minTripHeadway,
             hasLiveData: this.hasLiveData,
             coordinates: this.coordinates,
-            to: toDestinations
+            to: toDestinations,
+            openingHours: this.openingHours
         };
     }
 
@@ -617,17 +666,21 @@ export class BusStop {
         const allDepartures = [];
         
         timetableData.forEach(routeInfo => {
-            if (!routeInfo.stop_times || !Array.isArray(routeInfo.stop_times)) {
+            // Support both old schema (stop_times) and new schema (timings)
+            const stopTimes = routeInfo.timings || routeInfo.stop_times;
+            if (!stopTimes || !Array.isArray(stopTimes)) {
                 return;
             }
             
-            const routeName = routeInfo.route_short_name || routeInfo.route_name;
-            const destination = routeInfo.last_stop_name || 'Terminal';
+            const routeName = routeInfo.route_short_name || routeInfo.name;
+            // Support both old schema (last_stop_name) and new schema (to)
+            const destination = routeInfo.to || routeInfo.last_stop_name || 'Terminal';
             const agencyName = routeInfo.agency_name || 'BEST';
             const headway = routeInfo.trip_headway || 30;
+            const isAC = routeInfo.ac_service === true || routeInfo.ac_service === 'true';
             
             // Process each scheduled time
-            routeInfo.stop_times.forEach(timeStr => {
+            stopTimes.forEach(timeStr => {
                 const departureTime = DataUtils.parseTimeString(timeStr, currentTime);
                 if (departureTime) {
                     const timeDiffMinutes = (departureTime.getTime() - currentTime.getTime()) / (1000 * 60);
@@ -636,13 +689,21 @@ export class BusStop {
                     if (timeDiffMinutes >= -5 && timeDiffMinutes <= 180) {
                         allDepartures.push({
                             route: routeName,
-                            routeId: routeInfo.route_id || `route_${routeName}`,
+                            routeId: routeInfo.id || `route_${routeName}`,
+                            reverseRouteId: routeInfo.reverse_id,
+                            reverseStopId: routeInfo.reverse_stop_id,
                             time: departureTime,
                             destination: destination,
+                            from: routeInfo.from,
                             agencyName: agencyName,
                             headway: headway,
+                            morningHeadway: routeInfo.morning_trip_headway,
+                            afternoonHeadway: routeInfo.afternoon_trip_headway,
+                            eveningHeadway: routeInfo.evening_trip_headway,
+                            nightHeadway: routeInfo.night_trip_headway,
                             isLive: routeInfo.is_live === true || routeInfo.is_live === 'true',
-                            fareType: this.detectFareType(routeName),
+                            isAC: isAC,
+                            fareType: isAC ? 'AC' : this.detectFareType(routeName),
                             sortTime: departureTime.getTime()
                         });
                     }

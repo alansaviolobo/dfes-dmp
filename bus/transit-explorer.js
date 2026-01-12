@@ -20,6 +20,10 @@ import { TransitMapController } from './transit-map-controller.js';
 import { TransitStopController } from './transit-stop-controller.js';
 import { TransitDepartureController } from './transit-departure-controller.js';
 
+// Import location-based data loader
+import { LocationDataLoader } from './location-data-loader.js';
+import { TRANSIT_DATA_LOOKUP } from './transit-data-lookup.js';
+
 class TransitExplorer {
     constructor() {
         this.map = null;
@@ -31,6 +35,11 @@ class TransitExplorer {
         this.vectorTileSource = VECTOR_TILE_SOURCE;
         this.sourceName = VECTOR_TILE_SOURCE.sourceName;
         this.sourceLayer = VECTOR_TILE_SOURCE.sourceLayer;
+
+        // Initialize location-based data loader
+        this.locationDataLoader = new LocationDataLoader(TRANSIT_DATA_LOOKUP);
+        this.isSourceSwitching = false;
+        this.hasInitialDataLoaded = false;
 
         // Initialize URL manager for deep linking
         this.urlManager = null;
@@ -46,6 +55,7 @@ class TransitExplorer {
 
         // Track hovered feature for feature state management
         this.hoveredStopId = null;
+        this.currentHighlightedStop = null;
 
         // Route list state management
         this.visibleRoutes = [];
@@ -85,7 +95,7 @@ class TransitExplorer {
             }
         ];
         
-        this.currentCity = this.cities[0]; // Default to first city (Mumbai)
+        this.currentCity = this.cities[1]; // Default to Thiruvananthapuram
         
         this.init();
     }
@@ -107,7 +117,15 @@ class TransitExplorer {
             onStopClick: (stopFeature, allFeatures) => this.handleStopClick(stopFeature, allFeatures),
             onRouteClick: (routeFeature) => this.handleRouteClick(routeFeature),
             onMapBackgroundClick: () => this.clearAllSelections(),
-            onGeolocate: (e) => this.onLocationSuccess(e),
+            onGeolocate: (e) => {
+                console.log('📍 Geolocate event:', e.coords);
+                this.userLocation = {
+                    lat: e.coords.latitude,
+                    lng: e.coords.longitude
+                };
+                this.updateLocationStatus('Location found', 'status-live', false);
+                console.log('📍 Geolocate complete - waiting for map moveend to auto-select stop');
+            },
             onGeolocateError: (e) => this.handleLocationError(e),
             onMapLoaded: () => {
                 console.log('🗺️ Map loaded, initializing controllers...');
@@ -140,8 +158,48 @@ class TransitExplorer {
                 this.stopController.mapController.startAutoRefresh = () => this.departureController.startAutoRefresh();
                 this.stopController.mapController.displayInteractiveRoutes = (routes) => this.displayInteractiveRoutes(routes);
                 this.stopController.mapController.updateLocationStatus = (msg, cls, btn) => this.updateLocationStatus(msg, cls, btn);
+
+                setTimeout(() => {
+                    console.log('🔍 Calling initial queryVisibleTransitData...');
+                    console.log(`🔍 Current zoom: ${this.map.getZoom()}, center: [${this.map.getCenter().lng.toFixed(4)}, ${this.map.getCenter().lat.toFixed(4)}]`);
+                    console.log(`🔍 Source loaded: ${this.map.isSourceLoaded(this.sourceName)}`);
+
+                    const testFeatures = this.map.querySourceFeatures(this.sourceName, {
+                        sourceLayer: this.sourceLayer
+                    });
+                    console.log(`🔍 Total features in source: ${testFeatures.length}`);
+
+                    if (testFeatures.length > 0) {
+                        const sample = testFeatures[0];
+                        console.log(`🔍 Sample feature:`, {
+                            type: sample.geometry.type,
+                            props: Object.keys(sample.properties),
+                            allProperties: sample.properties,
+                            featureType: sample.properties.feature_type,
+                            typeProperty: sample.properties.type,
+                            hasId: 'id' in sample.properties,
+                            sourceLayer: sample.sourceLayer,
+                            layer: sample.layer
+                        });
+
+                        // Check different geometry types
+                        const pointFeatures = testFeatures.filter(f => f.geometry.type === 'Point');
+                        const lineFeatures = testFeatures.filter(f => f.geometry.type === 'LineString' || f.geometry.type === 'MultiLineString');
+                        console.log(`🔍 Geometry breakdown: ${pointFeatures.length} Points, ${lineFeatures.length} Lines`);
+
+                        if (pointFeatures.length > 0) {
+                            console.log(`🔍 Sample Point properties:`, pointFeatures[0].properties);
+                        }
+                        if (lineFeatures.length > 0) {
+                            console.log(`🔍 Sample Line properties:`, lineFeatures[0].properties);
+                        }
+                    }
+
+                    this.queryVisibleTransitData();
+                }, 500);
             },
             onMoveEnd: () => {
+                this.checkAndSwitchDataSource();
                 this.queryVisibleTransitData();
                 if (this.stopController && this.autoSelectClosestStop) {
                     this.stopController.findClosestStopToMapCenter();
@@ -171,17 +229,27 @@ class TransitExplorer {
 
         // If no URL parameters, auto-trigger geolocate once map is loaded
         if (!hasURLSelection) {
-            this.map.once('load', () => {
-                console.log('📍 No URL params detected, triggering geolocate...');
+            if (this.map.loaded()) {
+                console.log('📍 Map already loaded, triggering geolocate...');
                 this.updateLocationStatus('Locating...', 'status-scheduled', false);
-
-                // Small delay to ensure geolocate control is ready
                 setTimeout(() => {
                     if (this.geolocateControl) {
                         this.geolocateControl.trigger();
                     }
                 }, 500);
-            });
+            } else {
+                this.map.once('load', () => {
+                    console.log('📍 No URL params detected, triggering geolocate...');
+                    this.updateLocationStatus('Locating...', 'status-scheduled', false);
+
+                    // Small delay to ensure geolocate control is ready
+                    setTimeout(() => {
+                        if (this.geolocateControl) {
+                            this.geolocateControl.trigger();
+                        }
+                    }, 500);
+                });
+            }
         } else {
             this.updateLocationStatus('Loading from URL...', 'status-scheduled', false);
         }
@@ -1977,18 +2045,172 @@ class TransitExplorer {
         this.clearRouteSelections(); // Clear interactive route badge selections
         this.stopBusLocationTracking(); // Stop bus tracking
         this.currentSelectedStop = null;
-        
+
         // Clean up any remaining markers
         if (this.nearestStopMarker) {
             this.nearestStopMarker.remove();
             this.nearestStopMarker = null;
         }
-        
+
         // Update URL to clear parameters
         this.updateTransitURL({ route: null, stop: null });
-        
+
         // Clear the selection indicator
         this.updateSelectionIndicator('');
+    }
+
+    async checkAndSwitchDataSource() {
+        if (this.isSourceSwitching || !this.map) return;
+
+        if (!this.hasInitialDataLoaded) {
+            console.log('⏳ Initial data not loaded yet, skipping data source check');
+            return;
+        }
+
+        if (!this.map.isSourceLoaded(this.sourceName)) {
+            console.log('⏳ Source not loaded yet, skipping data source check');
+            return;
+        }
+
+        const bounds = this.map.getBounds();
+        const result = this.locationDataLoader.getBestMatch(bounds);
+
+        if (result.changed && result.match) {
+            console.log(`🔄 Data source changed to: ${result.match.name}`);
+            await this.updateMapSource(result.match);
+        }
+    }
+
+    async updateMapSource(matchData) {
+        if (!this.map || this.isSourceSwitching) return;
+
+        this.isSourceSwitching = true;
+
+        try {
+            const oldSourceName = this.sourceName;
+            const newSource = matchData.source;
+            const newSourceLayer = matchData.sourceLayer;
+
+            console.log(`🔄 Updating map source from ${oldSourceName} to ${matchData.name}`);
+
+            const layersToRecreate = [
+                'routes',
+                'routes-highlight',
+                'stops',
+                'stops-highlight',
+                'stops-debug-labels'
+            ];
+
+            layersToRecreate.forEach(layerId => {
+                if (this.map.getLayer(layerId)) {
+                    this.map.removeLayer(layerId);
+                }
+            });
+
+            if (this.map.getSource(oldSourceName)) {
+                this.map.removeSource(oldSourceName);
+            }
+
+            this.vectorTileSource.url = newSource;
+            this.sourceLayer = newSourceLayer;
+            this.mapController.sourceLayer = newSourceLayer;
+
+            this.map.addSource(oldSourceName, {
+                type: 'vector',
+                url: newSource,
+                promoteId: 'id'
+            });
+
+            this.mapController.addLayers();
+
+            this.stopController.sourceLayer = newSourceLayer;
+            this.departureController.sourceLayer = newSourceLayer;
+
+            await this.waitForSourceToLoad(oldSourceName);
+
+            console.log(`🔍 Querying features from source: ${oldSourceName}, layer: ${newSourceLayer}`);
+
+            const allFeaturesAllLayers = this.map.querySourceFeatures(oldSourceName);
+            console.log(`🔍 Found ${allFeaturesAllLayers.length} total features across ALL layers`);
+
+            if (allFeaturesAllLayers.length > 0) {
+                const allSourceLayers = new Set(allFeaturesAllLayers.map(f => f.sourceLayer));
+                console.log(`🔍 ALL available source layers:`, Array.from(allSourceLayers));
+
+                allSourceLayers.forEach(layer => {
+                    const layerFeatures = allFeaturesAllLayers.filter(f => f.sourceLayer === layer);
+                    if (layerFeatures.length > 0 && layerFeatures[0].properties) {
+                        const props = Object.keys(layerFeatures[0].properties);
+                        console.log(`🔍 Layer "${layer}": ${layerFeatures.length} features, properties: ${props.slice(0, 5).join(', ')}...`);
+                    }
+                });
+            }
+
+            const testFeatures = this.map.querySourceFeatures(oldSourceName, {
+                sourceLayer: newSourceLayer
+            });
+            console.log(`🔍 Found ${testFeatures.length} features in specified layer: ${newSourceLayer}`);
+
+            if (testFeatures.length > 0) {
+                const sampleFeature = testFeatures[0];
+                console.log(`🔍 Sample feature properties:`, Object.keys(sampleFeature.properties));
+                console.log(`🔍 Sample feature geometry type:`, sampleFeature.geometry.type);
+                console.log(`🔍 Full sample feature:`, sampleFeature.properties);
+                console.log(`🔍 Feature source layer:`, sampleFeature.sourceLayer);
+                console.log(`🔍 Feature layer:`, sampleFeature.layer);
+
+                const uniqueSourceLayers = new Set(testFeatures.map(f => f.sourceLayer));
+                console.log(`🔍 Available source layers in tileset:`, Array.from(uniqueSourceLayers));
+            }
+
+            const routeFeatures = this.map.querySourceFeatures(oldSourceName, {
+                sourceLayer: newSourceLayer,
+                filter: [
+                    'any',
+                    ['==', ['get', 'feature_type'], 'route'],
+                    ['==', ['get', 'type'], 'route']
+                ]
+            });
+            console.log(`🔍 Found ${routeFeatures.length} route features`);
+
+            const stopFeatures = this.map.querySourceFeatures(oldSourceName, {
+                sourceLayer: newSourceLayer,
+                filter: [
+                    'any',
+                    ['==', ['get', 'feature_type'], 'stop'],
+                    ['==', ['get', 'type'], 'stop']
+                ]
+            });
+            console.log(`🔍 Found ${stopFeatures.length} stop features`);
+
+            if (routeFeatures.length === 0 && stopFeatures.length === 0) {
+                console.warn(`⚠️ No transit data found in ${matchData.name} tileset at current location`);
+                console.warn(`⚠️ This may be expected if zoomed out or viewing an area without transit data`);
+            }
+
+            this.queryVisibleTransitData();
+            console.log(`✅ Map source updated successfully to: ${matchData.name}`);
+
+        } catch (error) {
+            console.error('❌ Error updating map source:', error);
+        } finally {
+            this.isSourceSwitching = false;
+        }
+    }
+
+    async waitForSourceToLoad(sourceName, maxAttempts = 50) {
+        console.log(`⏳ Waiting for source "${sourceName}" to load...`);
+
+        for (let i = 0; i < maxAttempts; i++) {
+            if (this.map.isSourceLoaded(sourceName)) {
+                console.log(`✅ Source "${sourceName}" loaded after ${i + 1} attempts`);
+                return true;
+            }
+            await new Promise(resolve => setTimeout(resolve, 100));
+        }
+
+        console.warn(`⚠️ Source "${sourceName}" did not load after ${maxAttempts} attempts`);
+        return false;
     }
 
     handleLocationError(error) {
@@ -3398,7 +3620,11 @@ class TransitExplorer {
 
             const rawRouteFeatures = this.map.querySourceFeatures(this.sourceName, {
                 sourceLayer: this.sourceLayer,
-                filter: ['==', ['get', 'feature_type'], 'route']
+                filter: [
+                    'any',
+                    ['==', ['get', 'feature_type'], 'route'],
+                    ['==', ['get', 'type'], 'route']
+                ]
             });
 
             if (!rawRouteFeatures || rawRouteFeatures.length === 0) {
@@ -3465,6 +3691,11 @@ class TransitExplorer {
             }
 
             console.log(`✅ Populated route list with ${uniqueRoutes.length} unique routes`);
+
+            if (!this.hasInitialDataLoaded) {
+                this.hasInitialDataLoaded = true;
+                console.log('✅ Initial data loaded successfully');
+            }
 
         } catch (error) {
             console.error('❌ Error querying visible transit data:', error);
@@ -3652,7 +3883,7 @@ class TransitExplorer {
     
     clearStopHighlight() {
         // Clear selection state
-        if (this.currentHighlightedStop !== null) {
+        if (this.currentHighlightedStop !== null && this.currentHighlightedStop !== undefined) {
             try {
                 this.map.setFeatureState(
                     {
