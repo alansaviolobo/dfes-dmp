@@ -26,6 +26,15 @@ export class PermalinkManager {
             return;
         }
 
-        window.location.replace(data.permalinks[permalinkId].url)
+        const permalinkUrl = data.permalinks[permalinkId].url;
+        const originalHash = window.location.hash;
+
+        if (originalHash) {
+            const url = new URL(permalinkUrl);
+            const newUrl = `${url.origin}${url.pathname}${url.search}${originalHash}`;
+            window.location.replace(newUrl);
+        } else {
+            window.location.replace(permalinkUrl);
+        }
     }
 }
