@@ -49,7 +49,39 @@ export class MapExportControl {
         };
         window.addEventListener('resize', this._resizeHandler);
 
+        // Listen to feature selection changes
+        this._featureStateChangeHandler = (event) => {
+            const isVectorFormat = this._format === 'geojson' || this._format === 'kml';
+            const isPanelVisible = !this._exportPanel.classList.contains('hidden');
+
+            if (isVectorFormat && isPanelVisible) {
+                this._updateSelectedFeaturesCheckbox();
+            }
+        };
+
+        this._attachStateManagerListener();
+
         return this._container;
+    }
+
+    _attachStateManagerListener() {
+        const tryAttach = () => {
+            if (window.stateManager) {
+                window.stateManager.addEventListener('state-change', this._featureStateChangeHandler);
+                return true;
+            }
+            return false;
+        };
+
+        if (!tryAttach()) {
+            let attempts = 0;
+            const maxAttempts = 10;
+            const retryInterval = setInterval(() => {
+                if (tryAttach() || attempts++ >= maxAttempts) {
+                    clearInterval(retryInterval);
+                }
+            }, 500);
+        }
     }
 
     onRemove() {
@@ -61,6 +93,10 @@ export class MapExportControl {
         if (this._resizeHandler) {
             window.removeEventListener('resize', this._resizeHandler);
             this._resizeHandler = null;
+        }
+        if (this._featureStateChangeHandler && window.stateManager) {
+            window.stateManager.removeEventListener('state-change', this._featureStateChangeHandler);
+            this._featureStateChangeHandler = null;
         }
         this._container.parentNode.removeChild(this._container);
         this._map = null;
@@ -101,12 +137,34 @@ export class MapExportControl {
         formatContainer.innerHTML = `
             <label class="flex items-center gap-1 cursor-pointer"><input type="radio" name="export-format" value="pdf" checked> PDF</label>
             <label class="flex items-center gap-1 cursor-pointer"><input type="radio" name="export-format" value="geojson"> GeoJSON</label>
+            <label class="flex items-center gap-1 cursor-pointer"><input type="radio" name="export-format" value="kml"> KML</label>
         `;
         formatContainer.onchange = (e) => {
             this._format = e.target.value;
             this._updatePanelVisibility();
         };
         this._exportPanel.appendChild(formatContainer);
+
+        // Export Selected Features Checkbox
+        this._selectedFeaturesContainer = document.createElement('div');
+        this._selectedFeaturesContainer.className = 'mb-3';
+        this._selectedFeaturesContainer.style.display = 'none';
+        const selectedLabel = document.createElement('label');
+        selectedLabel.className = 'flex items-center gap-2 cursor-pointer';
+        const selectedCheckbox = document.createElement('input');
+        selectedCheckbox.type = 'checkbox';
+        selectedCheckbox.checked = true;
+        selectedCheckbox.onchange = (e) => {
+            this._exportSelectedOnly = e.target.checked;
+        };
+        const selectedText = document.createElement('span');
+        selectedText.textContent = 'Export only selected features';
+        selectedLabel.appendChild(selectedCheckbox);
+        selectedLabel.appendChild(selectedText);
+        this._selectedFeaturesContainer.appendChild(selectedLabel);
+        this._selectedFeaturesCheckbox = selectedCheckbox;
+        this._exportPanel.appendChild(this._selectedFeaturesContainer);
+        this._exportSelectedOnly = true;
 
         // Page Settings Collapsible Section
         const pageSettingsDetails = document.createElement('sl-details');
@@ -302,13 +360,14 @@ export class MapExportControl {
     _togglePanel() {
         this._exportPanel.classList.toggle('hidden');
         if (!this._exportPanel.classList.contains('hidden')) {
-            // Calculate max-height based on panel position to prevent overflow
             this._updatePanelMaxHeight();
-            
-            if (this._format !== 'geojson') {
+
+            const isVectorFormat = this._format === 'geojson' || this._format === 'kml';
+            if (isVectorFormat) {
+                this._updateSelectedFeaturesCheckbox();
+            } else {
                 this._frame.show();
-                this._updateFrameFromInputs(); // Ensure frame matches current inputs
-                // Load default title and description
+                this._updateFrameFromInputs();
                 this._loadDefaultTitleAndDescription();
             }
         } else {
@@ -485,7 +544,9 @@ export class MapExportControl {
     }
 
     _updatePanelVisibility() {
-        if (this._format === 'geojson') {
+        const isVectorFormat = this._format === 'geojson' || this._format === 'kml';
+
+        if (isVectorFormat) {
             if (this._pageSettingsDetails) {
                 this._pageSettingsDetails.style.display = 'none';
             }
@@ -493,6 +554,8 @@ export class MapExportControl {
             this._descriptionContainer.style.display = 'none';
             this._legendContainer.style.display = 'none';
             this._frame.hide();
+
+            this._updateSelectedFeaturesCheckbox();
         } else {
             if (this._pageSettingsDetails) {
                 this._pageSettingsDetails.style.display = 'block';
@@ -502,7 +565,62 @@ export class MapExportControl {
             this._legendContainer.style.display = 'block';
             this._frame.show();
             this._updateFrameFromInputs();
+
+            if (this._selectedFeaturesContainer) {
+                this._selectedFeaturesContainer.style.display = 'none';
+            }
         }
+    }
+
+    _updateSelectedFeaturesCheckbox() {
+        if (!this._selectedFeaturesContainer) {
+            return;
+        }
+
+        const hasSelectedFeatures = this._hasSelectedFeatures();
+
+        if (hasSelectedFeatures) {
+            this._selectedFeaturesContainer.style.display = 'block';
+        } else {
+            this._selectedFeaturesContainer.style.display = 'none';
+            if (this._selectedFeaturesCheckbox) {
+                this._selectedFeaturesCheckbox.checked = false;
+                this._exportSelectedOnly = false;
+            }
+        }
+    }
+
+    _hasSelectedFeatures() {
+        if (!window.stateManager) {
+            return false;
+        }
+
+        const selectedFeatures = this._getSelectedFeatures();
+        return selectedFeatures.length > 0;
+    }
+
+    _getSelectedFeatures() {
+        if (!window.stateManager) return [];
+
+        const allLayers = window.stateManager.getActiveLayers();
+        const selectedFeatures = [];
+
+        allLayers.forEach((layerData, layerId) => {
+            const { features } = layerData;
+            if (features) {
+                features.forEach((featureState, featureId) => {
+                    if (featureState.isSelected) {
+                        selectedFeatures.push({
+                            feature: featureState.feature,
+                            layerId: layerId,
+                            layerConfig: layerData.config
+                        });
+                    }
+                });
+            }
+        });
+
+        return selectedFeatures;
     }
 
     _onSizeChange(size) {
@@ -602,6 +720,8 @@ export class MapExportControl {
         try {
             if (this._format === 'geojson') {
                 this._exportGeoJSON();
+            } else if (this._format === 'kml') {
+                this._exportKML();
             } else {
                 await this._exportPDF();
             }
@@ -616,18 +736,162 @@ export class MapExportControl {
     }
 
     _exportGeoJSON() {
-        const features = this._map.queryRenderedFeatures();
+        let features;
+        let filename;
+
+        if (this._exportSelectedOnly && this._hasSelectedFeatures()) {
+            const selectedFeatures = this._getSelectedFeatures();
+            features = selectedFeatures.map(item => item.feature);
+
+            filename = this._generateFilenameFromFeatures(selectedFeatures, 'geojson');
+        } else {
+            features = this._map.queryRenderedFeatures();
+            filename = 'map-export.geojson';
+        }
+
         const geojson = {
             type: 'FeatureCollection',
             features: features
         };
-        const blob = new Blob([JSON.stringify(geojson)], { type: 'application/json' });
+
+        const blob = new Blob([JSON.stringify(geojson, null, 2)], { type: 'application/json' });
         const url = URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = 'map-export.geojson';
-        a.click();
-        URL.revokeObjectURL(url);
+
+        const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+
+        if (isIOS) {
+            window.open(url, '_blank');
+            setTimeout(() => {
+                URL.revokeObjectURL(url);
+            }, 60000);
+        } else {
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = filename;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        }
+    }
+
+    async _exportKML() {
+        let features;
+        let filename;
+        let documentName = 'Exported Data';
+        let documentDescription = '';
+
+        if (this._exportSelectedOnly && this._hasSelectedFeatures()) {
+            const selectedFeatures = this._getSelectedFeatures();
+            features = selectedFeatures.map(item => item.feature);
+
+            filename = this._generateFilenameFromFeatures(selectedFeatures, 'kml');
+
+            if (selectedFeatures.length === 1) {
+                const item = selectedFeatures[0];
+                const layerConfig = item.layerConfig;
+                documentName = this._getFeatureTitle(item.feature, layerConfig);
+                documentDescription = layerConfig.inspect?.title || layerConfig.title || 'Exported from Amche Goa';
+            } else {
+                documentName = `${selectedFeatures.length} Selected Features`;
+                documentDescription = 'Exported from Amche Goa';
+            }
+        } else {
+            features = this._map.queryRenderedFeatures();
+            filename = 'map-export.kml';
+            documentName = 'All Visible Features';
+            documentDescription = 'Exported from Amche Goa';
+        }
+
+        const { KMLConverter } = await import('./kml-converter.js');
+
+        const geojson = {
+            type: 'FeatureCollection',
+            features: features
+        };
+
+        const kmlContent = KMLConverter.geoJsonToKml(geojson, {
+            name: documentName,
+            description: documentDescription
+        });
+
+        const blob = new Blob([kmlContent], { type: 'application/vnd.google-earth.kml+xml' });
+        const url = URL.createObjectURL(blob);
+
+        const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+
+        if (isIOS) {
+            window.open(url, '_blank');
+            setTimeout(() => {
+                URL.revokeObjectURL(url);
+            }, 60000);
+        } else {
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = filename;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        }
+    }
+
+    _generateFilenameFromFeatures(selectedFeatures, extension) {
+        // Group features by layer
+        const layerGroups = new Map();
+
+        for (const item of selectedFeatures) {
+            const layerId = item.layerId;
+            if (!layerGroups.has(layerId)) {
+                layerGroups.set(layerId, {
+                    layerConfig: item.layerConfig,
+                    features: []
+                });
+            }
+            layerGroups.get(layerId).features.push(item.feature);
+        }
+
+        // Build filename in format: layer1_feature1_feature2_layer2_feature3_feature4
+        const parts = [];
+
+        for (const [layerId, group] of layerGroups) {
+            const layerTitle = group.layerConfig.title || layerId;
+            const sanitizedLayer = layerTitle
+                .replace(/[<>:"/\\|?*]/g, '')
+                .replace(/\s+/g, '_');
+
+            parts.push(sanitizedLayer);
+
+            // Add feature titles
+            for (const feature of group.features) {
+                const featureTitle = this._getFeatureTitle(feature, group.layerConfig);
+                const sanitizedFeature = featureTitle
+                    .replace(/[<>:"/\\|?*]/g, '')
+                    .replace(/\s+/g, '_');
+                parts.push(sanitizedFeature);
+            }
+        }
+
+        const filename = parts.join('_').substring(0, 200);
+        return `${filename}.${extension}`;
+    }
+
+    _getFeatureTitle(feature, layerConfig) {
+        const labelField = layerConfig.inspect?.label;
+        if (labelField && feature.properties[labelField]) {
+            return String(feature.properties[labelField]);
+        }
+
+        if (feature.properties.name) {
+            return String(feature.properties.name);
+        }
+
+        const firstPriorityField = layerConfig.inspect?.fields?.[0];
+        if (firstPriorityField && feature.properties[firstPriorityField]) {
+            return String(feature.properties[firstPriorityField]);
+        }
+
+        return 'Exported Feature';
     }
 
     async _exportPDF() {

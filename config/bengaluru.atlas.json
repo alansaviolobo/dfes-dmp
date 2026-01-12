@@ -81,7 +81,7 @@
       "type": "tms",
       "id": "1940-survey",
       "url": "https://maps.blryesterday.com/1948/{z}/{x}/{y}.png",
-      "attribution": "Survey Of India via <a href='https://mod.org.in/'>MOD Foundation</a>"
+      "attribution": "Survey Of India via <a href='https://blryesterday.com/?year=1948'>MOD Foundation / blryesterday.com</a>"
     }
   ]
 }

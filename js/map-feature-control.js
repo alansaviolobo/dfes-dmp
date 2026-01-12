@@ -2591,7 +2591,7 @@ export class MapFeatureControl {
     }
 
     /**
-     * Add feature actions footer with Export KML and Settings buttons
+     * Add feature actions footer (export functionality moved to map-export-control.js)
      */
     _addFeatureActionsToContent(content, featureState, layerConfig, layerId, featureId) {
         const feature = featureState.feature;
@@ -2611,114 +2611,9 @@ export class MapFeatureControl {
             flex-wrap: wrap;
         `;
 
-        // Export Button (moved settings to layer header)
-        if (layerConfig.type === 'vector' || layerConfig.type === 'geojson') {
-            const exportButton = document.createElement('button');
-            exportButton.className = 'feature-action-button';
-            exportButton.setAttribute('aria-label', 'Export');
-            exportButton.setAttribute('title', 'Export');
-            exportButton.style.cssText = `
-                display: flex;
-                align-items: center;
-                gap: 4px;
-                background: none;
-                border: 1px solid #d1d5db;
-                color: #4b5563;
-                cursor: pointer;
-                padding: 4px 8px;
-                border-radius: 4px;
-                font-size: 11px;
-                transition: all 0.2s ease;
-                white-space: nowrap;
-                min-width: auto;
-                flex: 1 1 auto;
-                justify-content: center;
-            `;
-
-            exportButton.innerHTML = `
-                <sl-icon name="download" style="font-size: 12px;"></sl-icon>
-                <span>Export</span>
-            `;
-
-            // Add hover effects
-            exportButton.addEventListener('mouseenter', () => {
-                exportButton.style.backgroundColor = '#f3f4f6';
-                exportButton.style.color = '#111827';
-                exportButton.style.borderColor = '#9ca3af';
-            });
-
-            exportButton.addEventListener('mouseleave', () => {
-                exportButton.style.backgroundColor = 'transparent';
-                exportButton.style.color = '#4b5563';
-                exportButton.style.borderColor = '#d1d5db';
-            });
-
-            // Add click handler for export button
-            exportButton.addEventListener('click', (e) => {
-                e.stopPropagation();
-                this._exportFeature(featureState.feature, layerId);
-            });
-
-            actionContainer.appendChild(exportButton);
-        }
-
         content.appendChild(actionContainer);
     }
 
-    /**
-     * Export feature as KML file
-     */
-    _exportFeature(feature, layerId) {
-        try {
-            // Generate meaningful filename from feature properties
-            const layerConfig = this._getLayerConfig(layerId);
-            const fieldValues = layerConfig.inspect?.fields
-                ? layerConfig.inspect.fields
-                    .map(field => feature.properties[field])
-                    .filter(value => value)
-                    .join('_')
-                : '';
-            const groupTitle = feature.properties[layerConfig.inspect?.label] || 'Exported';
-            const title = fieldValues
-                ? `${fieldValues}_${groupTitle}`
-                : feature.properties[layerConfig.inspect?.label] || 'Exported_Feature';
-            const description = layerConfig.inspect?.title || 'Exported from Amche Goa';
-
-            const kmlContent = GeoUtils.convertToKML(feature, { title, description });
-
-            const blob = new Blob([kmlContent], { type: 'application/vnd.google-earth.kml+xml' });
-            const url = URL.createObjectURL(blob);
-
-            // Check if we're on iOS/iPadOS
-            const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
-
-            if (isIOS) {
-                // iOS fallback method - open in new tab
-                window.open(url, '_blank');
-
-                // Show instructions
-                this._showToast('On iPad: Tap and hold the page, then select "Download Linked File" to save the KML', 'info', 10000);
-
-                // Clean up after delay
-                setTimeout(() => {
-                    URL.revokeObjectURL(url);
-                }, 60000); // Keep available for 1 minute
-            } else {
-                // Regular download for other platforms
-                const downloadLink = document.createElement('a');
-                downloadLink.href = url;
-                downloadLink.download = `${title}.kml`;
-                document.body.appendChild(downloadLink);
-                downloadLink.click();
-                document.body.removeChild(downloadLink);
-                URL.revokeObjectURL(url);
-            }
-
-        } catch (error) {
-            console.error('Error exporting KML:', error);
-            this._showToast('Error exporting KML. Please check the console for details.', 'error');
-        }
-    }
 
     /**
      * Show layer settings modal
