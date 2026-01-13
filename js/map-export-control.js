@@ -13,9 +13,10 @@ export class MapExportControl {
         this._title = '';
         this._description = '';
         this._titleCustomized = false; // Track if user has manually edited the title
+        this._descriptionCustomized = false; // Track if user has manually edited the description
         this._movendHandler = null; // Store handler for cleanup
         this._resizeHandler = null; // Store resize handler for cleanup
-        this._includeLegend = true; // Track legend inclusion checkbox
+        this._includeLegend = false; // Track legend inclusion checkbox
         this._margin = '1cm'; // CSS-style margin (supports 1, 2, 3, or 4 values)
     }
 
@@ -312,9 +313,15 @@ export class MapExportControl {
         this._descriptionContainer.appendChild(this._createLabel('Description'));
         const descriptionTextarea = document.createElement('textarea');
         descriptionTextarea.className = 'w-full bg-white border border-gray-300 rounded px-1 py-1 mt-1 box-border min-h-[60px] resize-y';
-        descriptionTextarea.placeholder = 'Loading...';
-        descriptionTextarea.onchange = (e) => { this._description = e.target.value; };
-        descriptionTextarea.oninput = (e) => { this._description = e.target.value; };
+        descriptionTextarea.placeholder = 'Exported at...';
+        descriptionTextarea.onchange = (e) => {
+            this._description = e.target.value;
+            this._descriptionCustomized = e.target.value.trim().length > 0;
+        };
+        descriptionTextarea.oninput = (e) => {
+            this._description = e.target.value;
+            this._descriptionCustomized = e.target.value.trim().length > 0;
+        };
         this._descriptionInput = descriptionTextarea;
         this._descriptionContainer.appendChild(descriptionTextarea);
         this._exportPanel.appendChild(this._descriptionContainer);
@@ -464,19 +471,22 @@ export class MapExportControl {
     }
 
     async _loadDefaultTitleAndDescription() {
-        // Set default description
-        const date = new Date();
-        const timestamp = date.toLocaleString('en-GB', {
-            day: 'numeric',
-            month: 'long',
-            year: 'numeric',
-            hour: '2-digit',
-            minute: '2-digit'
-        });
-        this._description = `PDF generated on ${timestamp}`;
-        this._descriptionInput.value = this._description;
+        // Set default description placeholder if not customized
+        if (!this._descriptionCustomized) {
+            const date = new Date();
+            const timestamp = date.toLocaleString('en-GB', {
+                day: 'numeric',
+                month: 'long',
+                year: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit'
+            });
+            this._descriptionInput.placeholder = `Exported at ${timestamp}`;
+            this._descriptionInput.value = '';
+            this._description = '';
+        }
 
-        // Reset customization flag when loading defaults
+        // Reset title customization flag when loading defaults
         this._titleCustomized = false;
 
         // Update title from current location
@@ -644,6 +654,10 @@ export class MapExportControl {
             if (this._selectedFeaturesContainer) {
                 this._selectedFeaturesContainer.style.display = 'none';
             }
+
+            if (!this._exportPanel.classList.contains('hidden')) {
+                this._loadDefaultTitleAndDescription();
+            }
         }
 
         if (this._geojsonIOContainer) {
@@ -801,10 +815,16 @@ export class MapExportControl {
     /**
      * Update export button progress
      * @param {number} percent - Progress percentage (0-100)
+     * @param {string} message - Optional status message
      */
-    _updateExportProgress(percent) {
+    _updateExportProgress(percent, message = null) {
         if (this._exportButtonText) {
-            this._exportButtonText.textContent = `Processing ${Math.round(percent)}%`;
+            const percentText = `${Math.round(percent)}%`;
+            if (message) {
+                this._exportButtonText.textContent = `${message} (${percentText})`;
+            } else {
+                this._exportButtonText.textContent = `Processing ${percentText}`;
+            }
         }
     }
 
@@ -812,7 +832,7 @@ export class MapExportControl {
         if (this._isExporting) return;
         this._isExporting = true;
         const oldText = this._exportButtonText.textContent;
-        this._updateExportProgress(0);
+        this._updateExportProgress(0, 'Starting export');
         this._exportButton.disabled = true;
 
         try {
@@ -1100,18 +1120,18 @@ export class MapExportControl {
         const container = this._map.getContainer();
 
         // Generate QR
-        this._updateExportProgress(10);
+        this._updateExportProgress(10, 'Generating QR code');
         let qrDataUrl = null;
         try {
             qrDataUrl = await this._getQRCodeDataUrl(shareUrl);
-            this._updateExportProgress(20);
+            this._updateExportProgress(20, 'QR code generated');
         } catch (e) {
             console.warn('Failed to generate QR for PDF', e);
-            this._updateExportProgress(20);
+            this._updateExportProgress(20, 'Skipping QR code');
         }
 
         // Capture Overlay (Feature Control Layers)
-        this._updateExportProgress(25);
+        this._updateExportProgress(25, 'Preparing legend');
         let overlayDataUrl = null;
         let overlayWidthMm = 0;
         let overlayHeightMm = 0;
@@ -1284,11 +1304,11 @@ export class MapExportControl {
                     overlayWidthMm = logicWidth * 0.26458;
                     overlayHeightMm = logicHeight * 0.26458;
 
-                    this._updateExportProgress(40);
+                    this._updateExportProgress(40, 'Legend captured');
 
                 } catch (e) {
                     console.warn('Failed to capture overlay', e);
-                    this._updateExportProgress(40);
+                    this._updateExportProgress(40, 'Legend capture failed');
                 } finally {
                     // Restore original panel visibility if it was hidden
                     if (wasHidden && parentPanel) {
@@ -1296,10 +1316,10 @@ export class MapExportControl {
                     }
                 }
             } else {
-                this._updateExportProgress(40);
+                this._updateExportProgress(40, 'No legend to capture');
             }
         } else {
-            this._updateExportProgress(40);
+            this._updateExportProgress(40, 'Skipping legend');
         }
 
         return new Promise((resolve, reject) => {
@@ -1307,7 +1327,7 @@ export class MapExportControl {
             // Function to capture after resize and move
             const capture = async () => {
                 try {
-                    this._updateExportProgress(50);
+                    this._updateExportProgress(50, 'Capturing map');
                     const canvas = this._map.getCanvas();
                     const imgData = canvas.toDataURL('image/png');
 
@@ -1318,7 +1338,7 @@ export class MapExportControl {
                     });
 
                     // Draw Map (with margins)
-                    this._updateExportProgress(60);
+                    this._updateExportProgress(60, 'Adding map to PDF');
                     if (this._rasterQuality === 'high') {
                         // High Quality = TIFF
                         try {
@@ -1337,7 +1357,7 @@ export class MapExportControl {
                     // Note: Legend overlay removed from page 1 - will be on page 2
 
                     // Generate footer using HTML template for consistent layout
-                    this._updateExportProgress(70);
+                    this._updateExportProgress(70, 'Generating footer');
                     const footerResult = await this._generateFooterHTML(
                         contentWidthMm,
                         contentHeightMm,
@@ -1370,13 +1390,13 @@ export class MapExportControl {
                     }
 
                     // Add Page 2: Legend (if legend checkbox is checked)
-                    this._updateExportProgress(85);
+                    this._updateExportProgress(85, 'Adding legend pages');
                     if (this._includeLegend && overlayDataUrl) {
                         await this._addLegendPage(doc, widthMm, heightMm, overlayDataUrl, overlayWidthMm, overlayHeightMm, dpi);
                     }
 
                     // Generate filename from title, sanitizing invalid characters
-                    this._updateExportProgress(95);
+                    this._updateExportProgress(95, 'Finalizing PDF');
                     let filename = 'map-export.pdf';
                     if (this._title && this._title.trim()) {
                         // Remove HTML tags and convert <br> to ', '
@@ -1393,7 +1413,7 @@ export class MapExportControl {
                             filename = `${sanitized}.pdf`;
                         }
                     }
-                    this._updateExportProgress(100);
+                    this._updateExportProgress(100, 'Downloading PDF');
                     doc.save(filename);
                     resolve();
                 } catch (e) {
@@ -1402,6 +1422,7 @@ export class MapExportControl {
             };
 
             // Set new size - MATCHING MAP AREA ONLY
+            this._updateExportProgress(45, 'Resizing map');
             Object.assign(container.style, {
                 width: targetWidth + 'px',
                 height: targetHeight + 'px',
@@ -1770,7 +1791,7 @@ export class MapExportControl {
             const thumbnailMap = new Map();
 
             // Update progress to show we're moving forward
-            this._updateExportProgress(87);
+            this._updateExportProgress(87, 'Building legend content');
 
             // Create a helper function to create a single layer element
             const createLayerElement = (layer, isFirstPage = false, pageIndex = 0) => {
@@ -3567,7 +3588,10 @@ export class MapExportControl {
             // Description
             const descEl = footerClone.querySelector('.text-description');
             if (descEl) {
-                descEl.textContent = this._description || '';
+                const descriptionText = this._description && this._description.trim() !== ''
+                    ? this._description
+                    : this._descriptionInput.placeholder;
+                descEl.textContent = descriptionText || '';
             }
 
             // Attribution
@@ -3580,6 +3604,7 @@ export class MapExportControl {
             const urlEl = footerClone.querySelector('.text-url');
             if (urlEl && shareUrl) {
                 urlEl.textContent = shareUrl;
+                urlEl.style.opacity = '0.3';
             }
 
             // Scale bar
@@ -3595,52 +3620,22 @@ export class MapExportControl {
             }
 
             // North arrow - apply rotation and tilt using CSS transforms
-            const northArrowEl = footerClone.querySelector('.north-arrow');
-            const northArrowSvg = footerClone.querySelector('.north-arrow-svg');
-            const northArrowTrapezoid = footerClone.querySelector('.north-arrow-trapezoid');
+            const northArrowCross = footerClone.querySelector('.north-arrow-cross');
 
-            if (northArrowEl && northArrowSvg && bearing !== undefined) {
-                // Apply rotation based on bearing (negative because CSS rotation is clockwise)
+            if (northArrowCross && bearing !== undefined) {
+                // Apply rotation based on bearing
                 // Mapbox bearing: 0 = north up, positive = clockwise
-                // CSS rotation: positive = clockwise
-                northArrowSvg.style.transform = `rotate(${-bearing}deg)`;
+                // CSS rotation: positive = clockwise, so negate bearing
+                let transform = `rotate(${-bearing}deg)`;
 
                 // Apply tilt/perspective based on pitch
                 if (pitch !== undefined && pitch > 0) {
-                    // Tilt the arrow to match the map's pitch
-                    // Use perspective and rotateX to simulate 3D tilt
-                    const tiltAngle = pitch; // Pitch angle in degrees
-                    northArrowSvg.style.transform += ` perspective(20mm) rotateX(${tiltAngle}deg)`;
-
-                    // Show and adjust trapezoid background
-                    // Trapezoid angle = (90 - pitch) degrees
-                    // This creates an isosceles trapezoid where the top is narrower (farther away)
-                    // and bottom is wider (closer to viewer), simulating ground plane tilt
-                    if (northArrowTrapezoid) {
-                        northArrowTrapezoid.classList.add('visible');
-
-                        // Calculate trapezoid top width based on pitch
-                        // When pitch = 0: top width = 100% (rectangle, angle = 90°)
-                        // When pitch = 90: top width = 0% (triangle, angle = 0°)
-                        // Linear interpolation: topWidth = 1 - (pitch / 90)
-                        const topWidthRatio = Math.max(0, 1 - (pitch / 90));
-
-                        // Calculate clip-path coordinates for isosceles trapezoid
-                        // Bottom edge: full width (100%)
-                        // Top edge: centered, width = topWidthRatio * 100%
-                        const topLeft = (1 - topWidthRatio) / 2;
-                        const topRight = 1 - topLeft;
-
-                        // clip-path: bottom-left, bottom-right, top-right, top-left
-                        northArrowTrapezoid.style.clipPath =
-                            `polygon(0% 100%, 100% 100%, ${topRight * 100}% 0%, ${topLeft * 100}% 0%)`;
-                    }
-                } else {
-                    // Hide trapezoid when pitch is 0
-                    if (northArrowTrapezoid) {
-                        northArrowTrapezoid.classList.remove('visible');
-                    }
+                    // Apply 3D rotation around X-axis to show pitch
+                    // Use a more subtle transformation that keeps the cross visible
+                    transform += ` rotateX(${pitch * 0.7}deg)`;
                 }
+
+                northArrowCross.style.transform = transform;
             }
 
             // Append footer to container

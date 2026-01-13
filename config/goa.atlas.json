@@ -1128,7 +1128,7 @@
       "maxzoom": 14,
       "attribution": "<a href='https://www.czma.goa.gov.in/ViewDoc.aspx'>Final CZMP, Goa Coastal Zone Management Authority</a> - via <a href='https://www.maphub.co/map/ece88d0e-2c10-4b78-a163-904a4cf16dd4'>Maphub</a>",
       "style": {
-        "fill-opacity": 1,
+        "fill-opacity": 0.5,
         "text-halo-color": "#b3ff0f",
         "fill-color": "#b3ff0f",
         "line-width": 1,
@@ -2071,7 +2071,8 @@
       "attribution": "© MapWarper - <a href=\"https://mapwarper.net/maps/96085#Rectify_tab\" target=\"_blank\">View Original</a>",
       "headerImage": "https://mapwarper.net/uploads/96085/thumb/Salvador_M_lulc__1_.png",
       "initiallyChecked": false
-    },{
+    },
+    {
       "title": "Henrique's Hand Drawn Map of Quitla",
       "description": "Hand drawn map of Quitla village in Aldona Panchayat surveyed by Henrique T.A.S Fernandes between 1960-1970.",
       "date": "1970",
