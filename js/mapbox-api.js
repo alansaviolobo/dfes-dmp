@@ -2468,6 +2468,44 @@ export class MapboxAPI {
     }
 
     /**
+     * Update line layers with dynamic sort keys for hover/selection z-ordering
+     * @param {Set} selectedFeatureIds - Set of selected feature IDs
+     * @param {Set} hoveredFeatureIds - Set of hovered feature IDs
+     */
+    updateLineLayerSortKeys(selectedFeatureIds, hoveredFeatureIds) {
+        const style = this.getStyle();
+        if (!style || !style.layers) return;
+
+        const selectedIds = Array.from(selectedFeatureIds);
+        const hoveredIds = Array.from(hoveredFeatureIds);
+
+        style.layers.forEach(layer => {
+            if (layer.type === 'line' && layer.id.includes('-outline')) {
+                const sortKeyExpression = [
+                    'case',
+                    ['in', ['id'], ['literal', selectedIds]], 3,
+                    ['in', ['id'], ['literal', hoveredIds]], 1,
+                    2
+                ];
+
+                const offsetExpression = [
+                    'case',
+                    ['in', ['id'], ['literal', selectedIds]], -2,
+                    ['in', ['id'], ['literal', hoveredIds]], -1,
+                    0
+                ];
+
+                try {
+                    this._map.setLayoutProperty(layer.id, 'line-sort-key', sortKeyExpression);
+                    this._map.setPaintProperty(layer.id, 'line-offset', offsetExpression);
+                } catch (error) {
+                    console.warn(`Failed to update sort key/offset for ${layer.id}:`, error);
+                }
+            }
+        });
+    }
+
+    /**
      * Cleanup all layer groups and dispose of the API
      */
     cleanup() {

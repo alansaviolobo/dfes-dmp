@@ -2,7 +2,7 @@
  * MapFeatureStateManager - Centralized feature state management
  * Manages hover, selection, and interaction states for map features across all layers
  */
-import {MapboxAPI} from './mapbox-api.js';
+import { MapboxAPI } from './mapbox-api.js';
 
 export class MapFeatureStateManager extends EventTarget {
     constructor(map, mapboxAPI = null) {
@@ -169,7 +169,10 @@ export class MapFeatureStateManager extends EventTarget {
         });
 
         // Set mapbox feature state for visual feedback
-        this._setMapboxFeatureState(featureId, layerId, {hover: true});
+        this._setMapboxFeatureState(featureId, layerId, { hover: true });
+
+        // Update line layer sort keys for z-ordering
+        this._updateLineSortKeys();
 
         // Emit hover event
         this._emitStateChange('feature-hover', {
@@ -204,7 +207,7 @@ export class MapFeatureStateManager extends EventTarget {
         const processedFeatures = [];
 
         // Process each hovered feature
-        hoveredFeatures.forEach(({feature, layerId, lngLat}) => {
+        hoveredFeatures.forEach(({ feature, layerId, lngLat }) => {
             if (!feature || !layerId) return;
 
             const featureId = this._getFeatureId(feature);
@@ -220,7 +223,7 @@ export class MapFeatureStateManager extends EventTarget {
             });
 
             // Set mapbox feature state for visual feedback
-            this._setMapboxFeatureState(featureId, layerId, {hover: true});
+            this._setMapboxFeatureState(featureId, layerId, { hover: true });
 
             affectedLayers.add(layerId);
             processedFeatures.push({
@@ -231,6 +234,9 @@ export class MapFeatureStateManager extends EventTarget {
 
             // Removed verbose batch hover logging
         });
+
+        // Update line layer sort keys for z-ordering
+        this._updateLineSortKeys();
 
         // Emit batch hover event for more efficient UI updates
         this._emitStateChange('features-batch-hover', {
@@ -264,6 +270,9 @@ export class MapFeatureStateManager extends EventTarget {
         // Clear all hover states
         this._clearAllHover();
 
+        // Update line layer sort keys for z-ordering
+        this._updateLineSortKeys();
+
         // Emit map mouse leave event
         this._emitStateChange('map-mouse-leave', {
             timestamp: Date.now()
@@ -282,7 +291,7 @@ export class MapFeatureStateManager extends EventTarget {
                 featureState.isHovered = false;
 
                 // Remove mapbox feature state
-                const {layerId, feature} = featureState;
+                const { layerId, feature } = featureState;
                 const featureId = this._getFeatureId(feature);
                 this._removeMapboxFeatureState(featureId, layerId, 'hover');
 
@@ -349,7 +358,7 @@ export class MapFeatureStateManager extends EventTarget {
         // Process clicked features and select them
         const newSelections = [];
 
-        clickedFeatures.forEach(({feature, layerId, lngLat}) => {
+        clickedFeatures.forEach(({ feature, layerId, lngLat }) => {
             if (!feature || !layerId) return;
 
             const featureId = this._getFeatureId(feature);
@@ -374,7 +383,7 @@ export class MapFeatureStateManager extends EventTarget {
             this._selectedFeatures.add(compositeKey);
 
             // Set mapbox feature state for visual feedback
-            this._setMapboxFeatureState(featureId, layerId, {selected: true});
+            this._setMapboxFeatureState(featureId, layerId, { selected: true });
 
             newSelections.push({
                 featureId,
@@ -385,6 +394,9 @@ export class MapFeatureStateManager extends EventTarget {
 
             // Removed verbose selection logging
         });
+
+        // Update line layer sort keys for z-ordering
+        this._updateLineSortKeys();
 
         // Emit appropriate events based on number of features clicked
         if (newSelections.length === 1) {
@@ -475,6 +487,9 @@ export class MapFeatureStateManager extends EventTarget {
         // Remove mapbox feature state
         this._removeMapboxFeatureState(featureId, layerId, 'selected');
 
+        // Update line layer sort keys for z-ordering
+        this._updateLineSortKeys();
+
         // Removed verbose deselection logging
 
         return true;
@@ -514,6 +529,9 @@ export class MapFeatureStateManager extends EventTarget {
         });
 
         this._selectedFeatures.clear();
+
+        // Update line layer sort keys for z-ordering
+        this._updateLineSortKeys();
 
         if (!suppressEvent && clearedFeatures.length > 0) {
             this._emitStateChange('selections-cleared', {
@@ -824,7 +842,7 @@ export class MapFeatureStateManager extends EventTarget {
                 // Remove events using the MapboxAPI
                 const refs = this._eventListenerRefs.get(layerId);
                 if (refs) {
-                    refs.forEach(({type, listener, layerIdOrOptions}) => {
+                    refs.forEach(({ type, listener, layerIdOrOptions }) => {
                         try {
                             this._mapboxAPI.off(type, listener, layerIdOrOptions);
                         } catch (error) {
@@ -858,7 +876,7 @@ export class MapFeatureStateManager extends EventTarget {
         }
 
         const existing = this._featureStates.get(compositeKey) || {};
-        this._featureStates.set(compositeKey, {...existing, ...updates});
+        this._featureStates.set(compositeKey, { ...existing, ...updates });
     }
 
     /**
@@ -937,7 +955,7 @@ export class MapFeatureStateManager extends EventTarget {
      */
     _emitStateChange(eventType, data) {
         this.dispatchEvent(new CustomEvent('state-change', {
-            detail: {eventType, data}
+            detail: { eventType, data }
         }));
     }
 
@@ -1044,6 +1062,29 @@ export class MapFeatureStateManager extends EventTarget {
         // Final fallback: generate a hash (not ideal for Mapbox feature state)
         const geomStr = JSON.stringify(feature.geometry);
         return this._hashCode(geomStr);
+    }
+
+    /**
+     * Update line layer sort keys for proper z-ordering of hover/selection outlines
+     */
+    _updateLineSortKeys() {
+        if (!this._mapboxAPI) return;
+
+        const selectedIds = new Set();
+        const hoveredIds = new Set();
+
+        this._featureStates.forEach((featureState, compositeKey) => {
+            const rawId = this._getRawFeatureIdFromFeature(featureState.feature);
+
+            if (featureState.isSelected) {
+                selectedIds.add(rawId);
+            }
+            if (featureState.isHovered) {
+                hoveredIds.add(rawId);
+            }
+        });
+
+        this._mapboxAPI.updateLineLayerSortKeys(selectedIds, hoveredIds);
     }
 
     /**
@@ -1251,8 +1292,8 @@ export class MapFeatureStateManager extends EventTarget {
 
         // Store references for cleanup
         this._eventListenerRefs.set('map-events', [
-            {type: 'styledata', listener: handleStyleData},
-            {type: 'style.load', listener: handleStyleStart}
+            { type: 'styledata', listener: handleStyleData },
+            { type: 'style.load', listener: handleStyleStart }
         ]);
     }
 
