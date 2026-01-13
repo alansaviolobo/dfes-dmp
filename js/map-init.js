@@ -467,10 +467,10 @@ export class MapInitializer {
             window.featureControl = new MapFeatureControl();
 
             map.addControl(window.featureControl, 'top-left');
+            map.addControl(new ButtonGeolocationManager(), 'top-right');
             map.addControl(new TimeControl(), 'top-right');
             map.addControl(window.terrain3DControl, 'top-right');
             map.addControl(new ButtonResetMapView(), 'top-right');
-            map.addControl(new ButtonGeolocationManager(), 'top-right');
             map.addControl(window.attributionControl, 'bottom-right');
             map.addControl(new MapExportControl(), 'bottom-right');
             map.addControl(new ButtonExternalMapLinks(), 'bottom-right');

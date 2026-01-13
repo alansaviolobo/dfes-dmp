@@ -135,6 +135,51 @@ export class DataUtils {
         result.push(current);
         return result;
     }
+
+    /**
+     * Parses a "dirty" JSON string (e.g. from URL) that may have unquoted keys or values
+     * @param {string} jsonString - The dirty JSON string
+     * @returns {Object|null} The parsed object or null if parsing fails
+     */
+    static parseDirtyJson(jsonString) {
+        if (!jsonString) return null;
+
+        // First try standard JSON parsing
+        try {
+            return JSON.parse(jsonString);
+        } catch (e) {
+            // Check if it's a simple unquoted string that failed
+            if (!jsonString.startsWith('{') && !jsonString.startsWith('[')) {
+                return null;
+            }
+        }
+
+        try {
+            let fixed = jsonString;
+
+            // 1. Replace single quotes with double quotes (handling escaped quotes)
+            fixed = fixed.replace(/\\'/g, '\u0001')
+                .replace(/'/g, '"')
+                .replace(/\u0001/g, "'");
+
+            // 2. Quote unquoted keys
+            // Looks for key: that isn't preceded by a quote
+            fixed = fixed.replace(/([{,]\s*)([a-zA-Z0-9_\-]+?)\s*:/g, '$1"$2":');
+
+            // 3. Quote unquoted string values
+            // Looks for values that are NOT:
+            // - true/false/null
+            // - numbers
+            // - ALREADY quoted strings
+            // - objects/arrays ({ or [)
+            fixed = fixed.replace(/:\s*(?!(?:true|false|null|[-0-9]|\"|\'|\{|\[))([a-zA-Z0-9_\-\.\/]+?)\s*(?=[,}])/g, ':"$1"');
+
+            return JSON.parse(fixed);
+        } catch (error) {
+            console.warn('Failed to parse dirty JSON:', jsonString, error);
+            return null;
+        }
+    }
 }
 
 export class GeoUtils {
@@ -391,13 +436,15 @@ export class URLUtils {
                 if (trimmedItem) {
                     if (trimmedItem.startsWith('{') && trimmedItem.endsWith('}')) {
                         try {
-                            // Convert single-quoted JSON to double-quoted JSON
-                            // First unescape escaped single quotes, then replace single quotes with double quotes
-                            const jsonString = trimmedItem.replace(/\\'/g, '\u0001').replace(/'/g, '"').replace(/\u0001/g, "'");
-                            const parsedLayer = JSON.parse(jsonString);
-                            // Minify the JSON by removing extra whitespace and use single quotes
-                            const minifiedItem = JSON.stringify(parsedLayer).replace(/'/g, "\\'").replace(/"/g, "'");
-                            layers.push({ ...parsedLayer, _originalJson: minifiedItem });
+                            const parsedLayer = DataUtils.parseDirtyJson(trimmedItem);
+                            if (parsedLayer) {
+                                // Minify the JSON by removing extra whitespace and use single quotes for storage/URL
+                                const minifiedItem = JSON.stringify(parsedLayer).replace(/'/g, "\\'").replace(/"/g, "'");
+                                layers.push({ ...parsedLayer, _originalJson: minifiedItem });
+                            } else {
+                                // If parsing returns null, treat as ID
+                                layers.push({ id: trimmedItem });
+                            }
                         } catch (error) {
                             console.warn('Failed to parse layer JSON:', trimmedItem, error);
                             // Treat as layer ID if JSON parsing fails
@@ -419,13 +466,13 @@ export class URLUtils {
         if (trimmedItem) {
             if (trimmedItem.startsWith('{') && trimmedItem.endsWith('}')) {
                 try {
-                    // Convert single-quoted JSON to double-quoted JSON
-                    // First unescape escaped single quotes, then replace single quotes with double quotes
-                    const jsonString = trimmedItem.replace(/\\'/g, '\u0001').replace(/'/g, '"').replace(/\u0001/g, "'");
-                    const parsedLayer = JSON.parse(jsonString);
-                    // Minify the JSON by removing extra whitespace and use single quotes
-                    const minifiedItem = JSON.stringify(parsedLayer).replace(/'/g, "\\'").replace(/"/g, "'");
-                    layers.push({ ...parsedLayer, _originalJson: minifiedItem });
+                    const parsedLayer = DataUtils.parseDirtyJson(trimmedItem);
+                    if (parsedLayer) {
+                        const minifiedItem = JSON.stringify(parsedLayer).replace(/'/g, "\\'").replace(/"/g, "'");
+                        layers.push({ ...parsedLayer, _originalJson: minifiedItem });
+                    } else {
+                        layers.push({ id: trimmedItem });
+                    }
                 } catch (error) {
                     console.warn('Failed to parse layer JSON:', trimmedItem, error);
                     // Treat as layer ID if JSON parsing fails

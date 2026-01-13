@@ -16,6 +16,7 @@ export class MapExportControl {
         this._movendHandler = null; // Store handler for cleanup
         this._resizeHandler = null; // Store resize handler for cleanup
         this._includeLegend = true; // Track legend inclusion checkbox
+        this._margin = '1cm'; // CSS-style margin (supports 1, 2, 3, or 4 values)
     }
 
     onAdd(map) {
@@ -133,7 +134,7 @@ export class MapExportControl {
         // Format Selection
         this._exportPanel.appendChild(this._createLabel('Format'));
         const formatContainer = document.createElement('div');
-        formatContainer.className = 'flex gap-4 mb-3';
+        formatContainer.className = 'flex gap-4 mb-2';
         formatContainer.innerHTML = `
             <label class="flex items-center gap-1 cursor-pointer"><input type="radio" name="export-format" value="kml" checked> KML</label>
             <label class="flex items-center gap-1 cursor-pointer"><input type="radio" name="export-format" value="geojson"> GeoJSON</label>
@@ -141,9 +142,16 @@ export class MapExportControl {
         `;
         formatContainer.onchange = (e) => {
             this._format = e.target.value;
+            this._updateFormatDescription();
             this._updatePanelVisibility();
         };
         this._exportPanel.appendChild(formatContainer);
+
+        const formatDescription = document.createElement('div');
+        formatDescription.className = 'text-xs text-gray-600 mb-3 italic';
+        formatDescription.textContent = 'Popular format for Google Earth';
+        this._formatDescription = formatDescription;
+        this._exportPanel.appendChild(formatDescription);
 
         // Export Selected Features Checkbox
         this._selectedFeaturesContainer = document.createElement('div');
@@ -171,7 +179,7 @@ export class MapExportControl {
         const pageSettingsDetails = document.createElement('sl-details');
         pageSettingsDetails.className = 'mb-3';
         pageSettingsDetails.summary = 'Show page settings';
-        
+
         const pageSettingsContent = document.createElement('div');
         pageSettingsContent.className = 'pt-2';
         pageSettingsDetails.appendChild(pageSettingsContent);
@@ -254,6 +262,24 @@ export class MapExportControl {
         this._qualityContainer.appendChild(qualityOptions);
         pageSettingsContent.appendChild(this._qualityContainer);
 
+        // Margin Input
+        this._marginContainer = document.createElement('div');
+        this._marginContainer.className = 'mb-3';
+        this._marginContainer.appendChild(this._createLabel('Margin'));
+        const marginInput = document.createElement('input');
+        marginInput.type = 'text';
+        marginInput.className = 'w-full bg-white border border-gray-300 rounded px-2 py-1';
+        marginInput.placeholder = '1cm or 10mm 20mm or 1in 2cm 3cm 4cm';
+        marginInput.value = this._margin;
+        marginInput.onchange = (e) => { this._margin = e.target.value; };
+        marginInput.oninput = (e) => { this._margin = e.target.value; };
+        const marginHint = document.createElement('div');
+        marginHint.className = 'text-xs text-gray-500 mt-1';
+        marginHint.textContent = 'CSS format: top, right, bottom, left (e.g., "1in" or "10mm 20mm")';
+        this._marginContainer.appendChild(marginInput);
+        this._marginContainer.appendChild(marginHint);
+        pageSettingsContent.appendChild(this._marginContainer);
+
         // Store reference to page settings details for visibility control
         this._pageSettingsDetails = pageSettingsDetails;
         this._exportPanel.appendChild(pageSettingsDetails);
@@ -266,13 +292,13 @@ export class MapExportControl {
         titleInput.rows = 2;
         titleInput.className = 'w-full bg-white border border-gray-300 rounded px-1 py-1 mt-1 box-border resize-y';
         titleInput.placeholder = 'Loading...';
-        titleInput.onchange = (e) => { 
-            this._title = e.target.value; 
+        titleInput.onchange = (e) => {
+            this._title = e.target.value;
             // Reset customization flag if user clears the title
             this._titleCustomized = e.target.value.trim().length > 0;
         };
-        titleInput.oninput = (e) => { 
-            this._title = e.target.value; 
+        titleInput.oninput = (e) => {
+            this._title = e.target.value;
             // Reset customization flag if user clears the title
             this._titleCustomized = e.target.value.trim().length > 0;
         };
@@ -331,6 +357,39 @@ export class MapExportControl {
         this._exportButton = doExportBtn; // Store reference
         this._exportButtonText = exportText; // Store text reference
 
+        // Explore with geojson.io Button (only for GeoJSON)
+        this._geojsonIOContainer = document.createElement('div');
+        this._geojsonIOContainer.className = 'mt-2';
+        this._geojsonIOContainer.style.display = 'none';
+
+        const geojsonIOBtn = document.createElement('button');
+        geojsonIOBtn.className = 'geojson-io-button';
+        geojsonIOBtn.style.cssText = 'width: 100%; padding: 8px 16px; background: #ffffff; color: #333333; border: 1px solid #cccccc; border-radius: 4px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; font-size: 13px; font-weight: 400; transition: all 0.2s ease;';
+        geojsonIOBtn.onmouseenter = () => {
+            geojsonIOBtn.style.background = '#f5f5f5';
+            geojsonIOBtn.style.borderColor = '#999999';
+        };
+        geojsonIOBtn.onmouseleave = () => {
+            geojsonIOBtn.style.background = '#ffffff';
+            geojsonIOBtn.style.borderColor = '#cccccc';
+        };
+
+        const geojsonIOIcon = document.createElement('sl-icon');
+        geojsonIOIcon.name = 'box-arrow-up-right';
+        geojsonIOIcon.style.fontSize = '14px';
+        geojsonIOIcon.style.color = '#333333';
+
+        const geojsonIOText = document.createElement('span');
+        geojsonIOText.innerHTML = 'Explore with <strong>geojson.io</strong>';
+        geojsonIOText.style.color = '#333333';
+
+        geojsonIOBtn.appendChild(geojsonIOIcon);
+        geojsonIOBtn.appendChild(geojsonIOText);
+        geojsonIOBtn.onclick = () => this._openInGeojsonIO();
+
+        this._geojsonIOContainer.appendChild(geojsonIOBtn);
+        this._exportPanel.appendChild(this._geojsonIOContainer);
+
         this._container.appendChild(this._exportPanel);
 
         // Initial values
@@ -379,27 +438,27 @@ export class MapExportControl {
 
     _updatePanelMaxHeight() {
         if (!this._map || !this._exportPanel) return;
-        
+
         // Get map container dimensions
         const mapContainer = this._map.getContainer();
         const mapRect = mapContainer.getBoundingClientRect();
-        
+
         // Get panel position relative to viewport
         const panelRect = this._exportPanel.getBoundingClientRect();
-        
+
         // Calculate available space from panel top to map bottom
         // Add some padding (20px) to ensure panel doesn't touch bottom
         const availableHeight = mapRect.bottom - panelRect.top - 20;
-        
+
         // Also ensure it doesn't exceed viewport height minus top padding
         const maxViewportHeight = window.innerHeight - panelRect.top - 20;
-        
+
         // Use the smaller of the two to prevent overflow
         const maxHeight = Math.min(availableHeight, maxViewportHeight, window.innerHeight - 150);
-        
+
         // Set minimum height to ensure usability
         const minHeight = 200;
-        
+
         // Apply max-height (ensure it's at least minHeight)
         this._exportPanel.style.maxHeight = `${Math.max(maxHeight, minHeight)}px`;
     }
@@ -407,9 +466,9 @@ export class MapExportControl {
     async _loadDefaultTitleAndDescription() {
         // Set default description
         const date = new Date();
-        const timestamp = date.toLocaleString('en-GB', { 
-            day: 'numeric', 
-            month: 'long', 
+        const timestamp = date.toLocaleString('en-GB', {
+            day: 'numeric',
+            month: 'long',
             year: 'numeric',
             hour: '2-digit',
             minute: '2-digit'
@@ -419,7 +478,7 @@ export class MapExportControl {
 
         // Reset customization flag when loading defaults
         this._titleCustomized = false;
-        
+
         // Update title from current location
         await this._updateTitleFromLocation();
     }
@@ -431,7 +490,7 @@ export class MapExportControl {
     async _updateTitleFromLocation() {
         try {
             let center;
-            
+
             // Check if frame is visible and has dimensions - use frame center if available
             if (this._frame && this._frame._el && this._frame._el.classList.contains('active')) {
                 const frameRect = this._frame._el.getBoundingClientRect();
@@ -444,7 +503,7 @@ export class MapExportControl {
                     center = this._map.unproject([frameCenterX, frameCenterY]);
                 }
             }
-            
+
             // Fallback to map center if frame is not available
             if (!center) {
                 center = this._map.getCenter();
@@ -487,7 +546,7 @@ export class MapExportControl {
         if (this._isExporting) {
             return;
         }
-        
+
         // Only update if title hasn't been customized by the user
         // Update regardless of current title value (blank, "Map", or "Map of ...")
         if (!this._titleCustomized) {
@@ -504,11 +563,11 @@ export class MapExportControl {
             // Truncate coordinates to 5 decimal places (~1.1 meter precision)
             const latRounded = Math.round(lat * 100000) / 100000;
             const lngRounded = Math.round(lng * 100000) / 100000;
-            
+
             // Clamp zoom to valid Nominatim range (0-18) and use it for address detail level
             const nominatimZoom = Math.max(0, Math.min(18, Math.round(zoom || 15)));
             const url = `https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${latRounded}&lon=${lngRounded}&zoom=${nominatimZoom}&addressdetails=1`;
-            
+
             const response = await fetch(url, {
                 headers: {
                     'User-Agent': 'AMChe-Goa-Map-Export/1.0'
@@ -520,7 +579,7 @@ export class MapExportControl {
             }
 
             const data = await response.json();
-            
+
             if (!data.display_name) {
                 return null;
             }
@@ -528,21 +587,33 @@ export class MapExportControl {
             // Use display_name from Nominatim response
             // Split by comma and trim each part
             const parts = data.display_name.split(',').map(part => part.trim()).filter(part => part.length > 0);
-            
+
             // Format: last four parts on second line after <br>
             if (parts.length <= 4) {
                 return parts.join(', ');
             }
-            
+
             // Split into first line and last four parts
             const firstLineParts = parts.slice(0, parts.length - 4);
             const lastFourParts = parts.slice(parts.length - 4);
-            
+
             return firstLineParts.join(', ') + '<br>' + lastFourParts.join(', ');
         } catch (e) {
             console.error('Reverse geocoding failed', e);
             return null;
         }
+    }
+
+    _updateFormatDescription() {
+        if (!this._formatDescription) return;
+
+        const descriptions = {
+            'kml': 'For Google Earth and mapping apps',
+            'geojson': 'For web development and GIS software',
+            'pdf': 'For printing and sharing as documents'
+        };
+
+        this._formatDescription.textContent = descriptions[this._format] || '';
     }
 
     _updatePanelVisibility() {
@@ -573,6 +644,10 @@ export class MapExportControl {
             if (this._selectedFeaturesContainer) {
                 this._selectedFeaturesContainer.style.display = 'none';
             }
+        }
+
+        if (this._geojsonIOContainer) {
+            this._geojsonIOContainer.style.display = this._format === 'geojson' ? 'block' : 'none';
         }
 
         requestAnimationFrame(() => {
@@ -798,6 +873,28 @@ export class MapExportControl {
         }
     }
 
+    _openInGeojsonIO() {
+        let features;
+
+        if (this._exportSelectedOnly && this._hasSelectedFeatures()) {
+            const selectedFeatures = this._getSelectedFeatures();
+            features = selectedFeatures.map(item => item.feature);
+        } else {
+            features = this._map.queryRenderedFeatures();
+        }
+
+        const geojson = {
+            type: 'FeatureCollection',
+            features: features
+        };
+
+        const geojsonString = JSON.stringify(geojson);
+        const encodedData = encodeURIComponent(geojsonString);
+        const geojsonIOUrl = `https://geojson.io/#data=data:application/json,${encodedData}`;
+
+        window.open(geojsonIOUrl, '_blank');
+    }
+
     async _exportKML() {
         let features;
         let filename;
@@ -917,6 +1014,38 @@ export class MapExportControl {
         return 'Exported Feature';
     }
 
+    _parseMargin(marginStr) {
+        const parts = marginStr.trim().split(/\s+/);
+        const values = parts.map(part => {
+            const match = part.match(/^([\d.]+)(in|mm|cm|pt|px)?$/);
+            if (!match) return 0;
+
+            const value = parseFloat(match[1]);
+            const unit = match[2] || 'mm';
+
+            switch (unit) {
+                case 'in': return value * 25.4;
+                case 'cm': return value * 10;
+                case 'pt': return value * 0.3527778;
+                case 'px': return value * 0.2645833;
+                case 'mm':
+                default: return value;
+            }
+        });
+
+        if (values.length === 1) {
+            return { top: values[0], right: values[0], bottom: values[0], left: values[0] };
+        } else if (values.length === 2) {
+            return { top: values[0], right: values[1], bottom: values[0], left: values[1] };
+        } else if (values.length === 3) {
+            return { top: values[0], right: values[1], bottom: values[2], left: values[1] };
+        } else if (values.length >= 4) {
+            return { top: values[0], right: values[1], bottom: values[2], left: values[3] };
+        }
+
+        return { top: 10, right: 10, bottom: 10, left: 10 };
+    }
+
     async _exportPDF() {
         const { jsPDF } = await import('jspdf');
 
@@ -924,8 +1053,7 @@ export class MapExportControl {
         const heightMm = parseFloat(this._heightInput.input.value);
         const dpi = this._dpi;
 
-        // Footer configuration - will be calculated based on content
-        const marginMm = 5;
+        const margins = this._parseMargin(this._margin);
 
         // Get Data for Footer (needed for footer height calculation)
         // URL
@@ -941,11 +1069,11 @@ export class MapExportControl {
             attributionText = attribCtrl._container.textContent;
         }
 
-        // No full footer bar - overlay boxes will be drawn on top of map
-        // Map uses full page height
-        const mapHeightMm = heightMm;
-        const targetWidth = Math.round((widthMm * dpi) / 25.4);
-        const targetHeight = Math.round((mapHeightMm * dpi) / 25.4);
+        // Calculate content area (page size minus margins)
+        const contentWidthMm = widthMm - margins.left - margins.right;
+        const contentHeightMm = heightMm - margins.top - margins.bottom;
+        const targetWidth = Math.round((contentWidthMm * dpi) / 25.4);
+        const targetHeight = Math.round((contentHeightMm * dpi) / 25.4);
 
         // Capture Frame State for manual calculation (before hiding/resizing)
         const frameRect = this._frame._el.getBoundingClientRect();
@@ -991,182 +1119,182 @@ export class MapExportControl {
         // Only capture overlay if legend checkbox is checked
         if (this._includeLegend) {
             // Find the feature panel layers container - check both class names
-            const featurePanelLayers = document.querySelector('.feature-control-layers.map-feature-panel-layers') || 
-                                       document.querySelector('.map-feature-panel-layers');
-            
+            const featurePanelLayers = document.querySelector('.feature-control-layers.map-feature-panel-layers') ||
+                document.querySelector('.map-feature-panel-layers');
+
             // Check if element exists and has content (children or text)
             const hasContent = featurePanelLayers && (
-                featurePanelLayers.children.length > 0 || 
+                featurePanelLayers.children.length > 0 ||
                 featurePanelLayers.textContent.trim().length > 0
             );
 
             if (hasContent) {
-            // Check if parent panel is hidden - track state for cleanup
-            const parentPanel = featurePanelLayers.closest('.map-feature-panel');
-            const wasHidden = parentPanel && parentPanel.style.display === 'none';
-            const originalDisplay = wasHidden ? 'none' : null;
+                // Check if parent panel is hidden - track state for cleanup
+                const parentPanel = featurePanelLayers.closest('.map-feature-panel');
+                const wasHidden = parentPanel && parentPanel.style.display === 'none';
+                const originalDisplay = wasHidden ? 'none' : null;
 
-            try {
-                // Dynamically import html2canvas
-                const html2canvas = (await import('html2canvas')).default;
+                try {
+                    // Dynamically import html2canvas
+                    const html2canvas = (await import('html2canvas')).default;
 
-                // Temporarily show the panel if it was hidden, so html2canvas can capture it
-                if (wasHidden && parentPanel) {
-                    parentPanel.style.display = 'flex';
-                    // Force a reflow to ensure rendering
-                    parentPanel.offsetHeight;
-                }
-
-                // Clone the element to capture it independently
-                // This ensures we capture the content even if the original is in a scrolling container
-                const clone = featurePanelLayers.cloneNode(true);
-                
-                // Expand all collapsed sl-details elements in the clone
-                const allDetails = clone.querySelectorAll('sl-details');
-                allDetails.forEach(detail => {
-                    detail.open = true;
-                    // Also ensure content containers are visible
-                    const contentContainer = detail.querySelector('.layer-content');
-                    if (contentContainer) {
-                        contentContainer.style.display = 'block';
+                    // Temporarily show the panel if it was hidden, so html2canvas can capture it
+                    if (wasHidden && parentPanel) {
+                        parentPanel.style.display = 'flex';
+                        // Force a reflow to ensure rendering
+                        parentPanel.offsetHeight;
                     }
-                });
 
-                // Show all tab panels (not just active) so legends are visible
-                const allTabPanels = clone.querySelectorAll('sl-tab-panel');
-                allTabPanels.forEach(panel => {
-                    // Remove hidden attribute and ensure display
-                    panel.removeAttribute('hidden');
-                    panel.style.display = 'block';
-                    panel.style.visibility = 'visible';
-                });
+                    // Clone the element to capture it independently
+                    // This ensures we capture the content even if the original is in a scrolling container
+                    const clone = featurePanelLayers.cloneNode(true);
 
-                // Also ensure tab groups show all content
-                const tabGroups = clone.querySelectorAll('sl-tab-group');
-                tabGroups.forEach(tabGroup => {
-                    // Show all panels in the tab group
-                    const panels = tabGroup.querySelectorAll('sl-tab-panel');
-                    panels.forEach(panel => {
+                    // Expand all collapsed sl-details elements in the clone
+                    const allDetails = clone.querySelectorAll('sl-details');
+                    allDetails.forEach(detail => {
+                        detail.open = true;
+                        // Also ensure content containers are visible
+                        const contentContainer = detail.querySelector('.layer-content');
+                        if (contentContainer) {
+                            contentContainer.style.display = 'block';
+                        }
+                    });
+
+                    // Show all tab panels (not just active) so legends are visible
+                    const allTabPanels = clone.querySelectorAll('sl-tab-panel');
+                    allTabPanels.forEach(panel => {
+                        // Remove hidden attribute and ensure display
                         panel.removeAttribute('hidden');
                         panel.style.display = 'block';
                         panel.style.visibility = 'visible';
                     });
-                });
 
-                // Get computed styles for proper rendering
-                const computedStyle = window.getComputedStyle(featurePanelLayers);
-                
-                // Use a reasonable fixed width - match the panel width or use 300px
-                const targetWidth = parentPanel && parentPanel.offsetWidth > 0
-                    ? Math.min(parentPanel.offsetWidth, 350)
-                    : 300;
-                
-                // Set up clone styling - position off-screen but visible for measurement
-                clone.style.position = 'absolute';
-                clone.style.left = '0px'; // Position at 0,0 for easier measurement
-                clone.style.top = '0px';
-                clone.style.width = `${targetWidth}px`;
-                clone.style.maxWidth = 'none';
-                clone.style.maxHeight = 'none';
-                clone.style.overflow = 'visible';
-                clone.style.backgroundColor = '#ffffff';
-                clone.style.padding = computedStyle.padding;
-                clone.style.margin = '0';
-                clone.style.boxSizing = 'border-box';
-                clone.style.zIndex = '99999'; // Ensure it's on top for measurement
-                
-                // Copy computed styles to ensure proper rendering
-                clone.style.fontFamily = computedStyle.fontFamily;
-                clone.style.fontSize = computedStyle.fontSize;
-                clone.style.color = computedStyle.color;
-                clone.style.lineHeight = computedStyle.lineHeight;
-                
-                document.body.appendChild(clone);
+                    // Also ensure tab groups show all content
+                    const tabGroups = clone.querySelectorAll('sl-tab-group');
+                    tabGroups.forEach(tabGroup => {
+                        // Show all panels in the tab group
+                        const panels = tabGroup.querySelectorAll('sl-tab-panel');
+                        panels.forEach(panel => {
+                            panel.removeAttribute('hidden');
+                            panel.style.display = 'block';
+                            panel.style.visibility = 'visible';
+                        });
+                    });
 
-                // Wait for rendering and layout - give time for images to load
-                await new Promise(resolve => requestAnimationFrame(resolve));
-                await new Promise(resolve => requestAnimationFrame(resolve));
-                await new Promise(resolve => setTimeout(resolve, 200)); // Extra time for images/legends to load
+                    // Get computed styles for proper rendering
+                    const computedStyle = window.getComputedStyle(featurePanelLayers);
 
-                // Now measure the actual content height using getBoundingClientRect
-                const cloneRect = clone.getBoundingClientRect();
-                
-                // Find the last element with actual content
-                const allElements = Array.from(clone.querySelectorAll('*'));
-                let maxBottom = 0;
-                
-                for (const el of allElements) {
-                    const style = window.getComputedStyle(el);
-                    if (style.display === 'none' || style.visibility === 'hidden') {
-                        continue;
+                    // Use a reasonable fixed width - match the panel width or use 300px
+                    const targetWidth = parentPanel && parentPanel.offsetWidth > 0
+                        ? Math.min(parentPanel.offsetWidth, 350)
+                        : 300;
+
+                    // Set up clone styling - position off-screen but visible for measurement
+                    clone.style.position = 'absolute';
+                    clone.style.left = '0px'; // Position at 0,0 for easier measurement
+                    clone.style.top = '0px';
+                    clone.style.width = `${targetWidth}px`;
+                    clone.style.maxWidth = 'none';
+                    clone.style.maxHeight = 'none';
+                    clone.style.overflow = 'visible';
+                    clone.style.backgroundColor = '#ffffff';
+                    clone.style.padding = computedStyle.padding;
+                    clone.style.margin = '0';
+                    clone.style.boxSizing = 'border-box';
+                    clone.style.zIndex = '99999'; // Ensure it's on top for measurement
+
+                    // Copy computed styles to ensure proper rendering
+                    clone.style.fontFamily = computedStyle.fontFamily;
+                    clone.style.fontSize = computedStyle.fontSize;
+                    clone.style.color = computedStyle.color;
+                    clone.style.lineHeight = computedStyle.lineHeight;
+
+                    document.body.appendChild(clone);
+
+                    // Wait for rendering and layout - give time for images to load
+                    await new Promise(resolve => requestAnimationFrame(resolve));
+                    await new Promise(resolve => requestAnimationFrame(resolve));
+                    await new Promise(resolve => setTimeout(resolve, 200)); // Extra time for images/legends to load
+
+                    // Now measure the actual content height using getBoundingClientRect
+                    const cloneRect = clone.getBoundingClientRect();
+
+                    // Find the last element with actual content
+                    const allElements = Array.from(clone.querySelectorAll('*'));
+                    let maxBottom = 0;
+
+                    for (const el of allElements) {
+                        const style = window.getComputedStyle(el);
+                        if (style.display === 'none' || style.visibility === 'hidden') {
+                            continue;
+                        }
+
+                        const rect = el.getBoundingClientRect();
+                        const relativeBottom = rect.bottom - cloneRect.top;
+
+                        // Check if element has meaningful content
+                        const hasText = el.textContent && el.textContent.trim().length > 0;
+                        const hasImage = el.querySelector && (el.querySelector('img') || el.querySelector('svg'));
+                        const hasVisibleContent = rect.height > 0 && (hasText || hasImage || el.children.length > 0);
+
+                        if (hasVisibleContent && relativeBottom > maxBottom) {
+                            maxBottom = relativeBottom;
+                        }
                     }
-                    
-                    const rect = el.getBoundingClientRect();
-                    const relativeBottom = rect.bottom - cloneRect.top;
-                    
-                    // Check if element has meaningful content
-                    const hasText = el.textContent && el.textContent.trim().length > 0;
-                    const hasImage = el.querySelector && (el.querySelector('img') || el.querySelector('svg'));
-                    const hasVisibleContent = rect.height > 0 && (hasText || hasImage || el.children.length > 0);
-                    
-                    if (hasVisibleContent && relativeBottom > maxBottom) {
-                        maxBottom = relativeBottom;
+
+                    // Use scrollHeight as fallback, but prefer measured content height
+                    const contentHeight = Math.max(maxBottom, clone.scrollHeight);
+
+                    // Add small padding but trim excessive empty space
+                    // If contentHeight is much less than scrollHeight, use contentHeight
+                    const finalHeight = contentHeight < clone.scrollHeight * 0.8
+                        ? contentHeight + 10
+                        : clone.scrollHeight;
+
+                    // Move clone off-screen for capture
+                    clone.style.left = '-9999px';
+
+                    const canvas = await html2canvas(clone, {
+                        backgroundColor: '#ffffff', // Force white background for visibility on PDF
+                        scale: 2, // Better quality
+                        logging: false,
+                        useCORS: true,
+                        width: targetWidth,
+                        height: finalHeight,
+                        windowWidth: targetWidth,
+                        windowHeight: finalHeight
+                    });
+
+                    // Clean up clone
+                    document.body.removeChild(clone);
+
+                    overlayDataUrl = canvas.toDataURL('image/png');
+
+                    // Calculate dimensions for PDF (maintain aspect ratio)
+                    // Pixel width / dpi * 25.4 does not apply directly because html2canvas scale depends on device pixel ratio usually, 
+                    // but we forced scale: 2.
+                    // Let's map pixels to mm roughly based on typical screen viewing (96dpi).
+                    // Screen pixels to mm: pixels * 0.2645833333
+                    // We scaled by 2, so real logic pixels = canvas.width / 2
+
+                    const logicWidth = canvas.width / 2;
+                    const logicHeight = canvas.height / 2;
+
+                    // Convert logic pixels to mm (assuming ~96dpi assumption for PDF mapping visually)
+                    overlayWidthMm = logicWidth * 0.26458;
+                    overlayHeightMm = logicHeight * 0.26458;
+
+                    this._updateExportProgress(40);
+
+                } catch (e) {
+                    console.warn('Failed to capture overlay', e);
+                    this._updateExportProgress(40);
+                } finally {
+                    // Restore original panel visibility if it was hidden
+                    if (wasHidden && parentPanel) {
+                        parentPanel.style.display = originalDisplay;
                     }
                 }
-                
-                // Use scrollHeight as fallback, but prefer measured content height
-                const contentHeight = Math.max(maxBottom, clone.scrollHeight);
-                
-                // Add small padding but trim excessive empty space
-                // If contentHeight is much less than scrollHeight, use contentHeight
-                const finalHeight = contentHeight < clone.scrollHeight * 0.8 
-                    ? contentHeight + 10 
-                    : clone.scrollHeight;
-
-                // Move clone off-screen for capture
-                clone.style.left = '-9999px';
-
-                const canvas = await html2canvas(clone, {
-                    backgroundColor: '#ffffff', // Force white background for visibility on PDF
-                    scale: 2, // Better quality
-                    logging: false,
-                    useCORS: true,
-                    width: targetWidth,
-                    height: finalHeight,
-                    windowWidth: targetWidth,
-                    windowHeight: finalHeight
-                });
-
-                // Clean up clone
-                document.body.removeChild(clone);
-
-                overlayDataUrl = canvas.toDataURL('image/png');
-
-                // Calculate dimensions for PDF (maintain aspect ratio)
-                // Pixel width / dpi * 25.4 does not apply directly because html2canvas scale depends on device pixel ratio usually, 
-                // but we forced scale: 2.
-                // Let's map pixels to mm roughly based on typical screen viewing (96dpi).
-                // Screen pixels to mm: pixels * 0.2645833333
-                // We scaled by 2, so real logic pixels = canvas.width / 2
-
-                const logicWidth = canvas.width / 2;
-                const logicHeight = canvas.height / 2;
-
-                // Convert logic pixels to mm (assuming ~96dpi assumption for PDF mapping visually)
-                overlayWidthMm = logicWidth * 0.26458;
-                overlayHeightMm = logicHeight * 0.26458;
-                
-                this._updateExportProgress(40);
-
-            } catch (e) {
-                console.warn('Failed to capture overlay', e);
-                this._updateExportProgress(40);
-            } finally {
-                // Restore original panel visibility if it was hidden
-                if (wasHidden && parentPanel) {
-                    parentPanel.style.display = originalDisplay;
-                }
-            }
             } else {
                 this._updateExportProgress(40);
             }
@@ -1189,21 +1317,21 @@ export class MapExportControl {
                         format: [widthMm, heightMm]
                     });
 
-                    // Draw Map
+                    // Draw Map (with margins)
                     this._updateExportProgress(60);
                     if (this._rasterQuality === 'high') {
                         // High Quality = TIFF
                         try {
                             const tiffData = this._canvasToTIFF(canvas);
-                            doc.addImage(tiffData, 'TIFF', 0, 0, widthMm, mapHeightMm);
+                            doc.addImage(tiffData, 'TIFF', margins.left, margins.top, contentWidthMm, contentHeightMm);
                         } catch (err) {
                             console.error('TIFF Generation failed, falling back to PNG', err);
-                            doc.addImage(imgData, 'PNG', 0, 0, widthMm, mapHeightMm);
+                            doc.addImage(imgData, 'PNG', margins.left, margins.top, contentWidthMm, contentHeightMm);
                         }
                     } else {
                         // Medium Quality = JPEG 90
                         const jpegData = canvas.toDataURL('image/jpeg', 0.90);
-                        doc.addImage(jpegData, 'JPEG', 0, 0, widthMm, mapHeightMm);
+                        doc.addImage(jpegData, 'JPEG', margins.left, margins.top, contentWidthMm, contentHeightMm);
                     }
 
                     // Note: Legend overlay removed from page 1 - will be on page 2
@@ -1211,8 +1339,8 @@ export class MapExportControl {
                     // Generate footer using HTML template for consistent layout
                     this._updateExportProgress(70);
                     const footerResult = await this._generateFooterHTML(
-                        widthMm,
-                        heightMm,
+                        contentWidthMm,
+                        contentHeightMm,
                         qrDataUrl,
                         shareUrl,
                         attributionText,
@@ -1222,23 +1350,23 @@ export class MapExportControl {
                         originalPitch,
                         dpi
                     );
-                    
+
                     if (footerResult && footerResult.dataUrl) {
                         // Use the actual footer height from template (in mm)
                         const footerHeightMm = footerResult.heightMm || 30; // Fallback to 30mm if not provided
-                        const footerY = heightMm - footerHeightMm;
-                        
-                        // Add footer image to PDF
-                        doc.addImage(footerResult.dataUrl, 'PNG', 0, footerY, widthMm, footerHeightMm);
+                        const footerY = heightMm - margins.bottom - footerHeightMm;
+
+                        // Add footer image to PDF (within margins)
+                        doc.addImage(footerResult.dataUrl, 'PNG', margins.left, footerY, contentWidthMm, footerHeightMm);
                     } else if (footerResult && typeof footerResult === 'string') {
                         // Backward compatibility: if just a data URL string is returned
                         const footerHeightMm = 30; // Approximate footer height
-                        const footerY = heightMm - footerHeightMm;
-                        doc.addImage(footerResult, 'PNG', 0, footerY, widthMm, footerHeightMm);
+                        const footerY = heightMm - margins.bottom - footerHeightMm;
+                        doc.addImage(footerResult, 'PNG', margins.left, footerY, contentWidthMm, footerHeightMm);
                     } else {
                         // Fallback to old method if HTML generation fails
                         console.warn('HTML footer generation failed, using fallback method');
-                        this._drawFooterFallback(doc, widthMm, heightMm, qrDataUrl, shareUrl, attributionText, targetCenter, newZoom, originalBearing, dpi);
+                        this._drawFooterFallback(doc, contentWidthMm, contentHeightMm, qrDataUrl, shareUrl, attributionText, targetCenter, newZoom, originalBearing, dpi, margins);
                     }
 
                     // Add Page 2: Legend (if legend checkbox is checked)
@@ -1260,7 +1388,7 @@ export class MapExportControl {
                             .replace(/\s+/g, ' ') // Normalize multiple spaces to single space
                             .trim() // Remove leading/trailing whitespace
                             .substring(0, 200); // Limit length
-                        
+
                         if (sanitized && sanitized.length > 0) {
                             filename = `${sanitized}.pdf`;
                         }
@@ -1430,23 +1558,23 @@ export class MapExportControl {
         const earthRadius = 6378137;
         // Standard tile size
         const tileSize = 256;
-        
+
         // Calculate meters per pixel at this zoom level and latitude
         const metersPerPixel = (2 * Math.PI * earthRadius * Math.cos(lat * Math.PI / 180)) / (tileSize * Math.pow(2, zoom));
-        
+
         // Convert to meters per mm at the given DPI
         const mmPerInch = 25.4;
         const pixelsPerMm = dpi / mmPerInch;
         const metersPerMm = metersPerPixel * pixelsPerMm;
-        
+
         // Choose an appropriate scale bar length (aim for ~30-40mm width)
         const scaleBarWidthMm = 30;
         const distanceMeters = metersPerMm * scaleBarWidthMm;
-        
+
         // Round to a nice number
         let roundedDistance;
         let unit;
-        
+
         if (distanceMeters >= 1000) {
             // Use kilometers
             const km = distanceMeters / 1000;
@@ -1462,10 +1590,10 @@ export class MapExportControl {
                 roundedDistance = roundedDistance / 1000;
             }
         }
-        
+
         // Recalculate actual width based on rounded distance
         const actualWidthMm = (roundedDistance * (unit === 'km' ? 1000 : 1)) / metersPerMm;
-        
+
         return {
             distance: roundedDistance,
             unit: unit,
@@ -1489,17 +1617,17 @@ export class MapExportControl {
         canvas.width = canvasSize;
         canvas.height = canvasSize;
         const ctx = canvas.getContext('2d');
-        
+
         // Clear canvas with transparent background
         ctx.clearRect(0, 0, canvasSize, canvasSize);
-        
+
         // Move to center of canvas
         ctx.save();
         ctx.translate(canvasSize / 2, canvasSize / 2);
-        
+
         // Rotate based on bearing (negative because canvas Y increases downward)
         ctx.rotate(-bearing * Math.PI / 180);
-        
+
         // Draw arrow stem (vertical line)
         const stemLength = size * 0.6 * (canvasSize / size) * 0.5; // Scale to canvas
         ctx.strokeStyle = 'white';
@@ -1508,7 +1636,7 @@ export class MapExportControl {
         ctx.moveTo(0, -stemLength / 2);
         ctx.lineTo(0, stemLength / 2);
         ctx.stroke();
-        
+
         // Draw arrow head (triangle pointing up)
         const arrowHeadSize = size * 0.3 * (canvasSize / size) * 0.5;
         ctx.fillStyle = 'white';
@@ -1518,16 +1646,16 @@ export class MapExportControl {
         ctx.lineTo(arrowHeadSize / 2, -stemLength / 2 + arrowHeadSize); // Bottom right
         ctx.closePath();
         ctx.fill();
-        
+
         // Draw "N" label below arrow
         ctx.fillStyle = 'white';
         ctx.font = 'bold 12px Arial';
         ctx.textAlign = 'center';
         ctx.textBaseline = 'top';
         ctx.fillText('N', 0, stemLength / 2 + 4);
-        
+
         ctx.restore();
-        
+
         // Convert canvas to image and add to PDF
         const arrowDataUrl = canvas.toDataURL('image/png');
         const arrowSizeMm = size;
@@ -1565,7 +1693,7 @@ export class MapExportControl {
                         // Detect image format from data URL (JPEG or PNG)
                         const imageFormat = page.dataUrl.startsWith('data:image/jpeg') ? 'JPEG' : 'PNG';
                         doc.addImage(page.dataUrl, imageFormat, 0, 0, widthMm, heightMm);
-                        
+
                         // Add clickable links if present
                         if (page.links && page.links.length > 0) {
                             // Convert pixel coordinates to mm
@@ -1577,7 +1705,7 @@ export class MapExportControl {
                             // For single page, it's the full canvas dimensions
                             const pageWidthPx = widthMm * mmToPx * scale;
                             const pageHeightPx = heightMm * mmToPx * scale;
-                            
+
                             page.links.forEach(link => {
                                 try {
                                     // Convert pixel coordinates to mm
@@ -1586,7 +1714,7 @@ export class MapExportControl {
                                     const linkYmm = link.y / (mmToPx * scale);
                                     const linkWidthMm = link.width / (mmToPx * scale);
                                     const linkHeightMm = link.height / (mmToPx * scale);
-                                    
+
                                     // Add clickable link to PDF
                                     // jsPDF link method: link(x, y, width, height, url)
                                     doc.link(linkXmm, linkYmm, linkWidthMm, linkHeightMm, { url: link.href });
@@ -1622,37 +1750,27 @@ export class MapExportControl {
      */
     async _generateLegendPagesHTML(widthMm, heightMm, overlayDataUrl, overlayWidthMm, overlayHeightMm, dpi) {
         const pages = [];
-        
+
         try {
             // Get layer information
             const layerInfo = this._getLayerInformation();
-            
+
             // Calculate available space for content (accounting for padding and header)
             const padding = 10; // mm
             const headerHeight = 40; // mm (header + title + description)
             const availableHeight = heightMm - (padding * 2) - headerHeight;
             const availableWidth = widthMm - (padding * 2);
-            
+
             // Column dimensions (2 columns with gap)
             const columnGap = 4; // mm
             const columnWidth = (availableWidth - columnGap) / 2;
-            
-            // Generate thumbnails for all layers sequentially (before creating HTML)
-            // Sequential generation is necessary since we modify map state (isolating layers)
+
+            // Skip thumbnail generation for now - it causes the export to hang
+            // TODO: Make thumbnail generation optional with a separate checkbox
             const thumbnailMap = new Map();
-            
-            for (const layer of layerInfo) {
-                if (layer.layerConfig && layer.layerId) {
-                    try {
-                        const thumbnailDataUrl = await this._captureLayerThumbnail(layer.layerConfig, 300);
-                        if (thumbnailDataUrl) {
-                            thumbnailMap.set(layer.layerId, thumbnailDataUrl);
-                        }
-                    } catch (error) {
-                        console.warn(`Failed to generate thumbnail for layer ${layer.layerId}:`, error);
-                    }
-                }
-            }
+
+            // Update progress to show we're moving forward
+            this._updateExportProgress(87);
 
             // Create a helper function to create a single layer element
             const createLayerElement = (layer, isFirstPage = false, pageIndex = 0) => {
@@ -1828,7 +1946,7 @@ export class MapExportControl {
                     // Limit features per layer to avoid overflow
                     const maxFeatures = 3; // Show max 3 features per layer
                     const featuresToShow = layer.features.slice(0, maxFeatures);
-                    
+
                     featuresToShow.forEach((feature, featureIndex) => {
                         const featureDiv = document.createElement('div');
                         featureDiv.style.marginBottom = '2mm';
@@ -1873,7 +1991,7 @@ export class MapExportControl {
 
                         featuresSection.appendChild(featureDiv);
                     });
-                    
+
                     if (layer.features.length > maxFeatures) {
                         const moreDiv = document.createElement('div');
                         moreDiv.textContent = `... and ${layer.features.length - maxFeatures} more`;
@@ -1895,7 +2013,7 @@ export class MapExportControl {
             let currentColumn = 0; // 0 = left, 1 = right
             let currentColumnHeight = 0;
             const maxColumnHeight = availableHeight;
-            
+
             const pagesData = [];
             let currentPageLayers = [[], []]; // [leftColumn, rightColumn]
             let currentPageHeights = [0, 0]; // Track heights for each column
@@ -1915,11 +2033,11 @@ export class MapExportControl {
                 for (const layer of layerInfo) {
                     const layerEl = createLayerElement(layer, false, 0);
                     tempContainer.appendChild(layerEl);
-                    
+
                     // Wait for rendering
                     await new Promise(resolve => requestAnimationFrame(resolve));
                     await new Promise(resolve => requestAnimationFrame(resolve));
-                    
+
                     // Wait for images to load
                     const images = layerEl.querySelectorAll('img');
                     if (images.length > 0) {
@@ -1932,17 +2050,17 @@ export class MapExportControl {
                             });
                         }));
                     }
-                    
+
                     // Measure actual height
                     const rect = layerEl.getBoundingClientRect();
                     // Convert pixels to mm (assuming 96 DPI for screen)
                     const pixelsToMm = 25.4 / 96;
                     const heightMm = rect.height * pixelsToMm;
-                    
+
                     measuredHeights.push(heightMm);
                     tempContainer.removeChild(layerEl);
                 }
-                
+
                 document.body.removeChild(tempContainer);
                 return measuredHeights;
             };
@@ -1953,13 +2071,13 @@ export class MapExportControl {
             // Distribute layers based on measured heights
             // Use a smarter algorithm that handles very tall layers by making them full-width
             const fullWidthThreshold = maxColumnHeight * 1.5; // Layers taller than 1.5x column height span full width
-            
+
             layerInfo.forEach((layer, index) => {
                 const layerHeight = layerHeights[index] || 100; // Fallback to 100mm if measurement failed
-                
+
                 // Safety margin to prevent cutoff
                 const safetyMargin = 20; // Increased safety margin
-                
+
                 // Check if layer is very tall (should span full width)
                 if (layerHeight > fullWidthThreshold) {
                     // Very tall layer - make it span full width to avoid wasting vertical space
@@ -1971,13 +2089,13 @@ export class MapExportControl {
                             pageIndex: currentPage,
                             fullWidthLayers: []
                         });
-                        
+
                         currentPage++;
                         currentPageLayers = [[], []];
                         currentPageHeights = [0, 0];
                         currentColumn = 0;
                     }
-                    
+
                     // Add tall layer as full-width (will be rendered spanning both columns)
                     // Store it in a special structure
                     if (!pagesData[currentPage]) {
@@ -1987,7 +2105,7 @@ export class MapExportControl {
                             fullWidthLayers: []
                         });
                     }
-                    
+
                     // Find or create the current page data
                     let currentPageData = pagesData.find(p => p.pageIndex === currentPage);
                     if (!currentPageData) {
@@ -2003,25 +2121,25 @@ export class MapExportControl {
                             currentPageData.fullWidthLayers = [];
                         }
                     }
-                    
+
                     // Add to full-width layers
                     currentPageData.fullWidthLayers.push({
                         layer: layer,
                         height: layerHeight
                     });
-                    
+
                     // Reset column tracking since we used full width
                     currentPageLayers = [[], []];
                     currentPageHeights = [0, 0];
                     currentColumn = 0;
-                    
+
                 } else if (layerHeight > maxColumnHeight * 0.9) {
                     // Tall but not extremely tall - put it in one column, but try to balance
                     // Check if we can fit it in current column
                     if (currentPageHeights[currentColumn] + layerHeight + safetyMargin > maxColumnHeight) {
                         // Move to next column
                         currentColumn++;
-                        
+
                         // If both columns are full, start new page
                         if (currentColumn >= 2) {
                             // Save current page
@@ -2030,7 +2148,7 @@ export class MapExportControl {
                                 pageIndex: currentPage,
                                 fullWidthLayers: []
                             });
-                            
+
                             // Start new page
                             currentPage++;
                             currentPageLayers = [[], []];
@@ -2038,11 +2156,11 @@ export class MapExportControl {
                             currentColumn = 0;
                         }
                     }
-                    
+
                     // Add the tall layer to current column
                     currentPageLayers[currentColumn].push(layer);
                     currentPageHeights[currentColumn] = layerHeight;
-                    
+
                     // Move to next column for next layer
                     currentColumn++;
                     if (currentColumn >= 2) {
@@ -2059,14 +2177,14 @@ export class MapExportControl {
                 } else {
                     // Normal layer - use 2-column layout
                     // Try to balance columns by checking which column has less content
-                    if (currentPageHeights[0] > currentPageHeights[1] + layerHeight + safetyMargin && 
+                    if (currentPageHeights[0] > currentPageHeights[1] + layerHeight + safetyMargin &&
                         currentPageHeights[1] + layerHeight + safetyMargin <= maxColumnHeight) {
                         // Right column has less content and can fit this layer - use it
                         currentColumn = 1;
                     } else if (currentPageHeights[currentColumn] + layerHeight + safetyMargin > maxColumnHeight) {
                         // Current column is full - move to next column
                         currentColumn++;
-                        
+
                         // If both columns are full, start new page
                         if (currentColumn >= 2) {
                             // Save current page
@@ -2075,7 +2193,7 @@ export class MapExportControl {
                                 pageIndex: currentPage,
                                 fullWidthLayers: []
                             });
-                            
+
                             // Start new page
                             currentPage++;
                             currentPageLayers = [[], []];
@@ -2083,7 +2201,7 @@ export class MapExportControl {
                             currentColumn = 0;
                         }
                     }
-                    
+
                     // Add layer to current column
                     currentPageLayers[currentColumn].push(layer);
                     currentPageHeights[currentColumn] += layerHeight;
@@ -2111,7 +2229,7 @@ export class MapExportControl {
             for (let pageIdx = 0; pageIdx < pagesData.length; pageIdx++) {
                 const pageData = pagesData[pageIdx];
                 const isFirstPage = pageIdx === 0;
-                
+
                 // Create container for this page - allow it to grow for measurement
                 const legendContainer = document.createElement('div');
                 legendContainer.style.position = 'fixed';
@@ -2173,7 +2291,7 @@ export class MapExportControl {
                     const fullWidthContainer = document.createElement('div');
                     fullWidthContainer.style.width = '100%';
                     fullWidthContainer.style.marginBottom = '6mm';
-                    
+
                     const layerEl = createLayerElement(fullWidthItem.layer, isFirstPage, pageIdx);
                     // Override column width constraint for full-width layers
                     const thumbnailImgs = layerEl.querySelectorAll('img');
@@ -2183,7 +2301,7 @@ export class MapExportControl {
                             img.style.maxWidth = `${availableWidth}mm`;
                         }
                     });
-                    
+
                     fullWidthContainer.appendChild(layerEl);
                     legendContainer.appendChild(fullWidthContainer);
                 });
@@ -2254,7 +2372,7 @@ export class MapExportControl {
                     const links = [];
                     const linkElements = container.querySelectorAll('a[href]');
                     const containerRect = container.getBoundingClientRect();
-                    
+
                     linkElements.forEach(link => {
                         const rect = link.getBoundingClientRect();
                         const href = link.getAttribute('href');
@@ -2268,10 +2386,10 @@ export class MapExportControl {
                             });
                         }
                     });
-                    
+
                     return links;
                 };
-                
+
                 const pageLinks = extractLinks(legendContainer);
 
                 // Render full content to canvas (may exceed page height)
@@ -2302,39 +2420,39 @@ export class MapExportControl {
                 const mmToPx = 96 / 25.4; // Convert mm to pixels at 96 DPI
                 const pageWidthPx = widthMm * mmToPx * scale;
                 const pageHeightPx = heightMm * mmToPx * scale;
-                
+
                 // Helper function to convert canvas to optimized JPEG
                 const canvasToOptimizedJPEG = (canvas, quality = 0.80) => {
                     // Use JPEG compression for legend pages (much smaller than PNG)
                     // Quality 0.80 provides good balance between file size and visual quality for legend pages
                     return canvas.toDataURL('image/jpeg', quality);
                 };
-                
+
                 // If canvas is taller than one page, split it into multiple pages
                 if (fullCanvas.height > pageHeightPx) {
                     const numPages = Math.ceil(fullCanvas.height / pageHeightPx);
-                    
+
                     for (let p = 0; p < numPages; p++) {
                         const sourceY = p * pageHeightPx;
                         const sourceHeight = Math.min(pageHeightPx, fullCanvas.height - sourceY);
-                        
+
                         // Create a new canvas for this page
                         const pageCanvas = document.createElement('canvas');
                         pageCanvas.width = pageWidthPx;
                         pageCanvas.height = pageHeightPx;
                         const ctx = pageCanvas.getContext('2d');
-                        
+
                         // Fill with white background
                         ctx.fillStyle = '#ffffff';
                         ctx.fillRect(0, 0, pageWidthPx, pageHeightPx);
-                        
+
                         // Draw the portion of the full canvas for this page
                         ctx.drawImage(
                             fullCanvas,
                             0, sourceY, fullCanvas.width, sourceHeight, // Source
                             0, 0, pageWidthPx, sourceHeight // Destination
                         );
-                        
+
                         // Filter links for this page
                         const pageLinksFiltered = pageLinks.filter(link => {
                             const linkY = link.y * scale;
@@ -2346,7 +2464,7 @@ export class MapExportControl {
                             width: link.width * scale,
                             height: link.height * scale
                         }));
-                        
+
                         pages.push({
                             dataUrl: canvasToOptimizedJPEG(pageCanvas, 0.80), // Use JPEG with 80% quality
                             widthMm: widthMm,
@@ -2364,7 +2482,7 @@ export class MapExportControl {
                         width: link.width * scale,
                         height: link.height * scale
                     }));
-                    
+
                     pages.push({
                         dataUrl: canvasToOptimizedJPEG(fullCanvas, 0.80), // Use JPEG with 80% quality
                         widthMm: widthMm,
@@ -2439,7 +2557,7 @@ export class MapExportControl {
 
             // Get layer information from feature control
             const layerInfo = this._getLayerInformation();
-            
+
             // Add layer information section
             if (layerInfo && layerInfo.length > 0) {
                 const layersSection = document.createElement('div');
@@ -2710,7 +2828,7 @@ export class MapExportControl {
      */
     _getMatchingLayerIds(layerConfig) {
         if (!this._map) return [];
-        
+
         const style = this._map.getStyle();
         if (!style.layers) return [];
 
@@ -2775,7 +2893,7 @@ export class MapExportControl {
         if (layerConfig.type === 'geojson') {
             const sourceId = `geojson-${layerId}`;
             const geojsonMatches = style.layers
-                .filter(l => l.source === sourceId || 
+                .filter(l => l.source === sourceId ||
                     l.id.startsWith(`${sourceId}-fill`) ||
                     l.id.startsWith(`${sourceId}-line`) ||
                     l.id.startsWith(`${sourceId}-circle`))
@@ -2956,10 +3074,10 @@ export class MapExportControl {
                             animate: false
                         });
                         // Wait for map to update
-                        await new Promise(resolve => {
-                            this._map.once('idle', resolve);
-                            setTimeout(resolve, 1000);
-                        });
+                        await Promise.race([
+                            new Promise(resolve => this._map.once('idle', resolve)),
+                            new Promise(resolve => setTimeout(resolve, 500))
+                        ]);
                     }
                 } catch (e) {
                     console.warn('Failed to zoom to layer bounds for thumbnail', e);
@@ -2970,16 +3088,15 @@ export class MapExportControl {
             const hiddenLayers = this._isolateLayer(layerConfig);
 
             // Wait for map to render with isolated layer
-            await new Promise(resolve => {
-                this._map.once('idle', resolve);
-                // Timeout after 2 seconds
-                setTimeout(resolve, 2000);
-            });
+            await Promise.race([
+                new Promise(resolve => this._map.once('idle', resolve)),
+                new Promise(resolve => setTimeout(resolve, 1000))
+            ]);
 
             // Get frame dimensions
             const frameRect = this._frame._el.getBoundingClientRect();
             const mapRect = this._map.getContainer().getBoundingClientRect();
-            
+
             // Ensure frame is within map bounds
             if (frameRect.width === 0 || frameRect.height === 0) {
                 throw new Error('Frame has zero dimensions');
@@ -2995,11 +3112,11 @@ export class MapExportControl {
             const canvas = this._map.getCanvas();
             const canvasWidth = canvas.width;
             const canvasHeight = canvas.height;
-            
+
             // Calculate scaling factor (canvas might be scaled for high DPI)
             const scaleX = canvasWidth / mapRect.width;
             const scaleY = canvasHeight / mapRect.height;
-            
+
             // Convert frame coordinates to canvas coordinates
             const canvasX = frameX * scaleX;
             const canvasY = frameY * scaleY;
@@ -3022,12 +3139,12 @@ export class MapExportControl {
             // Scale to target width while maintaining aspect ratio
             const aspectRatio = canvasFrameHeight / canvasFrameWidth;
             const targetHeight = Math.round(targetWidth * aspectRatio);
-            
+
             const scaledCanvas = document.createElement('canvas');
             scaledCanvas.width = targetWidth;
             scaledCanvas.height = targetHeight;
             const scaledCtx = scaledCanvas.getContext('2d');
-            
+
             // Use high-quality scaling
             scaledCtx.imageSmoothingEnabled = true;
             scaledCtx.imageSmoothingQuality = 'high';
@@ -3049,10 +3166,10 @@ export class MapExportControl {
             });
 
             // Wait for restoration to complete
-            await new Promise(resolve => {
-                this._map.once('idle', resolve);
-                setTimeout(resolve, 500);
-            });
+            await Promise.race([
+                new Promise(resolve => this._map.once('idle', resolve)),
+                new Promise(resolve => setTimeout(resolve, 300))
+            ]);
 
             // Restore frame visibility state
             if (!wasFrameVisible) {
@@ -3062,7 +3179,7 @@ export class MapExportControl {
             return dataUrl;
         } catch (error) {
             console.error('Failed to capture layer thumbnail', error);
-            
+
             // Ensure we restore state even on error
             try {
                 // Restore frame visibility state
@@ -3072,7 +3189,7 @@ export class MapExportControl {
             } catch (e) {
                 // Ignore errors during cleanup
             }
-            
+
             return null;
         }
     }
@@ -3091,7 +3208,7 @@ export class MapExportControl {
                 if (!html) return { html: '', links: [] };
                 const tmp = document.createElement('div');
                 tmp.innerHTML = html;
-                
+
                 // Extract links before processing
                 const links = [];
                 const linkElements = tmp.querySelectorAll('a[href]');
@@ -3107,7 +3224,7 @@ export class MapExportControl {
                         text: text
                     });
                 });
-                
+
                 // Replace <br> and <p> tags with line breaks for text fallback
                 const brs = tmp.querySelectorAll('br, p');
                 brs.forEach(br => {
@@ -3120,12 +3237,12 @@ export class MapExportControl {
                         br.insertAdjacentText('beforebegin', '\n');
                     }
                 });
-                
+
                 // Get text content for fallback
                 let text = tmp.textContent || tmp.innerText || '';
                 text = text.replace(/\n{3,}/g, '\n\n');
                 text = text.split('\n').map(line => line.trim()).join('\n');
-                
+
                 return {
                     html: tmp.innerHTML, // Preserve HTML with links
                     text: text.trim(), // Plain text fallback
@@ -3136,10 +3253,10 @@ export class MapExportControl {
             // Helper to get feature information for a layer
             const getFeatureInfo = (layerId, layerConfig, stateManager) => {
                 if (!stateManager) return null;
-                
+
                 const activeLayers = stateManager.getActiveLayers();
                 const layerData = activeLayers.get(layerId);
-                
+
                 if (!layerData || !layerData.features || layerData.features.size === 0) {
                     return null;
                 }
@@ -3162,7 +3279,7 @@ export class MapExportControl {
                     const feature = featureState.feature;
                     const properties = feature.properties || {};
                     const inspect = layerConfig.inspect || {};
-                    
+
                     // Get label field
                     const labelField = inspect.label;
                     let featureTitle = 'Feature';
@@ -3215,7 +3332,7 @@ export class MapExportControl {
                             if (systemFields.includes(key.toLowerCase())) return;
                             if (value === undefined || value === null || value === '') return;
                             if (key === 'name' || key === 'title') return; // Already shown as title
-                            
+
                             featureData.properties.push({
                                 key: key,
                                 value: String(value)
@@ -3232,7 +3349,7 @@ export class MapExportControl {
             // Try to get layer information from feature control
             if (window.featureControl) {
                 let layerOrder = [];
-                
+
                 // Try to get layer order
                 if (typeof window.featureControl._getConfigLayerOrder === 'function') {
                     layerOrder = window.featureControl._getConfigLayerOrder();
@@ -3244,7 +3361,7 @@ export class MapExportControl {
 
                 layerOrder.forEach(layerId => {
                     let layerConfig = null;
-                    
+
                     // Try to get layer config
                     if (typeof window.featureControl._getLayerConfig === 'function') {
                         layerConfig = window.featureControl._getLayerConfig(layerId);
@@ -3383,7 +3500,7 @@ export class MapExportControl {
             const parser = new DOMParser();
             const templateDoc = parser.parseFromString(templateHtml, 'text/html');
             const footerBox = templateDoc.querySelector('.footer-box');
-            
+
             if (!footerBox) {
                 console.warn('Footer box not found in template');
                 return null;
@@ -3402,7 +3519,7 @@ export class MapExportControl {
             footerContainer.style.backgroundColor = 'transparent';
             footerContainer.style.overflow = 'visible';
             footerContainer.style.fontFamily = "'Open Sans', sans-serif";
-            
+
             // Inject styles
             const styleEl = document.createElement('style');
             styleEl.textContent = styleText;
@@ -3410,13 +3527,13 @@ export class MapExportControl {
 
             // Clone the footer structure
             const footerClone = footerBox.cloneNode(true);
-            
+
             // Remove absolute positioning to allow proper measurement
             footerClone.style.position = 'relative';
             footerClone.style.bottom = 'auto';
             footerClone.style.left = 'auto';
             footerClone.style.right = 'auto';
-            
+
             // Populate with actual data
             const qrCodeEl = footerClone.querySelector('.qr-code');
             if (qrCodeEl && qrDataUrl) {
@@ -3481,41 +3598,41 @@ export class MapExportControl {
             const northArrowEl = footerClone.querySelector('.north-arrow');
             const northArrowSvg = footerClone.querySelector('.north-arrow-svg');
             const northArrowTrapezoid = footerClone.querySelector('.north-arrow-trapezoid');
-            
+
             if (northArrowEl && northArrowSvg && bearing !== undefined) {
                 // Apply rotation based on bearing (negative because CSS rotation is clockwise)
                 // Mapbox bearing: 0 = north up, positive = clockwise
                 // CSS rotation: positive = clockwise
                 northArrowSvg.style.transform = `rotate(${-bearing}deg)`;
-                
+
                 // Apply tilt/perspective based on pitch
                 if (pitch !== undefined && pitch > 0) {
                     // Tilt the arrow to match the map's pitch
                     // Use perspective and rotateX to simulate 3D tilt
                     const tiltAngle = pitch; // Pitch angle in degrees
                     northArrowSvg.style.transform += ` perspective(20mm) rotateX(${tiltAngle}deg)`;
-                    
+
                     // Show and adjust trapezoid background
                     // Trapezoid angle = (90 - pitch) degrees
                     // This creates an isosceles trapezoid where the top is narrower (farther away)
                     // and bottom is wider (closer to viewer), simulating ground plane tilt
                     if (northArrowTrapezoid) {
                         northArrowTrapezoid.classList.add('visible');
-                        
+
                         // Calculate trapezoid top width based on pitch
                         // When pitch = 0: top width = 100% (rectangle, angle = 90°)
                         // When pitch = 90: top width = 0% (triangle, angle = 0°)
                         // Linear interpolation: topWidth = 1 - (pitch / 90)
                         const topWidthRatio = Math.max(0, 1 - (pitch / 90));
-                        
+
                         // Calculate clip-path coordinates for isosceles trapezoid
                         // Bottom edge: full width (100%)
                         // Top edge: centered, width = topWidthRatio * 100%
                         const topLeft = (1 - topWidthRatio) / 2;
                         const topRight = 1 - topLeft;
-                        
+
                         // clip-path: bottom-left, bottom-right, top-right, top-left
-                        northArrowTrapezoid.style.clipPath = 
+                        northArrowTrapezoid.style.clipPath =
                             `polygon(0% 100%, 100% 100%, ${topRight * 100}% 0%, ${topLeft * 100}% 0%)`;
                     }
                 } else {
@@ -3533,7 +3650,7 @@ export class MapExportControl {
             // Wait for rendering and image loading
             await new Promise(resolve => requestAnimationFrame(resolve));
             await new Promise(resolve => requestAnimationFrame(resolve));
-            
+
             // Wait for images to load
             const images = footerClone.querySelectorAll('img');
             if (images.length > 0) {
@@ -3546,22 +3663,22 @@ export class MapExportControl {
                     });
                 }));
             }
-            
+
             await new Promise(resolve => setTimeout(resolve, 200));
 
             // Render to canvas using html2canvas
             const html2canvas = (await import('html2canvas')).default;
-            
+
             // Get actual footer dimensions
             const footerRect = footerClone.getBoundingClientRect();
-            
+
             // Convert mm to pixels at the target DPI for scaling
             const mmToPx = dpi / 25.4;
             const targetWidthPx = widthMm * mmToPx;
-            
+
             // Use actual rendered height, but scale appropriately
             const scale = 2; // Higher quality
-            
+
             const canvas = await html2canvas(footerClone, {
                 backgroundColor: 'rgba(0, 0, 0, 0.7)',
                 scale: scale,
@@ -3577,7 +3694,7 @@ export class MapExportControl {
             // The footer-box has height: 80mm in the template, but we need actual rendered height
             const computedStyle = window.getComputedStyle(footerClone);
             let footerHeightMm = 80; // Default from template
-            
+
             // Try to get height from computed style or bounding rect
             if (footerRect.height > 0) {
                 // Convert pixels to mm (assuming 96 DPI for screen rendering)
@@ -3607,34 +3724,34 @@ export class MapExportControl {
         // This is a fallback - for now just log a warning
         // In the future, this could implement a simple footer using jsPDF drawing methods
         console.warn('Using fallback footer method - footer may not match template');
-        
+
         // Calculate footer height
         const footerHeightMm = 30;
         const footerY = heightMm - footerHeightMm;
-        
+
         // Draw a simple footer background
         doc.setFillColor(0, 0, 0);
-        doc.setGState(doc.GState({opacity: 0.7}));
+        doc.setGState(doc.GState({ opacity: 0.7 }));
         doc.rect(0, footerY, widthMm, footerHeightMm, 'F');
-        doc.setGState(doc.GState({opacity: 1.0}));
-        
+        doc.setGState(doc.GState({ opacity: 1.0 }));
+
         // Add QR code if available
         if (qrDataUrl) {
             const qrSizeMm = 12;
             doc.addImage(qrDataUrl, 'PNG', 5, footerY + 5, qrSizeMm, qrSizeMm);
         }
-        
+
         // Add text
         doc.setTextColor(255, 255, 255);
         doc.setFontSize(10);
         const titleText = (this._title || 'Map').replace(/<br\s*\/?>/gi, ', ').replace(/<[^>]*>/g, '');
         doc.text(titleText, 20, footerY + 10);
-        
+
         if (this._description) {
             doc.setFontSize(8);
             doc.text(this._description, 20, footerY + 15);
         }
-        
+
         if (shareUrl) {
             doc.setFontSize(7);
             doc.text(shareUrl, 20, footerY + 25);
@@ -3847,7 +3964,7 @@ class ExportFrame {
             edge.style.position = 'absolute';
             edge.style.pointerEvents = 'auto'; // Enable interaction
             edge.style.cursor = pos === 'top' || pos === 'bottom' ? 'ns-resize' : 'ew-resize';
-            
+
             if (pos === 'top') {
                 edge.style.top = '0';
                 edge.style.left = '0';
@@ -3869,7 +3986,7 @@ class ExportFrame {
                 edge.style.bottom = '0';
                 edge.style.width = `${edgeThickness}px`;
             }
-            
+
             // Make edges draggable for moving the frame
             edge.onmousedown = (e) => {
                 e.stopPropagation();
@@ -3945,17 +4062,17 @@ class ExportFrame {
     _updatePosition() {
         const mapContainer = this._map.getContainer();
         const mapRect = mapContainer.getBoundingClientRect();
-        
+
         // Default size: 60% of map width, height based on ratio
         if (!this._el.style.width || !this._el.style.left) {
             const mapW = mapRect.width;
             const w = mapW * 0.6;
             const h = w / this._aspectRatio;
-            
+
             // Center the frame initially
             const left = (mapW - w) / 2;
             const top = (mapRect.height - h) / 2;
-            
+
             this._el.style.width = w + 'px';
             this._el.style.height = h + 'px';
             this._el.style.left = left + 'px';
@@ -3965,7 +4082,7 @@ class ExportFrame {
             const w = parseFloat(this._el.style.width);
             const h = w / this._aspectRatio;
             this._el.style.height = h + 'px';
-            
+
             // Ensure frame stays within viewport bounds
             this._constrainToViewport();
         }
@@ -3975,22 +4092,22 @@ class ExportFrame {
         const mapContainer = this._map.getContainer();
         const mapRect = mapContainer.getBoundingClientRect();
         const frameRect = this._el.getBoundingClientRect();
-        
+
         let left = parseFloat(this._el.style.left) || 0;
         let top = parseFloat(this._el.style.top) || 0;
         const width = parseFloat(this._el.style.width) || 0;
         const height = parseFloat(this._el.style.height) || 0;
-        
+
         // Constrain to map container bounds (with padding for handles)
         const handleSize = 12; // Size of resize handles
         const minLeft = -handleSize;
         const minTop = -handleSize;
         const maxLeft = mapRect.width - width + handleSize;
         const maxTop = mapRect.height - height + handleSize;
-        
+
         left = Math.max(minLeft, Math.min(maxLeft, left));
         top = Math.max(minTop, Math.min(maxTop, top));
-        
+
         this._el.style.left = left + 'px';
         this._el.style.top = top + 'px';
     }
@@ -4008,7 +4125,7 @@ class ExportFrame {
         const mapContainer = this._map.getContainer();
         const mapRect = mapContainer.getBoundingClientRect();
         const frameRect = this._el.getBoundingClientRect();
-        
+
         // Calculate initial position relative to map container
         const startLeft = frameRect.left - mapRect.left;
         const startTop = frameRect.top - mapRect.top;
@@ -4017,23 +4134,23 @@ class ExportFrame {
             e.preventDefault();
             const currentX = isTouch ? e.touches[0].clientX : e.clientX;
             const currentY = isTouch ? e.touches[0].clientY : e.clientY;
-            
+
             // Calculate delta from start position
             const dx = currentX - startX;
             const dy = currentY - startY;
-            
+
             // Calculate new position relative to map container
             let newLeft = startLeft + dx;
             let newTop = startTop + dy;
-            
+
             // Constrain to viewport
             const width = parseFloat(this._el.style.width) || 0;
             const height = parseFloat(this._el.style.height) || 0;
             const handleSize = 12;
-            
+
             newLeft = Math.max(-handleSize, Math.min(mapRect.width - width + handleSize, newLeft));
             newTop = Math.max(-handleSize, Math.min(mapRect.height - height + handleSize, newTop));
-            
+
             this._el.style.left = newLeft + 'px';
             this._el.style.top = newTop + 'px';
         };
@@ -4068,7 +4185,7 @@ class ExportFrame {
         const mapContainer = this._map.getContainer();
         const mapRect = mapContainer.getBoundingClientRect();
         const frameRect = this._el.getBoundingClientRect();
-        
+
         const startX = isTouch ? e.touches[0].clientX : e.clientX;
         const startY = isTouch ? e.touches[0].clientY : e.clientY;
         const startW = frameRect.width;
