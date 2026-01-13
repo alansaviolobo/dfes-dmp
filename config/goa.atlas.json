@@ -1723,6 +1723,35 @@
       "initiallyChecked": false
     },
     {
+      "title": "PM Ekta Unity Mall at Chimbel Goa",
+      "description": "Poposed Plan For PM Ekta Unity Mall at Chimbel from ekta mall_landscape layout.pdf",
+      "date": "",
+      "type": "tms",
+      "id": "unity-mall-plan",
+      "url": "https://mapwarper.net/maps/tile/98587/{z}/{x}/{y}.png",
+      "style": {
+        "raster-opacity": [
+          "interpolate",
+          [
+            "linear"
+          ],
+          [
+            "zoom"
+          ],
+          6,
+          0.95,
+          18,
+          0.8,
+          19,
+          0.3
+        ]
+      },
+      "attribution": "<a href='https://parivesh.nic.in/newupgrade/#/report/ec?proposalId=122438739' target='_blank'>Parivesh</a> via <a href='https://mapwarper.net/maps/98587' target='_blank'>MapWarper</a>",
+      "headerImage": "https://mapwarper.net/uploads/98587/thumb/replinshment_study_report_20.08.25.png",
+      "bbox": "73.8839661,15.4909629,73.8853313,15.492675",
+      "initiallyChecked": false
+    },
+    {
       "title": "Swadesh Darshan - Project Plans",
       "description": "Map 14: Proposed Interventions for Development of Nautical and Ecological Experience in and around Ekoshim Creek<br>Map 15: Proposed Elements of Ekoshim Road Promenade Development",
       "source": "https://sd2.tourism.gov.in/DocumentRepoFiles/MasterPlan/MP353addb8-ecdb-4942-8cff-6f71e069304a.pdf",
