@@ -2299,14 +2299,16 @@ export class MapFeatureControl {
         }
 
         // Render the organized fields with compact styling
-        organizedFields.forEach(field => {
+        organizedFields.forEach((field, index) => {
             const row = document.createElement('tr');
 
-            // Set row background with light theme
-            let rowBackgroundColor = 'white';
+            // Set row background with alternating colors
+            let rowBackgroundColor;
             if (field.isLabel) {
                 rowBackgroundColor = '#f3f4f6';
-            } else if (field.isPriority) {
+            } else if (index % 2 === 0) {
+                rowBackgroundColor = 'white';
+            } else {
                 rowBackgroundColor = '#f9fafb';
             }
 
@@ -2318,7 +2320,7 @@ export class MapFeatureControl {
 
             const keyCell = document.createElement('td');
             keyCell.style.cssText = `
-                padding: 6px 8px;
+                padding: 3px 6px;
                 font-weight: 600;
                 color: ${field.isLabel ? '#111827' : field.isPriority ? '#374151' : '#6b7280'};
                 width: 35%;
@@ -2331,7 +2333,7 @@ export class MapFeatureControl {
 
             const valueCell = document.createElement('td');
             valueCell.style.cssText = `
-                padding: 6px 8px;
+                padding: 3px 6px;
                 word-break: break-word;
                 font-size: 11px;
                 font-weight: ${field.isLabel ? '600' : '400'};
@@ -2389,19 +2391,20 @@ export class MapFeatureControl {
                     rawTable.id = `properties-table-${layerId}-${featureId}`;
                     rawTable.style.cssText = table.style.cssText;
 
-                    Object.entries(properties).forEach(([key, value]) => {
+                    Object.entries(properties).forEach(([key, value], index) => {
                         if (value === undefined || value === null || value === '') return;
 
                         const row = document.createElement('tr');
+                        const rowBackgroundColor = index % 2 === 0 ? 'white' : '#f9fafb';
                         row.style.cssText = `
                             border-bottom: 1px solid #f3f4f6;
-                            background-color: white;
+                            background-color: ${rowBackgroundColor};
                             transition: background-color 0.1s ease;
                         `;
 
                         const keyCell = document.createElement('td');
                         keyCell.style.cssText = `
-                            padding: 6px 8px;
+                            padding: 3px 6px;
                             font-weight: 600;
                             color: #6b7280;
                             width: 35%;
@@ -2414,7 +2417,7 @@ export class MapFeatureControl {
 
                         const valueCell = document.createElement('td');
                         valueCell.style.cssText = `
-                            padding: 6px 8px;
+                            padding: 3px 6px;
                             word-break: break-word;
                             font-size: 11px;
                             font-weight: 400;
@@ -3481,15 +3484,17 @@ export class MapFeatureControl {
         }
 
         // Render the organized fields
-        organizedFields.forEach(field => {
+        organizedFields.forEach((field, index) => {
             const row = document.createElement('tr');
 
-            // Set row background based on field type
-            let rowBackgroundColor = '#ffffff'; // Default white background
+            // Set row background with alternating colors
+            let rowBackgroundColor;
             if (field.isLabel) {
-                rowBackgroundColor = '#f8fafc'; // Very light blue-gray for label
-            } else if (field.isPriority) {
-                rowBackgroundColor = '#f9fafb'; // Very light gray for priority fields
+                rowBackgroundColor = '#f8fafc';
+            } else if (index % 2 === 0) {
+                rowBackgroundColor = '#ffffff';
+            } else {
+                rowBackgroundColor = '#f9fafb';
             }
 
             row.style.cssText = `
@@ -3500,13 +3505,7 @@ export class MapFeatureControl {
 
             // Add subtle hover effect for better UX
             row.addEventListener('mouseenter', () => {
-                if (field.isLabel) {
-                    row.style.backgroundColor = '#f1f5f9';
-                } else if (field.isPriority) {
-                    row.style.backgroundColor = '#f3f4f6';
-                } else {
-                    row.style.backgroundColor = '#f9fafb';
-                }
+                row.style.backgroundColor = '#f3f4f6';
             });
 
             row.addEventListener('mouseleave', () => {
@@ -3515,7 +3514,7 @@ export class MapFeatureControl {
 
             const keyCell = document.createElement('td');
             keyCell.style.cssText = `
-                padding: 6px 8px;
+                padding: 3px 6px;
                 font-weight: 600;
                 color: ${field.isLabel ? '#1f2937' : field.isPriority ? '#374151' : '#6b7280'};
                 width: 40%;
@@ -3527,7 +3526,7 @@ export class MapFeatureControl {
             // Simplified field name display - show only field title, add tooltip for original field name
             if (field.displayName !== field.key) {
                 keyCell.textContent = field.displayName;
-                keyCell.title = `Original field: ${field.key}`; // Tooltip showing original field name
+                keyCell.title = `Original field: ${field.key}`;
                 keyCell.style.cursor = 'help';
             } else {
                 keyCell.textContent = field.displayName;
@@ -3535,7 +3534,7 @@ export class MapFeatureControl {
 
             const valueCell = document.createElement('td');
             valueCell.style.cssText = `
-                padding: 6px 8px;
+                padding: 3px 6px;
                 word-break: break-word;
                 font-size: ${field.isLabel ? '12px' : '10px'};
                 font-weight: ${field.isLabel ? '600' : '400'};
@@ -3591,27 +3590,28 @@ export class MapFeatureControl {
                     rawTable.id = `properties-table-${layerId}-${featureId}`;
                     rawTable.style.cssText = table.style.cssText;
 
-                    Object.entries(properties).forEach(([key, value]) => {
+                    Object.entries(properties).forEach(([key, value], index) => {
                         if (value === undefined || value === null || value === '') return;
 
                         const row = document.createElement('tr');
+                        const rowBackgroundColor = index % 2 === 0 ? '#ffffff' : '#f9fafb';
                         row.style.cssText = `
                             border-bottom: 1px solid #e5e7eb;
-                            background-color: #ffffff;
+                            background-color: ${rowBackgroundColor};
                             transition: background-color 0.1s ease;
                         `;
 
                         row.addEventListener('mouseenter', () => {
-                            row.style.backgroundColor = '#f9fafb';
+                            row.style.backgroundColor = '#f3f4f6';
                         });
 
                         row.addEventListener('mouseleave', () => {
-                            row.style.backgroundColor = '#ffffff';
+                            row.style.backgroundColor = rowBackgroundColor;
                         });
 
                         const keyCell = document.createElement('td');
                         keyCell.style.cssText = `
-                            padding: 6px 8px;
+                            padding: 3px 6px;
                             font-weight: 600;
                             color: #6b7280;
                             width: 40%;
@@ -3623,7 +3623,7 @@ export class MapFeatureControl {
 
                         const valueCell = document.createElement('td');
                         valueCell.style.cssText = `
-                            padding: 6px 8px;
+                            padding: 3px 6px;
                             word-break: break-word;
                             font-size: 10px;
                             font-weight: 400;
@@ -3650,12 +3650,14 @@ export class MapFeatureControl {
                     filteredTable.id = `properties-table-${layerId}-${featureId}`;
                     filteredTable.style.cssText = table.style.cssText;
 
-                    organizedFields.forEach(field => {
+                    organizedFields.forEach((field, index) => {
                         const row = document.createElement('tr');
-                        let rowBackgroundColor = '#ffffff';
+                        let rowBackgroundColor;
                         if (field.isLabel) {
                             rowBackgroundColor = '#f8fafc';
-                        } else if (field.isPriority) {
+                        } else if (index % 2 === 0) {
+                            rowBackgroundColor = '#ffffff';
+                        } else {
                             rowBackgroundColor = '#f9fafb';
                         }
 
@@ -3666,13 +3668,7 @@ export class MapFeatureControl {
                         `;
 
                         row.addEventListener('mouseenter', () => {
-                            if (field.isLabel) {
-                                row.style.backgroundColor = '#f1f5f9';
-                            } else if (field.isPriority) {
-                                row.style.backgroundColor = '#f3f4f6';
-                            } else {
-                                row.style.backgroundColor = '#f9fafb';
-                            }
+                            row.style.backgroundColor = '#f3f4f6';
                         });
 
                         row.addEventListener('mouseleave', () => {
@@ -3681,7 +3677,7 @@ export class MapFeatureControl {
 
                         const keyCell = document.createElement('td');
                         keyCell.style.cssText = `
-                            padding: 6px 8px;
+                            padding: 3px 6px;
                             font-weight: 600;
                             color: ${field.isLabel ? '#1f2937' : field.isPriority ? '#374151' : '#6b7280'};
                             width: 40%;
@@ -3700,7 +3696,7 @@ export class MapFeatureControl {
 
                         const valueCell = document.createElement('td');
                         valueCell.style.cssText = `
-                            padding: 6px 8px;
+                            padding: 3px 6px;
                             word-break: break-word;
                             font-size: ${field.isLabel ? '12px' : '10px'};
                             font-weight: ${field.isLabel ? '600' : '400'};
