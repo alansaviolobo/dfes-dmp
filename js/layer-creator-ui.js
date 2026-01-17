@@ -83,6 +83,26 @@ export class LayerConfigGenerator {
     }
 
     /**
+     * Check if URL is a .pbf or .mvt tile with actual coordinates
+     * @param {string} url - URL to check
+     * @returns {boolean} True if it's a tile URL with coordinates
+     */
+    static isPbfTileUrl(url) {
+        // Match pattern like /12/2875/1827.pbf or /12/2875/1827.mvt
+        return /\/\d+\/\d+\/\d+\.(pbf|mvt)($|\?)/i.test(url);
+    }
+
+    /**
+     * Convert a .pbf tile URL with actual coordinates to a template URL
+     * @param {string} url - URL with actual tile coordinates
+     * @returns {string} Template URL with {z}/{x}/{y} placeholders
+     */
+    static convertPbfTileUrlToTemplate(url) {
+        // Replace pattern /12/2875/1827.pbf with /{z}/{x}/{y}.pbf
+        return url.replace(/\/\d+\/\d+\/\d+\.(pbf|mvt)($|\?)/i, '/{z}/{x}/{y}.$1$2');
+    }
+
+    /**
      * Guesses the layer type from URL
      * @param {string} url - Data URL
      * @returns {string} Guessed type
@@ -91,6 +111,7 @@ export class LayerConfigGenerator {
         if (this.isMapboxTilesetId(url)) return 'mapbox-tileset';
         if (url.startsWith('mapbox://')) return 'mapbox-tileset';
         if (/\.geojson($|\?)/i.test(url)) return 'geojson';
+        if (this.isPbfTileUrl(url)) return 'vector';
         if (url.includes('{z}') && (url.includes('.pbf') || url.includes('.mvt') || url.includes('vector.openstreetmap.org') || url.includes('/vector/'))) return 'vector';
         if (url.includes('{z}') && (url.includes('.png') || url.includes('.jpg'))) return 'raster';
         if (/\.json($|\?)/i.test(url)) return 'atlas';
@@ -306,6 +327,11 @@ export class LayerConfigGenerator {
         let tilejson = null;
         let mapwarperMetadata = null;
 
+        // Convert .pbf tile URLs with actual coordinates to template URLs
+        if (this.isPbfTileUrl(url)) {
+            actualUrl = this.convertPbfTileUrlToTemplate(url);
+        }
+
         // Handle Mapbox tileset IDs (e.g., planemad.np3cjv7ukkcy)
         if (this.isMapboxTilesetId(url)) {
             const tilesetId = url;
@@ -454,6 +480,7 @@ export class LayerCreatorUI {
                     <span class="block">MapWarper: <code>https://mapwarper.net/maps/95676#Export_tab</code></span>
                     <span class="block">MapWarper: <code>https://warper.wmflabs.org/maps/8940#Show_tab</code></span>
                     <span class="block">Vector: <code>https://vector.openstreetmap.org/shortbread_v1/{z}/{x}/{y}.mvt</code></span>
+                    <span class="block">Vector (single tile): <code>https://bhuvanmaps.nrsc.gov.in/tileserver2/mmi.road_ohy/12/2875/1827.pbf</code></span>
                     <span class="block">GeoJSON: <code>https://gist.githubusercontent.com/planemad/e5ccc47bf2a1aa458a86d6839476f539/raw/6922fcc2d5ffd4d58b0fb069b9f57334f13cd953/goa-water-bodies.geojson</code></span>
                     <span class="block">Atlas: <code>https://jsonkeeper.com/b/RQ0Y</code></span>
                 </div>

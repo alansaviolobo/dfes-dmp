@@ -148,7 +148,6 @@ export class ButtonShareLink {
         // Update our internal URL reference
         if (event.detail && event.detail.url) {
             this.cachedURL = event.detail.url;
-            console.log('🔗 ShareLink URL updated:', this.cachedURL);
         }
     }
 

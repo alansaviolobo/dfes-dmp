@@ -1477,13 +1477,6 @@ export class MapFeatureControl {
         if (this._layerStyleControl && mapboxAPI) {
             const layerGroupIds = mapboxAPI.getLayerGroupIds(layerId, config);
             hasStyleControls = layerGroupIds.length > 0;
-            console.log('[MapFeatureControl] Style check for', layerId, ':', {
-                hasStyleControl: !!this._layerStyleControl,
-                hasMapboxAPI: !!mapboxAPI,
-                layerGroupIds: layerGroupIds,
-                hasStyleControls: hasStyleControls,
-                showLayerOptions: this.options.showLayerOptions
-            });
         }
 
         // If no content at all, don't show tabs

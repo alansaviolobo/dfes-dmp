@@ -13,6 +13,9 @@ export class URLManager {
         // Set up browser history handling
         this.setupHistoryHandling();
 
+        // Set up layer control event listeners for URL updates
+        this.setupLayerControlEventListeners();
+
         $(document).on('update_url', this.updateGeolocateParam );
     }
 
@@ -235,7 +238,6 @@ export class URLManager {
         // Reverse the order so newest layers appear first in the URL
         activeLayers.reverse();
 
-        console.log('🔗 URLManager: Found active layers:', activeLayers);
         return activeLayers;
     }
 
@@ -244,7 +246,6 @@ export class URLManager {
      */
     isGroupActive(groupIndex) {
         if (!this.mapLayerControl._sourceControls || !this.mapLayerControl._sourceControls[groupIndex]) {
-            console.log(`🔗 URLManager: Group ${groupIndex} not found in source controls`);
             return false;
         }
 
@@ -342,7 +343,6 @@ export class URLManager {
     }
 
     _performURLUpdate(options = {}) {
-        console.log('🔗 URLManager: _performURLUpdate called with options:', options);
         const urlParams = new URLSearchParams(window.location.search);
         let hasChanges = false;
         let layersParam = null;
@@ -360,24 +360,12 @@ export class URLManager {
             const newLayersParam = this.serializeLayersForURL(activeLayers);
             const currentLayersParam = urlParams.get('layers');
 
-            console.log('🔗 URLManager: Layers comparison:', {
-                activeLayers,
-                newLayersParam,
-                currentLayersParam
-            });
-
             // Only update if the layers actually changed, not just formatting
             // This prevents reverting pretty URLs back to encoded versions
             if (newLayersParam !== currentLayersParam) {
                 // Check if this is just a formatting difference (encoded vs unencoded)
                 const normalizedNew = decodeURIComponent(newLayersParam || '');
                 const normalizedCurrent = decodeURIComponent(currentLayersParam || '');
-
-                console.log('🔗 URLManager: Normalized comparison:', {
-                    normalizedNew,
-                    normalizedCurrent,
-                    areEqual: normalizedNew === normalizedCurrent
-                });
 
                 if (normalizedNew !== normalizedCurrent) {
                     layersParam = newLayersParam;
@@ -497,7 +485,6 @@ export class URLManager {
         }
 
         // Update URL if there are changes
-        console.log('🔗 URLManager: hasChanges =', hasChanges);
         if (hasChanges) {
             // Create a pretty, readable URL without URL encoding
             const baseUrl = `${window.location.protocol}//${window.location.host}${window.location.pathname}`;
@@ -530,19 +517,13 @@ export class URLManager {
             // Add layers parameter if present - this is the key fix for pretty URLs
             if (layersParam) {
                 // Don't URL-encode the layers parameter to keep it readable
-                console.log('🔗 URLManager: Adding layers param:', layersParam);
                 params.push('layers=' + layersParam);
             } else if (options.updateLayers === false) {
                 // If we're not updating layers, preserve the current layers parameter as-is
                 const currentLayersParam = urlParams.get('layers');
                 if (currentLayersParam) {
-                    console.log('🔗 URLManager: Preserving layers param (updateLayers=false):', currentLayersParam);
                     params.push('layers=' + currentLayersParam);
                 }
-            } else {
-                // When layersParam is empty and we're updating layers, don't add layers parameter
-                // This effectively removes the layers parameter from the URL
-                console.log('🔗 URLManager: No layers param to add (layers are empty)');
             }
 
             // Add geolocate parameter if active (either new or preserved from current URL)
@@ -592,7 +573,6 @@ export class URLManager {
                 newUrl += window.location.hash;
             }
 
-            console.log('🔗 URLManager: Final URL:', newUrl);
             window.history.replaceState(null, '', newUrl);
 
             // Trigger custom event for other components (like ShareLink)
@@ -607,7 +587,6 @@ export class URLManager {
      */
     serializeLayersForURL(layers) {
         if (!layers || layers.length === 0) {
-            console.log('🔗 URLManager: No layers to serialize, returning empty string');
             return '';
         }
 
@@ -615,7 +594,6 @@ export class URLManager {
             return this.layerToURL(layer);
         }).join(',');
 
-        console.log('🔗 URLManager: Serialized layers:', serialized);
         return serialized;
     }
 
@@ -826,6 +804,12 @@ export class URLManager {
      * Listen for layer control events using DOM event delegation
      */
     setupLayerControlEventListeners() {
+        // Prevent duplicate listener registration
+        if (this._listenersRegistered) {
+            return;
+        }
+        this._listenersRegistered = true;
+
         // Listen for checkbox changes in layer controls
         $(document).on('change', '.toggle-switch input[type="checkbox"]', () => {
             if (!this.isUpdatingFromURL) {
@@ -861,14 +845,23 @@ export class URLManager {
                 }
             };
             window.stateManager.addEventListener('state-change', this._stateManagerListener);
+        } else {
+            // Set up a delayed check for state manager
+            setTimeout(() => {
+                if (window.stateManager && !this._stateManagerListener) {
+                    this._listenersRegistered = false; // Allow re-registration
+                    this.setupLayerControlEventListeners();
+                }
+            }, 1000);
         }
 
         // Listen for custom layer toggle events
-        window.addEventListener('layer-toggled', (event) => {
+        this._layerToggledListener = (event) => {
             if (!this.isUpdatingFromURL) {
                 this.onLayersChanged();
             }
-        });
+        };
+        window.addEventListener('layer-toggled', this._layerToggledListener);
 
     }
 
