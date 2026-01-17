@@ -9,6 +9,8 @@ import {Terrain3DControl} from './terrain-3d-control.js';
 import {MapFeatureControl} from './map-feature-control.js';
 import {MapBrowserControl} from './map-browser-control.js';
 import {ButtonResetMapView} from './button-reset-map-view.js';
+import { ButtonRssFeedManager } from './button-rss-feed-manager.js';
+import { ButtonLoadLiveLayers } from './button-load-live-layers.js';
 import {MapAttributionControl} from './map-attribution-control.js';
 import {ButtonExternalMapLinks} from './button-external-map-links.js';
 import {MapFeatureStateManager} from './map-feature-state-manager.js';
@@ -27,7 +29,7 @@ export class MapInitializer {
 
         let configPath = window.amche.DEFAULT_ATLAS;
         let config;
-    let atlasId = 'dfes-dmp'; // Track which atlas we're using
+        let atlasId = 'dfes-dmp'; // Track which atlas we're using
 
         // If a config parameter is provided, determine how to handle it
         if (configParam) {
@@ -475,6 +477,8 @@ export class MapInitializer {
             map.addControl(new MapBrowserControl(), 'top-left');
             map.addControl(new ButtonGeolocationManager(), 'top-left');
             map.addControl(window.featureControl, 'top-right');
+            map.addControl(new ButtonRssFeedManager(), 'top-left');
+            map.addControl(new ButtonLoadLiveLayers(), 'top-left');
             map.addControl(new TimeControl(), 'top-right');
             map.addControl(window.terrain3DControl, 'top-right');
             map.addControl(new ButtonResetMapView(), 'top-right');

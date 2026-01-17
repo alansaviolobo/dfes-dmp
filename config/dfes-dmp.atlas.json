@@ -11,8 +11,7 @@
     ],
     "zoom": 9.1
   },
-  "atlases": [
-  ],
+  "atlases": [],
   "layers": [
     {
       "id": "ambulances",
@@ -22,7 +21,7 @@
       "headerImage": "assets/map-layers/dfes-dmp/all-image-sprite.png",
       "headerPosition": "0 0",
       "type": "geojson",
-      "initiallyChecked": true,
+      "initiallyChecked": false,
       "url": "https://raw.githubusercontent.com/alansaviolobo/google-sheets-to-json-converter/refs/heads/data/data/Ambulances.min.geojson",
       "style": {
         "circle-color": "#B71C1C",
@@ -52,7 +51,7 @@
       "headerImage": "assets/map-layers/dfes-dmp/all-image-sprite.png",
       "headerPosition": "0 0",
       "type": "geojson",
-      "initiallyChecked": true,
+      "initiallyChecked": false,
       "url": "https://raw.githubusercontent.com/alansaviolobo/google-sheets-to-json-converter/refs/heads/data/data/Apada-Mitras.min.geojson",
       "clustered": true,
       "clusterRadius": 100,
@@ -86,7 +85,7 @@
       "headerImage": "assets/map-layers/dfes-dmp/all-image-sprite.png",
       "headerPosition": "0 -50px",
       "type": "geojson",
-      "initiallyChecked": true,
+      "initiallyChecked": false,
       "url": "https://raw.githubusercontent.com/alansaviolobo/google-sheets-to-json-converter/refs/heads/data/data/Civil-Supplies-Godowns.min.geojson",
       "style": {
         "circle-color": "#4E342E",
@@ -126,7 +125,7 @@
       "headerImage": "assets/map-layers/dfes-dmp/all-image-sprite.png",
       "headerPosition": "0 -100px",
       "type": "geojson",
-      "initiallyChecked": true,
+      "initiallyChecked": false,
       "url": "https://raw.githubusercontent.com/alansaviolobo/google-sheets-to-json-converter/refs/heads/data/data/Cyclone-Shelters.min.geojson",
       "style": {
         "circle-color": "#4527A0",
@@ -247,7 +246,7 @@
       "inspect": {
         "id": "Vehicle_No",
         "title": "Vehicle_No",
-        "label": "Vehicle",
+        "label": "Vehicle_No",
         "fields": [
           "Vehicle_No",
           "Branch",
@@ -277,11 +276,10 @@
         "circle-stroke-color": "#000000"
       },
       "inspect": {
-        "id": "id",
-        "title": "Name",
-        "label": "name",
+        "id": "Id",
+        "title": "Station",
+        "label": "Station",
         "fields": [
-          "Station",
           "Name",
           "Mobile",
           "No. of Fire Appliances",
@@ -290,7 +288,6 @@
           "Last Updated"
         ],
         "fieldTitles": [
-          "Station",
           "Name",
           "Mobile",
           "No. of Fire Appliances",
@@ -308,7 +305,7 @@
       "headerImage": "assets/map-layers/dfes-dmp/all-image-sprite.png",
       "headerPosition": "0 -300px",
       "type": "geojson",
-      "initiallyChecked": true,
+      "initiallyChecked": false,
       "url": "https://gist.githubusercontent.com/alansaviolobo/618378ae02a60efdd41b84e3cbee5350/raw/657eca5c0fc646c45a1ef9083707068be30f7612/gas_pipelines.geojson",
       "style": {
         "text-color": "white",
@@ -342,7 +339,7 @@
       "headerImage": "assets/map-layers/dfes-dmp/all-image-sprite.png",
       "headerPosition": "0 -350px",
       "type": "geojson",
-      "initiallyChecked": true,
+      "initiallyChecked": false,
       "url": "https://raw.githubusercontent.com/alansaviolobo/google-sheets-to-json-converter/refs/heads/data/data/HAM-Radio-Operators.min.geojson",
       "style": {
         "circle-color": "#512DA8",
@@ -386,7 +383,7 @@
       "headerImage": "assets/map-layers/dfes-dmp/all-image-sprite.png",
       "headerPosition": "0 -350px",
       "type": "geojson",
-      "initiallyChecked": true,
+      "initiallyChecked": false,
       "url": "https://raw.githubusercontent.com/alansaviolobo/google-sheets-to-json-converter/refs/heads/data/data/Heavy-Machinery.min.geojson",
       "clustered": true,
       "clusterRadius": 100,
@@ -428,7 +425,7 @@
       "headerImage": "assets/map-layers/dfes-dmp/all-image-sprite.png",
       "headerPosition": "0 -400px",
       "type": "geojson",
-      "initiallyChecked": true,
+      "initiallyChecked": false,
       "url": "https://raw.githubusercontent.com/alansaviolobo/google-sheets-to-json-converter/refs/heads/data/data/Hospitals.min.geojson",
       "style": {
         "circle-color": "#1B5E20",
@@ -479,37 +476,58 @@
       "headerPosition": "0 -500px",
       "type": "geojson",
       "initiallyChecked": true,
-      "url": "https://dfes.goa.gov.in/disaster-management/live-calls/geojson",
+      "url": "https://dfes.goa.gov.in/disaster-management/live-calls/geojson/",
       "style": {
-        "circle-color": "#8E0000",
+        "circle-color": [
+          "match",
+          [
+            "get",
+            "type"
+          ],
+          "Fire related",
+          "#FF0000",
+          "Emergency/ Accidents",
+          "#0000FF",
+          "Meteorological",
+          "#FF9500",
+          "Biological",
+          "#00FFEE",
+          "Climatological",
+          "#050F40",
+          "Hydrological",
+          "#FFF700",
+          "Geological",
+          "#5C110C",
+          "#000000"
+        ],
         "circle-radius": 6,
         "circle-stroke-width": 1.5,
         "circle-stroke-color": "#000000"
       },
       "inspect": {
-        "id": "name",
-        "title": "name",
-        "label": "name",
+        "id": "dsr_id",
+        "title": "description",
+        "label": "description",
         "fields": [
+          "description",
+          "station",
+          "near",
+          "at",
           "date",
           "outtime",
           "intime",
-          "station",
           "type",
-          "description",
-          "near",
-          "at",
           "vehicle"
         ],
         "fieldTitles": [
+          "description",
+          "station",
+          "near",
+          "at",
           "date",
           "outtime",
           "intime",
-          "station",
           "type",
-          "description",
-          "near",
-          "at",
           "vehicle"
         ]
       }
@@ -523,12 +541,16 @@
       "headerPosition": "0 -500px",
       "type": "geojson",
       "initiallyChecked": false,
-      "url": "https://gist.githubusercontent.com/alansaviolobo/00e7f5bb8a513522ca3d2fb2fec9c662/raw/8529ac00b215712f3d0239f28052925282c5c1bd/industrial_estate_plots.geojson",
+      "url": "https://gist.githubusercontent.com/alansaviolobo/00e7f5bb8a513522ca3d2fb2fec9c662/raw/179ab5becfa485118e79b3883ebf6b99d23db106/industrial_estate_plots.geojson",
       "style": {
-        "circle-color": "#8E0000",
-        "circle-radius": 6,
-        "circle-stroke-width": 1.5,
-        "circle-stroke-color": "#000000"
+        "text-color": "white",
+        "text-halo-color": "#0084f7",
+        "text-halo-width": 2,
+        "text-size": 12,
+        "line-color": "#33691E",
+        "line-width": 2,
+        "fill-color": "#7CB342",
+        "fill-opacity": 0.01
       },
       "inspect": {
         "id": "ID",
@@ -538,13 +560,13 @@
           "Unit_Name",
           "Plot_Number",
           "Phase",
-          "Village",
+          "Village"
         ],
         "fieldTitles": [
           "Unit Name",
           "Plot_Number",
           "Phase",
-          "Village",
+          "Village"
         ]
       }
     },
@@ -556,7 +578,7 @@
       "headerImage": "assets/map-layers/dfes-dmp/all-image-sprite.png",
       "headerPosition": "0 -500px",
       "type": "geojson",
-      "initiallyChecked": true,
+      "initiallyChecked": false,
       "url": "https://raw.githubusercontent.com/alansaviolobo/google-sheets-to-json-converter/refs/heads/data/data/MHA-Units.min.geojson",
       "style": {
         "circle-color": "#8E0000",
@@ -592,7 +614,7 @@
       "headerImage": "assets/map-layers/dfes-dmp/all-image-sprite.png",
       "headerPosition": "0 -550px",
       "type": "geojson",
-      "initiallyChecked": true,
+      "initiallyChecked": false,
       "url": "https://raw.githubusercontent.com/alansaviolobo/google-sheets-to-json-converter/refs/heads/data/data/Mutual-Aid-Agencies.min.geojson",
       "style": {
         "circle-color": "#263238",
@@ -620,7 +642,7 @@
       "headerImage": "assets/map-layers/dfes-dmp/all-image-sprite.png",
       "headerPosition": "0 -600px",
       "type": "geojson",
-      "initiallyChecked": true,
+      "initiallyChecked": false,
       "url": "https://raw.githubusercontent.com/alansaviolobo/google-sheets-to-json-converter/refs/heads/data/data/Police-Stations.min.geojson",
       "style": {
         "circle-color": "#0D1B4C",
@@ -690,7 +712,7 @@
       "headerImage": "assets/map-layers/dfes-dmp/all-image-sprite.png",
       "headerPosition": "0 -700px",
       "type": "geojson",
-      "initiallyChecked": true,
+      "initiallyChecked": false,
       "url": "https://raw.githubusercontent.com/alansaviolobo/google-sheets-to-json-converter/refs/heads/data/data/Schools.min.geojson",
       "clustered": true,
       "clusterRadius": 100,
@@ -722,7 +744,7 @@
       "headerImage": "assets/map-layers/dfes-dmp/all-image-sprite.png",
       "headerPosition": "0 -800px",
       "type": "geojson",
-      "initiallyChecked": true,
+      "initiallyChecked": false,
       "url": "https://raw.githubusercontent.com/alansaviolobo/google-sheets-to-json-converter/refs/heads/data/data/Tree-Cutters.min.geojson",
       "style": {
         "circle-color": "#4E342E",
@@ -754,7 +776,7 @@
       "headerImage": "assets/map-layers/dfes-dmp/all-image-sprite.png",
       "headerPosition": "0 -900px",
       "type": "geojson",
-      "initiallyChecked": true,
+      "initiallyChecked": false,
       "url": "https://raw.githubusercontent.com/alansaviolobo/google-sheets-to-json-converter/refs/heads/data/data/Water-Resources.min.geojson",
       "clustered": true,
       "style": {
@@ -785,7 +807,7 @@
       "headerImage": "assets/map-layers/dfes-dmp/all-image-sprite.png",
       "headerPosition": "0 -900px",
       "type": "geojson",
-      "initiallyChecked": true,
+      "initiallyChecked": false,
       "url": "https://raw.githubusercontent.com/alansaviolobo/google-sheets-to-json-converter/refs/heads/data/data/Capacity-Building.min.geojson",
       "paint": {
         "circle-radius": 6,
@@ -807,6 +829,39 @@
         "fieldTitles": [
           "name",
           "location"
+        ]
+      }
+    },
+    {
+      "id": "nasa-firms",
+      "title": "NASA FIRMS",
+      "description": "Satellite-based active fire and thermal anomaly detection",
+      "attribution": "<a href='https://firms.modaps.eosdis.nasa.gov/'>NASA FIRMS</a>",
+      "headerImage": "assets/map-layers/dfes-dmp/all-image-sprite.png",
+      "headerPosition": "0 -900px",
+      "type": "geojson",
+      "initiallyChecked": false,
+      "url": "https://raw.githubusercontent.com/alansaviolobo/google-sheets-to-json-converter/refs/heads/data/data/NASA-FIRMS.min.geojson",
+      "paint": {
+        "circle-radius": 6,
+        "circle-color": "#FF0000"
+      },
+      "style": {
+        "circle-color": "#00695C",
+        "circle-stroke-width": 1.5,
+        "circle-stroke-color": "#000000"
+      },
+      "inspect": {
+        "id": "satellite",
+        "title": "satellite",
+        "label": "satellite",
+        "fields": [
+          "satellite",
+          "instrument"
+        ],
+        "fieldTitles": [
+          "satellite",
+          "instrument"
         ]
       }
     },
@@ -856,7 +911,7 @@
       "headerImage": "assets/map-layers/dfes-dmp/all-image-sprite.png",
       "headerPosition": "0 -900px",
       "type": "geojson",
-      "initiallyChecked": true,
+      "initiallyChecked": false,
       "url": "https://gist.githubusercontent.com/alansaviolobo/833a6f738c71f324ff9daa230c096969/raw/146904687540de178dda3d1acb7b539cf5210c25/flood_plains.geojson",
       "paint": {
         "circle-radius": 10,
@@ -894,7 +949,7 @@
       "headerImage": "assets/map-layers/dfes-dmp/all-image-sprite.png",
       "headerPosition": "0 -850px",
       "type": "geojson",
-      "initiallyChecked": true,
+      "initiallyChecked": false,
       "url": "https://gist.githubusercontent.com/alansaviolobo/7a324cc42b827e0eeb3a8c0f02b01918/raw/b54a0e5e4c82dbeace95403e73222033cbd1968a/village_panchayats.geojson",
       "style": {
         "text-color": "white",
@@ -928,7 +983,7 @@
       "headerImage": "assets/map-layers/dfes-dmp/all-image-sprite.png",
       "headerPosition": "0 -850px",
       "type": "geojson",
-      "initiallyChecked": true,
+      "initiallyChecked": false,
       "url": "https://gist.githubusercontent.com/alansaviolobo/9c2c22f6f601df4bb1ac507c217c7462/raw/e005aa5a287f5e44eafcfbd4303b9318a58b0ec5/goa_district_communication_plan.geojson",
       "style": {
         "text-color": "white",
@@ -1033,31 +1088,16 @@
       }
     },
     {
-      "id": "streetmap",
-      "title": "Street Map",
-      "description": "Detailed street map showing places, landmarks, roads & rivers",
-      "type": "style",
-      "headerImage": "assets/map-layers/dfes-dmp/all-image-sprite.png",
-      "headerPosition": "0 -750px",
-      "initiallyChecked": true,
-      "layers": [
-        {
-          "title": "Places",
-          "sourceLayer": "place_label"
-        },
-        {
-          "title": "Landmarks",
-          "sourceLayer": "poi_label"
-        },
-        {
-          "title": "Roads",
-          "sourceLayer": "road"
-        },
-        {
-          "title": "Waterbodies",
-          "sourceLayer": "water"
-        }
-      ]
+      "id": "bhuvan-satellite",
+      "title": "Bhuvan Satellite Imagery",
+      "description": "High-resolution satellite imagery from ISRO Bhuvan",
+      "type": "wms",
+      "url": "https://bhuvan-ras1.nrsc.gov.in/tilecache/tilecache.py?service=WMS&version=1.1.1&request=GetMap&layers=bhuvan_ocm_wbase&styles=&format=image/jpeg&transparent=false",
+      "proxyUrl": "https://amche-atlas-production.up.railway.app/proxy",
+      "proxyReferer": "https://bhuvan.nrsc.gov.in/",
+      "attribution": "<a href='https://bhuvan.nrsc.gov.in/ngmaps?mode=Hybrid#3.65/22.91/82.78'>NRSC/ISRO Bhuvan</a>",
+      "maxzoom": 19,
+      "initiallyChecked": true
     }
   ]
 }

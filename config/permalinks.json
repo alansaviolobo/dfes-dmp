@@ -1,20 +1,12 @@
 {
   "version": "1.0",
   "permalinks": {
-    "1970-quitla-map": {
-      "url": "https://amche.in/?layers=goa-1970-henrique-quitla,mapbox-satellite#13.76/15.60567/73.8752",
-      "title": "Quitla Village Map (1970) by Henrique Fernandes",
-      "description": "Hand-drawn historical map of Quitla village from 1970",
+    "live": {
+      "url": "?atlas=dfes-dmp&layers=imd-alerts,river-flooding-gauges,dfes-incidents,fire-stations,fire-appliances,dam-levels&terrain=1.5#9.44/15.3431/73.9015",
+      "title": "Live Dashboard",
+      "description": "Activation all Live Layers",
       "published": {
-        "2025-06-10": "Fish Curry and Rice"
-      }
-    },
-    "goa-land-atlas": {
-      "url": "https://amche.in/?atlas=goa&layers=goa-plots,notified-khazan,notified-bunds,{id:goa-bhunaksha-communidade,filter:null},goa-bhunaksha-government,goa-bhunaksha-tenanted,world-2023-open-buildings,goa-2021-regional-plan,mapbox-streets,mapbox-satellite&terrain=1.5#11.87/15.51624/73.8246",
-      "title": "Land Information Atlas of Goa",
-      "description": "Plotwise land information of Goa using Dharani/Bhunaksha",
-      "published": {
-        "2025-06-12": "Community Sharing"
+        "0": "--"
       }
     }
   }
