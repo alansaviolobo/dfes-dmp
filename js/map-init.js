@@ -379,22 +379,12 @@ export class MapInitializer {
         const config = await this.loadConfiguration();
         const layers = config.layers || [];
 
-        // Apply map settings from config if available
-        const mapOptions = {
-            container: 'map',
-            style: 'mapbox://styles/planemad/cm3gyibd3004x01qz08rohcsg',
-            center: [73.9414, 15.4121],
-            zoom: 9.99,
-            hash: true,
-            attributionControl: false,
-            preserveDrawingBuffer: true
-        };
+        // Apply all properties from config.map to mapOptions
         if (config.map) {
-            // Apply all properties from config.map to mapOptions
-            Object.assign(mapOptions, config.map);
+            Object.assign(window.amche.MAPBOX_MAP_OPTIONS, config.map);
         }
 
-        const map = new mapboxgl.Map(mapOptions);
+        const map = new mapboxgl.Map(window.amche.MAPBOX_MAP_OPTIONS);
 
         // Make map accessible globally for debugging
         window.map = map;
