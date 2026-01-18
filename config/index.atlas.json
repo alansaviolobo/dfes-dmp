@@ -20,6 +20,7 @@
   "url": "https://github.com/publicmap/amche-goa/blob/main/config/index.atlas.json",
   "color": "#2563eb",
   "map": {
+    "style": "mapbox://styles/planemad/cm3gyibd3004x01qz08rohcsg",
     "center": [
       73.8,
       15.47

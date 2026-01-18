@@ -379,7 +379,12 @@ export class MapInitializer {
         const config = await this.loadConfiguration();
         const layers = config.layers || [];
 
-        // Apply all properties from config.map to mapOptions
+        // Apply defaults from config.defaults.map first
+        if (config.defaults && config.defaults.map) {
+            Object.assign(window.amche.MAPBOX_MAP_OPTIONS, config.defaults.map);
+        }
+
+        // Then apply atlas-specific overrides from config.map
         if (config.map) {
             Object.assign(window.amche.MAPBOX_MAP_OPTIONS, config.map);
         }

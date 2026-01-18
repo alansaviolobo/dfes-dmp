@@ -3,6 +3,17 @@
     "title": "Maps",
     "shareButton": "Share"
   },
+  "map": {
+    "style": "mapbox://styles/mapbox/streets-v12",
+    "center": [
+      73.9414,
+      15.4121
+    ],
+    "zoom": 9.99,
+    "hash": true,
+    "attributionControl": false,
+    "preserveDrawingBuffer": true
+  },
   "layer": {
     "style": {
       "vector": {
