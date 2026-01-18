@@ -644,6 +644,7 @@ export class MapInitializer {
 
             // Make both globally accessible for debugging
             window.featureStateManager = featureStateManager;
+            window.searchControl = searchControl;
 
         };
 

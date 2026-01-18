@@ -55,6 +55,11 @@ export class MapSearchControl {
         this.searchBox.addEventListener('input', this.handleInput.bind(this));
         this.searchBox.addEventListener('keydown', this.handleKeyDown.bind(this));
         this.searchBox.addEventListener('clear', this.handleClear.bind(this));
+        this.searchBox.addEventListener('input', () => {
+            if (window.urlManager) {
+                window.urlManager.updateSearchParam(this.getCurrentQuery());
+            }
+        });
         this.searchBox.bindMap(this.map);
 
         // Add required ARIA attributes for the combobox input
@@ -266,6 +271,46 @@ export class MapSearchControl {
     }
 
     /**
+     * Set the search query from URL parameter
+     * @param {string} query - The search query to set
+     */
+    setQueryFromURL(query) {
+        if (!query) return;
+
+        try {
+            this.updateSearchBoxInput(query);
+
+            setTimeout(() => {
+                const inputEvent = new Event('input', { bubbles: true });
+                const searchBoxInput = this.searchBox.shadowRoot?.querySelector('input') ||
+                    this.searchBox.querySelector('input');
+
+                if (searchBoxInput) {
+                    searchBoxInput.dispatchEvent(inputEvent);
+                }
+            }, 500);
+        } catch (error) {
+            console.error('Error setting query from URL:', error);
+        }
+    }
+
+    /**
+     * Get the current search query
+     * @returns {string} The current search query
+     */
+    getCurrentQuery() {
+        try {
+            const searchBoxInput = this.searchBox.shadowRoot?.querySelector('input') ||
+                this.searchBox.querySelector('input');
+
+            return searchBoxInput ? (searchBoxInput.value || '') : '';
+        } catch (error) {
+            console.error('Error getting current query:', error);
+            return '';
+        }
+    }
+
+    /**
      * Handle keydown events to handle Enter key for coordinates
      * @param {Event} event - The keydown event
      */
@@ -295,6 +340,10 @@ export class MapSearchControl {
      */
     handleClear(event) {
         this.handleEmptyInput();
+
+        if (window.urlManager) {
+            window.urlManager.updateSearchParam('');
+        }
     }
 
     /**

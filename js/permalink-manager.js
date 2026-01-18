@@ -15,7 +15,7 @@ export class PermalinkManager {
     async detectAndRedirect() {
 
         const urlParams = new URLSearchParams(window.location.search);
-        const permalinkId = urlParams.get('permalink') || urlParams.get('q');
+        const permalinkId = urlParams.get('permalink') || urlParams.get('p');
         if (!permalinkId) {
             return;
         }

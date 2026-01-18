@@ -348,6 +348,7 @@ export class URLManager {
         let layersParam = null;
         let atlasParam = null;
         let geolocateParam = null;
+        let searchParam = null;
         let terrainParam = null;
         let animateParam = null;
         let fogParam = null;
@@ -398,6 +399,21 @@ export class URLManager {
                 }
             } else {
                 if (currentGeolocateParam !== null) {
+                    hasChanges = true;
+                }
+            }
+        }
+
+        // Handle search query parameter
+        if (options.search !== undefined) {
+            const currentSearchParam = urlParams.get('q');
+            if (options.search) {
+                searchParam = options.search;
+                if (currentSearchParam !== searchParam) {
+                    hasChanges = true;
+                }
+            } else {
+                if (currentSearchParam !== null) {
                     hasChanges = true;
                 }
             }
@@ -495,6 +511,7 @@ export class URLManager {
             otherParams.delete('layers');
             otherParams.delete('atlas');
             otherParams.delete('geolocate');
+            otherParams.delete('q');
             otherParams.delete('terrain');
             otherParams.delete('animate');
             otherParams.delete('fog');
@@ -530,6 +547,12 @@ export class URLManager {
             const currentGeolocate = geolocateParam || (options.geolocate === undefined ? urlParams.get('geolocate') : null);
             if (currentGeolocate === 'true') {
                 params.push('geolocate=true');
+            }
+
+            // Add search query parameter (either new or preserved from current URL)
+            const currentSearch = searchParam !== null ? searchParam : (options.search === undefined ? urlParams.get('q') : null);
+            if (currentSearch) {
+                params.push('q=' + encodeURIComponent(currentSearch));
             }
 
             // Add terrain parameter (either new or preserved from current URL)
@@ -611,6 +634,7 @@ export class URLManager {
         const urlParams = new URLSearchParams(window.location.search);
         const layersParam = urlParams.get('layers');
         const geolocateParam = urlParams.get('geolocate');
+        const searchParam = urlParams.get('q');
         const terrainParam = urlParams.get('terrain');
         const animateParam = urlParams.get('animate');
         const fogParam = urlParams.get('fog');
@@ -623,7 +647,7 @@ export class URLManager {
             this.autoAddTerrainParameter();
         }
 
-        if (!layersParam && !geolocateParam && !terrainParam && !animateParam && !fogParam && !wireframeParam && !terrainSourceParam) {
+        if (!layersParam && !geolocateParam && !searchParam && !terrainParam && !animateParam && !fogParam && !wireframeParam && !terrainSourceParam) {
             return false;
         }
 
@@ -652,6 +676,12 @@ export class URLManager {
             if (geolocateParam === 'true') {
                 applied = true;
                 this.triggerGeolocation();
+            }
+
+            // Handle search query parameter
+            if (searchParam && window.searchControl) {
+                applied = true;
+                window.searchControl.setQueryFromURL(searchParam);
             }
 
             // Handle terrain parameter
@@ -957,5 +987,12 @@ export class URLManager {
      */
     updateTerrainSourceParam(terrainSource) {
         this.updateURL({ terrainSource: terrainSource });
+    }
+
+    /**
+     * Update search query parameter in URL
+     */
+    updateSearchParam(query) {
+        this.updateURL({ search: query || '', updateLayers: false });
     }
 }
