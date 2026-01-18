@@ -2871,6 +2871,17 @@
       "id": "1792-general-atlas",
       "url": "https://warper.wmflabs.org/maps/tile/7050/{z}/{x}/{y}.png",
       "attribution": "<a href='https://commons.wikimedia.org/wiki/File:Southern_India_Wilkinson.png'>Wikimedia Commons: Southern India Wilkinson.png </a> via <a href='https://warper.wmflabs.org/maps/7050'>Wikimaps Warper</a> released in public domain"
+    },
+    {
+      "id": "bhuvan-satellite",
+      "title": "Satellite Imagery (Bhuvan)",
+      "description": "High-resolution satellite imagery from ISRO Bhuvan Open Data Archive",
+      "type": "wms",
+      "url": "https://bhuvan-ras1.nrsc.gov.in/tilecache/tilecache.py?service=WMS&version=1.1.1&request=GetMap&layers=bhuvan_ocm_wbase&styles=&format=image/png&transparent=true",
+      "attribution": "<a href='https://bhuvan.nrsc.gov.in/'>ISRO Bhuvan</a>",
+      "maxzoom": 18,
+      "tileSize": 256,
+      "initiallyChecked": false
     }
   ]
 }

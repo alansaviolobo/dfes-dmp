@@ -1013,41 +1013,39 @@ export class MapboxAPI {
         // For WMS, we need to ensure the URL has the correct parameters for tiled access
         let tileUrl = wmsUrl;
 
-        // Ensure BBOX parameter uses the correct placeholder
-        if (!tileUrl.includes('BBOX=')) {
-            // Add BBOX parameter if not present
+        // Ensure BBOX parameter uses the correct placeholder (case-insensitive check)
+        if (!/[&?]bbox=/i.test(tileUrl)) {
+            // Add bbox parameter if not present
             const separator = tileUrl.includes('?') ? '&' : '?';
-            tileUrl += `${separator}BBOX={bbox-epsg-3857}`;
+            tileUrl += `${separator}bbox={bbox-epsg-3857}`;
         } else {
-            // Replace existing BBOX with the tile placeholder
-            tileUrl = tileUrl.replace(/BBOX=[^&]+/, 'BBOX={bbox-epsg-3857}');
+            // Replace existing BBOX with the tile placeholder (case-insensitive)
+            tileUrl = tileUrl.replace(/([&?])bbox=[^&]+/i, '$1bbox={bbox-epsg-3857}');
         }
 
-        // Ensure proper WIDTH and HEIGHT (replace if they exist with wrong values)
-        if (tileUrl.includes('WIDTH=')) {
-            tileUrl = tileUrl.replace(/WIDTH=\d+/, 'WIDTH=256');
+        // Ensure proper WIDTH and HEIGHT (case-insensitive, use lowercase for TileCache compatibility)
+        if (/[&?]width=/i.test(tileUrl)) {
+            tileUrl = tileUrl.replace(/([&?])width=\d+/i, '$1width=256');
         } else {
-            tileUrl += '&WIDTH=256';
+            tileUrl += '&width=256';
         }
-        if (tileUrl.includes('HEIGHT=')) {
-            tileUrl = tileUrl.replace(/HEIGHT=\d+/, 'HEIGHT=256');
+        if (/[&?]height=/i.test(tileUrl)) {
+            tileUrl = tileUrl.replace(/([&?])height=\d+/i, '$1height=256');
         } else {
-            tileUrl += '&HEIGHT=256';
+            tileUrl += '&height=256';
         }
 
-        // Ensure CRS/SRS is set to EPSG:3857 for Web Mercator
+        // Ensure CRS/SRS is set to EPSG:3857 for Web Mercator (case-insensitive)
         // WMS 1.1.1 and earlier use SRS parameter, WMS 1.3.0+ use CRS parameter
-        if (tileUrl.includes('CRS=')) {
-            tileUrl = tileUrl.replace(/CRS=[^&]+/, 'CRS=EPSG:3857');
-        } else if (tileUrl.includes('SRS=')) {
-            tileUrl = tileUrl.replace(/SRS=[^&]+/, 'SRS=EPSG:3857');
+        if (/[&?]crs=/i.test(tileUrl)) {
+            tileUrl = tileUrl.replace(/([&?])crs=[^&]+/i, '$1crs=EPSG:3857');
+        } else if (/[&?]srs=/i.test(tileUrl)) {
+            tileUrl = tileUrl.replace(/([&?])srs=[^&]+/i, '$1srs=EPSG:3857');
         } else {
             // Default to SRS for WMS 1.1.1 or CRS for 1.3.0+ based on VERSION parameter
-            const usesCRS = tileUrl.includes('VERSION=1.3') ||
-                tileUrl.includes('VERSION=1.4') ||
-                tileUrl.includes('VERSION=2.') ||
-                tileUrl.includes('VERSION=3.');
-            const crsParam = usesCRS ? 'CRS=EPSG:3857' : 'SRS=EPSG:3857';
+            const usesCRS = /version=1\.[34]/i.test(tileUrl) ||
+                /version=[23]\./i.test(tileUrl);
+            const crsParam = usesCRS ? 'crs=EPSG:3857' : 'srs=EPSG:3857';
             tileUrl += `&${crsParam}`;
         }
 
