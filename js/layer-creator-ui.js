@@ -110,6 +110,7 @@ export class LayerConfigGenerator {
     static guessLayerType(url) {
         if (this.isMapboxTilesetId(url)) return 'mapbox-tileset';
         if (url.startsWith('mapbox://')) return 'mapbox-tileset';
+        if (url.includes('earthengine.googleapis.com') && url.includes('/tiles/')) return 'raster';
         if (/\.geojson($|\?)/i.test(url)) return 'geojson';
         if (this.isPbfTileUrl(url)) return 'vector';
         if (url.includes('{z}') && (url.includes('.pbf') || url.includes('.mvt') || url.includes('vector.openstreetmap.org') || url.includes('/vector/'))) return 'vector';
@@ -233,19 +234,21 @@ export class LayerConfigGenerator {
                 return attribution || undefined;
             };
 
+            const isEarthEngine = url.includes('earthengine.googleapis.com');
+
             config = {
-                title: metadata ? cleanTitle(metadata.title) : 'Raster Layer',
-                description: metadata ? formatDescription(metadata.description) : undefined,
+                title: metadata ? cleanTitle(metadata.title) : (isEarthEngine ? 'Google Earth Engine Image' : 'Raster Layer'),
+                description: metadata ? formatDescription(metadata.description) : (isEarthEngine ? "XYZ tiles generated from <a href='https://developers.google.com/earth-engine/datasets/'>Google Earth Engine</a>" : undefined),
                 date: metadata ? metadata.date : undefined,
                 type: 'tms',
-                id: metadata ? `mapwarper-${metadata.mapId}` : 'raster-' + Math.random().toString(36).slice(2, 8),
+                id: metadata ? `mapwarper-${metadata.mapId}` : (isEarthEngine ? 'earthengine-' + Math.random().toString(36).slice(2, 8) : 'raster-' + Math.random().toString(36).slice(2, 8)),
                 url,
                 style: {
                     'raster-opacity': [
                         'interpolate', ['linear'], ['zoom'], 6, 0.95, 18, 0.8, 19, 0.3
                     ]
                 },
-                attribution: metadata ? formatAttribution(metadata) : undefined,
+                attribution: metadata ? formatAttribution(metadata) : (isEarthEngine ? '© Google Earth Engine' : undefined),
                 headerImage: metadata ? metadata.thumbnail : undefined,
                 bbox: metadata && metadata.bbox ? metadata.bbox : undefined,
                 initiallyChecked: false
@@ -473,10 +476,11 @@ export class LayerCreatorUI {
                     <sl-icon slot="prefix" name="link"></sl-icon>
                 </sl-input>
                 <div id="layer-url-help" class="text-xs text-gray-300">
-                    Supported: Raster/Vector tile URLs, GeoJSON, Atlas JSON, MapWarper URLs, Mapbox tileset IDs.<br>
+                    Supported: Raster/Vector tile URLs, GeoJSON, Atlas JSON, MapWarper URLs, Mapbox tileset IDs, Earth Engine tiles.<br>
                     Examples:<br>
                     <span class="block">Mapbox: <code>planemad.np3cjv7ukkcy</code> (tileset ID)</span>
                     <span class="block">Raster: <code>https://warper.wmflabs.org/maps/tile/4749/{z}/{x}/{y}.png</code></span>
+                    <span class="block">Earth Engine: <code>https://earthengine.googleapis.com/v1/projects/.../maps/.../tiles/{z}/{x}/{y}</code></span>
                     <span class="block">MapWarper: <code>https://mapwarper.net/maps/95676#Export_tab</code></span>
                     <span class="block">MapWarper: <code>https://warper.wmflabs.org/maps/8940#Show_tab</code></span>
                     <span class="block">Vector: <code>https://vector.openstreetmap.org/shortbread_v1/{z}/{x}/{y}.mvt</code></span>
