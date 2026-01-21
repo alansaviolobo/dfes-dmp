@@ -623,7 +623,7 @@ export class MapFeatureControl {
         const atlasName = atlasMetadata?.name || 'Browse Maps';
 
         layerAtlasBtn.innerHTML = `
-            <sl-icon name="globe" style="font-size: 14px; margin-right: 6px;"></sl-icon>
+            <sl-icon name="layers" style="font-size: 14px; margin-right: 6px;"></sl-icon>
             <span>${atlasName}</span>
         `;
 

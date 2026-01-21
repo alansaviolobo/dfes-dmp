@@ -117,9 +117,19 @@
                         </div>
                     </div>
 
-                    <div class="flex items-center justify-end gap-2 mt-2">
-                        <label class="text-sm text-white">Hide inactive</label>
-                        <sl-switch id="hide-inactive-switch" size="small"></sl-switch>
+                    <!-- Filters Section -->
+                    <div class="mt-3 pt-3 border-t border-gray-700">
+                        <div class="text-xs text-gray-400 mb-2 px-1">Filters</div>
+                        <div class="flex flex-col gap-2">
+                            <label class="flex items-center gap-2 text-sm text-white cursor-pointer">
+                                <sl-checkbox id="filter-active-maps" size="small"></sl-checkbox>
+                                <span>Active Maps</span>
+                            </label>
+                            <label class="flex items-center gap-2 text-sm text-white cursor-pointer">
+                                <sl-checkbox id="filter-maps-in-view" size="small"></sl-checkbox>
+                                <span>Maps in current view</span>
+                            </label>
+                        </div>
                     </div>
                 </div>
                 <div id="layer-controls-container"></div>

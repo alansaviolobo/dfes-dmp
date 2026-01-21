@@ -471,7 +471,7 @@ export class MapInitializer {
             // Initialize the feature control with state manager and config
             window.featureControl = new MapFeatureControl();
 
-            map.addControl(window.featureControl, 'top-left');
+            map.addControl(window.featureControl, 'top-right');
             map.addControl(new ButtonGeolocationManager(), 'top-right');
             map.addControl(new TimeControl(), 'top-right');
             map.addControl(window.terrain3DControl, 'top-right');
