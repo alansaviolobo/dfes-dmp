@@ -4047,8 +4047,8 @@ Styles moved from layer-settings.js
 /* Main Panel */
 .map-feature-panel {
     position: absolute;
-    top: 10px;
-    left: 10px;
+    top: 8px;
+    right: 50px;
     width: 350px;
     max-width: 85vw;
     max-height: calc(100vh - 120px);
