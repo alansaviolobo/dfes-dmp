@@ -904,6 +904,462 @@
       }
     },
     {
+      "id": "ndem-imd-alerts",
+      "title": "NDEM IMD Alerts",
+      "description": "Official weather forecasts, warnings, and advisories",
+      "attribution": "<a href='https://mausam.imd.gov.in'>India Meteorological Department, Goa</a>",
+      "headerImage": "assets/map-layers/dfes-dmp/all-image-sprite.png",
+      "headerPosition": "0 -900px",
+      "type": "geojson",
+      "initiallyChecked": true,
+      "url": "https://raw.githubusercontent.com/alansaviolobo/sachet-dmp-geojson-layer/refs/heads/data/data/IMDAlerts.geojson",
+      "paint": {
+        "circle-radius": 10,
+        "circle-color": "#FF0000"
+      },
+      "style": {
+        "text-color": "white",
+        "text-halo-color": "#0084f7",
+        "text-halo-width": 2,
+        "text-size": 12,
+        "line-color": "#0084f7",
+        "line-width": 2,
+        "fill-color": "#0084f7",
+        "fill-opacity": 0.1
+      },
+      "inspect": {
+        "id": "location",
+        "title": "name",
+        "label": "name",
+        "fields": [
+          "name",
+          "location"
+        ],
+        "fieldTitles": [
+          "name",
+          "location"
+        ]
+      }
+    },
+    {
+      "id": "ndem-imd-alerts2",
+      "title": "NDEM IMD Alerts",
+      "description": "Official weather forecasts, warnings, and advisories",
+      "attribution": "<a href='https://mausam.imd.gov.in'>India Meteorological Department, Goa</a>",
+      "headerImage": "assets/map-layers/dfes-dmp/all-image-sprite.png",
+      "headerPosition": "0 -900px",
+      "type": "geojson",
+      "initiallyChecked": true,
+      "url": "https://raw.githubusercontent.com/alansaviolobo/sachet-dmp-geojson-layer/refs/heads/data/data/IMDAlerts2.geojson",
+      "paint": {
+        "circle-radius": 10,
+        "circle-color": "#FF0000"
+      },
+      "style": {
+        "text-color": "white",
+        "text-halo-color": "#0084f7",
+        "text-halo-width": 2,
+        "text-size": 12,
+        "line-color": "#0084f7",
+        "line-width": 2,
+        "fill-color": "#0084f7",
+        "fill-opacity": 0.1
+      },
+      "inspect": {
+        "id": "location",
+        "title": "name",
+        "label": "name",
+        "fields": [
+          "name",
+          "location"
+        ],
+        "fieldTitles": [
+          "name",
+          "location"
+        ]
+      }
+    },
+    {
+      "id": "cloud-burst",
+      "title": "Cloud Burst Alerts",
+      "description": "Official weather forecasts, warnings, and advisories",
+      "attribution": "<a href='https://mausam.imd.gov.in'>India Meteorological Department, Goa</a>",
+      "headerImage": "assets/map-layers/dfes-dmp/all-image-sprite.png",
+      "headerPosition": "0 -900px",
+      "type": "geojson",
+      "initiallyChecked": true,
+      "url": "https://raw.githubusercontent.com/alansaviolobo/sachet-dmp-geojson-layer/refs/heads/data/data/cloudBurst.geojson",
+      "paint": {
+        "circle-radius": 10,
+        "circle-color": "#FF0000"
+      },
+      "style": {
+        "text-color": "white",
+        "text-halo-color": "#0084f7",
+        "text-halo-width": 2,
+        "text-size": 12,
+        "line-color": "#0084f7",
+        "line-width": 2,
+        "fill-color": "#0084f7",
+        "fill-opacity": 0.1
+      },
+      "inspect": {
+        "id": "location",
+        "title": "name",
+        "label": "name",
+        "fields": [
+          "name",
+          "location"
+        ],
+        "fieldTitles": [
+          "name",
+          "location"
+        ]
+      }
+    },
+    {
+      "id": "current-weather",
+      "title": "Current Weather Alerts",
+      "description": "Official weather forecasts, warnings, and advisories",
+      "attribution": "<a href='https://mausam.imd.gov.in'>India Meteorological Department, Goa</a>",
+      "headerImage": "assets/map-layers/dfes-dmp/all-image-sprite.png",
+      "headerPosition": "0 -900px",
+      "type": "geojson",
+      "initiallyChecked": true,
+      "url": "https://raw.githubusercontent.com/alansaviolobo/sachet-dmp-geojson-layer/refs/heads/data/data/currentWeather.geojson",
+      "paint": {
+        "circle-radius": 10,
+        "circle-color": "#FF0000"
+      },
+      "style": {
+        "text-color": "white",
+        "text-halo-color": "#0084f7",
+        "text-halo-width": 2,
+        "text-size": 12,
+        "line-color": "#0084f7",
+        "line-width": 2,
+        "fill-color": "#0084f7",
+        "fill-opacity": 0.1
+      },
+      "inspect": {
+        "id": "location",
+        "title": "name",
+        "label": "name",
+        "fields": [
+          "name",
+          "location"
+        ],
+        "fieldTitles": [
+          "name",
+          "location"
+        ]
+      }
+    },
+    {
+      "id": "cwc",
+      "title": "CWC Alerts",
+      "description": "Official weather forecasts, warnings, and advisories",
+      "attribution": "<a href='https://mausam.imd.gov.in'>India Meteorological Department, Goa</a>",
+      "headerImage": "assets/map-layers/dfes-dmp/all-image-sprite.png",
+      "headerPosition": "0 -900px",
+      "type": "geojson",
+      "initiallyChecked": true,
+      "url": "https://raw.githubusercontent.com/alansaviolobo/sachet-dmp-geojson-layer/refs/heads/data/data/cwc.geojson",
+      "paint": {
+        "circle-radius": 10,
+        "circle-color": "#FF0000"
+      },
+      "style": {
+        "text-color": "white",
+        "text-halo-color": "#0084f7",
+        "text-halo-width": 2,
+        "text-size": 12,
+        "line-color": "#0084f7",
+        "line-width": 2,
+        "fill-color": "#0084f7",
+        "fill-opacity": 0.1
+      },
+      "inspect": {
+        "id": "location",
+        "title": "name",
+        "label": "name",
+        "fields": [
+          "name",
+          "location"
+        ],
+        "fieldTitles": [
+          "name",
+          "location"
+        ]
+      }
+    },
+    {
+      "id": "earthquakes",
+      "title": "Earthquakes Alerts",
+      "description": "Official weather forecasts, warnings, and advisories",
+      "attribution": "<a href='https://mausam.imd.gov.in'>India Meteorological Department, Goa</a>",
+      "headerImage": "assets/map-layers/dfes-dmp/all-image-sprite.png",
+      "headerPosition": "0 -900px",
+      "type": "geojson",
+      "initiallyChecked": true,
+      "url": "https://raw.githubusercontent.com/alansaviolobo/sachet-dmp-geojson-layer/refs/heads/data/data/earthquake.geojson",
+      "paint": {
+        "circle-radius": 10,
+        "circle-color": "#FF0000"
+      },
+      "style": {
+        "text-color": "white",
+        "text-halo-color": "#0084f7",
+        "text-halo-width": 2,
+        "text-size": 12,
+        "line-color": "#0084f7",
+        "line-width": 2,
+        "fill-color": "#0084f7",
+        "fill-opacity": 0.1
+      },
+      "inspect": {
+        "id": "location",
+        "title": "name",
+        "label": "name",
+        "fields": [
+          "name",
+          "location"
+        ],
+        "fieldTitles": [
+          "name",
+          "location"
+        ]
+      }
+    },
+    {
+      "id": "ff-alerts",
+      "title": "FF Alerts",
+      "description": "Official weather forecasts, warnings, and advisories",
+      "attribution": "<a href='https://mausam.imd.gov.in'>India Meteorological Department, Goa</a>",
+      "headerImage": "assets/map-layers/dfes-dmp/all-image-sprite.png",
+      "headerPosition": "0 -900px",
+      "type": "geojson",
+      "initiallyChecked": true,
+      "url": "https://raw.githubusercontent.com/alansaviolobo/sachet-dmp-geojson-layer/refs/heads/data/data/ffAlerts.geojson",
+      "paint": {
+        "circle-radius": 10,
+        "circle-color": "#FF0000"
+      },
+      "style": {
+        "text-color": "white",
+        "text-halo-color": "#0084f7",
+        "text-halo-width": 2,
+        "text-size": 12,
+        "line-color": "#0084f7",
+        "line-width": 2,
+        "fill-color": "#0084f7",
+        "fill-opacity": 0.1
+      },
+      "inspect": {
+        "id": "location",
+        "title": "name",
+        "label": "name",
+        "fields": [
+          "name",
+          "location"
+        ],
+        "fieldTitles": [
+          "name",
+          "location"
+        ]
+      }
+    },
+    {
+      "id": "ff-alerts",
+      "title": "FF Alerts",
+      "description": "Official weather forecasts, warnings, and advisories",
+      "attribution": "<a href='https://mausam.imd.gov.in'>India Meteorological Department, Goa</a>",
+      "headerImage": "assets/map-layers/dfes-dmp/all-image-sprite.png",
+      "headerPosition": "0 -900px",
+      "type": "geojson",
+      "initiallyChecked": true,
+      "url": "https://raw.githubusercontent.com/alansaviolobo/sachet-dmp-geojson-layer/refs/heads/data/data/ffAlerts.geojson",
+      "paint": {
+        "circle-radius": 10,
+        "circle-color": "#FF0000"
+      },
+      "style": {
+        "text-color": "white",
+        "text-halo-color": "#0084f7",
+        "text-halo-width": 2,
+        "text-size": 12,
+        "line-color": "#0084f7",
+        "line-width": 2,
+        "fill-color": "#0084f7",
+        "fill-opacity": 0.1
+      },
+      "inspect": {
+        "id": "location",
+        "title": "name",
+        "label": "name",
+        "fields": [
+          "name",
+          "location"
+        ],
+        "fieldTitles": [
+          "name",
+          "location"
+        ]
+      }
+    },
+    {
+      "id": "high-wave-alerts",
+      "title": "High Wave Alerts",
+      "description": "Official weather forecasts, warnings, and advisories",
+      "attribution": "<a href='https://mausam.imd.gov.in'>India Meteorological Department, Goa</a>",
+      "headerImage": "assets/map-layers/dfes-dmp/all-image-sprite.png",
+      "headerPosition": "0 -900px",
+      "type": "geojson",
+      "initiallyChecked": true,
+      "url": "https://raw.githubusercontent.com/alansaviolobo/sachet-dmp-geojson-layer/refs/heads/data/data/highWaveAlerts.geojson",
+      "paint": {
+        "circle-radius": 10,
+        "circle-color": "#FF0000"
+      },
+      "style": {
+        "text-color": "white",
+        "text-halo-color": "#0084f7",
+        "text-halo-width": 2,
+        "text-size": 12,
+        "line-color": "#0084f7",
+        "line-width": 2,
+        "fill-color": "#0084f7",
+        "fill-opacity": 0.1
+      },
+      "inspect": {
+        "id": "location",
+        "title": "name",
+        "label": "name",
+        "fields": [
+          "name",
+          "location"
+        ],
+        "fieldTitles": [
+          "name",
+          "location"
+        ]
+      }
+    },
+    {
+      "id": "sea-port-alerts",
+      "title": "Sea Port Alerts",
+      "description": "Official weather forecasts, warnings, and advisories",
+      "attribution": "<a href='https://mausam.imd.gov.in'>India Meteorological Department, Goa</a>",
+      "headerImage": "assets/map-layers/dfes-dmp/all-image-sprite.png",
+      "headerPosition": "0 -900px",
+      "type": "geojson",
+      "initiallyChecked": true,
+      "url": "https://raw.githubusercontent.com/alansaviolobo/sachet-dmp-geojson-layer/refs/heads/data/data/imdSeaPortWarnings.geojson",
+      "paint": {
+        "circle-radius": 10,
+        "circle-color": "#FF0000"
+      },
+      "style": {
+        "text-color": "white",
+        "text-halo-color": "#0084f7",
+        "text-halo-width": 2,
+        "text-size": 12,
+        "line-color": "#0084f7",
+        "line-width": 2,
+        "fill-color": "#0084f7",
+        "fill-opacity": 0.1
+      },
+      "inspect": {
+        "id": "location",
+        "title": "name",
+        "label": "name",
+        "fields": [
+          "name",
+          "location"
+        ],
+        "fieldTitles": [
+          "name",
+          "location"
+        ]
+      }
+    },
+    {
+      "id": "swell-surge-alerts",
+      "title": "Swell Surge Alerts",
+      "description": "Official weather forecasts, warnings, and advisories",
+      "attribution": "<a href='https://mausam.imd.gov.in'>India Meteorological Department, Goa</a>",
+      "headerImage": "assets/map-layers/dfes-dmp/all-image-sprite.png",
+      "headerPosition": "0 -900px",
+      "type": "geojson",
+      "initiallyChecked": true,
+      "url": "https://raw.githubusercontent.com/alansaviolobo/sachet-dmp-geojson-layer/refs/heads/data/data/swellSurgeALerts.geojson",
+      "paint": {
+        "circle-radius": 10,
+        "circle-color": "#FF0000"
+      },
+      "style": {
+        "text-color": "white",
+        "text-halo-color": "#0084f7",
+        "text-halo-width": 2,
+        "text-size": 12,
+        "line-color": "#0084f7",
+        "line-width": 2,
+        "fill-color": "#0084f7",
+        "fill-opacity": 0.1
+      },
+      "inspect": {
+        "id": "location",
+        "title": "name",
+        "label": "name",
+        "fields": [
+          "name",
+          "location"
+        ],
+        "fieldTitles": [
+          "name",
+          "location"
+        ]
+      }
+    },
+    {
+      "id": "tsunami-alerts",
+      "title": "Tsunami Alerts",
+      "description": "Official weather forecasts, warnings, and advisories",
+      "attribution": "<a href='https://mausam.imd.gov.in'>India Meteorological Department, Goa</a>",
+      "headerImage": "assets/map-layers/dfes-dmp/all-image-sprite.png",
+      "headerPosition": "0 -900px",
+      "type": "geojson",
+      "initiallyChecked": true,
+      "url": "https://raw.githubusercontent.com/alansaviolobo/sachet-dmp-geojson-layer/refs/heads/data/data/tsunamiAlerts.geojson",
+      "paint": {
+        "circle-radius": 10,
+        "circle-color": "#FF0000"
+      },
+      "style": {
+        "text-color": "white",
+        "text-halo-color": "#0084f7",
+        "text-halo-width": 2,
+        "text-size": 12,
+        "line-color": "#0084f7",
+        "line-width": 2,
+        "fill-color": "#0084f7",
+        "fill-opacity": 0.1
+      },
+      "inspect": {
+        "id": "location",
+        "title": "name",
+        "label": "name",
+        "fields": [
+          "name",
+          "location"
+        ],
+        "fieldTitles": [
+          "name",
+          "location"
+        ]
+      }
+    },
+    {
       "id": "flood-plains",
       "title": "Flood Plains",
       "description": "Flood-prone zones and inundation risk areas",
