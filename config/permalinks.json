@@ -2,7 +2,7 @@
   "version": "1.0",
   "permalinks": {
     "live": {
-      "url": "?atlas=dfes-dmp&layers=imd-alerts,river-flooding-gauges,dfes-incidents,fire-stations,fire-appliances,dam-levels&terrain=1.5#9.44/15.3431/73.9015",
+      "url": "?atlas=dfes-dmp&layers=imd-alerts,river-flooding-gauges,dfes-incidents,fire-stations,fire-appliances,dam-levels,bhuvan-satellite&terrain=1.5#9.44/15.3431/73.9015",
       "title": "Live Dashboard",
       "description": "Activation all Live Layers",
       "published": {
