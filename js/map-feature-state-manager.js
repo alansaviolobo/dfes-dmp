@@ -773,8 +773,7 @@ export class MapFeatureStateManager extends EventTarget {
                 l.id.startsWith(`wmts-layer-${layerId}`) ||
                 l.id.startsWith(`wms-layer-${layerId}`) ||
                 l.id.startsWith(`geojson-${layerId}`) ||
-                l.id.startsWith(`csv-${layerId}`) ||
-                l.id.startsWith(`markers-${layerId}`)
+                l.id.startsWith(`csv-${layerId}`)
             )
             .map(l => l.id);
         matchingIds.push(...generatedMatches);

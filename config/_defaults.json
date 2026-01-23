@@ -279,22 +279,6 @@
           "circle-pitch-scale": "map"
         }
       },
-      "markers": {
-        "circle": {
-          "circle-radius": 6,
-          "circle-color": "#FF0000",
-          "circle-opacity": 0.9,
-          "circle-stroke-width": 1,
-          "circle-stroke-color": "#ffffff",
-          "circle-stroke-opacity": 1,
-          "circle-blur": 0,
-          "circle-translate": [
-            0,
-            0
-          ],
-          "circle-pitch-scale": "map"
-        }
-      },
       "csv": {
         "circle": {
           "circle-radius": 5,

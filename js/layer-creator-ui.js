@@ -49,7 +49,6 @@ export class LayerConfigGenerator {
             case 'atlas': return 'atlas';
             case 'img': return 'img';
             case 'raster-style-layer': return 'raster';
-            case 'markers': return 'markers';
         }
 
         if (layer.url) {

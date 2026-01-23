@@ -159,10 +159,14 @@ The map supports three different ways to load configurations via the URL paramet
 
 #### 3. **Serialized JSON**: `?atlas={"name":"..."}`
 - Parses the JSON configuration directly from the URL
-- Example: `https://amche.goa.in/?atlas={"name":"My Map","layers":[{"id":"mapbox-streets"}]}`
+- Example: `https://amche.in/?atlas={"name":"My Map","layers":[{"id":"mapbox-streets"}]}`
 - Best for: Quick testing, embedding full configs in URLs
+- Note: URL-encode the JSON for special characters
 
-**Example** [CRZ Line layer with additional datasets](http://localhost:4035/?config={%22version%22:%220.1.0%22,%22name%22:%22Example%20map%20configuration%20template%20curated%20by%20the%20amche-goa%20community%22,%22areaOfInterest%22:%22India%22,%22startDate%22:%222010%22,%22endDate%22:%222025%22,%22map%22:{%22center%22:[72.8,18.93],%22zoom%22:12.4},%22layers%22:[{%22id%22:%22mapbox-streets%22},{%22id%22:%22open-buildings%22},{%22initiallyChecked%22:true,%22title%22:%22Coastal%20Regulation%20Zone%20Lines%22,%22description%22:%22Regulatory%20lines%20for%20Coastal%20Regulation%20Zones%22,%22headerImage%22:%22assets/map-layers/map-layer-crz-line.png%22,%22type%22:%22vector%22,%22id%22:%22crz-line%22,%22url%22:%22https://indianopenmaps.fly.dev/not-so-open/coastal/regulation-lines/parivesh/{z}/{x}/{y}.pbf%22,%22sourceLayer%22:%22Bharatmaps_Parivesh_CRZ_Regulatory_Lines%22,%22maxzoom%22:14,%22attribution%22:%22%3Ca%20href=%27https://bharatmaps.gov.in/BharatMaps/Home/Map%27%3EBharatmaps/Parivesh%3C/a%3E%20-%20Collected%20by%20%3Ca%20href=%27https://datameet.org%27%3EDatameet%20Community%3C/a%3E%22,%22style%22:{%22line-color%22:[%22match%22,[%22get%22,%22class%22],%22CRZ%20Boundary%22,%22blue%22,%22High%20Tide%20Line%22,%22blue%22,%22Low%20Tide%20Line%22,%22blue%22,%22orange%22],%22line-width%22:[%22match%22,[%22get%22,%22class%22],%22CRZ%20Boundary%22,3,%22High%20Tide%20Line%22,3,1]},%22inspect%22:{%22id%22:%22class%22,%22title%22:%22CRZ%20Class%22,%22label%22:%22class%22,%22fields%22:[%22state%22]}},{%22id%22:%22osm%22},{%22initiallyChecked%22:false,%22id%22:%223d-terrain%22}]}&layers=crz-line#12.4/18.93/72.8)
+**Quick Test:**
+```
+https://amche.in/?atlas={"name":"Test","layers":[{"id":"mapbox-streets"},{"id":"forests"}]}
+```
 
 ### Additional Testing Methods
 
@@ -190,16 +194,39 @@ The map supports three different ways to load configurations via the URL paramet
 ```json
 {
   "id": "layer-name",
-  "title": "Custom Title",           // Change display name
-  "initiallyChecked": true,         // Turn on by default
-  "description": "Custom description",  // Change description
-  "clusterSeparateBy": "category",      // if there are too many points and clustering is required
-  "clusterStyles": {
-    "A": { "color": "red" },
-    "B": { "color": "blue" }
-  },
-  ...
+  "title": "Custom Title",
+  "initiallyChecked": true,
+  "description": "Custom description",
+  "opacity": 0.7,
+  "style": {
+    "fill-color": "#ff0000",
+    "fill-opacity": 0.5
+  }
 }
+```
+
+**Available for all layer types:**
+- `id` (required) - Unique identifier
+- `title` (optional) - Display name in UI
+- `description` (optional) - Layer description (supports HTML)
+- `headerImage` (optional) - Header image URL for layer card
+- `attribution` (optional) - Data source attribution
+- `initiallyChecked` (optional) - Show layer on load (default: false)
+- `legendImage` (optional) - Legend image URL or PDF
+
+**GeoJSON/CSV clustering:**
+```json
+{
+  "id": "clustered-points",
+  "type": "geojson",
+  "clustered": true,
+  "clusterMaxZoom": 14,
+  "clusterRadius": 50,
+  "clusterSeparateBy": "category",
+  "clusterStyles": {
+    "restaurant": { "color": "#ff0000" },
+    "hotel": { "color": "#0000ff" }
+  }
 }
 ```
 
@@ -258,16 +285,62 @@ Create different configs for different regions:
 ## ❓ FAQ
 
 **Q: I want to add a completely new layer, not from the library**
-A: You can still define custom layers with full properties. See the [Advanced Configuration](#advanced-configuration) section below.
+A: You can still define custom layers with full properties. See the [Advanced Configuration](#advanced-configuration) section and [Available Layer Types](#-available-layer-types) for all supported layer types and their properties.
 
-**Q: Can I change the styling of existing layers?**  
-A: Yes! Just add a `style` property to override the default styling.
+**Q: Can I change the styling of existing layers?**
+A: Yes! Just add a `style` property to override the default styling. See [Style Properties Reference](#-style-properties-reference) for available options.
+
+**Q: How do I validate my layer configuration?**
+A: Use the built-in validation:
+```bash
+npm run lint  # Validates all JSON files in config/
+```
+
+For programmatic validation in the browser console or JavaScript:
+```javascript
+import { ConfigManager } from './js/config-manager.js';
+
+// Validate a layer configuration
+const config = {
+  id: 'villages',
+  type: 'vector',
+  url: 'https://example.com/tiles/{z}/{x}/{y}.pbf',
+  sourceLayer: 'villages'
+};
+
+const result = ConfigManager.validateLayerConfig(config);
+if (!result.valid) {
+  console.error('Errors:', result.errors);
+  console.warn('Warnings:', result.warnings);
+} else {
+  console.log('Valid configuration!');
+}
+
+// Generate a template for a new layer
+const template = ConfigManager.generateLayerTemplate('geojson');
+console.log(JSON.stringify(template, null, 2));
+
+// Get documentation for a layer type
+const docs = ConfigManager.getLayerDocumentation('vector');
+console.log('Required fields:', docs.required);
+console.log('Optional fields:', docs.optional);
+```
 
 **Q: My JSON has an error**
-A: Use a JSON validator like [jsonlint.com](https://jsonlint.com) to check for syntax errors.
+A: Use a JSON validator like [jsonlint.com](https://jsonlint.com) to check for syntax errors, or run `npm run lint` to validate all config files.
 
 **Q: The map doesn't load my config**
-A: Check the browser console for errors. The map will fall back to the default config if yours has problems.
+A: Check the browser console (F12) for errors. The map will fall back to the default config if yours has problems. Common issues:
+- Invalid JSON syntax
+- Missing required fields (e.g., `id`, `type`, `url`)
+- Incorrect layer type
+- CORS issues with remote URLs
+
+**Q: How do I add time-based layers?**
+A: Add `urlTimeParam` to layers that support temporal data (tms, wmts, wms, img). See [Time-Based Layers](#-time-based-layers) section.
+
+**Q: Can I cluster my points by category?**
+A: Yes! Use `clusterSeparateBy` with GeoJSON layers. See the [geojson layer type](#6-geojson---geojson-vector-layer) example.
 
 ## 🏗️ Advanced Configuration
 
@@ -292,20 +365,402 @@ If you need to define completely custom layers (not in the preset library), you 
 
 ## 🎨 Available Layer Types
 
-- `tms` - Tile map service (raster images)
-- `vector` - Vector tiles
-- `geojson` - GeoJSON data
-- `style` - Mapbox style layers  
-- `terrain` - 3D terrain controls
-- `markers` - Point markers from CSV/spreadsheet
-- `img` - Single image overlay
+The map supports 10 different layer types. Each has specific configuration requirements and capabilities.
+
+> **📘 Complete Specifications**: See [`js/config-manager.js`](../js/config-manager.js) for detailed schemas, properties, and examples for each layer type.
+
+### Quick Reference
+
+| Type | Description | Common Use |
+|------|-------------|------------|
+| `style` | Control existing base map layers | Toggle contours, labels, roads |
+| `vector` | Vector tiles (.pbf/.mvt) | Boundaries, infrastructure |
+| `tms` | Raster tiles (XYZ/TMS) | Satellite imagery, base maps |
+| `wmts` | OGC WMTS standard | Government WMS services |
+| `wms` | OGC WMS standard | Real-time data, weather |
+| `geojson` | GeoJSON vector data | Points, lines, polygons |
+| `csv` | Tabular data with lat/lng | Sensor data, locations |
+| `img` | Single georeferenced image | Historic maps, overlays |
+| `raster-style-layer` | Control base map rasters | Hillshade, satellite toggle |
+| `layer-group` | Radio button group | Basemap switcher |
+
+### Layer Type Details
+
+#### 1. **style** - Style Layer Control
+Controls visibility of layers already in the base Mapbox style.
+
+```json
+{
+  "id": "contours",
+  "type": "style",
+  "title": "Contour Lines",
+  "layers": [
+    { "sourceLayer": "contour", "title": "Contours" },
+    { "sourceLayer": "contour_index", "title": "Index Contours" }
+  ]
+}
+```
+
+**Key Properties:**
+- `layers` (required) - Array of sublayers with `sourceLayer` names
+- `style` (optional) - Paint/layout properties to apply when visible
+
+---
+
+#### 2. **vector** - Vector Tile Layer
+Vector tiles with full styling control.
+
+```json
+{
+  "id": "villages",
+  "type": "vector",
+  "title": "Village Boundaries",
+  "url": "https://example.com/tiles/{z}/{x}/{y}.pbf",
+  "sourceLayer": "villages",
+  "style": {
+    "fill-color": "#f0f0f0",
+    "fill-opacity": 0.5,
+    "line-color": "#333",
+    "line-width": 2
+  },
+  "inspect": {
+    "title": "Village Info",
+    "label": "name",
+    "fields": ["population", "area"]
+  }
+}
+```
+
+**Key Properties:**
+- `url` (required) - Tile URL with `{z}/{x}/{y}` placeholders
+- `sourceLayer` (required) - Source layer name within tiles
+- `style` (optional) - Supports `fill-*`, `line-*`, `circle-*`, `text-*` properties
+- `filter` (optional) - Mapbox GL filter expression
+- `inspect` (optional) - Feature popup configuration
+- `maxzoom` (optional, default: 22) - Maximum zoom level
+
+---
+
+#### 3. **tms** - Tile Map Service (Raster)
+Raster tile service supporting XYZ or TMS schemes.
+
+```json
+{
+  "id": "satellite",
+  "type": "tms",
+  "title": "Satellite Imagery",
+  "url": "https://example.com/tiles/{z}/{x}/{y}.png",
+  "opacity": 0.8,
+  "scheme": "xyz",
+  "maxzoom": 18
+}
+```
+
+**Key Properties:**
+- `url` (required) - Tile URL with `{z}/{x}/{y}` placeholders
+- `opacity` (optional, default: 1) - Layer transparency
+- `scheme` (optional, default: "xyz") - Coordinate scheme: "xyz" or "tms"
+- `urlTimeParam` (optional) - Time parameter for temporal layers (e.g., `"TIME={time}"`)
+
+---
+
+#### 4. **wmts** - Web Map Tile Service
+OGC WMTS standard with automatic conversion to Web Mercator.
+
+```json
+{
+  "id": "nasa-viirs",
+  "type": "wmts",
+  "title": "NASA VIIRS",
+  "url": "https://gibs.earthdata.nasa.gov/wmts/.../TileMatrix={z}/TileRow={y}/TileCol={x}.png",
+  "urlTimeParam": "TIME={time}",
+  "tileSize": 256,
+  "opacity": 0.9
+}
+```
+
+**Key Properties:**
+- `url` (required) - WMTS GetTile URL (will convert TileMatrix/Row/Col to {z}/{x}/{y})
+- `tileSize` (optional, default: 256) - Tile size in pixels
+- `urlTimeParam` (optional) - Enables time-based layer updates
+- `forceWebMercator` (optional) - Force EPSG:3857 conversion
+
+**Time-Based Layers:** If `urlTimeParam` is set, the layer will update when the map's time control changes.
+
+---
+
+#### 5. **wms** - Web Map Service
+OGC WMS standard converted to tiles.
+
+```json
+{
+  "id": "weather-radar",
+  "type": "wms",
+  "title": "Weather Radar",
+  "url": "https://example.com/wms?service=WMS&version=1.1.1&request=GetMap&layers=radar",
+  "srs": "EPSG:3857",
+  "tileSize": 256,
+  "opacity": 0.7,
+  "proxyUrl": "https://proxy.example.com",
+  "urlTimeParam": "TIME={time}"
+}
+```
+
+**Key Properties:**
+- `url` (required) - WMS GetMap base URL with parameters
+- `srs` (optional, default: "EPSG:3857") - Spatial reference system
+- `tileSize` (optional, default: 256) - Tile size for requests
+- `proxyUrl` (optional) - Proxy server for CORS issues
+- `proxyReferer` (optional) - Referer header for proxy
+
+---
+
+#### 6. **geojson** - GeoJSON Vector Layer
+GeoJSON data with clustering support.
+
+```json
+{
+  "id": "poi",
+  "type": "geojson",
+  "title": "Points of Interest",
+  "url": "https://example.com/data.geojson",
+  "clustered": true,
+  "clusterMaxZoom": 14,
+  "clusterRadius": 50,
+  "clusterSeparateBy": "category",
+  "clusterStyles": {
+    "restaurant": { "color": "#ff0000" },
+    "hotel": { "color": "#0000ff" }
+  },
+  "style": {
+    "circle-radius": 8,
+    "circle-color": "#f00"
+  }
+}
+```
+
+**Key Properties:**
+- `url` OR `data` (required) - Either URL to GeoJSON or inline data object
+- `style` (optional) - Supports `fill-*`, `line-*`, `circle-*`, `text-*` properties
+- `clustered` (optional, default: false) - Enable point clustering
+- `clusterMaxZoom` (optional, default: 14) - Max zoom for clustering
+- `clusterRadius` (optional, default: 50) - Cluster radius in pixels
+- `clusterSeparateBy` (optional) - Property name to create separate colored clusters
+- `clusterStyles` (optional) - Color mapping for categories when using `clusterSeparateBy`
+
+**KML Support:** KML files are automatically converted to GeoJSON.
+
+---
+
+#### 7. **csv** - CSV Data Layer
+Tabular data with latitude/longitude columns.
+
+```json
+{
+  "id": "sensors",
+  "type": "csv",
+  "title": "Sensor Locations",
+  "url": "https://example.com/sensors.csv",
+  "refresh": 60000,
+  "style": {
+    "circle-radius": 6,
+    "circle-color": "#00ff00"
+  }
+}
+```
+
+**Key Properties:**
+- `url` OR `data` (required) - Either URL to CSV or inline CSV text
+- `refresh` (optional) - Auto-refresh interval in milliseconds
+- `csvParser` (optional) - Custom parsing function
+- Default expects columns: `Latitude`, `Longitude` (or `lat`, `lng`)
+
+---
+
+#### 8. **img** - Image Overlay
+Single georeferenced image overlay.
+
+```json
+{
+  "id": "historic-map",
+  "type": "img",
+  "title": "Historic Map 1906",
+  "url": "https://example.com/map.jpg",
+  "bounds": [73.5, 15.0, 74.5, 16.0],
+  "opacity": 0.7,
+  "refresh": 300000,
+  "urlTimeParam": "TIME={time}"
+}
+```
+
+**Key Properties:**
+- `url` (required) - Image URL
+- `bounds` (required) - Bounding box `[west, south, east, north]`
+- `opacity` (optional, default: 0.85) - Image transparency
+- `refresh` (optional) - Auto-refresh interval in milliseconds
+- `urlTimeParam` (optional) - Time parameter for temporal images
+
+---
+
+#### 9. **raster-style-layer** - Raster Style Control
+Controls existing raster layers in the base map style.
+
+```json
+{
+  "id": "hillshade-control",
+  "type": "raster-style-layer",
+  "title": "Hillshade",
+  "styleLayer": "hillshade",
+  "opacity": 0.5
+}
+```
+
+**Key Properties:**
+- `styleLayer` (required) - ID of style layer to control
+- `opacity` (optional) - Layer opacity override
+- `style` (optional) - Additional raster paint properties
+
+---
+
+#### 10. **layer-group** - Layer Group Toggle
+Radio button group for mutually exclusive layers.
+
+```json
+{
+  "id": "basemap-group",
+  "type": "layer-group",
+  "title": "Base Map",
+  "groups": [
+    { "id": "streets", "title": "Streets" },
+    { "id": "satellite", "title": "Satellite" },
+    { "id": "terrain", "title": "Terrain" }
+  ]
+}
+```
+
+**Key Properties:**
+- `groups` (required) - Array of layer options with `id` and `title`
+- Only one layer in the group can be visible at a time
+
+---
+
+### 🕐 Time-Based Layers
+
+Certain layer types support temporal data that changes over time. Use `urlTimeParam` to enable time-based updates:
+
+```json
+{
+  "id": "weather-satellite",
+  "type": "wmts",
+  "url": "https://gibs.earthdata.nasa.gov/wmts/.../default/{time}/GoogleMapsCompatible_Level9/...",
+  "urlTimeParam": "TIME={time}"
+}
+```
+
+**Supported layer types:**
+- `tms` - Tile Map Service
+- `wmts` - Web Map Tile Service
+- `wms` - Web Map Service
+- `img` - Image overlay
+
+When the map's time control changes, layers with `urlTimeParam` will automatically update their URLs with the new time value. The time format is automatically converted based on the service (ISO 8601 for most, YYYY-MM-DD for NASA GIBS).
+
+---
+
+### 🎯 Feature Inspection
+
+Vector layers (`vector`, `geojson`, `csv`) support interactive feature popups:
+
+```json
+{
+  "inspect": {
+    "id": "unique_id",
+    "title": "Feature Information",
+    "label": "name",
+    "fields": ["population", "area", "district"]
+  }
+}
+```
+
+**Inspect Properties:**
+- `id` (optional) - Property to use as feature ID for state management
+- `title` (optional) - Popup header title
+- `label` (optional) - Property to display as feature label
+- `fields` (optional) - Array of property names to show in popup
+
+**Disable inspection:**
+```json
+{
+  "inspect": false
+}
+```
+
+---
+
+### 🎨 Style Properties Reference
+
+The `style` property accepts Mapbox GL JS style specifications:
+
+**Fill (Polygons):**
+- `fill-color` - Fill color
+- `fill-opacity` - Fill transparency (0-1)
+- `fill-outline-color` - Outline color
+
+**Line (Lines/Borders):**
+- `line-color` - Line color
+- `line-width` - Line width in pixels
+- `line-opacity` - Line transparency (0-1)
+- `line-dasharray` - Dash pattern `[dash, gap]`
+
+**Circle (Points):**
+- `circle-radius` - Radius in pixels
+- `circle-color` - Fill color
+- `circle-opacity` - Fill transparency (0-1)
+- `circle-stroke-width` - Border width
+- `circle-stroke-color` - Border color
+
+**Text (Labels):**
+- `text-field` - Property to display as text
+- `text-color` - Text color
+- `text-size` - Font size in pixels
+- `text-halo-color` - Text outline color
+- `text-halo-width` - Text outline width
+
+**Raster (Images/Tiles):**
+- `raster-opacity` - Image transparency (0-1)
+- `raster-brightness-min` - Brightness minimum (-1 to 1)
+- `raster-brightness-max` - Brightness maximum (-1 to 1)
+- `raster-contrast` - Contrast adjustment (-1 to 1)
+- `raster-saturation` - Saturation adjustment (-1 to 1)
+
+For advanced styling with expressions, zoom functions, and data-driven properties, see the [Mapbox Style Specification](https://docs.mapbox.com/style-spec/).
 
 ## 📚 Resources
 
-- [Live Example](https://amche.in/dev/?atlas=maphub) - See the config system in action
+**Configuration:**
+- [Config Manager](../js/config-manager.js) - Complete layer type specifications and schemas
 - [Example Atlas Files](.) - Browse existing atlas configurations for layer examples
 - [Default Styling](_defaults.json) - See the default style settings
+- [Layer Registry](../js/layer-registry.js) - Central registry for managing layer presets
+
+**Live Examples:**
+- [Main Map](https://amche.in/) - Production map with full layer library
+- [Development Map](https://amche.in/dev/) - Testing environment
+- [Maphub Demo](https://amche.in/?atlas=maphub) - Example themed configuration
+
+**Documentation:**
+- [API Documentation](../docs/API.md) - URL parameters and API usage
+- [Mapbox Style Specification](https://docs.mapbox.com/style-spec/) - Advanced styling reference
+- [Mapbox GL JS Docs](https://docs.mapbox.com/mapbox-gl-js/api/) - Map API reference
+
+**Tools:**
 - [JSON Validator](https://jsonlint.com) - Check your JSON syntax
-- [Mapbox Style Specification](https://docs.mapbox.com/style-spec/) - For advanced styling
+- [GeoJSON.io](https://geojson.io/) - Create and edit GeoJSON data
+- [Mapbox Studio](https://studio.mapbox.com/) - Design custom map styles
+
+**Getting Help:**
+- Open an issue on [GitHub](https://github.com/datameet/amche-goa/issues)
+- Join the [Datameet Community](https://datameet.org/)
+- Check existing [atlas configurations](.) for examples
 
 Need help? Open an issue on GitHub! 🙋‍♀️

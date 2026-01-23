@@ -17,7 +17,7 @@ export class LayerOrderManager {
             return 'bottom';
         }
 
-        if (['vector', 'geojson', 'csv', 'markers'].includes(type)) {
+        if (['vector', 'geojson', 'csv'].includes(type)) {
             return 'middle';
         }
 
