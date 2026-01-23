@@ -972,12 +972,16 @@ export class MapFeatureControl {
                 this._renderLayer(data.layerId);
                 // Check if layer still has selections to update visual state
                 this._updateLayerVisualStateFromFeatures(data.layerId);
+                // Collapse layer if no selections remain
+                this._collapseLayerIfNoSelections(data.layerId);
                 break;
             case 'feature-deselected':
                 // Handle feature deselection (toggle off)
                 this._renderLayer(data.layerId);
                 // Check if layer still has selections to update visual state
                 this._updateLayerVisualStateFromFeatures(data.layerId);
+                // Collapse layer if no selections remain
+                this._collapseLayerIfNoSelections(data.layerId);
                 break;
             case 'features-batch-deselected':
                 // Handle batch deselection of multiple features
@@ -985,6 +989,8 @@ export class MapFeatureControl {
                     this._renderLayer(layerId);
                     // Check if layer still has selections to update visual state
                     this._updateLayerVisualStateFromFeatures(layerId);
+                    // Collapse layer if no selections remain
+                    this._collapseLayerIfNoSelections(layerId);
                 });
                 break;
             case 'feature-leave':
@@ -1135,6 +1141,9 @@ export class MapFeatureControl {
         affectedLayerIds.forEach(layerId => {
             this._lastRenderState.delete(layerId); // Force update by clearing hash
             this._renderLayer(layerId);
+
+            // Collapse the layer after clearing selection
+            this._collapseLayer(layerId);
         });
 
         // If no layers had selections, do a full render to ensure clean state
@@ -1349,10 +1358,9 @@ export class MapFeatureControl {
             layerCard.style.boxShadow = '0 1px 2px rgba(0,0,0,0.05)';
         });
 
-        // Set initial collapse state based on screen size
-        const isMobile = this._isMobileScreen();
+        // Set initial collapse state - collapsed by default
         if (!this._layerCollapseStates.has(layerId)) {
-            this._layerCollapseStates.set(layerId, isMobile);
+            this._layerCollapseStates.set(layerId, true);
         }
         const isCollapsed = this._layerCollapseStates.get(layerId);
 
@@ -1416,6 +1424,57 @@ export class MapFeatureControl {
     }
 
     /**
+     * Collapse a layer if it has no selected features
+     */
+    _collapseLayerIfNoSelections(layerId) {
+        if (!this._stateManager) return;
+
+        const layerFeatures = this._stateManager.getLayerFeatures(layerId);
+        const hasSelection = Array.from(layerFeatures.values()).some(f => f.isSelected);
+
+        if (!hasSelection) {
+            this._collapseLayer(layerId);
+        }
+    }
+
+    /**
+     * Collapse a specific layer
+     */
+    _collapseLayer(layerId) {
+        const layerCard = this._layersContainer.querySelector(`[data-layer-id="${layerId}"]`);
+        if (!layerCard) return;
+
+        const isCurrentlyCollapsed = this._layerCollapseStates.get(layerId) || false;
+        if (isCurrentlyCollapsed) return;
+
+        this._layerCollapseStates.set(layerId, true);
+
+        const collapseIcon = layerCard.querySelector('.collapse-indicator');
+        const contentContainer = layerCard.querySelector('.layer-content');
+        const actionsContainer = layerCard.querySelector('.layer-actions');
+
+        if (collapseIcon) {
+            collapseIcon.name = 'chevron-right';
+        }
+
+        if (contentContainer) {
+            contentContainer.style.display = 'none';
+        }
+
+        if (actionsContainer) {
+            const opacityDropdown = actionsContainer.querySelector('.layer-opacity-dropdown');
+            const settingsBtn = actionsContainer.querySelector('[title="Layer Settings"]');
+
+            if (opacityDropdown) {
+                opacityDropdown.style.display = 'none';
+            }
+            if (settingsBtn) {
+                settingsBtn.style.display = 'none';
+            }
+        }
+    }
+
+    /**
      * Toggle layer collapse/expand state
      */
     _toggleLayerCollapse(layerId, layerCard) {
@@ -1436,11 +1495,11 @@ export class MapFeatureControl {
         }
 
         if (actionsContainer) {
-            const opacityBtn = actionsContainer.querySelector('[aria-label="Opacity"]')?.closest('sl-dropdown');
+            const opacityDropdown = actionsContainer.querySelector('.layer-opacity-dropdown');
             const settingsBtn = actionsContainer.querySelector('[title="Layer Settings"]');
 
-            if (opacityBtn) {
-                opacityBtn.style.display = newState ? 'none' : '';
+            if (opacityDropdown) {
+                opacityDropdown.style.display = newState ? 'none' : '';
             }
             if (settingsBtn) {
                 // Settings button should be hidden if collapsed OR if showLayerOptions is disabled
@@ -1685,6 +1744,7 @@ export class MapFeatureControl {
 
         // Create opacity popover
         const opacityPopover = document.createElement('sl-dropdown');
+        opacityPopover.className = 'layer-opacity-dropdown';
         opacityPopover.distance = 5;
         opacityPopover.placement = 'bottom-end';
         opacityPopover.style.display = isCollapsed ? 'none' : '';
