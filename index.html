@@ -101,35 +101,42 @@
                     Maps नकासो
                 </div>
                 <div id="map-layer-filter" class="sticky top-0 z-10 hidden">
-                    <!-- Search and Atlas Filter in a single row -->
-                    <div class="flex gap-2 items-stretch">
-                        <div style="width: 60%; min-width: 0;">
-                            <sl-input id="layer-search-input" placeholder="Search layers..." clearable class="w-full"
-                                size="small">
-                                <sl-icon slot="prefix" name="search"></sl-icon>
-                            </sl-input>
-                        </div>
-                        <div style="width: 40%; min-width: 0;">
-                            <button id="atlas-filter-select" class="atlas-selector-btn w-full">
-                                <sl-icon name="globe" style="font-size: 14px; margin-right: 6px;"></sl-icon>
-                                <span id="atlas-filter-text">All Atlases</span>
-                            </button>
-                        </div>
+                    <!-- Search Input -->
+                    <div class="mb-3">
+                        <sl-input id="layer-search-input" placeholder="Search layers..." clearable class="w-full"
+                            size="small">
+                            <sl-icon slot="prefix" name="search"></sl-icon>
+                        </sl-input>
                     </div>
 
                     <!-- Filters Section -->
-                    <div class="mt-3 pt-3 border-t border-gray-700">
+                    <div class="pt-3 border-t border-gray-700">
                         <div class="text-xs text-gray-400 mb-2 px-1">Filters</div>
                         <div class="flex flex-col gap-2">
                             <label class="flex items-center gap-2 text-sm text-white cursor-pointer">
-                                <sl-checkbox id="filter-active-maps" size="small"></sl-checkbox>
+                                <sl-checkbox id="filter-active-maps" size="small" checked></sl-checkbox>
                                 <span>Active Maps</span>
                             </label>
                             <label class="flex items-center gap-2 text-sm text-white cursor-pointer">
                                 <sl-checkbox id="filter-maps-in-view" size="small"></sl-checkbox>
                                 <span>Maps in current view</span>
                             </label>
+                            <div class="flex items-center gap-2 text-sm text-white mt-1">
+                                <span class="text-gray-400">Atlas:</span>
+                                <button id="atlas-filter-select" class="atlas-selector-btn flex-1">
+                                    <sl-icon name="globe" style="font-size: 14px; margin-right: 6px;"></sl-icon>
+                                    <span id="atlas-filter-text">All Atlases</span>
+                                </button>
+                            </div>
                         </div>
+                    </div>
+
+                    <!-- New Layer Button -->
+                    <div class="mt-3 pt-3 border-t border-gray-700">
+                        <button id="new-layer-btn" class="w-full flex items-center justify-center gap-2 px-3 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded text-sm transition-colors">
+                            <sl-icon name="plus-square" style="font-size: 14px;"></sl-icon>
+                            <span>New Data Source</span>
+                        </button>
                     </div>
                 </div>
                 <div id="layer-controls-container"></div>

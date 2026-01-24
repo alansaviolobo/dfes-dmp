@@ -140,6 +140,25 @@ button.large {
     font-size: 16px;
 }
 
+/* Dark theme control button */
+.map-control-dark {
+    background: #1f2937 !important;
+    color: #ffbf00 !important;
+    border-color: #1f2937;
+}
+
+.map-control-dark:hover {
+    background: #374151 !important;
+    color: #ffd700 !important;
+}
+
+/* Map layer filter styling */
+#map-layer-filter {
+    background-color: #1f2937;
+    margin-bottom: 10px;
+    padding: 5px;
+}
+
 /* Add new styles for the opacity control */
 .opacity-control {
     background: white;

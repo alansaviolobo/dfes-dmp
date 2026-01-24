@@ -7,6 +7,7 @@ import {MapSearchControl} from './map-search-control.js';
 import {MapExportControl} from './map-export-control.js';
 import {Terrain3DControl} from './terrain-3d-control.js';
 import {MapFeatureControl} from './map-feature-control.js';
+import {MapBrowserControl} from './map-browser-control.js';
 import {ButtonResetMapView} from './button-reset-map-view.js';
 import {MapAttributionControl} from './map-attribution-control.js';
 import {ButtonExternalMapLinks} from './button-external-map-links.js';
@@ -471,8 +472,9 @@ export class MapInitializer {
             // Initialize the feature control with state manager and config
             window.featureControl = new MapFeatureControl();
 
+            map.addControl(new MapBrowserControl(), 'top-left');
+            map.addControl(new ButtonGeolocationManager(), 'top-left');
             map.addControl(window.featureControl, 'top-right');
-            map.addControl(new ButtonGeolocationManager(), 'top-right');
             map.addControl(new TimeControl(), 'top-right');
             map.addControl(window.terrain3DControl, 'top-right');
             map.addControl(new ButtonResetMapView(), 'top-right');
