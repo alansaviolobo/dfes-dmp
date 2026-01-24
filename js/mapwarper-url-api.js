@@ -84,6 +84,115 @@ export class MapWarperAPI {
         }
     }
 
+    static async fetchMosaicMaps(mosaicId, baseUrl = 'https://mapwarper.net') {
+        try {
+            const apiUrl = `${baseUrl}/api/v1/layers/${mosaicId}/maps`;
+            console.log(`[MapWarper] Fetching mosaic maps from: ${apiUrl}`);
+
+            const response = await fetch(apiUrl);
+            if (!response.ok) {
+                throw new Error(`Failed to fetch mosaic maps: ${response.status} ${response.statusText}`);
+            }
+
+            const apiResponse = await response.json();
+            const maps = apiResponse.data || [];
+
+            console.log(`[MapWarper] Found ${maps.length} maps in mosaic ${mosaicId}`);
+            return maps;
+        } catch (error) {
+            console.error(`[MapWarper] Error fetching mosaic maps ${mosaicId}:`, error);
+            throw error;
+        }
+    }
+
+    static bboxToPolygon(bbox) {
+        if (!bbox) return null;
+
+        let coords;
+        if (typeof bbox === 'string') {
+            coords = bbox.split(',').map(parseFloat);
+        } else if (Array.isArray(bbox)) {
+            coords = bbox;
+        } else {
+            return null;
+        }
+
+        if (coords.length !== 4 || coords.some(isNaN)) {
+            return null;
+        }
+
+        const [west, south, east, north] = coords;
+
+        return {
+            type: 'Polygon',
+            coordinates: [[
+                [west, north],
+                [east, north],
+                [east, south],
+                [west, south],
+                [west, north]
+            ]]
+        };
+    }
+
+    static async buildMosaicGeoJSON(mosaicId, baseUrl = 'https://mapwarper.net') {
+        try {
+            const maps = await this.fetchMosaicMaps(mosaicId, baseUrl);
+
+            const features = maps
+                .map(mapData => {
+                    const attrs = mapData.attributes || {};
+                    const bbox = attrs.bbox;
+
+                    if (!bbox) {
+                        console.warn(`[MapWarper] Map ${mapData.id} has no bbox, skipping`);
+                        return null;
+                    }
+
+                    const geometry = this.bboxToPolygon(bbox);
+                    if (!geometry) {
+                        console.warn(`[MapWarper] Invalid bbox for map ${mapData.id}, skipping`);
+                        return null;
+                    }
+
+                    return {
+                        type: 'Feature',
+                        id: mapData.id,
+                        geometry: geometry,
+                        properties: {
+                            id: mapData.id,
+                            title: attrs.title || `Map ${mapData.id}`,
+                            description: attrs.description || '',
+                            status: attrs.status || 'unknown',
+                            width: attrs.width,
+                            height: attrs.height,
+                            map_type: attrs.map_type,
+                            created_at: attrs.created_at,
+                            updated_at: attrs.updated_at,
+                            url: `${baseUrl}/maps/${mapData.id}`,
+                            'stroke': '#ff6b6b',
+                            'stroke-width': 2,
+                            'stroke-opacity': 0.8,
+                            'fill': '#ff6b6b',
+                            'fill-opacity': 0.1
+                        }
+                    };
+                })
+                .filter(feature => feature !== null);
+
+            const geojson = {
+                type: 'FeatureCollection',
+                features: features
+            };
+
+            console.log(`[MapWarper] Built GeoJSON with ${features.length} features for mosaic ${mosaicId}`);
+            return geojson;
+        } catch (error) {
+            console.error(`[MapWarper] Error building GeoJSON for mosaic ${mosaicId}:`, error);
+            return null;
+        }
+    }
+
     static async fetchMapMetadata(mapId, baseUrl = 'https://mapwarper.net') {
         try {
             const apiUrl = `${baseUrl}/api/v1/maps/${mapId}`;
@@ -114,7 +223,7 @@ export class MapWarperAPI {
         }
     }
 
-    static createMosaicConfig(mosaicData, baseUrl = 'https://mapwarper.net') {
+    static createMosaicConfig(mosaicData, baseUrl = 'https://mapwarper.net', geojson = null) {
         const mosaicId = mosaicData.id;
         const tilesUrl = mosaicData.tiles_url || `${baseUrl}/layers/tile/${mosaicId}/{z}/{x}/{y}.png`;
 
@@ -167,6 +276,10 @@ export class MapWarperAPI {
             config.description = config.description
                 ? `${config.description}<br><small>Created: ${createdDate}</small>`
                 : `<small>Created: ${createdDate}</small>`;
+        }
+
+        if (geojson && geojson.features && geojson.features.length > 0) {
+            config.geojson = geojson;
         }
 
         return config;
@@ -268,7 +381,15 @@ export class MapWarperAPI {
 
             console.log(`[MapWarper] Processing mosaic ${mosaicId} from ${baseUrl}`);
             const mosaicData = await this.fetchMosaicMetadata(mosaicId, baseUrl);
-            return this.createMosaicConfig(mosaicData, baseUrl);
+
+            let geojson = null;
+            try {
+                geojson = await this.buildMosaicGeoJSON(mosaicId, baseUrl);
+            } catch (error) {
+                console.warn(`[MapWarper] Failed to build GeoJSON for mosaic ${mosaicId}, continuing without it:`, error);
+            }
+
+            return this.createMosaicConfig(mosaicData, baseUrl, geojson);
         }
 
         if (this.isMapUrl(cleanUrl)) {

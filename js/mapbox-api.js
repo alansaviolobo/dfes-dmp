@@ -736,7 +736,6 @@ export class MapboxAPI {
                 sourceConfig.tiles = [config.url];
             }
 
-            // Add attribution if available
             if (config.attribution) {
                 sourceConfig.attribution = config.attribution;
             }
@@ -756,6 +755,10 @@ export class MapboxAPI {
             }, 'raster');
 
             this._addLayerWithSlot(layerConfig, LayerOrderManager.getInsertPosition(this._map, 'tms', null, config, this._orderedGroups));
+
+            if (config.geojson && visible) {
+                this._addSimpleStyleGeoJSONOverlay(groupId, config.geojson, visible);
+            }
         } else {
             this._updateTMSLayerVisibility(groupId, config, visible);
         }
@@ -768,6 +771,16 @@ export class MapboxAPI {
         if (this._map.getLayer(layerId)) {
             this._map.setLayoutProperty(layerId, 'visibility', visible ? 'visible' : 'none');
         }
+
+        if (config.geojson) {
+            const geojsonSourceId = `tms-geojson-${groupId}`;
+            if (visible && !this._map.getSource(geojsonSourceId)) {
+                this._addSimpleStyleGeoJSONOverlay(groupId, config.geojson, visible);
+            } else {
+                this._updateSimpleStyleGeoJSONOverlayVisibility(groupId, visible);
+            }
+        }
+
         return true;
     }
 
@@ -781,6 +794,11 @@ export class MapboxAPI {
         if (this._map.getSource(sourceId)) {
             this._map.removeSource(sourceId);
         }
+
+        if (config.geojson) {
+            this._removeSimpleStyleGeoJSONOverlay(groupId);
+        }
+
         return true;
     }
 
@@ -795,6 +813,79 @@ export class MapboxAPI {
             this._map.setPaintProperty(layerId, 'raster-opacity', finalOpacity);
         }
         return true;
+    }
+
+    _addSimpleStyleGeoJSONOverlay(groupId, geojson, visible) {
+        const sourceId = `tms-geojson-${groupId}`;
+
+        if (this._map.getSource(sourceId)) {
+            return;
+        }
+
+        this._map.addSource(sourceId, {
+            type: 'geojson',
+            data: geojson
+        });
+
+        const fillLayerId = `${sourceId}-fill`;
+        const lineLayerId = `${sourceId}-line`;
+
+        const fillLayerConfig = this._createLayerConfig({
+            id: fillLayerId,
+            groupId: groupId,
+            type: 'fill',
+            source: sourceId,
+            style: {
+                'fill-color': ['coalesce', ['get', 'fill'], '#ff6b6b'],
+                'fill-opacity': ['coalesce', ['get', 'fill-opacity'], 0.1]
+            },
+            visible
+        }, 'fill');
+
+        const lineLayerConfig = this._createLayerConfig({
+            id: lineLayerId,
+            groupId: groupId,
+            type: 'line',
+            source: sourceId,
+            style: {
+                'line-color': ['coalesce', ['get', 'stroke'], '#ff6b6b'],
+                'line-width': ['coalesce', ['get', 'stroke-width'], 2],
+                'line-opacity': ['coalesce', ['get', 'stroke-opacity'], 0.8]
+            },
+            visible
+        }, 'line');
+
+        this._addLayerWithSlot(fillLayerConfig, LayerOrderManager.getInsertPosition(this._map, 'vector', 'fill', {}, this._orderedGroups));
+        this._addLayerWithSlot(lineLayerConfig, LayerOrderManager.getInsertPosition(this._map, 'vector', 'line', {}, this._orderedGroups));
+    }
+
+    _updateSimpleStyleGeoJSONOverlayVisibility(groupId, visible) {
+        const sourceId = `tms-geojson-${groupId}`;
+        const fillLayerId = `${sourceId}-fill`;
+        const lineLayerId = `${sourceId}-line`;
+
+        if (this._map.getLayer(fillLayerId)) {
+            this._map.setLayoutProperty(fillLayerId, 'visibility', visible ? 'visible' : 'none');
+        }
+        if (this._map.getLayer(lineLayerId)) {
+            this._map.setLayoutProperty(lineLayerId, 'visibility', visible ? 'visible' : 'none');
+        }
+    }
+
+    _removeSimpleStyleGeoJSONOverlay(groupId) {
+        const sourceId = `tms-geojson-${groupId}`;
+        const fillLayerId = `${sourceId}-fill`;
+        const lineLayerId = `${sourceId}-line`;
+
+        if (this._map.getLayer(lineLayerId)) {
+            this._map.removeLayer(lineLayerId);
+        }
+        if (this._map.getLayer(fillLayerId)) {
+            this._map.removeLayer(fillLayerId);
+        }
+        if (this._map.getSource(sourceId)) {
+            this._map.removeSource(sourceId);
+        }
     }
 
     // WMTS layer methods
