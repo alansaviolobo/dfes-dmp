@@ -49,15 +49,9 @@ export class DrawerStateManager {
       computedStyle.visibility !== 'hidden' &&
       computedStyle.opacity !== '0';
 
-    if (window.innerWidth <= 768) {
-      // On mobile, only consider open if Shoelace explicitly says it's open
-      // On mobile, drawer should be closed by default unless explicitly opened
-      this._isOpen = shoelaceOpen && (hasOpenAttribute || hasOpenClass) && isVisible;
-    } else {
-      // On desktop, consider open if any indicator suggests it's open
-      // On desktop, drawer should be open by default unless explicitly closed
-      this._isOpen = shoelaceOpen || hasOpenAttribute || hasOpenClass || isVisible;
-    }
+    // Drawer should be closed by default on all screen sizes
+    // Only consider open if Shoelace explicitly says it's open
+    this._isOpen = shoelaceOpen && (hasOpenAttribute || hasOpenClass) && isVisible;
     (this._isOpen) ? this.open() : this.close();
   }
 

@@ -375,27 +375,19 @@ export class MapFeatureControl {
 
         // Create button
         const button = document.createElement('button');
-        button.className = 'mapboxgl-ctrl-icon map-feature-control-btn';
+        button.className = 'mapboxgl-ctrl-icon map-feature-control-btn map-control-dark';
         button.type = 'button';
         button.setAttribute('aria-label', 'Map Layers');
 
         // Create Shoelace icon
         const icon = document.createElement('sl-icon');
-        icon.name = 'stack';
+        icon.name = 'info-circle-fill';
 
         button.appendChild(icon);
 
         // Add event handlers
         button.addEventListener('click', () => {
             this._togglePanel();
-        });
-
-        button.addEventListener('mouseenter', () => {
-            button.style.backgroundColor = '#f0f0f0';
-        });
-
-        button.addEventListener('mouseleave', () => {
-            button.style.backgroundColor = '#ffffff';
         });
 
         this._container.appendChild(button);
@@ -430,35 +422,26 @@ export class MapFeatureControl {
         const content = document.createElement('div');
         content.className = 'map-feature-panel-content';
 
-        // Create Header (Layer Atlas + Actions)
+        // Create Header (Actions)
         const header = document.createElement('div');
-        header.className = 'map-feature-panel-header';
+        header.className = 'map-feature-panel-header map-control-dark';
 
-        // Layer Atlas Button Container (left side, expands to fill space)
-        const layerAtlasContainer = document.createElement('div');
-        layerAtlasContainer.className = 'map-feature-panel-header-left';
-        const layerAtlasBtn = this._createLayerAtlasButton();
-        layerAtlasContainer.appendChild(layerAtlasBtn);
-        header.appendChild(layerAtlasContainer);
+        // Header Title
+        const headerTitle = document.createElement('div');
+        headerTitle.className = 'map-feature-panel-header-title';
+        headerTitle.style.paddingLeft = '10px';
+        headerTitle.style.fontWeight = 'bold';
+        headerTitle.textContent = 'Map Information';
 
-        // Header Actions Container (right side)
+        // Header Actions Container
         const headerActions = document.createElement('div');
         headerActions.className = 'map-feature-panel-header-actions';
 
-        // Add actions to header (without Layer Atlas, which is now on the left)
+        // Add actions to header
         const actions = this._createHeaderActions();
         actions.forEach(action => headerActions.appendChild(action));
 
-        // Close button (integrated into header actions)
-        const closeButton = document.createElement('sl-icon-button');
-        closeButton.name = 'x-lg';
-        closeButton.label = 'Close';
-        closeButton.className = 'header-close-btn';
-        closeButton.addEventListener('click', () => {
-            this._hidePanel();
-        });
-        headerActions.appendChild(closeButton);
-
+        header.appendChild(headerTitle);
         header.appendChild(headerActions);
 
         // Add drag functionality to the header
@@ -623,7 +606,7 @@ export class MapFeatureControl {
         const atlasName = atlasMetadata?.name || 'Browse Maps';
 
         layerAtlasBtn.innerHTML = `
-            <sl-icon name="globe" style="font-size: 14px; margin-right: 6px;"></sl-icon>
+            <sl-icon name="layers" style="font-size: 14px; margin-right: 6px;"></sl-icon>
             <span>${atlasName}</span>
         `;
 
@@ -640,28 +623,15 @@ export class MapFeatureControl {
     _createHeaderActions() {
         const actions = [];
 
-        // 1. New Data Source Button (Icon only)
-        const newDataSourceBtn = document.createElement('sl-icon-button');
-        newDataSourceBtn.name = 'plus-square';
-        newDataSourceBtn.label = 'New Data Source';
-        newDataSourceBtn.className = 'header-icon-btn';
-        // Add tooltip
-        const newSourceTooltip = document.createElement('sl-tooltip');
-        newSourceTooltip.content = 'New Data Source';
-        newSourceTooltip.appendChild(newDataSourceBtn);
-
-        newDataSourceBtn.addEventListener('click', (e) => {
-            e.preventDefault();
-            e.stopPropagation();
-            LayerCreatorUI.openLayerCreatorDialog();
-        });
-        actions.push(newSourceTooltip);
-
-        // 3. Settings Menu (Popover)
-        const settingsBtn = document.createElement('sl-icon-button');
-        settingsBtn.name = 'gear';
-        settingsBtn.label = 'Settings';
-        settingsBtn.className = 'header-icon-btn';
+        // Settings Menu (Popover)
+        const settingsBtn = document.createElement('button');
+        settingsBtn.textContent = 'Options';
+        settingsBtn.className = 'header-options-btn';
+        settingsBtn.style.background = 'transparent';
+        settingsBtn.style.border = 'none';
+        settingsBtn.style.color = 'rgba(235, 235, 235, 1)';
+        settingsBtn.style.cursor = 'pointer';
+        settingsBtn.style.fontSize = '8pt';
 
         // Create settings popover content
         const settingsPopover = document.createElement('sl-dropdown');

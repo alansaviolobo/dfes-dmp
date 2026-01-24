@@ -71,6 +71,9 @@ export class MapLayerControl {
         this._defaultStyles = {};// Initialize default styles (will be populated by _loadDefaultStyles)
         this._layerSettingsModal = null;
         this._stateManager = null;
+        this._filterActiveMaps = false;
+        this._filterMapsInView = false;
+        this._mapMoveListenerAdded = false;
 
         // Load default styles asynchronously
         this._loadDefaultStyles();
@@ -85,6 +88,9 @@ export class MapLayerControl {
 
         // Make sure default styles are loaded BEFORE creating MapboxAPI
         await this._ensureDefaultStylesLoaded();
+
+        // Load all layers from registry and add them to state
+        this._loadAllLayersFromRegistry();
 
         // Initialize MapboxAPI with the map and atlas configuration
         this._mapboxAPI = new MapboxAPI(map, {
@@ -123,6 +129,38 @@ export class MapLayerControl {
         }
 
         $(container).append($('<div>', { class: 'layer-control' }));
+    }
+
+    /**
+     * Load all layers from the registry and add them to state
+     */
+    _loadAllLayersFromRegistry() {
+        if (!window.layerRegistry || !window.layerRegistry._initialized) {
+            console.warn('[LayerControl] Layer registry not initialized, cannot load all layers');
+            return;
+        }
+
+        const currentLayerIds = new Set(this._state.groups.map(g => g.id));
+        const allLayers = [];
+
+        // Get all layers from all atlases
+        window.layerRegistry._registry.forEach((layer, layerId) => {
+            // Skip if already in current atlas
+            if (!currentLayerIds.has(layerId) && !currentLayerIds.has(layer._originalId)) {
+                allLayers.push({
+                    ...layer,
+                    id: layerId,
+                    initiallyChecked: false
+                });
+            }
+        });
+
+        console.log(`[LayerControl] Adding ${allLayers.length} layers from registry to the ${this._state.groups.length} current atlas layers`);
+
+        // Add all layers to state
+        this._state.groups = [...this._state.groups, ...allLayers];
+
+        console.log(`[LayerControl] Total layers in state: ${this._state.groups.length}`);
     }
 
     /**
@@ -209,6 +247,8 @@ export class MapLayerControl {
      * Initialize the main control UI
      */
     _initializeControl(container) {
+        console.log(`[LayerControl] Rendering ${this._state.groups.length} layers to UI`);
+
         // Add current atlas layers
         this._state.groups.forEach((group, groupIndex) => {
             $(container).append(this._createGroupHeader(group, groupIndex));
@@ -220,6 +260,11 @@ export class MapLayerControl {
         if (!this._initialized) {
             this._initializeWithAnimation();
         }
+
+        // Log actual rendered count
+        const $container = $(container);
+        const renderedCount = $container.find('.group-header').length;
+        console.log(`[LayerControl] Rendered ${renderedCount} layer UI elements`);
     }
 
     /**
@@ -1252,7 +1297,198 @@ export class MapLayerControl {
                     }
                 });
             }
+
+            // Initialize filter checkboxes
+            const filterActiveMaps = document.getElementById('filter-active-maps');
+            const filterMapsInView = document.getElementById('filter-maps-in-view');
+
+            if (filterActiveMaps) {
+                this._filterActiveMaps = !!filterActiveMaps.checked;
+                console.log('[Filter] filterActiveMaps initialized to:', this._filterActiveMaps);
+
+                filterActiveMaps.addEventListener('sl-change', (e) => {
+                    this._filterActiveMaps = !!e.target.checked;
+                    this._applyAllFilters();
+                });
+
+                const filterActiveMapsLabel = filterActiveMaps.closest('label');
+                if (filterActiveMapsLabel) {
+                    filterActiveMapsLabel.addEventListener('click', (e) => {
+                        if (e.target.tagName !== 'SL-CHECKBOX') {
+                            e.preventDefault();
+                            filterActiveMaps.checked = !filterActiveMaps.checked;
+                            this._filterActiveMaps = !!filterActiveMaps.checked;
+                            this._applyAllFilters();
+                        }
+                    });
+                }
+            }
+
+            if (filterMapsInView) {
+                this._filterMapsInView = !!filterMapsInView.checked;
+                console.log('[Filter] filterMapsInView initialized to:', this._filterMapsInView);
+
+                filterMapsInView.addEventListener('sl-change', (e) => {
+                    this._filterMapsInView = !!e.target.checked;
+                    this._applyAllFilters();
+
+                    if (e.target.checked) {
+                        this._addMapMoveListener();
+                    }
+                });
+
+                const filterMapsInViewLabel = filterMapsInView.closest('label');
+                if (filterMapsInViewLabel) {
+                    filterMapsInViewLabel.addEventListener('click', (e) => {
+                        if (e.target.tagName !== 'SL-CHECKBOX') {
+                            e.preventDefault();
+                            filterMapsInView.checked = !filterMapsInView.checked;
+                            this._filterMapsInView = !!filterMapsInView.checked;
+                            this._applyAllFilters();
+
+                            if (filterMapsInView.checked) {
+                                this._addMapMoveListener();
+                            }
+                        }
+                    });
+                }
+
+                if (this._filterMapsInView) {
+                    this._addMapMoveListener();
+                    this._applyFiltersWhenReady();
+                }
+            }
         }, 100);
+    }
+
+    /**
+     * Apply filters when map and registry are ready
+     */
+    _applyFiltersWhenReady() {
+        const checkReady = () => {
+            if (this._map && this._map.isStyleLoaded() && window.layerRegistry && window.layerRegistry._initialized) {
+                this._applyAllFilters();
+            } else {
+                setTimeout(checkReady, 100);
+            }
+        };
+        checkReady();
+    }
+
+    /**
+     * Add map move listener to update filters on viewport change
+     */
+    _addMapMoveListener() {
+        if (this._mapMoveListenerAdded || !this._map) return;
+
+        const updateFiltersOnMove = () => {
+            if (this._filterMapsInView) {
+                this._applyAllFilters();
+            }
+        };
+
+        this._map.on('moveend', updateFiltersOnMove);
+        this._mapMoveListenerAdded = true;
+    }
+
+    /**
+     * Get bounds for a layer (from layer config or parent atlas)
+     */
+    _getLayerBounds(layer) {
+        if (layer.bounds) {
+            return this._normalizeBounds(layer.bounds);
+        }
+
+        if (layer.bbox) {
+            return this._normalizeBounds(layer.bbox);
+        }
+
+        const atlasId = this._getAtlasIdForLayer(layer);
+        if (atlasId && window.layerRegistry) {
+            const atlasMetadata = window.layerRegistry.getAtlasMetadata(atlasId);
+            if (atlasMetadata) {
+                if (atlasMetadata.bounds) {
+                    return this._normalizeBounds(atlasMetadata.bounds);
+                }
+                if (atlasMetadata.bbox) {
+                    return this._normalizeBounds(atlasMetadata.bbox);
+                }
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * Normalize bounds to array format [west, south, east, north]
+     */
+    _normalizeBounds(bounds) {
+        if (!bounds) return null;
+
+        if (typeof bounds === 'string') {
+            const parts = bounds.split(',').map(s => parseFloat(s.trim()));
+            if (parts.length === 4 && parts.every(n => !isNaN(n))) {
+                return parts;
+            }
+            return null;
+        }
+
+        if (Array.isArray(bounds) && bounds.length === 4) {
+            return bounds;
+        }
+
+        if (bounds.type === 'Polygon' || bounds.type === 'MultiPolygon') {
+            return bounds;
+        }
+
+        return null;
+    }
+
+    /**
+     * Check if layer bounds intersect with current viewport
+     */
+    _boundsIntersectViewport(layerBounds) {
+        if (!this._map) return true;
+
+        if (!layerBounds) return false;
+
+        const mapBounds = this._map.getBounds();
+        const mapNorth = mapBounds.getNorth();
+        const mapSouth = mapBounds.getSouth();
+        const mapEast = mapBounds.getEast();
+        const mapWest = mapBounds.getWest();
+
+        let layerWest, layerSouth, layerEast, layerNorth;
+
+        if (Array.isArray(layerBounds)) {
+            if (layerBounds.length === 4) {
+                [layerWest, layerSouth, layerEast, layerNorth] = layerBounds;
+            } else {
+                return false;
+            }
+        } else if (layerBounds.type === 'Polygon' || layerBounds.type === 'MultiPolygon') {
+            const coords = layerBounds.type === 'Polygon'
+                ? layerBounds.coordinates[0]
+                : layerBounds.coordinates.flat(1);
+
+            const lngs = coords.map(c => c[0]);
+            const lats = coords.map(c => c[1]);
+            layerWest = Math.min(...lngs);
+            layerEast = Math.max(...lngs);
+            layerSouth = Math.min(...lats);
+            layerNorth = Math.max(...lats);
+        } else {
+            return false;
+        }
+
+        const intersects = !(
+            layerEast < mapWest ||
+            layerWest > mapEast ||
+            layerNorth < mapSouth ||
+            layerSouth > mapNorth
+        );
+
+        return intersects;
     }
 
     /**
@@ -1280,16 +1516,16 @@ export class MapLayerControl {
      */
     _updateSearchPlaceholder() {
         const searchInput = document.getElementById('layer-search-input');
-        if (!searchInput || !window.layerRegistry) return;
+        if (!searchInput) return;
 
         let layerCount = 0;
 
-        if (this._selectedAtlasFilter) {
+        if (this._selectedAtlasFilter && window.layerRegistry) {
             // Count layers in selected atlas
             const atlasLayers = window.layerRegistry.getAtlasLayers(this._selectedAtlasFilter);
             layerCount = atlasLayers.length;
         } else {
-            // Count all layers from current atlas
+            // Count all layers in state
             layerCount = this._state.groups.length;
         }
 
@@ -1400,6 +1636,9 @@ export class MapLayerControl {
                 currentLayerIds.add(group.id);
             });
 
+            let visibleCount = 0;
+            let hiddenCount = 0;
+
             // Apply visibility to existing layers
             layerGroups.forEach(groupElement => {
                 const groupId = groupElement.getAttribute('data-layer-id');
@@ -1418,11 +1657,32 @@ export class MapLayerControl {
                     atlasMatches = atlasId === selectedAtlas;
                 }
 
-                const toggleInput = groupElement.querySelector('.toggle-switch input[type="checkbox"]');
+                // Check if layer matches active maps filter
+                let activeMatches = true;
+                if (this._filterActiveMaps) {
+                    const toggleInput = groupElement.querySelector('.toggle-switch input[type="checkbox"]');
+                    activeMatches = toggleInput && toggleInput.checked;
+                }
+
+                // Check if layer matches maps in view filter
+                let viewMatches = true;
+                if (this._filterMapsInView) {
+                    const layerBounds = this._getLayerBounds(groupData);
+                    viewMatches = this._boundsIntersectViewport(layerBounds);
+                }
 
                 // Show if matches all filters
-                groupElement.style.display = (searchMatches && atlasMatches) ? '' : 'none';
+                const shouldShow = searchMatches && atlasMatches && activeMatches && viewMatches;
+                groupElement.style.display = shouldShow ? '' : 'none';
+
+                if (shouldShow) {
+                    visibleCount++;
+                } else {
+                    hiddenCount++;
+                }
             });
+
+            console.log(`[Filter] Result: ${visibleCount} visible, ${hiddenCount} hidden`);
 
             // Add cross-atlas search results dynamically (if not already in current atlas)
             if (isSearching && crossAtlasResults.length > 0) {
