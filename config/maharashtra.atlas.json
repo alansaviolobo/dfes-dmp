@@ -194,6 +194,64 @@
       }
     },
     {
+      "title": "Nashik Revised Draft Development Plan",
+      "description": "Draft Revised Development Plan of Nashik u/s 28(4) of Maharashtra\r\nRegional & Town Planning Act, 1966 \r\n\r\nNotified in 2015 vide https://nmc.gov.in/assets/admin/upload/download/32351_EnglishNotice.pdf\r\n\r\nFrom https://nmc.gov.in/home/getfrontpage/65/65/M",
+      "date": "",
+      "type": "tms",
+      "id": "mapwarper-101533",
+      "url": "https://mapwarper.net/maps/tile/101533/{z}/{x}/{y}.png",
+      "style": {
+        "raster-opacity": [
+          "interpolate",
+          [
+            "linear"
+          ],
+          [
+            "zoom"
+          ],
+          6,
+          0.95,
+          18,
+          0.8,
+          19,
+          0.3
+        ]
+      },
+      "attribution": "<a href='http://nmc.gov.in/assets/admin/upload/download/86144_NASHIKDPCOMBINEMAP-Model.pdf' target='_blank'>http://nmc.gov.in/assets/admin/upload/download/86144_NASHIKDPCOMBINEMAP-Model.pdf</a> via <a href='https://mapwarper.net/maps/101533' target='_blank'>MapWarper</a>",
+      "headerImage": "https://mapwarper.net/uploads/101533/thumb/NASHIKDPCOMBINEMAP-Model.png",
+      "bbox": "73.6714092,19.8869948,73.9471315,20.0960003",
+      "initiallyChecked": false
+    },
+    {
+      "title": "Nashik District Regional Plan",
+      "description": "Proposed landuse map notified in 2013 vide https://dtp.maharashtra.gov.in/wp-content/uploads/2024/11/RP_NASHIK_US_15_1_NOTI_21062013.pdf\r\n\r\nSourced from https://dtp.maharashtra.gov.in/home/downloads/rp/?cities=nashik",
+      "date": "",
+      "type": "tms",
+      "id": "mapwarper-101557",
+      "url": "https://mapwarper.net/maps/tile/101557/{z}/{x}/{y}.png",
+      "style": {
+        "raster-opacity": [
+          "interpolate",
+          [
+            "linear"
+          ],
+          [
+            "zoom"
+          ],
+          6,
+          0.95,
+          18,
+          0.8,
+          19,
+          0.3
+        ]
+      },
+      "attribution": "<a href='https://dtp.maharashtra.gov.in/wp-content/uploads/2024/11/RP_Nashik.jpg' target='_blank'>https://dtp.maharashtra.gov.in/wp-content/uploads/2024/11/RP_Nashik.jpg</a> via <a href='https://mapwarper.net/maps/101557' target='_blank'>MapWarper</a>",
+      "headerImage": "https://mapwarper.net/uploads/101557/thumb/RP_Nashik.png",
+      "bbox": "73.1319366,19.6069601,75.4532274,20.8870761",
+      "initiallyChecked": false
+    },
+    {
       "initiallyChecked": true,
       "id": "mapbox-satellite"
     }

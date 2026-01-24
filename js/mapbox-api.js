@@ -321,8 +321,6 @@ export class MapboxAPI {
                     return this._createGeoJSONLayer(groupId, config, visible);
                 case 'csv':
                     return this._createCSVLayer(groupId, config, visible);
-                case 'markers':
-                    return this._createMarkersLayer(groupId, config, visible);
                 case 'img':
                     return this._createImageLayer(groupId, config, visible);
                 case 'raster-style-layer':
@@ -371,8 +369,6 @@ export class MapboxAPI {
                     return this._updateGeoJSONLayerVisibility(groupId, config, visible);
                 case 'csv':
                     return this._updateCSVLayerVisibility(groupId, config, visible);
-                case 'markers':
-                    return this._updateMarkersLayerVisibility(groupId, config, visible);
                 case 'img':
                     return this._updateImageLayerVisibility(groupId, config, visible);
                 case 'raster-style-layer':
@@ -424,8 +420,6 @@ export class MapboxAPI {
                     return this._removeGeoJSONLayer(groupId, config);
                 case 'csv':
                     return this._removeCSVLayer(groupId, config);
-                case 'markers':
-                    return this._removeMarkersLayer(groupId, config);
                 case 'img':
                     return this._removeImageLayer(groupId, config);
                 case 'raster-style-layer':
@@ -1767,99 +1761,6 @@ export class MapboxAPI {
         return true;
     }
 
-    // Markers layer methods
-    async _createMarkersLayer(groupId, config, visible) {
-        const sourceId = `markers-${groupId}`;
-        const layerId = `${sourceId}-circles`;
-
-        if (!this._map.getSource(sourceId) && visible && config.dataUrl) {
-            try {
-                const response = await fetch(config.dataUrl);
-                const data = await response.text();
-
-                let geojson;
-                if (config.dataUrl.includes('spreadsheets.google.com')) {
-                    const parsedData = gstableToArray(JSON.parse(data.slice(47, -2)).table);
-                    geojson = {
-                        type: 'FeatureCollection',
-                        features: parsedData.map(row => ({
-                            type: 'Feature',
-                            geometry: {
-                                type: 'Point',
-                                coordinates: [row.Longitude || 0, row.Latitude || 0]
-                            },
-                            properties: row
-                        }))
-                    };
-                } else {
-                    throw new Error('Unsupported markers data source format');
-                }
-
-                const sourceConfig = {
-                    type: 'geojson',
-                    data: geojson
-                };
-
-                if (config.inspect?.id) {
-                    sourceConfig.promoteId = config.inspect.id;
-                }
-
-                // Add attribution if available
-                if (config.attribution) {
-                    sourceConfig.attribution = config.attribution;
-                }
-
-                this._map.addSource(sourceId, sourceConfig);
-
-                const layerConfig = this._createLayerConfig({
-                    id: layerId,
-                    type: 'circle',
-                    source: sourceId,
-                    style: {
-                        'circle-radius': config.style?.['circle-radius'] || 6,
-                        'circle-color': config.style?.['circle-color'] || '#FF0000',
-                        'circle-opacity': config.style?.['circle-opacity'] || 0.9,
-                        'circle-stroke-width': 1,
-                        'circle-stroke-color': '#ffffff'
-                    },
-                    visible
-                }, 'circle');
-
-                // Markers don't have an insertPosition parameter, but we can still use slot
-                this._addLayerWithSlot(layerConfig, LayerOrderManager.getInsertPosition(this._map, 'markers', null, config, this._orderedGroups));
-            } catch (error) {
-                console.error(`Error loading markers layer '${groupId}':`, error);
-                return false;
-            }
-        } else {
-            this._updateMarkersLayerVisibility(groupId, config, visible);
-        }
-
-        return true;
-    }
-
-    _updateMarkersLayerVisibility(groupId, config, visible) {
-        const layerId = `markers-${groupId}-circles`;
-        if (this._map.getLayer(layerId)) {
-            this._map.setLayoutProperty(layerId, 'visibility', visible ? 'visible' : 'none');
-        }
-        return true;
-    }
-
-    _removeMarkersLayer(groupId, config) {
-        const sourceId = `markers-${groupId}`;
-        const layerId = `${sourceId}-circles`;
-
-        if (this._map.getLayer(layerId)) {
-            this._map.removeLayer(layerId);
-        }
-        if (this._map.getSource(sourceId)) {
-            this._map.removeSource(sourceId);
-        }
-
-        return true;
-    }
-
     // Image layer methods
     async _createImageLayer(groupId, config, visible) {
         if (!this._map.getSource(groupId) && visible) {
@@ -2130,8 +2031,6 @@ export class MapboxAPI {
                     .filter(id => this._map.getLayer(id));
             case 'csv':
                 return [`csv-${groupId}-circle`].filter(id => this._map.getLayer(id));
-            case 'markers':
-                return [`markers-${groupId}-circles`].filter(id => this._map.getLayer(id));
             case 'img':
             case 'raster-style-layer':
                 return [config.styleLayer || groupId];

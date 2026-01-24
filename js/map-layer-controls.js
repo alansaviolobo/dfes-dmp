@@ -1156,8 +1156,7 @@ export class MapLayerControl {
                         layerId.includes('vector-layer-') ||
                         layerId.includes('geojson-') ||
                         layerId.includes('csv-') ||
-                        layerId.includes('tms-layer-') ||
-                        layerId.includes('markers-')
+                        layerId.includes('tms-layer-')
                     );
                 });
 

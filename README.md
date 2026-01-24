@@ -36,7 +36,7 @@ global space.
 
 ## Background
 
-The [74th Amendment to the Constitution of India](https://www.india.gov.in/my-government/constitution-india/amendments/constitution-india-seventy-fourth-amendment-act-1992) that empowered local bodies with greater democratic powers specifically mentioned the common requirement of spatial planning between urban and rural areas.
+The [74th Amendment to the Constitution of India](https://www.india.gov.in/my-government/constitution-india/amendments/constitution-india-seventy-fourth-amendment-act-1992) added the [12th Schedule](https://www.mea.gov.in/Images/pdf1/S12.pdf) that empowered local bodies with greater democratic powers for local governance specifically the common requirement of spatial planning between urban and rural areas.
 
 > 243ZD (3) (A) (i) matters of common interest between the Panchayats and the Municipalities including spatial planning, sharing of water and other physical and natural resources, the integrated development of infrastructure and environmental conservation
 > https://www.india.gov.in/my-government/constitution-india/amendments/constitution-india-seventy-fourth-amendment-act-1992
