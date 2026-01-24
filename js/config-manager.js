@@ -1,8 +1,136 @@
 /**
- * ConfigManager - Central configuration specification and validation for map layers
+ * ============================================================================
+ * ConfigManager - Central Configuration Specification for Map Layers
+ * ============================================================================
  *
- * Defines all supported layer types and their configuration schemas.
- * Used by MapLayerControl and MapboxAPI for rendering different layer types.
+ * ⚠️  IMPORTANT: This is the SINGLE SOURCE OF TRUTH for all layer schemas
+ * ⚠️  ALL configuration changes MUST start here and be documented below
+ *
+ * FILE STRUCTURE:
+ * ---------------
+ * 1. Documentation (THIS SECTION)
+ * 2. LAYER_TYPES constants (line 110+)
+ * 3. LAYER_SPECIFICATIONS definitions (line 115+)
+ * 4. ConfigManager class with utility methods (line 485+)
+ * 5. Implementation guide and best practices (line 665+)
+ *
+ * This is the SINGLE SOURCE OF TRUTH for all layer configuration schemas.
+ * ALL schema changes MUST be managed here and documented below.
+ *
+ * OVERVIEW:
+ * ---------
+ * This file defines all supported layer types (style, vector, geojson, tms, etc.)
+ * and their configuration schemas. Used by MapLayerControl and MapboxAPI for
+ * rendering different layer types.
+ *
+ * HOW TO ADD A NEW LAYER TYPE:
+ * -----------------------------
+ * 1. Add the new type constant to LAYER_TYPES object below (line 8+)
+ *    Example: MY_TYPE: 'my-type'
+ *
+ * 2. Add the full specification to LAYER_SPECIFICATIONS object (line 21+)
+ *    - name: Human-readable name for the layer type
+ *    - description: Brief description of what this layer type does
+ *    - required: Array of required configuration fields
+ *    - optional: Array of optional configuration fields
+ *    - requiredOneOf: (optional) Array where at least one field is required
+ *    - properties: Detailed schema for each field with type, description, defaults
+ *    - example: A working example configuration
+ *
+ * 3. Implement rendering logic in MapboxAPI (js/mapbox-api.js):
+ *    - Add case in addLayer() method to handle your new type
+ *    - Implement source creation (addSource)
+ *    - Implement layer creation with appropriate Mapbox GL style
+ *    - Handle opacity controls if needed
+ *    - Add cleanup in removeLayer() method
+ *
+ * 4. Update Layer Creator UI (js/layer-creator-ui.js):
+ *    - Add new option to type dropdown in _createLayerTypeSelect()
+ *    - Add field validation for type-specific fields
+ *    - Update form fields based on new type requirements
+ *
+ * 5. Update documentation (/docs/API.md):
+ *    - Add example of new layer type with all supported fields
+ *    - Document use cases and limitations
+ *    - Add to table of supported layer types
+ *
+ * 6. Add tests (js/tests/):
+ *    - Create unit tests for new layer type validation
+ *    - Add integration tests for rendering behavior
+ *    - Test URL parameter handling if applicable
+ *
+ * FILES IMPACTED BY SCHEMA CHANGES:
+ * ----------------------------------
+ * CORE FILES (always check these):
+ * - js/config-manager.js (THIS FILE) - Update LAYER_SPECIFICATIONS
+ * - js/mapbox-api.js - Implement rendering logic for new type
+ * - js/layer-creator-ui.js - Update UI form for new fields
+ *
+ * OPTIONAL FILES (check if adding new capabilities):
+ * - js/map-feature-control.js - If layer supports feature inspection
+ * - js/map-layer-controls.js - If special UI controls needed
+ * - js/url-manager.js - If new URL parameters needed
+ * - config/_defaults.json - Add default styling for new type
+ *
+ * DOCUMENTATION FILES:
+ * - /docs/API.md - Document new layer type and examples
+ * - CLAUDE.md - Update architecture overview if significant change
+ *
+ * TEST FILES:
+ * - js/tests/config-manager.test.js - Add validation tests
+ * - js/tests/mapbox-api.test.js - Add rendering tests
+ * - e2e/*.spec.js - Add end-to-end tests
+ *
+ * COMMON PROPERTY PATTERNS:
+ * -------------------------
+ * All layer types should support these standard properties:
+ * - id (required): Unique layer identifier
+ * - type (required): Layer type from LAYER_TYPES
+ * - title (optional): Display name in UI
+ * - description (optional): Layer description (supports HTML)
+ * - headerImage (optional): Header image URL for layer card
+ * - attribution (optional): Data attribution text
+ * - initiallyChecked (optional): Whether layer is visible on load
+ * - opacity (optional): Layer opacity (0-1)
+ * - style (optional): Type-specific Mapbox GL style properties
+ *
+ * VALIDATION:
+ * -----------
+ * Use ConfigManager.validateLayerConfig(config) to validate any layer config.
+ * This method checks required fields, known properties, and returns errors/warnings.
+ *
+ * EXAMPLES:
+ * ---------
+ * See LAYER_SPECIFICATIONS below for complete examples of each layer type.
+ * Copy the example and modify for your needs - all fields are documented inline.
+ *
+ * QUICK REFERENCE - MOST COMMON TASKS:
+ * -------------------------------------
+ * 1. Add new optional field to existing layer type:
+ *    → Update LAYER_SPECIFICATIONS[type].optional array (around line 110+)
+ *    → Add field to LAYER_SPECIFICATIONS[type].properties object
+ *    → Update example configuration
+ *    → Implement handling in mapbox-api.js addLayer() method
+ *    → Document in /docs/API.md
+ *
+ * 2. Make optional field required:
+ *    → Move from 'optional' array to 'required' array in specification
+ *    → Update validation tests
+ *    → Update all existing configs in /config/ to include field
+ *
+ * 3. Change default value:
+ *    → Update properties[field].default in specification
+ *    → Update config/_defaults.json if style-related
+ *
+ * 4. Add new layer type:
+ *    → See detailed guide in IMPLEMENTATION GUIDE section at bottom of file
+ *    → Follow step-by-step checklist
+ *
+ * 5. Deprecate a field:
+ *    → Move to 'optional' array with note in description
+ *    → Keep handling in mapbox-api.js for backwards compatibility
+ *    → Add migration guide in documentation
+ *    → Plan removal for next major version
  */
 
 export const LAYER_TYPES = {
@@ -387,6 +515,38 @@ export const LAYER_SPECIFICATIONS = {
     }
 };
 
+/**
+ * ConfigManager - Utility class for layer configuration management
+ *
+ * METHODS:
+ * --------
+ * - getLayerType(config): Extract layer type from config
+ * - getLayerSpec(type): Get specification for a layer type
+ * - getAllLayerTypes(): Get array of all supported layer types
+ * - validateLayerConfig(config): Validate config and return errors/warnings
+ * - getLayerDocumentation(type): Get human-readable documentation for type
+ * - generateLayerTemplate(type): Generate minimal config template for type
+ *
+ * USAGE:
+ * ------
+ * // Validate a configuration
+ * const result = ConfigManager.validateLayerConfig(myConfig);
+ * if (!result.valid) {
+ *     console.error('Validation errors:', result.errors);
+ *     console.warn('Warnings:', result.warnings);
+ * }
+ *
+ * // Get documentation for a layer type
+ * const docs = ConfigManager.getLayerDocumentation('geojson');
+ * console.log(docs.description);
+ * console.log('Required fields:', docs.required);
+ * console.log('Example:', docs.example);
+ *
+ * // Generate a template for a new layer
+ * const template = ConfigManager.generateLayerTemplate('vector');
+ * template.id = 'my-custom-layer';
+ * template.url = 'https://example.com/tiles/{z}/{x}/{y}.pbf';
+ */
 export class ConfigManager {
     static getLayerType(config) {
         return config?.type || null;
@@ -483,5 +643,221 @@ export class ConfigManager {
         return template;
     }
 }
+
+/**
+ * IMPLEMENTATION GUIDE FOR NEW LAYER TYPES
+ * =========================================
+ *
+ * STEP-BY-STEP IMPLEMENTATION CHECKLIST:
+ * ---------------------------------------
+ *
+ * □ 1. Define Schema (THIS FILE - js/config-manager.js)
+ *    - Add type constant to LAYER_TYPES
+ *    - Add complete specification to LAYER_SPECIFICATIONS
+ *    - Include all required/optional fields
+ *    - Document each property with type and description
+ *    - Provide working example
+ *
+ * □ 2. Implement Rendering (js/mapbox-api.js)
+ *    Location: MapboxAPI.addLayer() method
+ *
+ *    Add case statement:
+ *    ```javascript
+ *    case LAYER_TYPES.MY_TYPE:
+ *        // Create source
+ *        this.map.addSource(sourceId, {
+ *            type: 'geojson|raster|vector',
+ *            // ... source configuration
+ *        });
+ *
+ *        // Create layer(s)
+ *        this.map.addLayer({
+ *            id: layerId,
+ *            type: 'fill|line|circle|symbol|raster',
+ *            source: sourceId,
+ *            paint: {
+ *                // Apply config.style properties
+ *            },
+ *            layout: {
+ *                'visibility': 'visible'
+ *            }
+ *        });
+ *
+ *        // Store layer reference
+ *        this._layers.set(config.id, {
+ *            config,
+ *            mapboxLayerIds: [layerId],
+ *            sourceId
+ *        });
+ *        break;
+ *    ```
+ *
+ *    Cleanup in removeLayer():
+ *    ```javascript
+ *    if (this.map.getLayer(layerId)) {
+ *        this.map.removeLayer(layerId);
+ *    }
+ *    if (this.map.getSource(sourceId)) {
+ *        this.map.removeSource(sourceId);
+ *    }
+ *    ```
+ *
+ *    Opacity handling in setLayerOpacity():
+ *    Add case for your layer type's paint properties
+ *
+ * □ 3. Update Layer Creator UI (js/layer-creator-ui.js)
+ *    Location: _createLayerTypeSelect() method
+ *
+ *    Add to dropdown:
+ *    ```javascript
+ *    const option = document.createElement('sl-option');
+ *    option.value = LAYER_TYPES.MY_TYPE;
+ *    option.textContent = 'My Layer Type';
+ *    ```
+ *
+ *    Location: _updateFieldsForLayerType() method
+ *    Show/hide relevant form fields based on type
+ *
+ * □ 4. Add Default Styling (config/_defaults.json)
+ *    ```json
+ *    "my-type": {
+ *        "style": {
+ *            "fill-color": "#3b82f6",
+ *            "fill-opacity": 0.5
+ *        },
+ *        "opacity": 0.9
+ *    }
+ *    ```
+ *
+ * □ 5. Update Documentation (docs/API.md)
+ *    Add section with:
+ *    - Layer type description
+ *    - Complete example configuration
+ *    - Supported properties table
+ *    - Common use cases
+ *    - Known limitations
+ *
+ * □ 6. Write Tests
+ *    Unit tests (js/tests/config-manager.test.js):
+ *    - Test validation of required fields
+ *    - Test validation of optional fields
+ *    - Test error/warning messages
+ *
+ *    Integration tests (js/tests/mapbox-api.test.js):
+ *    - Test layer rendering
+ *    - Test layer removal
+ *    - Test opacity controls
+ *
+ *    E2E tests (e2e/*.spec.js):
+ *    - Test loading layer from config
+ *    - Test layer visibility toggle
+ *    - Test URL parameter handling
+ *
+ * PROPERTY NAMING CONVENTIONS:
+ * ----------------------------
+ * - Use camelCase for property names (e.g., sourceLayer, maxZoom)
+ * - Follow Mapbox GL naming for style properties (e.g., fill-color, line-width)
+ * - Boolean flags should be prefixed with 'is' or use adjectives (e.g., clustered, initiallyChecked)
+ * - Time/refresh intervals in milliseconds (e.g., refresh: 60000)
+ * - Opacity values as 0-1 range, not percentages
+ *
+ * MAPBOX GL LAYER TYPE MAPPING:
+ * ------------------------------
+ * Your layer type determines which Mapbox GL layer type to use:
+ * - Polygon data → 'fill' layer (with optional 'line' layer for borders)
+ * - Line data → 'line' layer
+ * - Point data → 'circle' or 'symbol' layer
+ * - Raster data → 'raster' layer
+ * - Text labels → 'symbol' layer
+ *
+ * OPACITY HANDLING:
+ * -----------------
+ * Different Mapbox GL layer types use different opacity properties:
+ * - fill: fill-opacity
+ * - line: line-opacity
+ * - circle: circle-opacity
+ * - symbol: icon-opacity, text-opacity
+ * - raster: raster-opacity
+ *
+ * Implement in MapboxAPI.setLayerOpacity() and _applyOpacityToLayers()
+ *
+ * FEATURE INSPECTION:
+ * -------------------
+ * If your layer type supports feature inspection (click to see properties):
+ * 1. Add 'inspect' property to optional fields
+ * 2. Register layers with MapFeatureStateManager in addLayer()
+ * 3. Ensure features have unique IDs for state tracking
+ *
+ * CLUSTERING:
+ * -----------
+ * For point-based layers that should support clustering:
+ * 1. Add clustering properties to schema (clustered, clusterMaxZoom, clusterRadius)
+ * 2. Set cluster options when creating GeoJSON source
+ * 3. Create separate layers for clusters vs unclustered points
+ *
+ * REFRESH/REAL-TIME DATA:
+ * -----------------------
+ * For layers that need periodic updates:
+ * 1. Add 'refresh' property (interval in milliseconds)
+ * 2. Implement setInterval in addLayer() to refetch data
+ * 3. Store interval ID for cleanup in removeLayer()
+ *
+ * TIME-BASED LAYERS:
+ * ------------------
+ * For layers with temporal data (e.g., satellite imagery):
+ * 1. Add 'urlTimeParam' property for time template string
+ * 2. Implement time slider UI if needed
+ * 3. Update URL when time changes using string replacement
+ *
+ * TESTING YOUR IMPLEMENTATION:
+ * -----------------------------
+ * 1. Create test config in config/index.atlas.json
+ * 2. Load map and verify layer renders correctly
+ * 3. Test toggle on/off functionality
+ * 4. Test opacity slider
+ * 5. Test feature inspection (if applicable)
+ * 6. Test URL parameters: ?atlas=index&layers=your-layer-id
+ * 7. Test layer removal and memory cleanup
+ * 8. Check browser console for errors/warnings
+ * 9. Verify ConfigManager.validateLayerConfig() passes
+ * 10. Run automated tests: npm test
+ *
+ * DEBUGGING TIPS:
+ * ---------------
+ * - Check browser console for Mapbox GL errors
+ * - Use MapboxAPI._layers Map to inspect registered layers
+ * - Verify source exists: map.getSource(sourceId)
+ * - Verify layer exists: map.getLayer(layerId)
+ * - Check layer visibility: map.getLayoutProperty(layerId, 'visibility')
+ * - Inspect paint properties: map.getPaintProperty(layerId, 'fill-color')
+ * - Use Mapbox GL Inspector browser extension for debugging
+ *
+ * PERFORMANCE CONSIDERATIONS:
+ * ---------------------------
+ * - Vector tiles: Set appropriate maxzoom for tile generation
+ * - GeoJSON: Consider clustering for >1000 points
+ * - Raster: Use appropriate tile size (256x256 or 512x512)
+ * - Refresh intervals: Don't poll too frequently (minimum 5000ms)
+ * - Feature inspection: Limit inspectable features with filters
+ *
+ * COMMON PITFALLS:
+ * ----------------
+ * - Forgetting to remove sources when removing layers (memory leak)
+ * - Not handling layer removal before source removal (Mapbox error)
+ * - Using wrong opacity property for layer type
+ * - Not validating config before rendering
+ * - Hardcoding layer IDs instead of generating unique ones
+ * - Not clearing intervals/timeouts in cleanup
+ * - Missing error handling for network requests
+ * - Not testing with invalid/malformed data
+ *
+ * NEED HELP?
+ * ----------
+ * - Review existing layer type implementations in mapbox-api.js
+ * - Check LAYER_SPECIFICATIONS examples below
+ * - Consult Mapbox GL JS documentation: https://docs.mapbox.com/mapbox-gl-js/
+ * - Run validation: ConfigManager.validateLayerConfig(yourConfig)
+ * - Check API docs: /docs/API.md
+ */
 
 export default ConfigManager;
