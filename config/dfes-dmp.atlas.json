@@ -5,6 +5,7 @@
   "url": "https://github.com/alansaviolobo/dfes-dmp/blob/main/config/dfes-dmp.atlas.json",
   "color": "#ff0d00",
   "map": {
+    "style": "mapbox://styles/planemad/cm3gyibd3004x01qz08rohcsg",
     "center": [
       74,
       15.4
@@ -223,25 +224,9 @@
       "initiallyChecked": true,
       "url": "https://raw.githubusercontent.com/publicmap/goa-fire-trucks-geojson/refs/heads/data/data/goa-fire-trucks.geojson",
       "style": {
-        "circle-color": [
-          "match",
-          [
-            "get",
-            "Status"
-          ],
-          "RUNNING",
-          "green",
-          "IDLE",
-          "yellow",
-          "STOP",
-          "red",
-          "INACTIVE",
-          "grey",
-          "black"
-        ],
-        "circle-radius": 6,
-        "circle-stroke-width": 2,
-        "circle-stroke-color": "#000000"
+        "icon-image": "assets/map-layers/dfes-dmp/icons/fire-appliances.png",
+        "icon-size": 1,
+        "icon-allow-overlap": true
       },
       "inspect": {
         "id": "Vehicle_No",
@@ -270,10 +255,9 @@
       "initiallyChecked": true,
       "url": "https://raw.githubusercontent.com/alansaviolobo/google-sheets-to-json-converter/refs/heads/data/data/Fire-Stations.min.geojson",
       "style": {
-        "circle-color": "#C62828",
-        "circle-radius": 6,
-        "circle-stroke-width": 1.5,
-        "circle-stroke-color": "#000000"
+        "icon-image": "assets/map-layers/dfes-dmp/icons/fire-stations.png",
+        "icon-size": 1,
+        "icon-allow-overlap": true
       },
       "inspect": {
         "id": "Id",
