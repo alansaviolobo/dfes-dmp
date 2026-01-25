@@ -1415,9 +1415,10 @@ export class MapboxAPI {
         const userHasLineStyles = config.style && (config.style['line-color'] || config.style['line-width']);
         const userHasTextStyles = config.style && config.style['text-field'];
         const userHasCircleStyles = config.style && (config.style['circle-radius'] || config.style['circle-color']);
+        const userHasIconStyles = config.style && config.style['icon-image'];
 
         // If user has only line styles defined (with or without text), treat this as a linestring layer and don't apply fill styles
-        const userOnlyHasLineStyles = userHasLineStyles && !userHasFillStyles && !userHasCircleStyles;
+        const userOnlyHasLineStyles = userHasLineStyles && !userHasFillStyles && !userHasCircleStyles && !userHasIconStyles;
 
         // Check if fill layer should be created (user styles or defaults)
         // If user only has line styles, don't create fill layer even if defaults exist
@@ -1492,13 +1493,22 @@ export class MapboxAPI {
             this._addLayerWithSlot(circleLayerConfig, LayerOrderManager.getInsertPosition(this._map, 'vector', 'circle', config, this._orderedGroups));
         }
 
-        // Add text layer if text properties are defined
-        if (hasTextStyles) {
+        // Add text or icon layer if symbol properties are defined
+        if (hasTextStyles || userHasIconStyles) {
             // Filter style to only include symbol/text-related properties
             const symbolStyle = this._filterStyleForLayerType(config.style, 'symbol');
 
-            const textLayerConfig = this._createLayerConfig({
-                id: `${sourceId}-label${idSuffix}`,
+            // If it's an icon layer, we need to make sure the image is loaded
+            if (userHasIconStyles) {
+                const iconPath = config.style['icon-image'];
+                // Only load if it looks like a path/URL and not a pre-existing sprite icon
+                if (iconPath.includes('/') || iconPath.includes('.') || iconPath.startsWith('http')) {
+                    this._ensureIconLoaded(iconPath);
+                }
+            }
+
+            const symbolLayerConfig = this._createLayerConfig({
+                id: `${sourceId}-symbol${idSuffix}`,
                 groupId: groupId,
                 type: 'symbol',
                 source: sourceId,
@@ -1507,7 +1517,7 @@ export class MapboxAPI {
                 ...(unclusteredFilter && { filter: unclusteredFilter })
             }, 'symbol');
 
-            this._addLayerWithSlot(textLayerConfig, LayerOrderManager.getInsertPosition(this._map, 'vector', 'symbol', config, this._orderedGroups));
+            this._addLayerWithSlot(symbolLayerConfig, LayerOrderManager.getInsertPosition(this._map, 'vector', 'symbol', config, this._orderedGroups));
         }
 
         // Add cluster layers if enabled
@@ -1574,6 +1584,7 @@ export class MapboxAPI {
                         `${sourceId}-fill-${suffix}`,
                         `${sourceId}-line-${suffix}`,
                         `${sourceId}-label-${suffix}`,
+                        `${sourceId}-symbol-${suffix}`,
                         `${sourceId}-circle-${suffix}`,
                         `${sourceId}-clusters-${suffix}`,
                         `${sourceId}-cluster-count-${suffix}`
@@ -1593,6 +1604,7 @@ export class MapboxAPI {
             `${sourceId}-fill`,
             `${sourceId}-line`,
             `${sourceId}-label`,
+            `${sourceId}-symbol`,
             `${sourceId}-circle`,
             `${sourceId}-clusters`,
             `${sourceId}-cluster-count`
@@ -1617,6 +1629,7 @@ export class MapboxAPI {
                         `${sourceId}-fill-${suffix}`,
                         `${sourceId}-line-${suffix}`,
                         `${sourceId}-label-${suffix}`,
+                        `${sourceId}-symbol-${suffix}`,
                         `${sourceId}-circle-${suffix}`,
                         `${sourceId}-clusters-${suffix}`,
                         `${sourceId}-cluster-count-${suffix}`
@@ -1642,6 +1655,7 @@ export class MapboxAPI {
             `${sourceId}-fill`,
             `${sourceId}-line`,
             `${sourceId}-label`,
+            `${sourceId}-symbol`,
             `${sourceId}-circle`,
             `${sourceId}-clusters`,
             `${sourceId}-cluster-count`
@@ -1679,6 +1693,8 @@ export class MapboxAPI {
                     setOp(`${sourceId}-fill-${suffix}`, 'fill-opacity', finalOpacity * 0.5);
                     setOp(`${sourceId}-line-${suffix}`, 'line-opacity', finalOpacity);
                     setOp(`${sourceId}-label-${suffix}`, 'text-opacity', finalOpacity);
+                    setOp(`${sourceId}-symbol-${suffix}`, 'icon-opacity', finalOpacity);
+                    setOp(`${sourceId}-symbol-${suffix}`, 'text-opacity', finalOpacity);
                     setOp(`${sourceId}-circle-${suffix}`, 'circle-opacity', finalOpacity);
                     setOp(`${sourceId}-clusters-${suffix}`, 'circle-opacity', finalOpacity);
                     setOp(`${sourceId}-cluster-count-${suffix}`, 'text-opacity', finalOpacity);
@@ -1697,6 +1713,10 @@ export class MapboxAPI {
         }
         if (this._map.getLayer(`${sourceId}-label`)) {
             this._map.setPaintProperty(`${sourceId}-label`, 'text-opacity', finalOpacity);
+        }
+        if (this._map.getLayer(`${sourceId}-symbol`)) {
+            this._map.setPaintProperty(`${sourceId}-symbol`, 'icon-opacity', finalOpacity);
+            this._map.setPaintProperty(`${sourceId}-symbol`, 'text-opacity', finalOpacity);
         }
         if (this._map.getLayer(`${sourceId}-circle`)) {
             this._map.setPaintProperty(`${sourceId}-circle`, 'circle-opacity', finalOpacity);
@@ -1807,6 +1827,7 @@ export class MapboxAPI {
             `${sourceId}-fill`,
             `${sourceId}-line`,
             `${sourceId}-label`,
+            `${sourceId}-symbol`,
             `${sourceId}-circle`,
             `${sourceId}-clusters`,
             `${sourceId}-cluster-count`
@@ -1834,6 +1855,7 @@ export class MapboxAPI {
             `${sourceId}-fill`,
             `${sourceId}-line`,
             `${sourceId}-label`,
+            `${sourceId}-symbol`,
             `${sourceId}-circle`,
             `${sourceId}-clusters`,
             `${sourceId}-cluster-count`
@@ -1914,6 +1936,23 @@ export class MapboxAPI {
             img.onerror = reject;
             img.src = url;
         });
+    }
+
+    /**
+     * Ensure an icon is loaded into the map
+     * @param {string} iconPath - Path or URL to the icon image
+     */
+    async _ensureIconLoaded(iconPath) {
+        if (!this._map.hasImage(iconPath)) {
+            try {
+                const image = await this._loadImage(iconPath);
+                if (!this._map.hasImage(iconPath)) {
+                    this._map.addImage(iconPath, image);
+                }
+            } catch (error) {
+                console.error(`Failed to load icon: ${iconPath}`, error);
+            }
+        }
     }
 
     _setupImageRefresh(groupId, config) {
