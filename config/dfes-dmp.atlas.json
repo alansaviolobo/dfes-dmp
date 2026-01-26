@@ -470,6 +470,17 @@
       "type": "geojson",
       "initiallyChecked": true,
       "url": "https://dfes.goa.gov.in/disaster-management/live-calls/geojson/",
+      "blink": {
+        "condition": [
+          "==",
+          [
+            "get",
+            "type"
+          ],
+          "Fire related"
+        ],
+        "interval": 800
+      },
       "style": {
         "icon-image": [
           "match",
