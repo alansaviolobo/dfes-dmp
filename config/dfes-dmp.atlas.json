@@ -28,7 +28,7 @@
       "headerImage": "assets/map-layers/dfes-dmp/all-image-sprite.png",
       "headerPosition": "0 0",
       "type": "geojson",
-      "initiallyChecked": false,
+      "initiallyChecked": true,
       "url": "https://raw.githubusercontent.com/alansaviolobo/google-sheets-to-json-converter/refs/heads/data/data/Ambulances.min.geojson",
       "style": {
         "circle-color": "#B71C1C",
@@ -132,7 +132,7 @@
       "headerImage": "assets/map-layers/dfes-dmp/all-image-sprite.png",
       "headerPosition": "0 -100px",
       "type": "geojson",
-      "initiallyChecked": false,
+      "initiallyChecked": true,
       "url": "https://raw.githubusercontent.com/alansaviolobo/google-sheets-to-json-converter/refs/heads/data/data/Cyclone-Shelters.min.geojson",
       "style": {
         "circle-color": "#4527A0",
@@ -227,7 +227,7 @@
       "headerPosition": "0 -200px",
       "type": "geojson",
       "refresh": 60000,
-      "initiallyChecked": true,
+      "initiallyChecked": false,
       "url": "https://raw.githubusercontent.com/publicmap/goa-fire-trucks-geojson/refs/heads/data/data/goa-fire-trucks.geojson",
       "style": {
         "icon-image": "assets/map-layers/dfes-dmp/icons/fire-appliances.png",
@@ -415,7 +415,7 @@
       "headerImage": "assets/map-layers/dfes-dmp/all-image-sprite.png",
       "headerPosition": "0 -400px",
       "type": "geojson",
-      "initiallyChecked": false,
+      "initiallyChecked": true,
       "url": "https://raw.githubusercontent.com/alansaviolobo/google-sheets-to-json-converter/refs/heads/data/data/Hospitals.min.geojson",
       "style": {
         "circle-color": "#1B5E20",
@@ -632,7 +632,7 @@
       "headerImage": "assets/map-layers/dfes-dmp/all-image-sprite.png",
       "headerPosition": "0 -600px",
       "type": "geojson",
-      "initiallyChecked": false,
+      "initiallyChecked": true,
       "url": "https://raw.githubusercontent.com/alansaviolobo/google-sheets-to-json-converter/refs/heads/data/data/Police-Stations.min.geojson",
       "style": {
         "circle-color": "#0D1B4C",
@@ -823,39 +823,6 @@
       }
     },
     {
-      "id": "nasa-firms",
-      "title": "NASA FIRMS",
-      "description": "Satellite-based active fire and thermal anomaly detection",
-      "attribution": "<a href='https://firms.modaps.eosdis.nasa.gov/'>NASA FIRMS</a>",
-      "headerImage": "assets/map-layers/dfes-dmp/all-image-sprite.png",
-      "headerPosition": "0 -900px",
-      "type": "geojson",
-      "initiallyChecked": false,
-      "url": "https://raw.githubusercontent.com/alansaviolobo/google-sheets-to-json-converter/refs/heads/data/data/NASA-FIRMS.min.geojson",
-      "paint": {
-        "circle-radius": 6,
-        "circle-color": "#FF0000"
-      },
-      "style": {
-        "circle-color": "#00695C",
-        "circle-stroke-width": 1.5,
-        "circle-stroke-color": "#000000"
-      },
-      "inspect": {
-        "id": "satellite",
-        "title": "satellite",
-        "label": "satellite",
-        "fields": [
-          "satellite",
-          "instrument"
-        ],
-        "fieldTitles": [
-          "satellite",
-          "instrument"
-        ]
-      }
-    },
-    {
       "id": "imd-alerts",
       "title": "IMD Alerts",
       "description": "Official weather forecasts, warnings, and advisories",
@@ -901,7 +868,7 @@
       "headerImage": "assets/map-layers/dfes-dmp/all-image-sprite.png",
       "headerPosition": "0 -900px",
       "type": "geojson",
-      "initiallyChecked": true,
+      "initiallyChecked": false,
       "url": "https://raw.githubusercontent.com/alansaviolobo/sachet-dmp-geojson-layer/refs/heads/data/data/IMDAlerts.geojson",
       "paint": {
         "circle-radius": 10,
@@ -939,7 +906,7 @@
       "headerImage": "assets/map-layers/dfes-dmp/all-image-sprite.png",
       "headerPosition": "0 -900px",
       "type": "geojson",
-      "initiallyChecked": true,
+      "initiallyChecked": false,
       "url": "https://raw.githubusercontent.com/alansaviolobo/sachet-dmp-geojson-layer/refs/heads/data/data/IMDAlerts2.geojson",
       "paint": {
         "circle-radius": 10,
@@ -977,7 +944,7 @@
       "headerImage": "assets/map-layers/dfes-dmp/all-image-sprite.png",
       "headerPosition": "0 -900px",
       "type": "geojson",
-      "initiallyChecked": true,
+      "initiallyChecked": false,
       "url": "https://raw.githubusercontent.com/alansaviolobo/sachet-dmp-geojson-layer/refs/heads/data/data/cloudBurst.geojson",
       "paint": {
         "circle-radius": 10,
@@ -1015,7 +982,7 @@
       "headerImage": "assets/map-layers/dfes-dmp/all-image-sprite.png",
       "headerPosition": "0 -900px",
       "type": "geojson",
-      "initiallyChecked": true,
+      "initiallyChecked": false,
       "url": "https://raw.githubusercontent.com/alansaviolobo/sachet-dmp-geojson-layer/refs/heads/data/data/currentWeather.geojson",
       "paint": {
         "circle-radius": 10,
@@ -1053,7 +1020,7 @@
       "headerImage": "assets/map-layers/dfes-dmp/all-image-sprite.png",
       "headerPosition": "0 -900px",
       "type": "geojson",
-      "initiallyChecked": true,
+      "initiallyChecked": false,
       "url": "https://raw.githubusercontent.com/alansaviolobo/sachet-dmp-geojson-layer/refs/heads/data/data/cwc.geojson",
       "paint": {
         "circle-radius": 10,
@@ -1091,7 +1058,7 @@
       "headerImage": "assets/map-layers/dfes-dmp/all-image-sprite.png",
       "headerPosition": "0 -900px",
       "type": "geojson",
-      "initiallyChecked": true,
+      "initiallyChecked": false,
       "url": "https://raw.githubusercontent.com/alansaviolobo/sachet-dmp-geojson-layer/refs/heads/data/data/earthquake.geojson",
       "paint": {
         "circle-radius": 10,
@@ -1129,45 +1096,7 @@
       "headerImage": "assets/map-layers/dfes-dmp/all-image-sprite.png",
       "headerPosition": "0 -900px",
       "type": "geojson",
-      "initiallyChecked": true,
-      "url": "https://raw.githubusercontent.com/alansaviolobo/sachet-dmp-geojson-layer/refs/heads/data/data/ffAlerts.geojson",
-      "paint": {
-        "circle-radius": 10,
-        "circle-color": "#FF0000"
-      },
-      "style": {
-        "text-color": "white",
-        "text-halo-color": "#0084f7",
-        "text-halo-width": 2,
-        "text-size": 12,
-        "line-color": "#0084f7",
-        "line-width": 2,
-        "fill-color": "#0084f7",
-        "fill-opacity": 0.1
-      },
-      "inspect": {
-        "id": "location",
-        "title": "name",
-        "label": "name",
-        "fields": [
-          "name",
-          "location"
-        ],
-        "fieldTitles": [
-          "name",
-          "location"
-        ]
-      }
-    },
-    {
-      "id": "ff-alerts",
-      "title": "FF Alerts",
-      "description": "Official weather forecasts, warnings, and advisories",
-      "attribution": "<a href='https://mausam.imd.gov.in'>India Meteorological Department, Goa</a>",
-      "headerImage": "assets/map-layers/dfes-dmp/all-image-sprite.png",
-      "headerPosition": "0 -900px",
-      "type": "geojson",
-      "initiallyChecked": true,
+      "initiallyChecked": false,
       "url": "https://raw.githubusercontent.com/alansaviolobo/sachet-dmp-geojson-layer/refs/heads/data/data/ffAlerts.geojson",
       "paint": {
         "circle-radius": 10,
@@ -1205,7 +1134,7 @@
       "headerImage": "assets/map-layers/dfes-dmp/all-image-sprite.png",
       "headerPosition": "0 -900px",
       "type": "geojson",
-      "initiallyChecked": true,
+      "initiallyChecked": false,
       "url": "https://raw.githubusercontent.com/alansaviolobo/sachet-dmp-geojson-layer/refs/heads/data/data/highWaveAlerts.geojson",
       "paint": {
         "circle-radius": 10,
@@ -1243,7 +1172,7 @@
       "headerImage": "assets/map-layers/dfes-dmp/all-image-sprite.png",
       "headerPosition": "0 -900px",
       "type": "geojson",
-      "initiallyChecked": true,
+      "initiallyChecked": false,
       "url": "https://raw.githubusercontent.com/alansaviolobo/sachet-dmp-geojson-layer/refs/heads/data/data/imdSeaPortWarnings.geojson",
       "paint": {
         "circle-radius": 10,
@@ -1281,7 +1210,7 @@
       "headerImage": "assets/map-layers/dfes-dmp/all-image-sprite.png",
       "headerPosition": "0 -900px",
       "type": "geojson",
-      "initiallyChecked": true,
+      "initiallyChecked": false,
       "url": "https://raw.githubusercontent.com/alansaviolobo/sachet-dmp-geojson-layer/refs/heads/data/data/swellSurgeALerts.geojson",
       "paint": {
         "circle-radius": 10,
@@ -1319,7 +1248,7 @@
       "headerImage": "assets/map-layers/dfes-dmp/all-image-sprite.png",
       "headerPosition": "0 -900px",
       "type": "geojson",
-      "initiallyChecked": true,
+      "initiallyChecked": false,
       "url": "https://raw.githubusercontent.com/alansaviolobo/sachet-dmp-geojson-layer/refs/heads/data/data/tsunamiAlerts.geojson",
       "paint": {
         "circle-radius": 10,
@@ -1346,6 +1275,39 @@
         "fieldTitles": [
           "name",
           "location"
+        ]
+      }
+    },
+    {
+      "id": "nasa-firms",
+      "title": "NASA FIRMS",
+      "description": "Satellite-based active fire and thermal anomaly detection",
+      "attribution": "<a href='https://firms.modaps.eosdis.nasa.gov/'>NASA FIRMS</a>",
+      "headerImage": "assets/map-layers/dfes-dmp/all-image-sprite.png",
+      "headerPosition": "0 -900px",
+      "type": "geojson",
+      "initiallyChecked": false,
+      "url": "https://raw.githubusercontent.com/alansaviolobo/google-sheets-to-json-converter/refs/heads/data/data/NASA-FIRMS.min.geojson",
+      "paint": {
+        "circle-radius": 6,
+        "circle-color": "#FF0000"
+      },
+      "style": {
+        "circle-color": "#00695C",
+        "circle-stroke-width": 1.5,
+        "circle-stroke-color": "#000000"
+      },
+      "inspect": {
+        "id": "satellite",
+        "title": "satellite",
+        "label": "satellite",
+        "fields": [
+          "satellite",
+          "instrument"
+        ],
+        "fieldTitles": [
+          "satellite",
+          "instrument"
         ]
       }
     },
