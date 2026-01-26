@@ -1500,11 +1500,8 @@ export class MapboxAPI {
 
             // If it's an icon layer, we need to make sure the image is loaded
             if (userHasIconStyles) {
-                const iconPath = config.style['icon-image'];
-                // Only load if it looks like a path/URL and not a pre-existing sprite icon
-                if (iconPath.includes('/') || iconPath.includes('.') || iconPath.startsWith('http')) {
-                    this._ensureIconLoaded(iconPath);
-                }
+                const iconImage = config.style['icon-image'];
+                this._ensureIconLoaded(iconImage);
             }
 
             const symbolLayerConfig = this._createLayerConfig({
@@ -1940,19 +1937,52 @@ export class MapboxAPI {
 
     /**
      * Ensure an icon is loaded into the map
-     * @param {string} iconPath - Path or URL to the icon image
+     * @param {string|Array} iconImage - Path or URL to the icon image, or a Mapbox expression
      */
-    async _ensureIconLoaded(iconPath) {
-        if (!this._map.hasImage(iconPath)) {
-            try {
-                const image = await this._loadImage(iconPath);
-                if (!this._map.hasImage(iconPath)) {
-                    this._map.addImage(iconPath, image);
+    async _ensureIconLoaded(iconImage) {
+        if (!iconImage) return;
+
+        const icons = this._extractIconsFromExpression(iconImage);
+        for (const iconPath of icons) {
+            if (!this._map.hasImage(iconPath)) {
+                try {
+                    const image = await this._loadImage(iconPath);
+                    if (!this._map.hasImage(iconPath)) {
+                        this._map.addImage(iconPath, image);
+                    }
+                } catch (error) {
+                    console.error(`Failed to load icon: ${iconPath}`, error);
                 }
-            } catch (error) {
-                console.error(`Failed to load icon: ${iconPath}`, error);
             }
         }
+    }
+
+    /**
+     * Extract all unique icon paths from a Mapbox expression or string
+     * @param {string|Array} expression - The icon-image value
+     * @returns {Set<string>} - Set of unique icon paths
+     * @private
+     */
+    _extractIconsFromExpression(expression) {
+        const icons = new Set();
+
+        const traverse = (expr) => {
+            if (typeof expr === 'string') {
+                // Only treat as icon path if it looks like a path/URL
+                if (expr.includes('/') || expr.includes('.') || expr.startsWith('http')) {
+                    icons.add(expr);
+                }
+            } else if (Array.isArray(expr)) {
+                // Skip the first element which is the operator (match, get, case, etc.)
+                // Start from index 1 and traverse nested arrays or strings
+                for (let i = 1; i < expr.length; i++) {
+                    traverse(expr[i]);
+                }
+            }
+        };
+
+        traverse(expression);
+        return icons;
     }
 
     _setupImageRefresh(groupId, config) {
