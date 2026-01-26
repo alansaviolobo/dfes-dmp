@@ -1,5 +1,5 @@
 {
-  "name": "Disaster Management Map Layer Configuration defined by DFES",
+  "name": "Disaster Resource Atlas",
   "areaOfInterest": "Goa, India",
   "version": "0.1.0",
   "url": "https://github.com/alansaviolobo/dfes-dmp/blob/main/config/dfes-dmp.atlas.json",
@@ -12,7 +12,13 @@
     ],
     "zoom": 9.1
   },
-  "atlases": [],
+  "atlases": ["dfes-dmp"],
+  "bbox": [
+    73.66,
+    14.88,
+    74.34,
+    15.82
+  ],
   "layers": [
     {
       "id": "ambulances",
