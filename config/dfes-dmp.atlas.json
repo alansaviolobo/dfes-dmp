@@ -31,10 +31,9 @@
       "initiallyChecked": true,
       "url": "https://raw.githubusercontent.com/alansaviolobo/google-sheets-to-json-converter/refs/heads/data/data/Ambulances.min.geojson",
       "style": {
-        "circle-color": "#B71C1C",
-        "circle-radius": 6,
-        "circle-stroke-width": 1.5,
-        "circle-stroke-color": "#000000"
+        "icon-image": "assets/map-layers/dfes-dmp/icons/ambulances.png",
+        "icon-size": 1,
+        "icon-allow-overlap": true
       },
       "inspect": {
         "id": "Vehicle_No",
@@ -63,10 +62,20 @@
       "clustered": true,
       "clusterRadius": 100,
       "style": {
-        "circle-color": "#1B5E20",
-        "circle-radius": 6,
-        "circle-stroke-width": 1.5,
-        "circle-stroke-color": "#000000"
+        "icon-image": [
+          "match",
+          [
+            "get",
+            "Gender"
+          ],
+          "Male",
+          "assets/map-layers/dfes-dmp/icons/apada-mitra.png",
+          "Female",
+          "assets/map-layers/dfes-dmp/icons/apada-sakhi.png",
+          "assets/map-layers/dfes-dmp/icons/apada-mitra.png"
+        ],
+        "icon-size": 1,
+        "icon-allow-overlap": true
       },
       "inspect": {
         "id": "Name",
@@ -95,10 +104,9 @@
       "initiallyChecked": false,
       "url": "https://raw.githubusercontent.com/alansaviolobo/google-sheets-to-json-converter/refs/heads/data/data/Civil-Supplies-Godowns.min.geojson",
       "style": {
-        "circle-color": "#4E342E",
-        "circle-radius": 6,
-        "circle-stroke-width": 1.5,
-        "circle-stroke-color": "#000000"
+        "icon-image": "assets/map-layers/dfes-dmp/icons/civil-supplies-godowns.png",
+        "icon-size": 1,
+        "icon-allow-overlap": true
       },
       "inspect": {
         "id": "Name",
@@ -135,10 +143,9 @@
       "initiallyChecked": true,
       "url": "https://raw.githubusercontent.com/alansaviolobo/google-sheets-to-json-converter/refs/heads/data/data/Cyclone-Shelters.min.geojson",
       "style": {
-        "circle-color": "#4527A0",
-        "circle-radius": 6,
-        "circle-stroke-width": 1.5,
-        "circle-stroke-color": "#000000"
+        "icon-image": "assets/map-layers/dfes-dmp/icons/cyclone-shelters.png",
+        "icon-size": 1,
+        "icon-allow-overlap": true
       },
       "inspect": {
         "id": "Name",
@@ -183,10 +190,9 @@
       "initiallyChecked": true,
       "url": "https://raw.githubusercontent.com/alansaviolobo/google-sheets-to-json-converter/refs/heads/data/data/Dam-Levels.min.geojson",
       "style": {
-        "circle-color": "#0D47A1",
-        "circle-radius": 6,
-        "circle-stroke-width": 1.5,
-        "circle-stroke-color": "#000000"
+        "icon-image": "assets/map-layers/dfes-dmp/icons/dam-levels.png",
+        "icon-size": 1,
+        "icon-allow-overlap": true
       },
       "inspect": {
         "id": "Name",
@@ -332,10 +338,9 @@
       "initiallyChecked": false,
       "url": "https://raw.githubusercontent.com/alansaviolobo/google-sheets-to-json-converter/refs/heads/data/data/HAM-Radio-Operators.min.geojson",
       "style": {
-        "circle-color": "#512DA8",
-        "circle-radius": 6,
-        "circle-stroke-width": 1.5,
-        "circle-stroke-color": "#000000"
+        "icon-image": "assets/map-layers/dfes-dmp/icons/ham-radio-operators.png",
+        "icon-size": 1,
+        "icon-allow-overlap": true
       },
       "inspect": {
         "id": "Name",
@@ -378,10 +383,9 @@
       "clustered": true,
       "clusterRadius": 100,
       "style": {
-        "circle-color": "#3E2723",
-        "circle-radius": 6,
-        "circle-stroke-width": 1.5,
-        "circle-stroke-color": "#000000"
+        "icon-image": "assets/map-layers/dfes-dmp/icons/heavy-machinery.png",
+        "icon-size": 1,
+        "icon-allow-overlap": true
       },
       "inspect": {
         "id": "Vehicle No",
@@ -418,10 +422,9 @@
       "initiallyChecked": true,
       "url": "https://raw.githubusercontent.com/alansaviolobo/google-sheets-to-json-converter/refs/heads/data/data/Hospitals.min.geojson",
       "style": {
-        "circle-color": "#1B5E20",
-        "circle-radius": 6,
-        "circle-stroke-width": 1.5,
-        "circle-stroke-color": "#000000"
+        "icon-image": "assets/map-layers/dfes-dmp/icons/hospitals.png",
+        "icon-size": 1,
+        "icon-allow-overlap": true
       },
       "inspect": {
         "id": "name",
@@ -468,31 +471,30 @@
       "initiallyChecked": true,
       "url": "https://dfes.goa.gov.in/disaster-management/live-calls/geojson/",
       "style": {
-        "circle-color": [
+        "icon-image": [
           "match",
           [
             "get",
             "type"
           ],
           "Fire related",
-          "#FF0000",
+          "assets/map-layers/dfes-dmp/icons/dfes-incidents.png",
           "Emergency/ Accidents",
-          "#0000FF",
+          "assets/map-layers/dfes-dmp/icons/dfes-incidents.png",
           "Meteorological",
-          "#FF9500",
+          "assets/map-layers/dfes-dmp/icons/dfes-incidents.png",
           "Biological",
-          "#00FFEE",
+          "assets/map-layers/dfes-dmp/icons/dfes-incidents.png",
           "Climatological",
-          "#050F40",
+          "assets/map-layers/dfes-dmp/icons/dfes-incidents.png",
           "Hydrological",
-          "#FFF700",
+          "assets/map-layers/dfes-dmp/icons/dfes-incidents.png",
           "Geological",
-          "#5C110C",
-          "#000000"
+          "assets/map-layers/dfes-dmp/icons/dfes-incidents.png",
+          "assets/map-layers/dfes-dmp/icons/dfes-incidents.png"
         ],
-        "circle-radius": 6,
-        "circle-stroke-width": 1.5,
-        "circle-stroke-color": "#000000"
+        "icon-size": 1,
+        "icon-allow-overlap": true
       },
       "inspect": {
         "id": "dsr_id",
@@ -607,10 +609,9 @@
       "initiallyChecked": false,
       "url": "https://raw.githubusercontent.com/alansaviolobo/google-sheets-to-json-converter/refs/heads/data/data/Mutual-Aid-Agencies.min.geojson",
       "style": {
-        "circle-color": "#263238",
-        "circle-radius": 6,
-        "circle-stroke-width": 1.5,
-        "circle-stroke-color": "#000000"
+        "icon-image": "assets/map-layers/dfes-dmp/icons/mutual-aid-agencies.png",
+        "icon-size": 1,
+        "icon-allow-overlap": true
       },
       "inspect": {
         "id": "name",
@@ -635,10 +636,9 @@
       "initiallyChecked": true,
       "url": "https://raw.githubusercontent.com/alansaviolobo/google-sheets-to-json-converter/refs/heads/data/data/Police-Stations.min.geojson",
       "style": {
-        "circle-color": "#0D1B4C",
-        "circle-radius": 6,
-        "circle-stroke-width": 1.5,
-        "circle-stroke-color": "#000000"
+        "icon-image": "assets/map-layers/dfes-dmp/icons/police-stations.png",
+        "icon-size": 1,
+        "icon-allow-overlap": true
       },
       "inspect": {
         "id": "name",
@@ -665,10 +665,9 @@
       "initiallyChecked": true,
       "url": "https://raw.githubusercontent.com/alansaviolobo/google-sheets-to-json-converter/refs/heads/data/data/River-Gauges.min.geojson",
       "style": {
-        "circle-color": "#01579B",
-        "circle-radius": 6,
-        "circle-stroke-width": 1.5,
-        "circle-stroke-color": "#000000"
+        "icon-image": "assets/map-layers/dfes-dmp/icons/river-flooding-gauges.png",
+        "icon-size": 1,
+        "icon-allow-overlap": true
       },
       "inspect": {
         "id": "Call Sign",
@@ -707,10 +706,9 @@
       "clustered": true,
       "clusterRadius": 100,
       "style": {
-        "circle-color": "#F9A825",
-        "circle-radius": 6,
-        "circle-stroke-width": 1.5,
-        "circle-stroke-color": "#000000"
+        "icon-image": "assets/map-layers/dfes-dmp/icons/schools.png",
+        "icon-size": 1,
+        "icon-allow-overlap": true
       },
       "inspect": {
         "id": "Name",
