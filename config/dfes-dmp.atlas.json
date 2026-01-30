@@ -78,18 +78,20 @@
         "icon-allow-overlap": true
       },
       "inspect": {
-        "id": "Name",
-        "title": "Name",
+        "id": "Full Name",
+        "title": "Full Name",
         "label": "Name",
         "fields": [
-          "Name",
+          "Full Name",
           "Mobile",
-          "Mobile_2"
+          "Mobile_2",
+          "ID_Card"
         ],
         "fieldTitles": [
-          "Name",
+          "Full Name",
           "Mobile",
-          "Mobile_2"
+          "Mobile_2",
+          "ID_Card"
         ]
       }
     },
