@@ -4177,6 +4177,39 @@ Styles moved from layer-settings.js
     font-weight: 500;
 }
 
+/* Image Modal Styles */
+.feature-image-dialog::part(panel) {
+    background-color: #111827;
+    color: #f9fafb;
+    border: 1px solid #374151;
+}
+
+.feature-image-dialog::part(header) {
+    border-bottom: 1px solid #374151;
+}
+
+.feature-image-dialog::part(title) {
+    color: #f9fafb;
+    font-weight: 600;
+}
+
+.feature-image-dialog::part(close-button) {
+    color: #9ca3af;
+}
+
+.feature-image-dialog::part(footer) {
+    border-top: 1px solid #374151;
+}
+
+.feature-image-dialog .image-container img {
+    box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.4), 0 8px 10px -6px rgba(0, 0, 0, 0.4);
+    transition: transform 0.3s ease;
+}
+
+.feature-image-dialog .image-container img:hover {
+    transform: scale(1.02);
+}
+
 .map-feature-footer-btn {
     background: transparent;
     border: 1px solid #0ea5e9;
