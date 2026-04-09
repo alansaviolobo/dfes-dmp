@@ -1,0 +1,74 @@
+{
+  "name": "Disaster Resource Atlas",
+  "areaOfInterest": "Goa, India",
+  "version": "0.1.0",
+  "url": "https://github.com/alansaviolobo/dfes-dmp/blob/main/config/dfes-dmp.atlas.json",
+  "color": "#ff0d00",
+  "map": {
+    "style": "mapbox://styles/planemad/cm3gyibd3004x01qz08rohcsg",
+    "center": [
+      73.900132,
+      15.605249
+    ],
+    "zoom": 16.7
+  },
+  "atlases": [
+    "dfes-dmp"
+  ],
+  "bbox": [
+    73.66,
+    14.88,
+    74.34,
+    15.82
+  ],
+  "layers": [
+    {
+      "id": "fire-appliances",
+      "title": "Fire Appliances",
+      "description": "Fire-fighting and rescue vehicles with real-time availability status",
+      "attribution": "<a href='https://dfes.goa.gov.in'>Directorate of Fire & Emergency Services, Goa.</a>",
+      "headerImage": "assets/map-layers/dfes-dmp/all-image-sprite.png",
+      "headerPosition": "0 -200px",
+      "type": "geojson",
+      "refresh": 60000,
+      "initiallyChecked": false,
+      "url": "https://dfes.goa.gov.in/dfes-goa-fire-appliance-api.geojson/",
+      "style": {
+        "icon-image": "assets/map-layers/dfes-dmp/icons/fire-appliances.png",
+        "icon-size": 1,
+        "icon-allow-overlap": true
+      },
+      "inspect": {
+        "id": "Vehicle_No",
+        "title": "Vehicle_No",
+        "label": "Vehicle_No",
+        "fields": [
+          "Vehicle_No",
+          "Branch",
+          "Datetime"
+        ],
+        "fieldTitles": [
+          "Vehicle No",
+          "Station",
+          "Last Updated"
+        ]
+      }
+    },
+    {
+      "id": "bhuvan-satellite",
+      "title": "Bhuvan Satellite Imagery",
+      "description": "High-resolution satellite imagery from ISRO Bhuvan",
+      "tags": [
+        "basemap",
+        "satellite"
+      ],
+      "type": "wms",
+      "url": "https://bhuvan-ras1.nrsc.gov.in/tilecache/tilecache.py?service=WMS&version=1.1.1&request=GetMap&layers=bhuvan_ocm_wbase&styles=&format=image/jpeg&transparent=false",
+      "proxyUrl": "https://amche-atlas-production.up.railway.app/proxy",
+      "proxyReferer": "https://bhuvan.nrsc.gov.in/",
+      "attribution": "<a href='https://bhuvan.nrsc.gov.in/ngmaps?mode=Hybrid#3.65/22.91/82.78'>NRSC/ISRO Bhuvan</a>",
+      "maxzoom": 19,
+      "initiallyChecked": true
+    }
+  ]
+}
