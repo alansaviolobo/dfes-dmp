@@ -2,7 +2,7 @@
   "name": "Disaster Resource Atlas",
   "areaOfInterest": "Goa, India",
   "version": "0.1.0",
-  "url": "https://github.com/alansaviolobo/dfes-dmp/blob/main/config/dfes-dmp.atlas.json",
+  "url": "https://github.com/alansaviolobo/dfes-dmp/blob/main/config/lairai-zatra.atlas.json",
   "color": "#ff0d00",
   "map": {
     "style": "mapbox://styles/planemad/cm3gyibd3004x01qz08rohcsg",
@@ -100,7 +100,7 @@
       "headerPosition": "0 -900px",
       "type": "geojson",
       "initiallyChecked": true,
-      "url": "https://raw.githubusercontent.com/alansaviolobo/dfes-dmp/refs/heads/main/assets/lairai-zatra/control-room.geojson",
+      "url": "https://raw.githubusercontent.com/alansaviolobo/dfes-dmp/refs/heads/main/assets/map-layers/lairai-zatra/control-room.geojson",
       "style": {
         "icon-image": "assets/map-layers/lairai-zatra/icons/control-room.jpeg",
         "icon-size": 1,
@@ -127,7 +127,7 @@
       "headerPosition": "0 -900px",
       "type": "geojson",
       "initiallyChecked": true,
-      "url": "https://raw.githubusercontent.com/alansaviolobo/dfes-dmp/refs/heads/main/assets/lairai-zatra/fire-extinguishers.geojson",
+      "url": "https://raw.githubusercontent.com/alansaviolobo/dfes-dmp/refs/heads/main/assets/map-layers/lairai-zatra/fire-extinguishers.geojson",
       "style": {
         "icon-image": "assets/map-layers/lairai-zatra/icons/fire-extinuisher.jpeg",
         "icon-size": 1,
@@ -154,7 +154,7 @@
       "headerPosition": "0 -900px",
       "type": "geojson",
       "initiallyChecked": true,
-      "url": "https://raw.githubusercontent.com/alansaviolobo/dfes-dmp/refs/heads/main/assets/lairai-zatra/motorcycle-response-units.geojson",
+      "url": "https://raw.githubusercontent.com/alansaviolobo/dfes-dmp/refs/heads/main/assets/map-layers/lairai-zatra/motorcycle-response-units.geojson",
       "style": {
         "icon-image": "assets/map-layers/lairai-zatra/icons/motorcycle-response-units.jpeg",
         "icon-size": 1,
@@ -181,7 +181,7 @@
       "headerPosition": "0 -900px",
       "type": "geojson",
       "initiallyChecked": true,
-      "url": "https://raw.githubusercontent.com/alansaviolobo/dfes-dmp/refs/heads/main/assets/lairai-zatra/monitoring-zones.geojson",
+      "url": "https://raw.githubusercontent.com/alansaviolobo/dfes-dmp/refs/heads/main/assets/map-layers/lairai-zatra/monitoring-zones.geojson",
       "style": {
         "text-color": "white",
         "text-halo-color": "#0084f7",
