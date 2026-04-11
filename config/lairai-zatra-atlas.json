@@ -92,6 +92,119 @@
       }
     },
     {
+      "id": "control-room",
+      "title": "Control Room",
+      "description": "Fire Control Room",
+      "attribution": "",
+      "headerImage": "assets/map-layers/dfes-dmp/all-image-sprite.png",
+      "headerPosition": "0 -900px",
+      "type": "geojson",
+      "initiallyChecked": true,
+      "url": "https://raw.githubusercontent.com/alansaviolobo/dfes-dmp/refs/heads/main/assets/lairai-zatra/control-room.geojson",
+      "style": {
+        "icon-image": "assets/map-layers/lairai-zatra/icons/control-room.jpeg",
+        "icon-size": 1,
+        "icon-allow-overlap": true
+      },
+      "inspect": {
+        "id": "Name",
+        "title": "Name",
+        "label": "Name",
+        "fields": [
+          "Name"
+        ],
+        "fieldTitles": [
+          "Name"
+        ]
+      }
+    },
+    {
+      "id": "fire-extinguishers",
+      "title": "Fire Extinguishers",
+      "description": "Fire Extinguishers",
+      "attribution": "",
+      "headerImage": "assets/map-layers/dfes-dmp/all-image-sprite.png",
+      "headerPosition": "0 -900px",
+      "type": "geojson",
+      "initiallyChecked": true,
+      "url": "https://raw.githubusercontent.com/alansaviolobo/dfes-dmp/refs/heads/main/assets/lairai-zatra/fire-extinguishers.geojson",
+      "style": {
+        "icon-image": "assets/map-layers/lairai-zatra/icons/fire-extinuisher.jpeg",
+        "icon-size": 1,
+        "icon-allow-overlap": true
+      },
+      "inspect": {
+        "id": "Name",
+        "title": "Name",
+        "label": "Name",
+        "fields": [
+          "Name"
+        ],
+        "fieldTitles": [
+          "Name"
+        ]
+      }
+    },
+    {
+      "id": "motorcycle-response-units",
+      "title": "Motorcycle Response Units",
+      "description": "Motorcycle Response Units",
+      "attribution": "",
+      "headerImage": "assets/map-layers/dfes-dmp/all-image-sprite.png",
+      "headerPosition": "0 -900px",
+      "type": "geojson",
+      "initiallyChecked": true,
+      "url": "https://raw.githubusercontent.com/alansaviolobo/dfes-dmp/refs/heads/main/assets/lairai-zatra/motorcycle-response-units.geojson",
+      "style": {
+        "icon-image": "assets/map-layers/lairai-zatra/icons/motorcycle-response-units.jpeg",
+        "icon-size": 1,
+        "icon-allow-overlap": true
+      },
+      "inspect": {
+        "id": "Name",
+        "title": "Name",
+        "label": "Name",
+        "fields": [
+          "Name"
+        ],
+        "fieldTitles": [
+          "Name"
+        ]
+      }
+    },
+    {
+      "id": "monitoring-zones",
+      "title": "Monitoring Zones",
+      "description": "Monitoring Zones",
+      "attribution": "",
+      "headerImage": "assets/map-layers/dfes-dmp/all-image-sprite.png",
+      "headerPosition": "0 -900px",
+      "type": "geojson",
+      "initiallyChecked": true,
+      "url": "https://raw.githubusercontent.com/alansaviolobo/dfes-dmp/refs/heads/main/assets/lairai-zatra/monitoring-zones.geojson",
+      "style": {
+        "text-color": "white",
+        "text-halo-color": "#0084f7",
+        "text-halo-width": 2,
+        "text-size": 12,
+        "line-color": "#33691E",
+        "line-width": 2,
+        "fill-color": "#7CB342",
+        "fill-opacity": 0.01
+      },
+      "inspect": {
+        "id": "Name",
+        "title": "Name",
+        "label": "Name",
+        "fields": [
+          "Name"
+        ],
+        "fieldTitles": [
+          "Name"
+        ]
+      }
+    },
+    {
       "id": "water-resources",
       "title": "Water Resources",
       "description": "Surface and groundwater assets for drinking and emergency use",
@@ -103,10 +216,9 @@
       "url": "https://raw.githubusercontent.com/alansaviolobo/google-sheets-to-json-converter/refs/heads/data/data/Water-Resources.min.geojson",
       "clustered": true,
       "style": {
-        "circle-color": "#00838F",
-        "circle-radius": 6,
-        "circle-stroke-width": 1.5,
-        "circle-stroke-color": "#000000"
+        "icon-image": "assets/map-layers/dfes-dmp/icons/water-resources.png",
+        "icon-size": 1,
+        "icon-allow-overlap": true
       },
       "inspect": {
         "id": "location",

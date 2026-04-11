@@ -1,0 +1,13 @@
+{
+"type": "FeatureCollection",
+"name": "monitoring_zones",
+"crs": { "type": "name", "properties": { "name": "urn:ogc:def:crs:OGC:1.3:CRS84" } },
+"features": [
+{ "type": "Feature", "properties": { "fid": 1, "Name": "Zone 1", "Desc": "Near Reception, Behind Devasthan" }, "geometry": { "type": "Polygon", "coordinates": [ [ [ 73.899235741814039, 15.604990184193143 ], [ 73.898651239748872, 15.603865293426233 ], [ 73.899816567765583, 15.603299171929164 ], [ 73.900294462535825, 15.604574783354384 ], [ 73.899235741814039, 15.604990184193143 ] ] ] } },
+{ "type": "Feature", "properties": { "fid": 2, "Name": null, "Desc": null }, "geometry": { "type": "Polygon", "coordinates": [ ] } },
+{ "type": "Feature", "properties": { "fid": 3, "Name": "Zone 3", "Desc": "Near Homkund" }, "geometry": { "type": "Polygon", "coordinates": [ [ [ 73.902893474863276, 15.606872354365228 ], [ 73.90278870562517, 15.606293366470496 ], [ 73.902020397879156, 15.606429382674337 ], [ 73.902189499105546, 15.606967933319279 ], [ 73.902893474863276, 15.606872354365228 ] ] ] } },
+{ "type": "Feature", "properties": { "fid": 4, "Name": "Zone 4", "Desc": "Near Tali" }, "geometry": { "type": "Polygon", "coordinates": [ [ [ 73.902874175266788, 15.61022772706947 ], [ 73.902772163113909, 15.609883091417842 ], [ 73.90323259634448, 15.609778322179748 ], [ 73.90332817529854, 15.610184532734465 ], [ 73.902874175266788, 15.61022772706947 ] ] ] } },
+{ "type": "Feature", "properties": { "fid": 5, "Name": null, "Desc": null }, "geometry": { "type": "Polygon", "coordinates": [ ] } },
+{ "type": "Feature", "properties": { "fid": 6, "Name": "Zone 5", "Desc": "Near Old Temple Muddar" }, "geometry": { "type": "Polygon", "coordinates": [ [ [ 73.902709669182428, 15.611792832442056 ], [ 73.902983539646925, 15.611313099614994 ], [ 73.903167345327788, 15.611529990318418 ], [ 73.902917369601809, 15.611965609782072 ], [ 73.902709669182428, 15.611792832442056 ] ] ] } }
+]
+}

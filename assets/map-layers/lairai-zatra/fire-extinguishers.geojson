@@ -1,0 +1,9 @@
+{
+"type": "FeatureCollection",
+"name": "fire_extinguisher",
+"crs": { "type": "name", "properties": { "name": "urn:ogc:def:crs:OGC:1.3:CRS84" } },
+"features": [
+{ "type": "Feature", "properties": { "fid": 1, "Name": "Fire Extinguisher" }, "geometry": null },
+{ "type": "Feature", "properties": { "fid": 2, "Name": "Zone 2 - Fire Extinguisher Stand" }, "geometry": { "type": "Point", "coordinates": [ 73.899281693234258, 15.60405645133434 ] } }
+]
+}

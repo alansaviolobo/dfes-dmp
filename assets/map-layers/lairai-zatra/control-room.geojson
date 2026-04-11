@@ -1,0 +1,8 @@
+{
+"type": "FeatureCollection",
+"name": "control_room",
+"crs": { "type": "name", "properties": { "name": "urn:ogc:def:crs:OGC:1.3:CRS84" } },
+"features": [
+{ "type": "Feature", "properties": { "fid": 1, "Name": "Control Room" }, "geometry": { "type": "Point", "coordinates": [ 73.902761134773087, 15.606422030447101 ] } }
+]
+}
