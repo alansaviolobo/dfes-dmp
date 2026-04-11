@@ -80,7 +80,7 @@
       "inspect": {
         "id": "Full Name",
         "title": "Full Name",
-        "label": "Name",
+        "label": "Full Name",
         "fields": [
           "Full Name",
           "Mobile",
@@ -236,7 +236,7 @@
       "type": "geojson",
       "refresh": 60000,
       "initiallyChecked": false,
-      "url": "https://raw.githubusercontent.com/publicmap/goa-fire-trucks-geojson/refs/heads/data/data/goa-fire-trucks.geojson",
+      "url": "https://dfes.goa.gov.in/goa-fire-trucks.geojson/",
       "style": {
         "icon-image": "assets/map-layers/dfes-dmp/icons/fire-appliances.png",
         "icon-size": 1,
@@ -1494,17 +1494,8 @@
         ],
         "fill-opacity": 0.9
       },
-      "inspect": {
-        "id": "STNAME",
-        "title": "STNAME",
-        "label": "STNAME",
-        "fields": [
-          "STNAME"
-        ],
-        "fieldTitles": [
-          "Name"
-        ]
-      }
+      "inspect": false,
+      "tags" : ["basemap"]
     },
     {
       "id": "bhuvan-satellite",
@@ -1516,7 +1507,8 @@
       "proxyReferer": "https://bhuvan.nrsc.gov.in/",
       "attribution": "<a href='https://bhuvan.nrsc.gov.in/ngmaps?mode=Hybrid#3.65/22.91/82.78'>NRSC/ISRO Bhuvan</a>",
       "maxzoom": 19,
-      "initiallyChecked": true
+      "initiallyChecked": true,
+      "tags" : ["basemap"]
     }
   ]
 }

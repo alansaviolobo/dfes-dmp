@@ -31,7 +31,7 @@
       "headerPosition": "0 -200px",
       "type": "geojson",
       "refresh": 60000,
-      "initiallyChecked": false,
+      "initiallyChecked": true,
       "url": "https://dfes.goa.gov.in/dfes-goa-fire-appliance-api.geojson/",
       "style": {
         "icon-image": "assets/map-layers/dfes-dmp/icons/fire-appliances.png",
@@ -53,6 +53,197 @@
           "Last Updated"
         ]
       }
+    },
+    {
+      "id": "fire-stations",
+      "title": "Fire Stations",
+      "description": "Primary fire and rescue response facilities",
+      "attribution": "<a href='https://dfes.goa.gov.in'>Directorate of Fire & Emergency Services, Goa.</a>",
+      "headerImage": "assets/map-layers/dfes-dmp/all-image-sprite.png",
+      "headerPosition": "0 -250px",
+      "type": "geojson",
+      "initiallyChecked": true,
+      "url": "https://raw.githubusercontent.com/alansaviolobo/google-sheets-to-json-converter/refs/heads/data/data/Fire-Stations.min.geojson",
+      "style": {
+        "icon-image": "assets/map-layers/dfes-dmp/icons/fire-stations.png",
+        "icon-size": 1,
+        "icon-allow-overlap": true
+      },
+      "inspect": {
+        "id": "Id",
+        "title": "Station",
+        "label": "Station",
+        "fields": [
+          "Name",
+          "Mobile",
+          "No. of Fire Appliances",
+          "Trained Personnel Count",
+          "Contact Number",
+          "Last Updated"
+        ],
+        "fieldTitles": [
+          "Name",
+          "Mobile",
+          "No. of Fire Appliances",
+          "Trained Personnel Count",
+          "Contact Number",
+          "Last Updated"
+        ]
+      }
+    },
+    {
+      "id": "water-resources",
+      "title": "Water Resources",
+      "description": "Surface and groundwater assets for drinking and emergency use",
+      "attribution": "",
+      "headerImage": "assets/map-layers/dfes-dmp/all-image-sprite.png",
+      "headerPosition": "0 -900px",
+      "type": "geojson",
+      "initiallyChecked": true,
+      "url": "https://raw.githubusercontent.com/alansaviolobo/google-sheets-to-json-converter/refs/heads/data/data/Water-Resources.min.geojson",
+      "clustered": true,
+      "style": {
+        "circle-color": "#00838F",
+        "circle-radius": 6,
+        "circle-stroke-width": 1.5,
+        "circle-stroke-color": "#000000"
+      },
+      "inspect": {
+        "id": "location",
+        "title": "Location",
+        "label": "Location",
+        "fields": [
+          "Location",
+          "Type"
+        ],
+        "fieldTitles": [
+          "Location",
+          "Type"
+        ]
+      }
+    },
+    {
+      "id": "apada-mitras",
+      "title": "Apada Mitras",
+      "description": "Community-based disaster response volunteers",
+      "attribution": "<a href='https://dfes.goa.gov.in'>Directorate of Fire & Emergency Services, Goa.</a>",
+      "headerImage": "assets/map-layers/dfes-dmp/all-image-sprite.png",
+      "headerPosition": "0 0",
+      "type": "geojson",
+      "initiallyChecked": true,
+      "url": "https://raw.githubusercontent.com/alansaviolobo/google-sheets-to-json-converter/refs/heads/data/data/Apada-Mitras.min.geojson",
+      "clustered": true,
+      "clusterRadius": 100,
+      "style": {
+        "icon-image": [
+          "match",
+          [
+            "get",
+            "Gender"
+          ],
+          "Male",
+          "assets/map-layers/dfes-dmp/icons/apada-mitra.png",
+          "Female",
+          "assets/map-layers/dfes-dmp/icons/apada-sakhi.png",
+          "assets/map-layers/dfes-dmp/icons/apada-mitra.png"
+        ],
+        "icon-size": 1,
+        "icon-allow-overlap": true
+      },
+      "inspect": {
+        "id": "Full Name",
+        "title": "Full Name",
+        "label": "Full Name",
+        "fields": [
+          "Full Name",
+          "Mobile",
+          "Mobile_2",
+          "ID_Card"
+        ],
+        "fieldTitles": [
+          "Full Name",
+          "Mobile",
+          "Mobile_2",
+          "ID_Card"
+        ]
+      }
+    },  {
+      "initiallyChecked": true,
+      "id": "streets",
+      "tags": [
+        "streets"
+      ],
+      "title": "Mapbox Street Map",
+      "description": "Detailed street level map data layers sourced from <a href='https://www.openstreetmap.org/#map=11/15.4054/73.9280' target='_blank'>OpenStreetMap contributors</a> and other data sources via <a href='https://docs.mapbox.com/data/tilesets/reference/mapbox-streets-v8/' target='_blank'>Mapbox Streets</a> vector tiles.",
+      "type": "style",
+      "headerImage": "assets/map-layers/mapbox/map-layer-mapbox-streets.png",
+      "attribution": "<a href='https://www.mapbox.com/about/maps' rel='noopener nofollow'>© Mapbox</a> <a href='https://www.openstreetmap.org/#map=16/15.49493/73.82864'>© OpenStreetMap contributors</a>",
+      "layers": [
+        {
+          "title": "Places Labels",
+          "sourceLayer": "place_label"
+        },
+        {
+          "title": "Natural Labels",
+          "sourceLayer": "natural_label"
+        },
+        {
+          "title": "Airport Labels",
+          "sourceLayer": "airport_label"
+        },
+        {
+          "title": "Transit Labels",
+          "sourceLayer": "transit_stop_label"
+        },
+        {
+          "title": "Landmark Labels",
+          "sourceLayer": "poi_label"
+        },
+        {
+          "title": "Buildings",
+          "sourceLayer": "building"
+        },
+        {
+          "title": "Structures",
+          "sourceLayer": "structure"
+        },
+        {
+          "title": "Roads & Railways",
+          "sourceLayer": "road"
+        },
+        {
+          "title": "Runways",
+          "sourceLayer": "aeroway"
+        },
+        {
+          "title": "Hillshading",
+          "sourceLayer": "hillshade"
+        },
+        {
+          "title": "Landcover",
+          "sourceLayer": "landcover"
+        },
+        {
+          "title": "Landuse",
+          "sourceLayer": "landuse"
+        },
+        {
+          "title": "Wetlands & National Parks",
+          "sourceLayer": "landuse_overlay"
+        },
+        {
+          "title": "Waterways",
+          "sourceLayer": "waterway"
+        },
+        {
+          "title": "Waterbodies",
+          "sourceLayer": "water"
+        },
+        {
+          "title": "Boundaries",
+          "sourceLayer": "admin"
+        }
+      ]
     },
     {
       "id": "bhuvan-satellite",
