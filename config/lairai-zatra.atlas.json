@@ -187,10 +187,10 @@
         "text-halo-color": "#0084f7",
         "text-halo-width": 2,
         "text-size": 12,
-        "line-color": "#33691E",
+        "line-color": "#f00",
         "line-width": 2,
-        "fill-color": "#7CB342",
-        "fill-opacity": 0.01
+        "fill-color": "#f00",
+        "fill-opacity": 0.5
       },
       "inspect": {
         "id": "Name",
