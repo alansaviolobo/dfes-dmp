@@ -129,7 +129,7 @@
       "initiallyChecked": true,
       "url": "https://raw.githubusercontent.com/alansaviolobo/dfes-dmp/refs/heads/main/assets/map-layers/lairai-zatra/fire-extinguishers.geojson",
       "style": {
-        "icon-image": "assets/map-layers/lairai-zatra/icons/fire-extinuisher.jpeg",
+        "icon-image": "assets/map-layers/lairai-zatra/icons/fire-extinguishers.jpeg",
         "icon-size": 1,
         "icon-allow-overlap": true
       },
