@@ -1,0 +1,150 @@
+{
+  "name": "WRD Bandharas Atlas",
+  "areaOfInterest": "Goa, India",
+  "version": "0.1.0",
+  "url": "https://github.com/alansaviolobo/dfes-dmp/blob/main/config/wrd-bandharas.atlas.json",
+  "color": "#ff0d00",
+  "map": {
+    "style": "mapbox://styles/planemad/cm3gyibd3004x01qz08rohcsg",
+    "center": [
+      73.900132,
+      15.605249
+    ],
+    "zoom": 10
+  },
+  "atlases": [
+    "wrd-bandharas-atlas"
+  ],
+  "bbox": [
+    73.66,
+    14.88,
+    74.34,
+    15.82
+  ],
+  "layers": [
+    {
+      "id": "wrd-bandharas",
+      "title": "Bandharas",
+      "description": "",
+      "attribution": "<a href='https://goawrd.gov.in'>Water Resources Dept, Goa.</a>",
+      "headerImage": "assets/map-layers/dfes-dmp/all-image-sprite.png",
+      "headerPosition": "0 -200px",
+      "type": "geojson",
+      "refresh": 60000,
+      "initiallyChecked": true,
+      "url": "https://raw.githubusercontent.com/alansaviolobo/dfes-dmp/refs/heads/main/assets/map-layers/wrd-bandharas/bandharas.geojson",
+      "style": {
+        "icon-image": "assets/map-layers/wrd-bandharas/bandhara.png",
+        "icon-size": 1,
+        "icon-allow-overlap": true
+      },
+      "inspect": {
+        "id": "Sr.No",
+        "title": "Bandara Name",
+        "label": "Bandara Address",
+        "fields": [
+          "Bandara Name",
+          "Bandara Address"
+        ],
+        "fieldTitles": [
+          "Bandara Name",
+          "Bandara Address"
+        ]
+      }
+    },
+    {
+      "initiallyChecked": true,
+      "id": "streets",
+      "tags": [
+        "streets"
+      ],
+      "title": "Mapbox Street Map",
+      "description": "Detailed street level map data layers sourced from <a href='https://www.openstreetmap.org/#map=11/15.4054/73.9280' target='_blank'>OpenStreetMap contributors</a> and other data sources via <a href='https://docs.mapbox.com/data/tilesets/reference/mapbox-streets-v8/' target='_blank'>Mapbox Streets</a> vector tiles.",
+      "type": "style",
+      "headerImage": "assets/map-layers/mapbox/map-layer-mapbox-streets.png",
+      "attribution": "<a href='https://www.mapbox.com/about/maps' rel='noopener nofollow'>© Mapbox</a> <a href='https://www.openstreetmap.org/#map=16/15.49493/73.82864'>© OpenStreetMap contributors</a>",
+      "layers": [
+        {
+          "title": "Places Labels",
+          "sourceLayer": "place_label"
+        },
+        {
+          "title": "Natural Labels",
+          "sourceLayer": "natural_label"
+        },
+        {
+          "title": "Airport Labels",
+          "sourceLayer": "airport_label"
+        },
+        {
+          "title": "Transit Labels",
+          "sourceLayer": "transit_stop_label"
+        },
+        {
+          "title": "Landmark Labels",
+          "sourceLayer": "poi_label"
+        },
+        {
+          "title": "Buildings",
+          "sourceLayer": "building"
+        },
+        {
+          "title": "Structures",
+          "sourceLayer": "structure"
+        },
+        {
+          "title": "Roads & Railways",
+          "sourceLayer": "road"
+        },
+        {
+          "title": "Runways",
+          "sourceLayer": "aeroway"
+        },
+        {
+          "title": "Hillshading",
+          "sourceLayer": "hillshade"
+        },
+        {
+          "title": "Landcover",
+          "sourceLayer": "landcover"
+        },
+        {
+          "title": "Landuse",
+          "sourceLayer": "landuse"
+        },
+        {
+          "title": "Wetlands & National Parks",
+          "sourceLayer": "landuse_overlay"
+        },
+        {
+          "title": "Waterways",
+          "sourceLayer": "waterway"
+        },
+        {
+          "title": "Waterbodies",
+          "sourceLayer": "water"
+        },
+        {
+          "title": "Boundaries",
+          "sourceLayer": "admin"
+        }
+      ]
+    },
+    {
+      "id": "bhuvan-satellite",
+      "title": "Bhuvan Satellite Imagery",
+      "description": "High-resolution satellite imagery from ISRO Bhuvan",
+      "tags": [
+        "basemap",
+        "satellite"
+      ],
+      "type": "wms",
+      "url": "https://bhuvan-ras1.nrsc.gov.in/tilecache/tilecache.py?service=WMS&version=1.1.1&request=GetMap&layers=bhuvan_ocm_wbase&styles=&format=image/jpeg&transparent=false",
+      "proxyUrl": "https://amche-atlas-production.up.railway.app/proxy",
+      "proxyReferer": "https://bhuvan.nrsc.gov.in/",
+      "attribution": "<a href='https://bhuvan.nrsc.gov.in/ngmaps?mode=Hybrid#3.65/22.91/82.78'>NRSC/ISRO Bhuvan</a>",
+      "maxzoom": 19,
+      "initiallyChecked": true
+    }
+  ]
+}
