@@ -34,9 +34,9 @@
       "initiallyChecked": true,
       "url": "https://raw.githubusercontent.com/alansaviolobo/dfes-dmp/refs/heads/main/assets/map-layers/wrd-bandharas/bandharas.geojson",
       "style": {
-        "icon-image": "assets/map-layers/wrd-bandharas/bandhara.png",
-        "icon-size": 1,
-        "icon-allow-overlap": true
+        "circle-color": "#4c7fff",
+        "circle-stroke-width": 0.8,
+        "circle-stroke-color": "#ffffff"
       },
       "inspect": {
         "id": "Sr.No",
@@ -129,22 +129,6 @@
           "sourceLayer": "admin"
         }
       ]
-    },
-    {
-      "id": "bhuvan-satellite",
-      "title": "Bhuvan Satellite Imagery",
-      "description": "High-resolution satellite imagery from ISRO Bhuvan",
-      "tags": [
-        "basemap",
-        "satellite"
-      ],
-      "type": "wms",
-      "url": "https://bhuvan-ras1.nrsc.gov.in/tilecache/tilecache.py?service=WMS&version=1.1.1&request=GetMap&layers=bhuvan_ocm_wbase&styles=&format=image/jpeg&transparent=false",
-      "proxyUrl": "https://amche-atlas-production.up.railway.app/proxy",
-      "proxyReferer": "https://bhuvan.nrsc.gov.in/",
-      "attribution": "<a href='https://bhuvan.nrsc.gov.in/ngmaps?mode=Hybrid#3.65/22.91/82.78'>NRSC/ISRO Bhuvan</a>",
-      "maxzoom": 19,
-      "initiallyChecked": true
     }
   ]
 }
